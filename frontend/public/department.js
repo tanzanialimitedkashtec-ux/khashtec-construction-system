@@ -27739,6 +27739,67 @@ function renderDriverTable(drivers, recordsList) {
     recordsList.innerHTML = html;
     console.log('✅ [DEBUG] Driver table rendered successfully with', drivers.length, 'rows');
 }
+            var fullName = driver.full_name || driver.driverName || 'Unknown Driver';
+            var desc = driver.description || 'No description';
+
+            html += '<tr>' +
+                '<td><div class="driver-info">' +
+                    '<div class="driver-id">' + driverId + '</div>' +
+                    '<div class="driver-name">' + fullName + '</div>' +
+                    '<div class="driver-description">' + desc + '</div>' +
+                '</div></td>' +
+                '<td><div class="personal-details">' +
+                    '<div class="experience">Experience: ' + experienceYears + ' years</div>' +
+                    '<div class="dob">DOB: ' + dob + '</div>' +
+                    '<div class="gender">Gender: ' + gender + '</div>' +
+                    '<div class="address">' + address + '</div>' +
+                    '<div class="region">Region: ' + region + '</div>' +
+                    '<div class="blood-group">Blood: ' + bloodGroup + '</div>' +
+                '</div></td>' +
+                '<td><div class="contact-info">' +
+                    '<div class="phone">📱 ' + phone + '</div>' +
+                    '<div class="email">📧 ' + email + '</div>' +
+                    '<div class="nida">NIDA: ' + nida + '</div>' +
+                    '<div class="passport">Passport: ' + passport + '</div>' +
+                '</div></td>' +
+                '<td><div class="license-info">' +
+                    '<div class="license-type">Type: ' + licenseType + '</div>' +
+                    '<div class="license-issue">Issue: ' + licenseIssue + '</div>' +
+                    '<div class="license-expiry">Expiry: ' + licenseExpiry + '</div>' +
+                    '<div class="medical">Medical: ' + medicalCert + '</div>' +
+                    '<div class="medical-expiry">Medical Exp: ' + medicalExpiry + '</div>' +
+                '</div></td>' +
+                '<td><div class="employment-info">' +
+                    '<div class="status">Status: ' + employmentStatus + '</div>' +
+                    '<div class="hire-date">Hired: ' + hireDate + '</div>' +
+                    '<div class="salary">Salary: ' + salary + '</div>' +
+                    '<div class="payment">Payment: ' + paymentMethod + '</div>' +
+                    '<div class="skills">Skills: ' + skills + '</div>' +
+                '</div></td>' +
+                '<td><div class="emergency-info">' +
+                    '<div class="emergency-name">' + emergencyName + '</div>' +
+                    '<div class="emergency-phone">📱 ' + emergencyPhone + '</div>' +
+                    '<div class="emergency-relation">Relation: ' + emergencyRelation + '</div>' +
+                '</div></td>' +
+                '<td><div class="vehicle-info">' +
+                    '<div class="assigned-vehicle">' + assignedVehicle + '</div>' +
+                '</div></td>' +
+                '<td><div class="status-info">' +
+                    '<span class="status-badge ' + statusClass + '">' + statusText + '</span>' +
+                '</div></td>' +
+                '<td><div class="driver-actions">' +
+                    '' +
+                    '' +
+                    '<button class="action-btn delete" onclick="deleteDriver(\'' + driverId + '\')" title="Delete Driver">🗑️</button>' +
+                '</div></td>' +
+            '</tr>';
+        } catch (e) {
+            console.error("❌ [DEBUG] Failed parsing row index", i, "Driver:", driver, "Error:", e);
+        }
+    }
+    recordsList.innerHTML = html;
+    console.log('✅ [DEBUG] Driver table rendered successfully with', drivers.length, 'rows');
+}
 
 
 

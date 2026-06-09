@@ -92113,6 +92113,46 @@ async function loadOfficePortalData() {
 
         
 
+        // Load drivers for portal
+
+        let portalDrivers = [];
+
+        try {
+
+            const driversResponse = await fetch(`${baseUrl}/api/drivers`, {
+
+                method: 'GET',
+
+                headers: {
+
+                    'Content-Type': 'application/json',
+
+                    'Authorization': `Bearer ${sessionManager.getAuthToken()}`
+
+                }
+
+            });
+
+            
+
+            if (driversResponse.ok) {
+
+                const driversData = await driversResponse.json();
+
+                portalDrivers = Array.isArray(driversData) ? driversData : (driversData.drivers || driversData.data || []);
+
+                console.log(`✅ Loaded ${portalDrivers.length} drivers for portal`);
+
+            }
+
+        } catch (error) {
+
+            console.error('❌ Error loading drivers for portal:', error);
+
+        }
+
+        
+
         // Store data globally for other functions
 
         window.currentPortalData = {
@@ -92120,6 +92160,8 @@ async function loadOfficePortalData() {
             personnel: officePortalUsers,
 
             clients: clients,
+
+            drivers: portalDrivers,
 
             documents: documents,
 
@@ -92133,7 +92175,7 @@ async function loadOfficePortalData() {
 
         // Render the portal with real data
 
-        renderOfficePortal(officePortalUsers, clients, documents, policies, contracts);
+        renderOfficePortal(officePortalUsers, clients, portalDrivers, documents, policies, contracts);
 
         
 
@@ -92169,7 +92211,7 @@ async function loadOfficePortalData() {
 
 // Render office portal with loaded data
 
-function renderOfficePortal(officePortalUsers, clients, documents, policies, contracts) {
+function renderOfficePortal(officePortalUsers, clients, portalDrivers, documents, policies, contracts) {
 
     
 
@@ -92428,6 +92470,120 @@ function renderOfficePortal(officePortalUsers, clients, documents, policies, con
 
     
 
+    // Generate HTML for drivers (portal card view)
+
+    const driversCardHTML = `
+        <style>
+        .driver-avatar-wrapper {
+            position: relative;
+            width: 56px;
+            height: 56px;
+            margin-bottom: 10px;
+        }
+        .driver-letter-avatar {
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+            font-weight: 700;
+            color: #fff;
+            text-transform: uppercase;
+            border: 2px solid rgba(255,255,255,0.3);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+        }
+        .driver-portal-card .driver-card-status {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 10px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            text-transform: capitalize;
+        }
+        .driver-card-status.active { background: #d4edda; color: #155724; }
+        .driver-card-status.inactive { background: #f8d7da; color: #721c24; }
+        .driver-card-status.on-leave { background: #fff3cd; color: #856404; }
+        .driver-card-status.suspended { background: #f5c6cb; color: #721c24; }
+        .driver-portal-card .driver-card-details {
+            width: 100%;
+            text-align: left;
+            border-top: 1px solid #eee;
+            padding-top: 8px;
+            margin-top: 4px;
+        }
+        .driver-portal-card .driver-card-details .detail-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 3px;
+            font-size: 10px;
+            color: #555;
+        }
+        .driver-portal-card .driver-card-details .detail-row .detail-label {
+            font-weight: 600;
+            color: #333;
+        }
+        .driver-portal-card .driver-card-vehicle {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 3px 8px;
+            margin-top: 6px;
+            font-size: 10px;
+            font-weight: 600;
+            color: #fff;
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            border: none;
+            border-radius: 14px;
+            box-shadow: 0 2px 6px rgba(17,153,142,0.35);
+        }
+        </style>
+        <div class="personnel-grid-cards">
+            ${portalDrivers.map(driver => {
+                const fullName = driver.full_name || driver.driverName || 'Driver';
+                const letter = fullName.charAt(0).toUpperCase();
+                const driverColors = ['#667eea','#f093fb','#4facfe','#43e97b','#fa709a','#fee140','#a18cd1','#fbc2eb','#ff9a9e','#fad0c4','#ffecd2','#0ba360','#3cba92','#30cfd0','#38f9d7','#c471f5','#fa71cd','#9795f0','#fbc8d4','#a6c0fe'];
+                const dColorIndex = letter.charCodeAt(0) % driverColors.length;
+                const dBgColor = driverColors[dColorIndex];
+                const driverId = driver.driver_id || '';
+                const phone = driver.phone_number || '-';
+                const email = driver.email_address || '-';
+                const licenseType = driver.license_type || '-';
+                const statusText = driver.driver_status || 'Active';
+                const statusClass = String(statusText).toLowerCase().replace(/\s+/g, '-');
+                const assignedVehicle = driver.assigned_vehicle || 'Unassigned';
+                const experienceYears = driver.years_of_experience != null ? driver.years_of_experience + ' yrs' : '-';
+                const region = driver.region || '-';
+                const employmentStatus = driver.employment_status || '-';
+                return `
+                <div class="personnel-card driver-portal-card" data-department="drivers" data-role="driver" data-person-id="${driverId}">
+                    <div class="driver-avatar-wrapper">
+                        <div class="driver-letter-avatar" style="background:${dBgColor};">${letter}</div>
+                    </div>
+                    <div class="name">${fullName}</div>
+                    <div class="role">🚗 ${driverId}</div>
+                    <span class="driver-card-status ${statusClass}">${statusText}</span>
+                    <div class="dept">${employmentStatus}</div>
+                    <div class="contact">
+                        <div class="contact-item" title="${email}">📧 ${email}</div>
+                        <div class="contact-item" title="${phone}">📱 ${phone}</div>
+                    </div>
+                    <div class="driver-card-details">
+                        <div class="detail-row"><span class="detail-label">License:</span><span>${licenseType}</span></div>
+                        <div class="detail-row"><span class="detail-label">Experience:</span><span>${experienceYears}</span></div>
+                        <div class="detail-row"><span class="detail-label">Region:</span><span>${region}</span></div>
+                    </div>
+                    <div class="driver-card-vehicle">🚗 ${assignedVehicle}</div>
+                </div>
+            `;
+            }).join('')}
+        </div>
+    `;
+
+    
+
     // Generate documents section
 
     const documentsHTML = documents.map(doc => `
@@ -92584,6 +92740,8 @@ function renderOfficePortal(officePortalUsers, clients, documents, policies, con
 
                 <button class="tab-btn-compact" onclick="showPortalSection('clients')" title="Clients">🤝</button>
 
+                <button class="tab-btn-compact" onclick="showPortalSection('drivers')" title="Drivers">🚗</button>
+
                 <button class="tab-btn-compact" onclick="showPortalSection('documents')">📄</button>
 
                 <button class="tab-btn-compact" onclick="showPortalSection('policies')">📋</button>
@@ -92691,6 +92849,42 @@ function renderOfficePortal(officePortalUsers, clients, documents, policies, con
                 <div class="personnel-grid">
 
                     ${clientsHTML}
+
+                </div>
+
+            </div>
+
+            
+
+            <!-- Drivers Section -->
+
+            <div id="drivers-section" class="portal-section" style="display: none;">
+
+                <div class="section-header compact">
+
+                    <div class="section-title">
+
+                        <span class="section-icon">🚗</span>
+
+                        <h4>Registered Drivers</h4>
+
+                    </div>
+
+                    <div class="section-stats compact">
+
+                        <span class="stat-compact">${portalDrivers.length} Total</span>
+
+                        <span class="stat-compact">${portalDrivers.filter(d => (d.driver_status || 'Active').toLowerCase() === 'active').length} Active</span>
+
+                        <span class="stat-compact">${portalDrivers.filter(d => d.assigned_vehicle && d.assigned_vehicle !== 'Unassigned').length} Assigned</span>
+
+                    </div>
+
+                </div>
+
+                <div class="personnel-grid">
+
+                    ${driversCardHTML}
 
                 </div>
 
