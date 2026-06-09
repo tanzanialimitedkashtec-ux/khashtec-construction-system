@@ -1,5 +1,7 @@
 const express = require('express');
 const router = express.Router();
+const fs = require('fs');
+const upload = require('../middleware/upload');
 
 // Test endpoint
 router.get('/test', (req, res) => {
@@ -552,6 +554,62 @@ router.delete('/:id', async (req, res) => {
             message: 'Failed to delete driver',
             error: error.message
         });
+    }
+});
+
+// Upload driver photo
+router.post('/:id/upload-photo', (req, res, next) => {
+    upload.single('profileImage')(req, res, (err) => {
+        if (err) {
+            console.error('❌ File upload error:', err.message);
+            return res.status(400).json({ error: 'File upload failed', details: err.message });
+        }
+        next();
+    });
+}, async (req, res) => {
+    try {
+        const { id } = req.params;
+        const file = req.file;
+
+        if (!file) {
+            return res.status(400).json({ error: 'No image file provided' });
+        }
+
+        const db = require('../../database/config/database');
+
+        const mimeType = file.mimetype;
+        let fileBuffer = null;
+        try { fileBuffer = fs.readFileSync(file.path); } catch (readErr) { console.warn('⚠️ Could not read uploaded file for BLOB:', readErr.message); }
+
+        const profileImagePath = `/uploads/${file.filename}`;
+
+        // Try to store BLOB & path if possible, otherwise path-only
+        try {
+            await db.execute(
+                'UPDATE drivers SET profile_image = ?, profile_image_data = ?, profile_image_mime = ? WHERE id = ? OR driver_id = ?',
+                [profileImagePath, fileBuffer, mimeType, id, id]
+            );
+        } catch (blobErr) {
+            console.warn('⚠️ BLOB update failed for drivers, retrying path-only:', blobErr.message);
+            try {
+                await db.execute(
+                    'UPDATE drivers SET profile_image = ? WHERE id = ? OR driver_id = ?',
+                    [profileImagePath, id, id]
+                );
+            } catch (pathErr) {
+                console.warn('⚠️ Path-only update also failed:', pathErr.message);
+            }
+        }
+
+        res.json({
+            success: true,
+            message: 'Photo uploaded successfully',
+            imageUrl: profileImagePath + '?t=' + Date.now()
+        });
+
+    } catch (error) {
+        console.error('❌ Error uploading driver photo:', error);
+        res.status(500).json({ error: 'Failed to upload driver photo', details: error.message });
     }
 });
 
