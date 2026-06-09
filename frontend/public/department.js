@@ -991,6 +991,7 @@ function loadMenu(){
         addMenu("Budgeting", financeBudgeting);
 
         addMenu("Financial Management", financialManagement);
+        
         addMenu("Financial Strategies", showFinancialStrategies);
 
         addMenu("Payroll Processing", payrollProcessing);
@@ -1147,6 +1148,7 @@ function loadMenu(){
         addMenu("Budgeting", financeBudgeting);
 
         addMenu("Financial Management", financialManagement);
+        addMenu("Financial Strategies", showFinancialStrategies);
 
         addMenu("Payroll Processing", payrollProcessing);
 
@@ -36446,8 +36448,105 @@ function financialManagement(){
 
     loadFinancialRecords();
 
+ 
+function showFinancialStrategies(){
+    showContent(`<div class="card">
+        <h3>Financial Strategies</h3>
+        <div id="financialStrategiesContainer"><div class="loading">Loading strategies...</div></div>
+        <div style="margin-top:10px;">
+            <button class="action" onclick="loadFinancialStrategies()">Refresh</button>
+            <button class="action" onclick="renderFinancialStrategyForm()">New Strategy</button>
+        </div>
+    </div>`);
+    loadFinancialStrategies();
 }
 
+async function loadFinancialStrategies(){
+    const baseUrl = window.location.origin;
+    try{
+        const res = await fetch(`${baseUrl}/api/financial-strategies`);
+        if(!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data = await res.json();
+        const list = Array.isArray(data) ? data : (data && typeof data === 'object') ? [data] : [];
+        const container = document.getElementById('financialStrategiesContainer');
+        if(!container) return;
+        if(list.length === 0){
+            container.innerHTML = '<div class="info">No financial strategies found.</div>';
+            return;
+        }
+        let html = '<div class="strategy-list">';
+        list.forEach(s => {
+            html += `<div class="strategy-item" data-id="${s.id}">` +
+                   `<h5>${s.revenue_strategy || ('Strategy #' + (s.id||''))}</h5>` +
+                   `<p><strong>Units:</strong> ${s.units || ''} • <strong>Price/unit:</strong> ${s.target_selling_price_per_unit || ''}</p>` +
+                   `<div class="actions"><button class="action" onclick="editFinancialStrategy(${s.id})">Edit</button></div>` +
+                   `</div>`;
+        });
+        html += '</div>';
+        container.innerHTML = html;
+    }catch(e){
+        console.error('Error loading financial strategies', e);
+        const container = document.getElementById('financialStrategiesContainer');
+        if(container) container.innerHTML = '<div class="error">Error loading strategies: ' + (e.message || e) + '</div>';
+    }
+}
+
+function renderFinancialStrategyForm(strategy = {}){
+    const container = document.getElementById('financialStrategiesContainer');
+    if(!container) return;
+    container.innerHTML = `
+        <form id="financialStrategyForm" onsubmit="saveFinancialStrategy(event)">
+            <label>Revenue Strategy</label>
+            <input name="revenue_strategy" value="${strategy.revenue_strategy || ''}" />
+            <label>Units</label>
+            <input name="units" type="number" value="${strategy.units || ''}" />
+            <label>Target Price per Unit</label>
+            <input name="target_selling_price_per_unit" type="number" value="${strategy.target_selling_price_per_unit || ''}" />
+            <div style="margin-top:8px;">
+                <button class="action" type="submit">Save</button>
+                <button class="action" type="button" onclick="loadFinancialStrategies()">Cancel</button>
+            </div>
+        </form>
+    `;
+}
+
+async function saveFinancialStrategy(e){
+    if(e && e.preventDefault) e.preventDefault();
+    const form = document.getElementById('financialStrategyForm');
+    if(!form) return;
+    const fd = new FormData(form);
+    const payload = {
+        revenue_strategy: fd.get('revenue_strategy'),
+        units: parseInt(fd.get('units')) || 0,
+        target_selling_price_per_unit: parseFloat(fd.get('target_selling_price_per_unit')) || 0
+    };
+    const baseUrl = window.location.origin;
+    try{
+        const res = await fetch(`${baseUrl}/api/financial-strategies`, {
+            method: 'POST',
+            headers: {'Content-Type':'application/json'},
+            body: JSON.stringify(payload)
+        });
+        if(!res.ok) throw new Error(`HTTP ${res.status}`);
+        await res.json();
+        if(typeof customAlert === 'function') customAlert('Strategy saved', 'Success', 'success');
+        loadFinancialStrategies();
+    }catch(err){
+        console.error('Error saving financial strategy', err);
+        if(typeof customAlert === 'function') customAlert('Failed to save strategy: ' + (err.message || err), 'Error', 'error');
+    }
+}
+
+function editFinancialStrategy(id){
+    const baseUrl = window.location.origin;
+    fetch(`${baseUrl}/api/financial-strategies/${id}`)
+        .then(res => { if(!res.ok) throw new Error(`HTTP ${res.status}`); return res.json(); })
+        .then(data => { renderFinancialStrategyForm(data); })
+        .catch(err => { if(typeof customAlert === 'function') customAlert('Failed to load: ' + (err.message || err), 'Error', 'error'); });
+ 
+}
+
+// Load financial records for table display
 
 
 // Load financial records for table display
