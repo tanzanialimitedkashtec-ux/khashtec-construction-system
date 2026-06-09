@@ -8,14 +8,21 @@ async function runMigrations() {
     const fs = require('fs').promises;
     const path = require('path');
     
-    console.log('📝 Reading complete database schema...');
-    const migrationPath = path.resolve(__dirname, '001_create_tables.sql');
-    console.log('📝 Migration path:', migrationPath);
-    console.log('📝 __dirname:', __dirname);
-    console.log('📝 File exists check:', require('fs').existsSync(migrationPath));
-    const migrationSQL = await fs.readFile(migrationPath, 'utf8');
-    console.log('📝 SQL file length:', migrationSQL.length);
-    console.log('📝 SQL file preview:', migrationSQL.substring(0, 200) + '...');
+    console.log('📝 Reading SQL migration files in directory...');
+    const fsPromises = require('fs').promises;
+    const filesInDir = await fsPromises.readdir(__dirname);
+    const sqlFiles = filesInDir.filter(f => f.toLowerCase().endsWith('.sql')).sort();
+    console.log('📝 SQL migration files found:', sqlFiles);
+
+    // Combine all SQL files (in alphabetical order) into a single SQL string
+    let migrationSQL = '';
+    for (const f of sqlFiles) {
+      const p = path.resolve(__dirname, f);
+      console.log('📝 Loading migration file:', p);
+      const content = await fsPromises.readFile(p, 'utf8');
+      migrationSQL += `\n-- Begin migration file: ${f}\n` + content + '\n';
+    }
+    console.log('📝 Combined SQL length:', migrationSQL.length);
     
     // Split SQL file by semicolons with improved parsing
     const statements = migrationSQL

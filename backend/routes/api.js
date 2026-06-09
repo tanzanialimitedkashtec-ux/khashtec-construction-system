@@ -9,6 +9,8 @@ const missionVisionRoutes = require('./mission-vision');
 const longTermGrowthRoutes = require('./long-term-growth');
 const paymentRoutes = require('./payment');
 console.log('✅ Payment routes imported successfully');
+const financialStrategiesRoutes = require('./financialStrategies');
+console.log('✅ Financial strategies routes imported successfully');
 
 // Mount new routes
 router.use('/accountant', accountantRoutes);
@@ -16,6 +18,7 @@ router.use('/leadership', leadershipRoutes);
 router.use('/mission-vision', missionVisionRoutes);
 router.use('/long-term-growth', longTermGrowthRoutes);
 router.use('/payment', paymentRoutes);
+router.use('/financial-strategies', financialStrategiesRoutes);
 
 // Get all users
 router.get('/users', async (req, res) => {
