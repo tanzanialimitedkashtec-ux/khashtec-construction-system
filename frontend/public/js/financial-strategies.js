@@ -9,28 +9,27 @@ if (!document.getElementById('chartjs-script')) {
 }
 function showFinancialStrategiesForm() {
     showContent(`
-        <div class="fs-card" style="background: #ffffff; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); padding: 25px; margin-bottom: 20px;">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; padding-bottom: 15px; border-bottom: 1px solid #eee;">
-                <h3 style="margin: 0; color: #1a4a7a; font-size: 22px; display: flex; align-items: center; gap: 10px;">
-                    <span style="font-size: 28px;">💰</span> Financial Strategies
-                </h3>
-                <button type="button" id="toggleFinancialStrategiesFormBtn" onclick="toggleFinancialStrategiesForm()" class="fs-btn fs-btn-primary">
-                    <i class="fas fa-edit"></i> 📝 Open Financial Strategy Form
+        <div class="card">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h3>💰 Financial Strategies</h3>
+                <button type="button" id="toggleFinancialStrategiesFormBtn" onclick="toggleFinancialStrategiesForm()" class="action" style="background: #007bff;">
+                    📝 Open Financial Strategy Form
                 </button>
             </div>
             
-            <div class="fs-header-banner" style="background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%); color: white; padding: 20px; border-radius: 10px; margin-bottom: 25px; box-shadow: 0 4px 15px rgba(30,60,114,0.2);">
-                <h4 style="margin: 0 0 8px 0; font-size: 16px; font-weight: 600;">Project Financial Planning & Feasibility</h4>
-                <p style="margin: 0; font-size: 12px; opacity: 0.9; line-height: 1.5; max-width: 800px;">Evaluate project costs, define revenue strategies (Build-to-Sell or Build-to-Rent), calculate potential ROI and IRR, and outline financial targets to ensure profitability.</p>
+            <div class="form-header" style="background: linear-gradient(135deg, #0b3d91 0%, #1a4a7a 100%); color: white; padding: 15px; border-radius: 5px; margin-bottom: 20px;">
+                <h4 style="margin: 0 0 8px 0; font-size: 14px;">Project Financial Planning & Feasibility</h4>
+                <p style="margin: 0; font-size: 9px; opacity: 0.9; line-height: 1.4;">Evaluate project costs, define revenue strategies (Build-to-Sell or Build-to-Rent), calculate potential ROI and IRR, and outline financial targets to ensure profitability.</p>
             </div>
             
             <div id="financialStrategiesFormContainer" style="display: none;">
                 <form id="financialStrategiesForm" onsubmit="return submitFinancialStrategiesForm(event)">
-                                   <!-- Integration with Projects -->
-                    <div class="fs-section">
+                    
+                    <!-- Integration with Projects -->
+                    <div class="form-section">
                         <h5>🏗️ Project Integration</h5>
-                        <div class="fs-grid">
-                            <div class="fs-input-group">
+                        <div class="form-row">
+                            <div class="form-group">
                                 <label>Select Project *</label>
                                 <select id="fsProjectId" required onchange="updateProjectName()">
                                     <option value="">Loading projects...</option>
@@ -41,129 +40,130 @@ function showFinancialStrategiesForm() {
                     </div>
 
                     <!-- Cost Estimation Fields -->
-                    <div class="fs-section">
+                    <div class="form-section">
                         <h5>💵 Cost Estimations</h5>
-                        <div class="fs-grid">
-                            <div class="fs-input-group">
+                        <div class="form-row">
+                            <div class="form-group">
                                 <label>Land Acquisition Cost (TZS) *</label>
                                 <input type="number" id="fsLandCost" required min="0" oninput="calculateFinancials()">
                             </div>
-                            <div class="fs-input-group">
+                            <div class="form-group">
                                 <label>Estimated Construction Cost (TZS) *</label>
                                 <input type="number" id="fsConstructionCost" required min="0" oninput="calculateFinancials()">
                             </div>
-                            <div class="fs-input-group">
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
                                 <label>Permits, Legal & Architecture Fees (TZS) *</label>
                                 <input type="number" id="fsPermitsFees" required min="0" oninput="calculateFinancials()">
                             </div>
-                            <div class="fs-input-group">
+                            <div class="form-group">
                                 <label>Contingency Reserve (%) *</label>
                                 <input type="number" id="fsContingencyPercent" required min="0" max="100" step="0.1" value="10" oninput="calculateFinancials()">
                             </div>
                         </div>
-                        <div class="fs-summary-box">
+                        <div class="form-group" style="background: #e9ecef; padding: 10px; border-radius: 5px;">
                             <strong>Total Estimated Project Cost: </strong>
-                            <span id="fsTotalCostDisplay">TZS 0.00</span>
+                            <span id="fsTotalCostDisplay">TZS 0</span>
                         </div>
                     </div>
 
                     <!-- Funding / Capital -->
-                    <div class="fs-section">
+                    <div class="form-section">
                         <h5>🏦 Funding Structure</h5>
-                        <div class="fs-grid">
-                            <div class="fs-input-group">
+                        <div class="form-row">
+                            <div class="form-group">
                                 <label>Developer Equity / Own Capital (TZS) *</label>
                                 <input type="number" id="fsDeveloperEquity" required min="0" oninput="calculateFinancials()">
                             </div>
-                            <div class="fs-input-group">
+                            <div class="form-group">
                                 <label>Bank Loan / Debt Amount (TZS) *</label>
                                 <input type="number" id="fsBankLoanAmount" required min="0" oninput="calculateFinancials()">
                             </div>
-                            <div class="fs-input-group">
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
                                 <label>Annual Interest Rate (%) *</label>
                                 <input type="number" id="fsInterestRate" required min="0" step="0.1" value="0" oninput="calculateFinancials()">
                             </div>
-                            <div class="fs-input-group">
+                            <div class="form-group">
                                 <label>Loan Repayment Period (Years) *</label>
                                 <input type="number" id="fsRepaymentYears" required min="0" value="0" oninput="calculateFinancials()">
                             </div>
-                            <div class="fs-input-group">
-                                <label>Grace Period (Months) *</label>
-                                <input type="number" id="fsGracePeriod" required min="0" value="0">
-                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>Grace Period (Months) *</label>
+                            <input type="number" id="fsGracePeriod" required min="0" value="0">
                         </div>
                     </div>
 
                     <!-- Revenue Strategies -->
-                    <div class="fs-section">
+                    <div class="form-section">
                         <h5>📈 Revenue Strategies</h5>
-                        <div class="fs-grid" style="margin-bottom: 15px;">
-                            <div class="fs-input-group">
-                                <label>Strategy Type *</label>
-                                <select id="fsRevenueStrategy" required onchange="toggleRevenueFields(); calculateFinancials()">
-                                    <option value="build_to_sell">Build to Sell</option>
-                                    <option value="build_to_rent">Build to Rent</option>
-                                </select>
-                            </div>
+                        <div class="form-group">
+                            <label>Strategy Type *</label>
+                            <select id="fsRevenueStrategy" required onchange="toggleRevenueFields(); calculateFinancials()">
+                                <option value="build_to_sell">Build to Sell</option>
+                                <option value="build_to_rent">Build to Rent</option>
+                            </select>
                         </div>
                         
-                        <div class="fs-grid" id="buildToSellFields">
-                            <div class="fs-input-group">
+                        <div class="form-row" id="buildToSellFields">
+                            <div class="form-group">
                                 <label>Targeting Selling Price per Unit (TZS)</label>
                                 <input type="number" id="fsSellingPriceUnit" min="0" oninput="calculateFinancials()">
                             </div>
-                            <div class="fs-input-group">
+                            <div class="form-group">
                                 <label>Number of Units</label>
                                 <input type="number" id="fsTotalUnits" min="1" value="1" oninput="calculateFinancials()">
                             </div>
                         </div>
 
-                        <div class="fs-grid" id="buildToRentFields" style="display: none;">
-                            <div class="fs-input-group">
+                        <div class="form-row" id="buildToRentFields" style="display: none;">
+                            <div class="form-group">
                                 <label>Expected Monthly Rent per Unit (TZS)</label>
                                 <input type="number" id="fsMonthlyRentUnit" min="0" oninput="calculateFinancials()">
                             </div>
-                            <div class="fs-input-group">
+                            <div class="form-group">
                                 <label>Target Occupancy (%)</label>
                                 <input type="number" id="fsTargetOccupancy" min="0" max="100" value="90" step="1" oninput="calculateFinancials()">
                             </div>
-                            <div class="fs-input-group">
+                            <div class="form-group">
                                 <label>Number of Units</label>
                                 <input type="number" id="fsRentTotalUnits" min="1" value="1" oninput="calculateFinancials()">
                             </div>
                         </div>
                         
-                        <div class="fs-summary-box">
+                        <div class="form-group" style="background: #e9ecef; padding: 10px; border-radius: 5px;">
                             <strong>Total Estimated Revenue: </strong>
-                            <span id="fsTotalRevenueDisplay">TZS 0.00</span>
+                            <span id="fsTotalRevenueDisplay">TZS 0</span>
                         </div>
                     </div>
 
                     <!-- Financial Targets -->
-                    <div class="fs-section">
+                    <div class="form-section">
                         <h5>🎯 Financial Targets & Auto-Calculations</h5>
-                        <p style="font-size: 11px; color: #6c757d; margin-bottom: 15px; border-left: 3px solid #ffc107; padding-left: 10px;">These fields are automatically calculated based on your inputs, but you can adjust them to set explicit targets.</p>
-                        <div class="fs-grid">
-                            <div class="fs-input-group">
+                        <p style="font-size: 10px; color: #666; margin-bottom: 15px;">These fields are automatically calculated based on your inputs, but you can adjust them to set explicit targets.</p>
+                        <div class="form-row">
+                            <div class="form-group">
                                 <label>Target Return on Investment (ROI) % *</label>
                                 <input type="number" id="fsTargetRoi" required step="0.1">
                             </div>
-                            <div class="fs-input-group">
+                            <div class="form-group">
                                 <label>Target Internal Rate of Return (IRR) % *</label>
                                 <input type="number" id="fsTargetIrr" required step="0.1">
                             </div>
-                            <div class="fs-input-group">
-                                <label>Minimum DSCR *</label>
-                                <input type="number" id="fsMinimumDscr" required step="0.01">
-                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>Minimum Debt Service Coverage Ratio (DSCR) *</label>
+                            <input type="number" id="fsMinimumDscr" required step="0.01">
                         </div>
                     </div>
 
-                    <div style="display: flex; gap: 10px; margin-top: 20px;">
-                        <button type="submit" class="fs-btn fs-btn-success">💾 Save Financial Strategy</button>
-                        <button type="button" onclick="document.getElementById('financialStrategiesForm').reset(); calculateFinancials();" class="fs-btn fs-btn-warning">🔄 Clear Form</button>
-                        <button type="button" onclick="toggleFinancialStrategiesForm()" class="fs-btn fs-btn-danger">❌ Close Form</button>
-                    </div>n>
+                    <div class="form-row">
+                        <button type="submit" class="action" style="background: #28a745;">💾 Save Financial Strategy</button>
+                        <button type="button" onclick="document.getElementById('financialStrategiesForm').reset(); calculateFinancials();" class="action" style="background: #ffc107;">🔄 Clear Form</button>
+                        <button type="button" onclick="toggleFinancialStrategiesForm()" class="action" style="background: #dc3545; margin-left: 10px;">Close Form</button>
                     </div>
                 </form>
             </div>
@@ -183,40 +183,40 @@ function showFinancialStrategiesForm() {
                 </div>
             </div>
 
-            <div style="margin-top: 35px;">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; gap: 8px; flex-wrap: wrap;">
-                    <h4 style="margin: 0; color: #1a4a7a;">📋 Recorded Financial Strategies</h4>
-                    <button type="button" class="fs-btn fs-btn-primary" onclick="loadFinancialStrategies()">🔄 Refresh Data</button>
+            <div style="margin-top: 25px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; gap: 8px; flex-wrap: wrap;">
+                    <h4 style="margin: 0;">📋 Recorded Financial Strategies</h4>
+                    <button type="button" class="action" style="background: #0b3d91;" onclick="loadFinancialStrategies()">🔄 Refresh Data</button>
                 </div>
-                <div class="fs-table-container">
-                    <table id="financialStrategiesTable" class="fs-table">
+                <div style="overflow: auto; border: 1px solid #dee2e6; border-radius: 5px;">
+                    <table id="financialStrategiesTable" style="width: 100%; border-collapse: collapse; text-align: left; font-size: 10px; white-space: nowrap;">
                         <thead>
-                            <tr>
-                                <th>#</th>
-                                <th>Project Name</th>
-                                <th>Land Cost (TZS)</th>
-                                <th>Construction Cost (TZS)</th>
-                                <th>Permits & Fees (TZS)</th>
-                                <th>Contingency (%)</th>
-                                <th>Total Cost (TZS)</th>
-                                <th>Developer Equity (TZS)</th>
-                                <th>Bank Loan (TZS)</th>
-                                <th>Interest Rate (%)</th>
-                                <th>Repayment (Yrs)</th>
-                                <th>Grace Period (Mo)</th>
-                                <th>Strategy</th>
-                                <th>Sell Price/Unit (TZS)</th>
-                                <th>Rent/Unit/Mo (TZS)</th>
-                                <th>Occupancy (%)</th>
-                                <th>Target ROI (%)</th>
-                                <th>Target IRR (%)</th>
-                                <th>Min DSCR</th>
-                                <th>Date Created</th>
+                            <tr style="background: linear-gradient(135deg, #0b3d91 0%, #1a4a7a 100%); color: white;">
+                                <th style="padding: 8px; border-bottom: 2px solid #dee2e6;">#</th>
+                                <th style="padding: 8px; border-bottom: 2px solid #dee2e6;">Project Name</th>
+                                <th style="padding: 8px; border-bottom: 2px solid #dee2e6;">Land Cost (TZS)</th>
+                                <th style="padding: 8px; border-bottom: 2px solid #dee2e6;">Construction Cost (TZS)</th>
+                                <th style="padding: 8px; border-bottom: 2px solid #dee2e6;">Permits & Fees (TZS)</th>
+                                <th style="padding: 8px; border-bottom: 2px solid #dee2e6;">Contingency (%)</th>
+                                <th style="padding: 8px; border-bottom: 2px solid #dee2e6;">Total Cost (TZS)</th>
+                                <th style="padding: 8px; border-bottom: 2px solid #dee2e6;">Developer Equity (TZS)</th>
+                                <th style="padding: 8px; border-bottom: 2px solid #dee2e6;">Bank Loan (TZS)</th>
+                                <th style="padding: 8px; border-bottom: 2px solid #dee2e6;">Interest Rate (%)</th>
+                                <th style="padding: 8px; border-bottom: 2px solid #dee2e6;">Repayment (Yrs)</th>
+                                <th style="padding: 8px; border-bottom: 2px solid #dee2e6;">Grace Period (Mo)</th>
+                                <th style="padding: 8px; border-bottom: 2px solid #dee2e6;">Strategy</th>
+                                <th style="padding: 8px; border-bottom: 2px solid #dee2e6;">Sell Price/Unit (TZS)</th>
+                                <th style="padding: 8px; border-bottom: 2px solid #dee2e6;">Rent/Unit/Mo (TZS)</th>
+                                <th style="padding: 8px; border-bottom: 2px solid #dee2e6;">Occupancy (%)</th>
+                                <th style="padding: 8px; border-bottom: 2px solid #dee2e6;">Target ROI (%)</th>
+                                <th style="padding: 8px; border-bottom: 2px solid #dee2e6;">Target IRR (%)</th>
+                                <th style="padding: 8px; border-bottom: 2px solid #dee2e6;">Min DSCR</th>
+                                <th style="padding: 8px; border-bottom: 2px solid #dee2e6;">Date Created</th>
                             </tr>
                         </thead>
                         <tbody id="financialStrategiesTbody">
                             <tr>
-                                <td colspan="20" style="text-align: center; padding: 20px;">Loading records...</td>
+                                <td colspan="20" style="text-align: center; padding: 10px;">Loading records...</td>
                             </tr>
                         </tbody>
                     </table>
@@ -225,120 +225,20 @@ function showFinancialStrategiesForm() {
         </div>
 
         <style>
-            .fs-section {
-                background: #fdfdfd;
-                border: 1px solid #eaeaea;
-                border-radius: 8px;
-                padding: 20px;
-                margin: 20px 0;
-                transition: box-shadow 0.3s ease;
-            }
-            .fs-section:hover {
-                box-shadow: 0 2px 10px rgba(0,0,0,0.03);
-            }
-            .fs-section h5 {
-                color: #2a5298;
-                margin-bottom: 15px;
-                font-size: 14px;
-                border-bottom: 2px solid #e1e8f0;
-                padding-bottom: 8px;
-                display: flex;
-                align-items: center;
-                gap: 8px;
-            }
-            .fs-grid {
-                display: grid;
-                grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-                gap: 15px;
-            }
-            .fs-input-group {
-                display: flex;
-                flex-direction: column;
-                gap: 5px;
-            }
-            .fs-input-group label {
-                font-size: 11px;
-                font-weight: 600;
-                color: #444;
-            }
-            .fs-input-group input, .fs-input-group select {
-                padding: 10px 12px;
-                border: 1px solid #ced4da;
-                border-radius: 6px;
-                font-size: 13px;
-                transition: border-color 0.2s, box-shadow 0.2s;
-            }
-            .fs-input-group input:focus, .fs-input-group select:focus {
-                border-color: #2a5298;
-                box-shadow: 0 0 0 3px rgba(42, 82, 152, 0.1);
-                outline: none;
-            }
-            .fs-btn {
-                padding: 10px 20px;
-                border: none;
-                border-radius: 6px;
-                font-size: 13px;
-                font-weight: 600;
-                cursor: pointer;
-                transition: all 0.2s;
-                display: inline-flex;
-                align-items: center;
-                gap: 5px;
-            }
-            .fs-btn-primary { background: #007bff; color: white; }
-            .fs-btn-primary:hover { background: #0056b3; transform: translateY(-1px); }
-            .fs-btn-success { background: #28a745; color: white; }
-            .fs-btn-success:hover { background: #218838; transform: translateY(-1px); }
-            .fs-btn-warning { background: #ffc107; color: #212529; }
-            .fs-btn-warning:hover { background: #e0a800; transform: translateY(-1px); }
-            .fs-btn-danger { background: #dc3545; color: white; }
-            .fs-btn-danger:hover { background: #c82333; transform: translateY(-1px); }
-            
-            .fs-summary-box {
-                background: #f0f4f8;
-                padding: 12px 15px;
-                border-radius: 6px;
-                margin-top: 15px;
-                display: flex;
-                align-items: center;
-                justify-content: space-between;
-                border-left: 4px solid #2a5298;
-            }
-            .fs-summary-box strong { color: #333; font-size: 13px; }
-            .fs-summary-box span { color: #1e3c72; font-weight: 700; font-size: 15px; }
-
-            .fs-table-container {
-                overflow: auto;
-                border: 1px solid #dee2e6;
-                border-radius: 8px;
-                box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-                max-height: 500px;
-            }
-            .fs-table {
-                width: 100%;
-                border-collapse: separate;
-                border-spacing: 0;
-                text-align: left;
-                font-size: 11px;
-                white-space: nowrap;
-            }
-            .fs-table th {
-                padding: 12px 15px;
+            .form-section {
                 background: #f8f9fa;
-                color: #333;
-                font-weight: 600;
-                border-bottom: 2px solid #dee2e6;
-                position: sticky;
-                top: 0;
-                z-index: 10;
-                box-shadow: 0 2px 2px -1px rgba(0,0,0,0.1);
+                border: 1px solid #dee2e6;
+                border-radius: 5px;
+                padding: 15px;
+                margin: 15px 0;
             }
-            .fs-table td {
-                padding: 10px 15px;
-                border-bottom: 1px solid #eee;
-            }
-            .fs-table tbody tr:hover td {
-                background: #f1f7fd;
+            
+            .form-section h5 {
+                color: #0b3d91;
+                margin-bottom: 10px;
+                font-size: 11px;
+                border-bottom: 2px solid #0b3d91;
+                padding-bottom: 5px;
             }
         </style>
     `);
@@ -566,22 +466,22 @@ async function loadFinancialStrategies() {
             const totalCost = baseCost + (baseCost * (contPercent / 100));
 
             const rowBg = idx % 2 === 0 ? '' : 'background: #f8f9fa;';
-            const td = '';
+            const td = 'padding: 8px; border-bottom: 1px solid #dee2e6;';
 
             html += `<tr style="${rowBg}">
                 <td style="${td} font-weight: bold;">${idx + 1}</td>
-                <td style="${td} font-weight: 600; color: #1e3c72;">${r.project_name || ('Project ' + r.project_id)}</td>
+                <td style="${td} font-weight: 600;">${r.project_name || ('Project ' + r.project_id)}</td>
                 <td style="${td}">${fmt(r.land_acquisition_cost)}</td>
                 <td style="${td}">${fmt(r.estimated_construction_cost)}</td>
                 <td style="${td}">${fmt(r.permits_fees)}</td>
                 <td style="${td}">${fmt(r.contingency_reserve_percent)}%</td>
-                <td style="${td} font-weight: 700; color: #d9534f;">${fmt(totalCost)}</td>
+                <td style="${td} font-weight: 600; color: #0b3d91;">${fmt(totalCost)}</td>
                 <td style="${td}">${fmt(r.developer_equity)}</td>
                 <td style="${td}">${fmt(r.bank_loan_amount)}</td>
                 <td style="${td}">${fmt(r.annual_interest_rate)}%</td>
                 <td style="${td}">${r.loan_repayment_period_years || 0}</td>
                 <td style="${td}">${r.grace_period_months || 0}</td>
-                <td style="${td}"><span style="padding: 4px 8px; border-radius: 4px; font-size: 10px; font-weight: 600; background: ${r.revenue_strategy === 'build_to_sell' ? '#d4edda; color: #155724' : '#cce5ff; color: #004085'};">${r.revenue_strategy === 'build_to_sell' ? 'Build to Sell' : 'Build to Rent'}</span></td>
+                <td style="${td}"><span style="padding: 2px 6px; border-radius: 3px; font-size: 9px; font-weight: 600; background: ${r.revenue_strategy === 'build_to_sell' ? '#d4edda; color: #155724' : '#cce5ff; color: #004085'};">${r.revenue_strategy === 'build_to_sell' ? 'Build to Sell' : 'Build to Rent'}</span></td>
                 <td style="${td}">${fmt(r.target_selling_price_per_unit)}</td>
                 <td style="${td}">${fmt(r.expected_monthly_rent_per_unit)}</td>
                 <td style="${td}">${fmt(r.target_occupancy_percent)}%</td>
