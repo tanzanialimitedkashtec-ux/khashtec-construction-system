@@ -991,6 +991,7 @@ function loadMenu(){
         addMenu("Budgeting", financeBudgeting);
 
         addMenu("Financial Management", financialManagement);
+        addMenu("Financial Strategies", showFinancialStrategies);
 
         addMenu("Payroll Processing", payrollProcessing);
 
