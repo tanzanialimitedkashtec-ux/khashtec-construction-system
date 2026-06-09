@@ -103840,9 +103840,11 @@ if (!document.getElementById('transport-cost-styles')) {
 
 <script src="js/team-management.js"></script>
 
+<!-- Load department helpers before main app script so menu callbacks exist -->
+<script src="js/department.js"></script>
+
 <script src="js/script.js"></script>
 
-<script src="js/department.js"></script>
 <!-- Removed missing work-approval-functions.js include (caused 404 + syntax errors) -->
 <script src="js/new-features.js"></script>
 
