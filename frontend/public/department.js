@@ -2819,13 +2819,12 @@ function displayFilteredPolicies(policies) {
             </div>
 
             <div class="policy-actions">
-
+                <button class="action" onclick="viewPolicy('${policy.id}')" style="background: #17a2b8;">View Policy</button>
+                ${policy.status !== 'approved' ? `
                 <button class="action" onclick="approvePolicy('${policy.id}')" style="background: #28a745;">Approve Policy</button>
-
                 <button class="action" onclick="requestPolicyRevision('${policy.id}')" style="background: #ffc107;">Request Revision</button>
-
                 <button class="action" onclick="rejectPolicy('${policy.id}')" style="background: #dc3545;">Reject</button>
-
+                ` : ''}
             </div>
 
         </div>
