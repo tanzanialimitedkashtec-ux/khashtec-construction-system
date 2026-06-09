@@ -4,7 +4,7 @@
 if (!document.getElementById('chartjs-script')) {
     const script = document.createElement('script');
     script.id = 'chartjs-script';
-    script.src = 'https://cdn.jsdelivr.net/npm/chart.js';
+    script.src = 'https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js';
     document.head.appendChild(script);
 }
 function showFinancialStrategiesForm() {
