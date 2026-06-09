@@ -1,4 +1,4 @@
-﻿// Disabled: Allow localhost development
+// Disabled: Allow localhost development
 
         // const PRODUCTION_FRONTEND_URL = 'https://khashtec-construction-system-production-e7b5.up.railway.app/frontend/public/department.html';
 
@@ -949,6 +949,8 @@ function loadMenu(){
         addMenu("Mission & Vision", showMissionVisionForm);
 
         addMenu("Long-Term Growth Strategy", showLongTermGrowthForm);
+
+        addMenu("Financial Strategies", showFinancialStrategiesForm);
 
         addMenu("Payment Management", showPaymentManagement);
 

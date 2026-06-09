@@ -127,8 +127,8 @@ const promotionsRoutes = require('./backend/routes/promotions');
 const riskManagementRoutes = require('./backend/routes/riskManagement');
 
 const assetsEquipmentRoutes = require('./backend/routes/assetsEquipment');
-
 const financeRoutes = require('./backend/routes/finance');
+const financialStrategiesRoutes = require('./backend/routes/financialStrategies');
 
 const auditRoutes = require('./backend/routes/audit');
 const safetyRoutes = require('./backend/routes/safety');
@@ -1142,6 +1142,10 @@ app.use('/api/suggestions', asyncHandler(async (req, res, next) => {
 }));
 
 app.use('/api/suggestions-view', suggestionsViewRoutes);
+
+app.use('/api/assets-equipment', assetsEquipmentRoutes);
+app.use('/api/finance', financeRoutes);
+app.use('/api/financial-strategies', financialStrategiesRoutes);
 
 app.use('/api/tax', asyncHandler(async (req, res, next) => {
 
