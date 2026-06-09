@@ -251,7 +251,7 @@ function calculateFinancials() {
     const contingencyAmount = baseCost * (contingencyPercent / 100);
     const totalCost = baseCost + contingencyAmount;
     
-    document.getElementById('fsTotalCostDisplay').innerText = \`TZS \${totalCost.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}\`;
+    document.getElementById('fsTotalCostDisplay').innerText = `TZS ${totalCost.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
 
     // Funding / Debt
     const loanAmount = parseFloat(document.getElementById('fsBankLoanAmount').value) || 0;
@@ -306,7 +306,7 @@ function calculateFinancials() {
         }
     }
     
-    document.getElementById('fsTotalRevenueDisplay').innerText = \`TZS \${totalRevenue.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}\` + (strategy === 'build_to_rent' ? ' (Annual)' : '');
+    document.getElementById('fsTotalRevenueDisplay').innerText = `TZS ${totalRevenue.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}` + (strategy === 'build_to_rent' ? ' (Annual)' : '');
 }
 
 async function loadProjectsForFinancials() {
@@ -322,7 +322,7 @@ async function loadProjectsForFinancials() {
 
         select.innerHTML = '<option value="">Select a Project...</option>';
         data.forEach(p => {
-            select.innerHTML += \`<option value="\${p.id}">\${p.project_name || p.name || 'Project ' + p.id}</option>\`;
+            select.innerHTML += `<option value="${p.id}">${p.project_name || p.name || 'Project ' + p.id}</option>`;
         });
     } catch (e) {
         console.error('Error loading projects:', e);
@@ -368,7 +368,7 @@ async function submitFinancialStrategiesForm(event) {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': \`Bearer \${KashTecAPI.getAuthToken()}\`
+                'Authorization': `Bearer ${KashTecAPI.getAuthToken()}`
             },
             body: JSON.stringify(data)
         });
@@ -380,7 +380,7 @@ async function submitFinancialStrategiesForm(event) {
             loadFinancialStrategies();
         } else {
             const err = await response.json();
-            customAlert(\`Failed to save: \${err.error || 'Unknown error'}\`, 'Error', 'error');
+            customAlert(`Failed to save: ${err.error || 'Unknown error'}`, 'Error', 'error');
         }
     } catch (e) {
         console.error('Submit error:', e);
@@ -397,14 +397,14 @@ async function loadFinancialStrategies() {
         
         const response = await fetch('/api/financial-strategies', {
             headers: {
-                'Authorization': \`Bearer \${KashTecAPI.getAuthToken()}\`
+                'Authorization': `Bearer ${KashTecAPI.getAuthToken()}`
             }
         });
         
         const resData = await response.json();
         
         if (!response.ok || !resData.success) {
-            tbody.innerHTML = \`<tr><td colspan="7" style="text-align: center; padding: 10px; color: red;">Failed to load records.</td></tr>\`;
+            tbody.innerHTML = `<tr><td colspan="7" style="text-align: center; padding: 10px; color: red;">Failed to load records.</td></tr>`;
             return;
         }
 
@@ -424,15 +424,15 @@ async function loadFinancialStrategies() {
             const baseCost = land + construction + fees;
             const totalCost = baseCost + (baseCost * (contPercent/100));
             
-            html += \`<tr>
-                <td style="padding: 8px; border-bottom: 1px solid #dee2e6;">\${r.project_name || ('Project ' + r.project_id)}</td>
-                <td style="padding: 8px; border-bottom: 1px solid #dee2e6;">TZS \${totalCost.toLocaleString()}</td>
-                <td style="padding: 8px; border-bottom: 1px solid #dee2e6;">\${r.revenue_strategy === 'build_to_sell' ? 'Build to Sell' : 'Build to Rent'}</td>
-                <td style="padding: 8px; border-bottom: 1px solid #dee2e6;">\${r.target_roi_percent}%</td>
-                <td style="padding: 8px; border-bottom: 1px solid #dee2e6;">\${r.target_irr_percent}%</td>
-                <td style="padding: 8px; border-bottom: 1px solid #dee2e6;">\${r.minimum_dscr}</td>
-                <td style="padding: 8px; border-bottom: 1px solid #dee2e6;">\${new Date(r.created_at).toLocaleDateString()}</td>
-            </tr>\`;
+            html += `<tr>
+                <td style="padding: 8px; border-bottom: 1px solid #dee2e6;">${r.project_name || ('Project ' + r.project_id)}</td>
+                <td style="padding: 8px; border-bottom: 1px solid #dee2e6;">TZS ${totalCost.toLocaleString()}</td>
+                <td style="padding: 8px; border-bottom: 1px solid #dee2e6;">${r.revenue_strategy === 'build_to_sell' ? 'Build to Sell' : 'Build to Rent'}</td>
+                <td style="padding: 8px; border-bottom: 1px solid #dee2e6;">${r.target_roi_percent}%</td>
+                <td style="padding: 8px; border-bottom: 1px solid #dee2e6;">${r.target_irr_percent}%</td>
+                <td style="padding: 8px; border-bottom: 1px solid #dee2e6;">${r.minimum_dscr}</td>
+                <td style="padding: 8px; border-bottom: 1px solid #dee2e6;">${new Date(r.created_at).toLocaleDateString()}</td>
+            </tr>`;
         });
         
         tbody.innerHTML = html;
