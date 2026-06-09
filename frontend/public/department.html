@@ -92494,6 +92494,46 @@ function renderOfficePortal(officePortalUsers, clients, portalDrivers, documents
             border: 2px solid rgba(255,255,255,0.3);
             box-shadow: 0 2px 8px rgba(0,0,0,0.15);
         }
+        .driver-real-avatar {
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid #ddd;
+            position: absolute;
+            top: 0;
+            left: 0;
+            display: none;
+        }
+        .driver-real-avatar.loaded {
+            display: block;
+        }
+        .driver-upload-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 4px 10px;
+            margin-top: 6px;
+            font-size: 10px;
+            font-weight: 600;
+            color: #fff;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            border-radius: 14px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 6px rgba(102,126,234,0.35);
+        }
+        .driver-upload-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(102,126,234,0.5);
+        }
+        .driver-upload-btn.hidden {
+            display: none !important;
+        }
+        .driver-upload-input {
+            display: none;
+        }
         .driver-portal-card .driver-card-status {
             display: inline-block;
             padding: 2px 8px;
@@ -92557,10 +92597,12 @@ function renderOfficePortal(officePortalUsers, clients, portalDrivers, documents
                 const experienceYears = driver.years_of_experience != null ? driver.years_of_experience + ' yrs' : '-';
                 const region = driver.region || '-';
                 const employmentStatus = driver.employment_status || '-';
+                const hasPhoto = driver.profile_image || driver.profileImage || false;
                 return `
                 <div class="personnel-card driver-portal-card" data-department="drivers" data-role="driver" data-person-id="${driverId}">
                     <div class="driver-avatar-wrapper">
-                        <div class="driver-letter-avatar" style="background:${dBgColor};">${letter}</div>
+                        <div class="driver-letter-avatar" style="background:${dBgColor};" id="driver-letter-${driverId}">${letter}</div>
+                        <img class="driver-real-avatar ${hasPhoto ? 'loaded' : ''}" id="driver-img-${driverId}" src="${hasPhoto ? driver.profile_image : '/assets/images/default-avatar.png'}" alt="${fullName}" onerror="this.classList.remove('loaded');" onload="if(this.naturalWidth>0){this.classList.add('loaded');}">
                     </div>
                     <div class="name">${fullName}</div>
                     <div class="role">🚗 ${driverId}</div>
@@ -92570,6 +92612,8 @@ function renderOfficePortal(officePortalUsers, clients, portalDrivers, documents
                         <div class="contact-item" title="${email}">📧 ${email}</div>
                         <div class="contact-item" title="${phone}">📱 ${phone}</div>
                     </div>
+                    <input type="file" accept="image/*" class="driver-upload-input" id="driver-file-${driverId}" onchange="uploadDriverPhoto('${driverId}', this)">
+                    <button class="driver-upload-btn ${hasPhoto ? 'hidden' : ''}" id="driver-upload-btn-${driverId}" onclick="document.getElementById('driver-file-${driverId}').click()">📷 Upload Photo</button>
                     <div class="driver-card-details">
                         <div class="detail-row"><span class="detail-label">License:</span><span>${licenseType}</span></div>
                         <div class="detail-row"><span class="detail-label">Experience:</span><span>${experienceYears}</span></div>
@@ -93236,6 +93280,64 @@ async function uploadClientPhoto(clientId, inputElement) {
         alert('Failed to upload photo. Please try again.');
         btn.innerHTML = originalText;
         btn.disabled = false;
+    }
+
+    inputElement.value = '';
+}
+
+// Upload driver photo from the driver card
+async function uploadDriverPhoto(driverId, inputElement) {
+    const file = inputElement.files[0];
+    if (!file) return;
+
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+        alert('Please select a valid image file.');
+        inputElement.value = '';
+        return;
+    }
+
+    // Validate file size (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+        alert('Image file is too large. Maximum size is 5MB.');
+        inputElement.value = '';
+        return;
+    }
+
+    const btn = document.getElementById(`driver-upload-btn-${driverId}`);
+    const originalText = btn ? btn.innerHTML : 'Uploading...';
+    if (btn) { btn.innerHTML = '⏳ Uploading...'; btn.disabled = true; }
+
+    try {
+        const formData = new FormData();
+        formData.append('profileImage', file);
+
+        const baseUrl = window.location.origin;
+        const response = await fetch(`${baseUrl}/api/drivers/${encodeURIComponent(driverId)}/upload-photo`, {
+            method: 'POST',
+            body: formData
+        });
+
+        if (response.ok) {
+            const data = await response.json();
+            // Update the image
+            const img = document.getElementById(`driver-img-${driverId}`);
+            if (img) {
+                img.src = (data.imageUrl || `/uploads/${file.name}`) + '?t=' + Date.now();
+                img.onload = function() { this.classList.add('loaded'); };
+            }
+            // Hide the upload button
+            if (btn) btn.classList.add('hidden');
+            console.log(`✅ Driver ${driverId} photo uploaded successfully`);
+        } else {
+            const errData = await response.json().catch(() => ({}));
+            alert('Failed to upload photo: ' + (errData.error || 'Unknown error'));
+            if (btn) { btn.innerHTML = originalText; btn.disabled = false; }
+        }
+    } catch (error) {
+        console.error('❌ Error uploading driver photo:', error);
+        alert('Failed to upload photo. Please try again.');
+        if (btn) { btn.innerHTML = originalText; btn.disabled = false; }
     }
 
     inputElement.value = '';
