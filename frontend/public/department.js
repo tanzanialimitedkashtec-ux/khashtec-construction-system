@@ -66256,6 +66256,69 @@ async function uploadClientPhoto(clientId, inputElement) {
     inputElement.value = '';
 }
 
+// Upload driver photo from the driver card
+async function uploadDriverPhoto(driverId, inputElement) {
+    const file = inputElement.files[0];
+    if (!file) return;
+
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+        alert('Please select a valid image file.');
+        inputElement.value = '';
+        return;
+    }
+
+    // Validate file size (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+        alert('Image file is too large. Maximum size is 5MB.');
+        inputElement.value = '';
+        return;
+    }
+
+    const btn = document.getElementById(`driver-upload-btn-${driverId}`);
+    const originalText = btn.innerHTML;
+    btn.innerHTML = '⏳ Uploading...';
+    btn.disabled = true;
+
+    try {
+        const formData = new FormData();
+        formData.append('profileImage', file);
+
+        const baseUrl = window.location.origin;
+        const response = await fetch(`${baseUrl}/api/drivers/${driverId}/upload-photo`, {
+            method: 'POST',
+            body: formData
+        });
+
+        if (response.ok) {
+            const data = await response.json();
+            // Update the image
+            const img = document.getElementById(`driver-img-${driverId}`);
+            if (img) {
+                img.src = `/api/profile-image/${driverId}?type=driver&t=${Date.now()}`;
+                img.onload = function() {
+                    this.classList.add('loaded');
+                };
+            }
+            // Hide the upload button
+            btn.classList.add('hidden');
+            console.log(`✅ Driver ${driverId} photo uploaded successfully`);
+        } else {
+            const errData = await response.json().catch(() => ({}));
+            alert('Failed to upload photo: ' + (errData.error || 'Unknown error'));
+            btn.innerHTML = originalText;
+            btn.disabled = false;
+        }
+    } catch (error) {
+        console.error('❌ Error uploading driver photo:', error);
+        alert('Failed to upload photo. Please try again.');
+        btn.innerHTML = originalText;
+        btn.disabled = false;
+    }
+
+    inputElement.value = '';
+}
+
 function showPortalSection(section) {
 
     // Hide all sections

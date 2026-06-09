@@ -435,6 +435,56 @@ router.post('/', async (req, res) => {
     }
 });
 
+// Upload driver photo
+const upload = require('../middleware/upload');
+router.post('/:id/upload-photo', (req, res, next) => {
+    upload.single('profileImage')(req, res, (err) => {
+        if (err) {
+            console.error('❌ File upload error:', err.message);
+            return res.status(400).json({ error: 'File upload failed', details: err.message });
+        }
+        next();
+    });
+}, async (req, res) => {
+    try {
+        const { id } = req.params;
+        const file = req.file;
+        
+        if (!file) {
+            return res.status(400).json({ error: 'No image file provided' });
+        }
+        
+        const db = require('../../database/config/database');
+        
+        const mimeType = file.mimetype;
+        const fileBuffer = require('fs').readFileSync(file.path);
+        const profileImagePath = `/api/profile-image/${id}?type=driver`;
+        
+        // Ensure the table has the columns first
+        try {
+            await db.execute('ALTER TABLE drivers ADD COLUMN IF NOT EXISTS profile_image VARCHAR(255) NULL');
+            await db.execute('ALTER TABLE drivers ADD COLUMN IF NOT EXISTS profile_image_data LONGBLOB NULL');
+            await db.execute('ALTER TABLE drivers ADD COLUMN IF NOT EXISTS profile_image_mime VARCHAR(50) NULL');
+        } catch (e) {
+            // columns might already exist
+        }
+        
+        await db.execute(
+            'UPDATE drivers SET profile_image = ?, profile_image_data = ?, profile_image_mime = ? WHERE driver_id = ? OR id = ?',
+            [profileImagePath, fileBuffer, mimeType, id, id]
+        );
+        
+        res.json({
+            success: true,
+            message: 'Photo uploaded successfully',
+            imageUrl: `${profileImagePath}&t=${Date.now()}`
+        });
+    } catch (error) {
+        console.error('❌ Error uploading driver photo:', error);
+        res.status(500).json({ error: 'Failed to upload photo', details: error.message });
+    }
+});
+
 // Get specific driver
 router.get('/:id', async (req, res) => {
     try {
