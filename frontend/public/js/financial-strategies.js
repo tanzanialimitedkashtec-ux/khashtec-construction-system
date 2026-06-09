@@ -1,5 +1,12 @@
 // Financial Strategies Frontend Logic
 
+// Ensure Chart.js is loaded
+if (!document.getElementById('chartjs-script')) {
+    const script = document.createElement('script');
+    script.id = 'chartjs-script';
+    script.src = 'https://cdn.jsdelivr.net/npm/chart.js';
+    document.head.appendChild(script);
+}
 function showFinancialStrategiesForm() {
     showContent(`
         <div class="card">
@@ -159,6 +166,21 @@ function showFinancialStrategiesForm() {
                         <button type="button" onclick="toggleFinancialStrategiesForm()" class="action" style="background: #dc3545; margin-left: 10px;">Close Form</button>
                     </div>
                 </form>
+            </div>
+
+            <!-- Dashboard Section -->
+            <div id="financialStrategiesDashboard" style="margin-top: 25px; display: none;">
+                <h4 style="margin: 0 0 15px 0;">📊 Financial Overview Dashboard</h4>
+                <div style="display: flex; flex-wrap: wrap; gap: 20px;">
+                    <div style="flex: 1; min-width: 300px; background: white; border: 1px solid #dee2e6; border-radius: 5px; padding: 15px;">
+                        <h5 style="margin: 0 0 10px 0; color: #0b3d91; text-align: center; font-size: 12px;">Costs vs Funding Structure</h5>
+                        <canvas id="financialStructureChart" style="max-height: 250px;"></canvas>
+                    </div>
+                    <div style="flex: 1; min-width: 300px; background: white; border: 1px solid #dee2e6; border-radius: 5px; padding: 15px;">
+                        <h5 style="margin: 0 0 10px 0; color: #0b3d91; text-align: center; font-size: 12px;">Profitability Targets (ROI & IRR)</h5>
+                        <canvas id="profitabilityTargetsChart" style="max-height: 250px;"></canvas>
+                    </div>
+                </div>
             </div>
 
             <div style="margin-top: 25px;">
@@ -439,8 +461,157 @@ async function loadFinancialStrategies() {
         
         tbody.innerHTML = html;
         
+        // Update charts with the fetched data
+        if (typeof Chart !== 'undefined') {
+            updateFinancialCharts(records);
+        } else {
+            // Wait for Chart.js to load if it hasn't yet
+            setTimeout(() => {
+                if (typeof Chart !== 'undefined') updateFinancialCharts(records);
+            }, 500);
+        }
+        
     } catch (e) {
         console.error('Error loading strategies:', e);
         document.getElementById('financialStrategiesTbody').innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 10px; color: red;">Error connecting to server.</td></tr>';
     }
+}
+
+// Global chart instances to destroy them before re-rendering
+let fsStructureChartInstance = null;
+let fsProfitabilityChartInstance = null;
+
+function updateFinancialCharts(records) {
+    const dashboard = document.getElementById('financialStrategiesDashboard');
+    
+    if (!records || records.length === 0) {
+        dashboard.style.display = 'none';
+        return;
+    }
+    
+    dashboard.style.display = 'block';
+
+    const labels = [];
+    const totalCosts = [];
+    const equity = [];
+    const loans = [];
+    
+    const roi = [];
+    const irr = [];
+
+    // Reverse records to show oldest to newest left-to-right
+    const chartData = [...records].reverse();
+
+    chartData.forEach(r => {
+        labels.push(r.project_name || ('Project ' + r.project_id));
+        
+        const land = parseFloat(r.land_acquisition_cost) || 0;
+        const construction = parseFloat(r.estimated_construction_cost) || 0;
+        const fees = parseFloat(r.permits_fees) || 0;
+        const contPercent = parseFloat(r.contingency_reserve_percent) || 0;
+        const baseCost = land + construction + fees;
+        const total = baseCost + (baseCost * (contPercent / 100));
+        
+        totalCosts.push(total);
+        equity.push(parseFloat(r.developer_equity) || 0);
+        loans.push(parseFloat(r.bank_loan_amount) || 0);
+        
+        roi.push(parseFloat(r.target_roi_percent) || 0);
+        irr.push(parseFloat(r.target_irr_percent) || 0);
+    });
+
+    // Destroy existing charts if any
+    if (fsStructureChartInstance) fsStructureChartInstance.destroy();
+    if (fsProfitabilityChartInstance) fsProfitabilityChartInstance.destroy();
+
+    // 1. Structure Chart (Costs vs Funding)
+    const ctxStructure = document.getElementById('financialStructureChart').getContext('2d');
+    fsStructureChartInstance = new Chart(ctxStructure, {
+        type: 'bar',
+        data: {
+            labels: labels,
+            datasets: [
+                {
+                    label: 'Total Est. Cost (TZS)',
+                    backgroundColor: 'rgba(220, 53, 69, 0.7)',
+                    borderColor: 'rgb(220, 53, 69)',
+                    borderWidth: 1,
+                    data: totalCosts
+                },
+                {
+                    label: 'Developer Equity (TZS)',
+                    backgroundColor: 'rgba(40, 167, 69, 0.7)',
+                    borderColor: 'rgb(40, 167, 69)',
+                    borderWidth: 1,
+                    data: equity
+                },
+                {
+                    label: 'Bank Loan (TZS)',
+                    backgroundColor: 'rgba(0, 123, 255, 0.7)',
+                    borderColor: 'rgb(0, 123, 255)',
+                    borderWidth: 1,
+                    data: loans
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        callback: function(value) {
+                            if (value >= 1000000) return (value / 1000000).toFixed(1) + 'M';
+                            if (value >= 1000) return (value / 1000).toFixed(1) + 'k';
+                            return value;
+                        }
+                    }
+                }
+            },
+            plugins: {
+                legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 10 } } }
+            }
+        }
+    });
+
+    // 2. Profitability Targets Chart (ROI & IRR)
+    const ctxProfitability = document.getElementById('profitabilityTargetsChart').getContext('2d');
+    fsProfitabilityChartInstance = new Chart(ctxProfitability, {
+        type: 'bar',
+        data: {
+            labels: labels,
+            datasets: [
+                {
+                    label: 'Target ROI (%)',
+                    backgroundColor: 'rgba(255, 193, 7, 0.7)',
+                    borderColor: 'rgb(255, 193, 7)',
+                    borderWidth: 1,
+                    data: roi
+                },
+                {
+                    label: 'Target IRR (%)',
+                    backgroundColor: 'rgba(23, 162, 184, 0.7)',
+                    borderColor: 'rgb(23, 162, 184)',
+                    borderWidth: 1,
+                    data: irr
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        callback: function(value) { return value + '%'; }
+                    }
+                }
+            },
+            plugins: {
+                legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 10 } } }
+            }
+        }
+    });
 }
