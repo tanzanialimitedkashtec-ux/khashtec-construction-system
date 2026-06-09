@@ -1,5 +1,7 @@
 const express = require('express');
 const router = express.Router();
+const fs = require('fs');
+const upload = require('../middleware/upload');
 
 console.log('🚀 Clients route file is being loaded...');
 
@@ -34,7 +36,7 @@ router.get('/', async (req, res) => {
             SELECT id, client_id, client_type, full_name, company_name, phone_number, 
                    email_address, nida_number, tin_number, physical_address, 
                    property_interest, budget_range, additional_notes, registered_by, status,
-                   created_at
+                   profile_image, created_at
             FROM clients 
             ORDER BY created_at DESC
         `;
@@ -228,6 +230,46 @@ router.get('/:id', async (req, res) => {
             error: 'Failed to fetch client',
             details: error.message
         });
+    }
+});
+
+// Upload client photo
+router.post('/:id/upload-photo', (req, res, next) => {
+    upload.single('profileImage')(req, res, (err) => {
+        if (err) {
+            console.error('❌ File upload error:', err.message);
+            return res.status(400).json({ error: 'File upload failed', details: err.message });
+        }
+        next();
+    });
+}, async (req, res) => {
+    try {
+        const { id } = req.params;
+        const file = req.file;
+        
+        if (!file) {
+            return res.status(400).json({ error: 'No image file provided' });
+        }
+        
+        const db = require('../../database/config/database');
+        
+        const mimeType = file.mimetype;
+        const fileBuffer = fs.readFileSync(file.path);
+        const profileImagePath = `/api/profile-image/${id}?type=client`;
+        
+        await db.execute(
+            'UPDATE clients SET profile_image = ?, profile_image_data = ?, profile_image_mime = ? WHERE id = ?',
+            [profileImagePath, fileBuffer, mimeType, id]
+        );
+        
+        res.json({
+            success: true,
+            message: 'Photo uploaded successfully',
+            imageUrl: `${profileImagePath}&t=${Date.now()}`
+        });
+    } catch (error) {
+        console.error('❌ Error uploading client photo:', error);
+        res.status(500).json({ error: 'Failed to upload photo', details: error.message });
     }
 });
 
