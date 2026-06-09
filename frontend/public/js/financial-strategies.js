@@ -462,13 +462,32 @@ async function loadFinancialStrategies() {
         tbody.innerHTML = html;
         
         // Update charts with the fetched data
-        if (typeof Chart !== 'undefined') {
-            updateFinancialCharts(records);
-        } else {
-            // Wait for Chart.js to load if it hasn't yet
-            setTimeout(() => {
+        const renderCharts = () => {
+            try {
                 if (typeof Chart !== 'undefined') updateFinancialCharts(records);
-            }, 500);
+            } catch(err) {
+                console.error('Error rendering charts:', err);
+            }
+        };
+
+        if (typeof Chart !== 'undefined') {
+            renderCharts();
+        } else {
+            // Wait for Chart.js to finish loading
+            const chartScript = document.getElementById('chartjs-script');
+            if (chartScript) {
+                chartScript.addEventListener('load', renderCharts);
+            } else {
+                // Fallback polling if script wasn't found by ID for some reason
+                let attempts = 0;
+                const interval = setInterval(() => {
+                    if (typeof Chart !== 'undefined') {
+                        clearInterval(interval);
+                        renderCharts();
+                    }
+                    if (++attempts > 20) clearInterval(interval); // give up after 2 seconds
+                }, 100);
+            }
         }
         
     } catch (e) {
