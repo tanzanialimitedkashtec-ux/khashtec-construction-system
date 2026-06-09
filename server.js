@@ -6334,12 +6334,9 @@ async function createFinancialStrategiesTable() {
     try {
         const db = require('./database/config/database');
         
-        // Drop and recreate to ensure correct schema (new feature, no production data to preserve)
-        await db.execute('DROP TABLE IF EXISTS financial_strategies');
-        console.log('  Dropped old financial_strategies table (if existed)');
-        
+        // Create table if it doesn't exist
         const sql = `
-            CREATE TABLE financial_strategies (
+            CREATE TABLE IF NOT EXISTS financial_strategies (
                 id INT AUTO_INCREMENT PRIMARY KEY,
                 project_id VARCHAR(100),
                 project_name VARCHAR(255),
