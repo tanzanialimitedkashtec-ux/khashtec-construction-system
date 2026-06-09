@@ -356,10 +356,19 @@ function sendDefaultAvatar(res, seed = '') {
 app.get('/api/profile-image/:employeeId', async (req, res) => {
     try {
         const db = require('./database/config/database');
-        const dbResult = await db.execute(
-            'SELECT profile_image, profile_image_data, profile_image_mime FROM employee_details WHERE employee_id = ? LIMIT 1',
-            [req.params.employeeId]
-        );
+        let dbResult;
+        
+        if (req.query.type === 'client') {
+            dbResult = await db.execute(
+                'SELECT profile_image, profile_image_data, profile_image_mime FROM clients WHERE id = ? LIMIT 1',
+                [req.params.employeeId]
+            );
+        } else {
+            dbResult = await db.execute(
+                'SELECT profile_image, profile_image_data, profile_image_mime FROM employee_details WHERE employee_id = ? LIMIT 1',
+                [req.params.employeeId]
+            );
+        }
         const rows = Array.isArray(dbResult) ? (Array.isArray(dbResult[0]) ? dbResult[0] : dbResult) : (dbResult.rows || []);
         
         if (rows && rows.length > 0) {
@@ -4441,6 +4450,47 @@ app.get('/api/clients', async (req, res) => {
             message: 'Failed to fetch clients',
             error: error.message
         });
+    }
+});
+
+// Upload client photo
+const upload = require('./backend/middleware/upload');
+app.post('/api/clients/:id/upload-photo', (req, res, next) => {
+    upload.single('profileImage')(req, res, (err) => {
+        if (err) {
+            console.error('❌ File upload error:', err.message);
+            return res.status(400).json({ error: 'File upload failed', details: err.message });
+        }
+        next();
+    });
+}, async (req, res) => {
+    try {
+        const { id } = req.params;
+        const file = req.file;
+        
+        if (!file) {
+            return res.status(400).json({ error: 'No image file provided' });
+        }
+        
+        const db = require('./database/config/database');
+        
+        const mimeType = file.mimetype;
+        const fileBuffer = require('fs').readFileSync(file.path);
+        const profileImagePath = `/api/profile-image/${id}?type=client`;
+        
+        await db.execute(
+            'UPDATE clients SET profile_image = ?, profile_image_data = ?, profile_image_mime = ? WHERE id = ?',
+            [profileImagePath, fileBuffer, mimeType, id]
+        );
+        
+        res.json({
+            success: true,
+            message: 'Photo uploaded successfully',
+            imageUrl: `${profileImagePath}&t=${Date.now()}`
+        });
+    } catch (error) {
+        console.error('❌ Error uploading client photo:', error);
+        res.status(500).json({ error: 'Failed to upload photo', details: error.message });
     }
 });
 
