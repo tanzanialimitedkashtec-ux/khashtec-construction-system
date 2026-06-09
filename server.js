@@ -6333,8 +6333,13 @@ async function migrateWorkApprovalColumns() {
 async function createFinancialStrategiesTable() {
     try {
         const db = require('./database/config/database');
+        
+        // Drop and recreate to ensure correct schema (new feature, no production data to preserve)
+        await db.execute('DROP TABLE IF EXISTS financial_strategies');
+        console.log('  Dropped old financial_strategies table (if existed)');
+        
         const sql = `
-            CREATE TABLE IF NOT EXISTS financial_strategies (
+            CREATE TABLE financial_strategies (
                 id INT AUTO_INCREMENT PRIMARY KEY,
                 project_id VARCHAR(100),
                 project_name VARCHAR(255),
@@ -6359,7 +6364,7 @@ async function createFinancialStrategiesTable() {
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
         `;
         await db.execute(sql);
-        console.log('✅ financial_strategies table ready');
+        console.log('✅ financial_strategies table created with full schema');
     } catch (error) {
         console.error('Error creating financial_strategies table:', error.message);
     }
