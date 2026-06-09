@@ -65545,36 +65545,97 @@ function renderOfficePortal(officePortalUsers, clients, documents, policies, con
     // Generate HTML for clients
 
     const clientsHTML = `
-
+        <style>
+        .client-avatar-wrapper {
+            position: relative;
+            width: 56px;
+            height: 56px;
+            margin-bottom: 10px;
+        }
+        .client-letter-avatar {
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+            font-weight: 700;
+            color: #fff;
+            text-transform: uppercase;
+            border: 2px solid rgba(255,255,255,0.3);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+        }
+        .client-real-avatar {
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid #ddd;
+            position: absolute;
+            top: 0;
+            left: 0;
+            display: none;
+        }
+        .client-real-avatar.loaded {
+            display: block;
+        }
+        .client-upload-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 4px 10px;
+            margin-top: 6px;
+            font-size: 10px;
+            font-weight: 600;
+            color: #fff;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            border-radius: 14px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 6px rgba(102,126,234,0.35);
+        }
+        .client-upload-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(102,126,234,0.5);
+        }
+        .client-upload-btn.hidden {
+            display: none !important;
+        }
+        .client-upload-input {
+            display: none;
+        }
+        </style>
         <div class="personnel-grid-cards">
-
-            ${clients.map(client => `
-
+            ${clients.map(client => {
+                const name = client.full_name || 'C';
+                const letter = name.charAt(0).toUpperCase();
+                const colors = ['#667eea','#f093fb','#4facfe','#43e97b','#fa709a','#fee140','#a18cd1','#fbc2eb','#ff9a9e','#fad0c4','#ffecd2','#0ba360','#3cba92','#30cfd0','#38f9d7','#c471f5','#fa71cd','#9795f0','#fbc8d4','#a6c0fe'];
+                const colorIndex = letter.charCodeAt(0) % colors.length;
+                const bgColor = colors[colorIndex];
+                const hasPhoto = client.profile_image && client.profile_image.length > 0;
+                return `
                 <div class="personnel-card" data-department="clients" data-role="${client.client_type || client.type || 'Client'}" data-person-id="${client.id}">
-
-                    <img class="avatar" src="/api/profile-image/${client.id}?type=client&t=${Date.now()}" alt="${client.full_name}" onerror="this.onerror=null;this.src='/assets/images/default-avatar.png';">
-
-                    <div class="name">${client.full_name}</div>
-
-                    <div class="role">${client.client_type || client.type || 'Client'}</div>
-
-                    <div class="dept">${client.company_name || 'Individual'}</div>
-
-                    <div class="contact">
-
-                        <div class="contact-item" title="${client.email_address || client.email || 'N/A'}">📧 ${client.email_address || client.email || 'N/A'}</div>
-
-                        <div class="contact-item" title="${client.phone_number || client.phone || 'N/A'}">📱 ${client.phone_number || client.phone || 'N/A'}</div>
-
+                    <div class="client-avatar-wrapper">
+                        <div class="client-letter-avatar" style="background:${bgColor};" id="client-letter-${client.id}">${letter}</div>
+                        <img class="client-real-avatar ${hasPhoto ? 'loaded' : ''}" id="client-img-${client.id}" src="/api/profile-image/${client.id}?type=client&t=${Date.now()}" alt="${name}" onerror="this.classList.remove('loaded');" onload="if(this.naturalWidth>0){this.classList.add('loaded');}">
                     </div>
-
+                    <div class="name">${name}</div>
+                    <div class="role">${client.client_type || client.type || 'Client'}</div>
+                    <div class="dept">${client.company_name || 'Individual'}</div>
+                    <div class="contact">
+                        <div class="contact-item" title="${client.email_address || client.email || 'N/A'}">📧 ${client.email_address || client.email || 'N/A'}</div>
+                        <div class="contact-item" title="${client.phone_number || client.phone || 'N/A'}">📱 ${client.phone_number || client.phone || 'N/A'}</div>
+                    </div>
+                    <input type="file" accept="image/*" class="client-upload-input" id="client-file-${client.id}" onchange="uploadClientPhoto(${client.id}, this)">
+                    <button class="client-upload-btn ${hasPhoto ? 'hidden' : ''}" id="client-upload-btn-${client.id}" onclick="document.getElementById('client-file-${client.id}').click()">📷 Upload Photo</button>
                 </div>
-
-            `).join('')}
-
+            `;
+            }).join('')}
         </div>
-
     `;
+
 
     
 
@@ -66131,6 +66192,69 @@ function renderOfficePortal(officePortalUsers, clients, documents, policies, con
 
 
 // Enhanced Office Portal Functions
+
+// Upload client photo from the client card
+async function uploadClientPhoto(clientId, inputElement) {
+    const file = inputElement.files[0];
+    if (!file) return;
+
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+        alert('Please select a valid image file.');
+        inputElement.value = '';
+        return;
+    }
+
+    // Validate file size (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+        alert('Image file is too large. Maximum size is 5MB.');
+        inputElement.value = '';
+        return;
+    }
+
+    const btn = document.getElementById(`client-upload-btn-${clientId}`);
+    const originalText = btn.innerHTML;
+    btn.innerHTML = '⏳ Uploading...';
+    btn.disabled = true;
+
+    try {
+        const formData = new FormData();
+        formData.append('profileImage', file);
+
+        const baseUrl = window.location.origin;
+        const response = await fetch(`${baseUrl}/api/clients/${clientId}/upload-photo`, {
+            method: 'POST',
+            body: formData
+        });
+
+        if (response.ok) {
+            const data = await response.json();
+            // Update the image
+            const img = document.getElementById(`client-img-${clientId}`);
+            if (img) {
+                img.src = `/api/profile-image/${clientId}?type=client&t=${Date.now()}`;
+                img.onload = function() {
+                    this.classList.add('loaded');
+                };
+            }
+            // Hide the upload button
+            btn.classList.add('hidden');
+            console.log(`✅ Client ${clientId} photo uploaded successfully`);
+        } else {
+            const errData = await response.json().catch(() => ({}));
+            alert('Failed to upload photo: ' + (errData.error || 'Unknown error'));
+            btn.innerHTML = originalText;
+            btn.disabled = false;
+        }
+    } catch (error) {
+        console.error('❌ Error uploading client photo:', error);
+        alert('Failed to upload photo. Please try again.');
+        btn.innerHTML = originalText;
+        btn.disabled = false;
+    }
+
+    inputElement.value = '';
+}
 
 function showPortalSection(section) {
 
