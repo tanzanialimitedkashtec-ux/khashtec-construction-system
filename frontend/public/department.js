@@ -27628,110 +27628,54 @@ async function loadDriverRecords() {
 
 function renderDriverTable(drivers, recordsList) {
     if (!drivers || drivers.length === 0) {
-        recordsList.innerHTML = '<tr><td colspan="9" class="error">No drivers found.</td></tr>';
+        recordsList.innerHTML = '<div class="error">No drivers found.</div>';
         return;
     }
 
-    var html = '';
-    for (var i = 0; i < drivers.length; i++) {
-        var driver = drivers[i];
+    let html = '';
+    for (let i = 0; i < drivers.length; i++) {
+        let driver = drivers[i];
         try {
-            var statusText = (driver.driver_status || 'Active');
-            var statusClass = 'status-' + String(statusText).toLowerCase().replace(/\s+/g, '-');
-            var assignedVehicle = driver.assigned_vehicle || 'Unassigned';
-            var phone = driver.phone_number || '-';
-            var email = driver.email_address || '-';
-            var licenseType = driver.license_type || '-';
-            var experienceYears = driver.years_of_experience != null ? driver.years_of_experience : '-';
-            var dob = driver.date_of_birth ? new Date(driver.date_of_birth).toLocaleDateString() : '-';
-            if (dob === 'Invalid Date') dob = driver.date_of_birth;
-            var gender = driver.gender || '-';
-            var address = driver.residential_address || driver.address || '-';
-            var region = driver.region || '-';
-            var bloodGroup = driver.blood_group || '-';
-            var nida = driver.nida_number || '-';
-            var passport = driver.passport_number || '-';
-            var licenseIssue = driver.license_issue_date ? new Date(driver.license_issue_date).toLocaleDateString() : '-';
-            if (licenseIssue === 'Invalid Date') licenseIssue = driver.license_issue_date;
-            var licenseExpiry = driver.license_expiry ? new Date(driver.license_expiry).toLocaleDateString() : '-';
-            if (licenseExpiry === 'Invalid Date') licenseExpiry = driver.license_expiry;
-            var medicalCert = driver.medical_certificate || '-';
-            var medicalExpiry = driver.medical_expiry_date ? new Date(driver.medical_expiry_date).toLocaleDateString() : '-';
-            if (medicalExpiry === 'Invalid Date') medicalExpiry = driver.medical_expiry_date;
-            var employmentStatus = driver.employment_status || '-';
-            var hireDate = driver.hire_date ? new Date(driver.hire_date).toLocaleDateString() : '-';
-            if (hireDate === 'Invalid Date') hireDate = driver.hire_date;
+            const statusText = (driver.driver_status || 'Active');
+            const statusClass = 'status-' + String(statusText).toLowerCase().replace(/\s+/g, '-');
+            const assignedVehicle = driver.assigned_vehicle || 'Unassigned';
+            const phone = driver.phone_number || '-';
+            const email = driver.email_address || '-';
+            const licenseType = driver.license_type || '-';
+            const driverId = driver.driver_id || driver.id || '';
+            const fullName = driver.full_name || driver.driverName || 'Unknown Driver';
             
-            var salary = '-';
-            if (driver.salary) {
-                var numSalary = Number(driver.salary);
-                if (!isNaN(numSalary)) {
-                    salary = 'TZS ' + numSalary.toLocaleString();
-                } else {
-                    salary = 'TZS ' + driver.salary;
-                }
-            }
-            
-            var paymentMethod = driver.payment_method || '-';
-            var skills = driver.skills || '-';
-            var emergencyName = driver.emergency_contact_name || driver.emergency_contact || '-';
-            var emergencyPhone = driver.emergency_contact_number || driver.emergency_phone || '-';
-            var emergencyRelation = driver.emergency_relationship || '-';
-            var driverId = driver.driver_id || '';
-            var fullName = driver.full_name || driver.driverName || 'Unknown Driver';
-            var desc = driver.description || 'No description';
+            // Reusing logic from clients
+            const nameStr = fullName !== 'Unknown Driver' ? fullName : 'D';
+            const letter = nameStr.charAt(0).toUpperCase();
+            const colors = ['#667eea','#f093fb','#4facfe','#43e97b','#fa709a','#fee140','#a18cd1','#fbc2eb','#ff9a9e','#fad0c4','#ffecd2','#0ba360','#3cba92','#30cfd0','#38f9d7','#c471f5','#fa71cd','#9795f0','#fbc8d4','#a6c0fe'];
+            const colorIndex = letter.charCodeAt(0) % colors.length;
+            const bgColor = colors[colorIndex];
+            const hasPhoto = driver.profile_image && driver.profile_image.length > 0;
 
-            html += '<tr>' +
-                '<td><div class="driver-info">' +
-                    '<div class="driver-id">' + driverId + '</div>' +
-                    '<div class="driver-name">' + fullName + '</div>' +
-                    '<div class="driver-description">' + desc + '</div>' +
-                '</div></td>' +
-                '<td><div class="personal-details">' +
-                    '<div class="experience">Experience: ' + experienceYears + ' years</div>' +
-                    '<div class="dob">DOB: ' + dob + '</div>' +
-                    '<div class="gender">Gender: ' + gender + '</div>' +
-                    '<div class="address">' + address + '</div>' +
-                    '<div class="region">Region: ' + region + '</div>' +
-                    '<div class="blood-group">Blood: ' + bloodGroup + '</div>' +
-                '</div></td>' +
-                '<td><div class="contact-info">' +
-                    '<div class="phone">📱 ' + phone + '</div>' +
-                    '<div class="email">📧 ' + email + '</div>' +
-                    '<div class="nida">NIDA: ' + nida + '</div>' +
-                    '<div class="passport">Passport: ' + passport + '</div>' +
-                '</div></td>' +
-                '<td><div class="license-info">' +
-                    '<div class="license-type">Type: ' + licenseType + '</div>' +
-                    '<div class="license-issue">Issue: ' + licenseIssue + '</div>' +
-                    '<div class="license-expiry">Expiry: ' + licenseExpiry + '</div>' +
-                    '<div class="medical">Medical: ' + medicalCert + '</div>' +
-                    '<div class="medical-expiry">Medical Exp: ' + medicalExpiry + '</div>' +
-                '</div></td>' +
-                '<td><div class="employment-info">' +
-                    '<div class="status">Status: ' + employmentStatus + '</div>' +
-                    '<div class="hire-date">Hired: ' + hireDate + '</div>' +
-                    '<div class="salary">Salary: ' + salary + '</div>' +
-                    '<div class="payment">Payment: ' + paymentMethod + '</div>' +
-                    '<div class="skills">Skills: ' + skills + '</div>' +
-                '</div></td>' +
-                '<td><div class="emergency-info">' +
-                    '<div class="emergency-name">' + emergencyName + '</div>' +
-                    '<div class="emergency-phone">📱 ' + emergencyPhone + '</div>' +
-                    '<div class="emergency-relation">Relation: ' + emergencyRelation + '</div>' +
-                '</div></td>' +
-                '<td><div class="vehicle-info">' +
-                    '<div class="assigned-vehicle">' + assignedVehicle + '</div>' +
-                '</div></td>' +
-                '<td><div class="status-info">' +
-                    '<span class="status-badge ' + statusClass + '">' + statusText + '</span>' +
-                '</div></td>' +
-                '<td><div class="driver-actions">' +
-                    '' +
-                    '' +
-                    '<button class="action-btn delete" onclick="deleteDriver(\'' + driverId + '\')" title="Delete Driver">🗑️</button>' +
-                '</div></td>' +
-            '</tr>';
+            html += `
+                <div class="personnel-card" data-department="drivers" data-role="Driver" data-person-id="${driverId}">
+                    <div class="client-avatar-wrapper">
+                        <div class="client-letter-avatar" style="background:${bgColor};" id="driver-letter-${driverId}">${letter}</div>
+                        <img class="client-real-avatar ${hasPhoto ? 'loaded' : ''}" id="driver-img-${driverId}" src="/api/profile-image/${driverId}?type=driver&t=${Date.now()}" alt="${fullName}" onerror="this.classList.remove('loaded');" onload="if(this.naturalWidth>0){this.classList.add('loaded');}">
+                    </div>
+                    <div class="name">${fullName}</div>
+                    <div class="role">Driver</div>
+                    <div class="dept">${assignedVehicle}</div>
+                    <div class="contact">
+                        <div class="contact-item" title="${email}">📧 ${email}</div>
+                        <div class="contact-item" title="${phone}">📱 ${phone}</div>
+                        <div class="contact-item" title="${licenseType}">💳 ${licenseType}</div>
+                    </div>
+                    <div class="driver-actions" style="margin-top:10px; display:flex; gap:5px; justify-content:center;">
+                        <button class="action-btn view" onclick="viewDriverDetails('${driverId}')" title="View Details">👁️</button>
+                        <button class="action-btn edit" onclick="editDriver('${driverId}')" title="Edit Driver">✏️</button>
+                        <button class="action-btn delete" onclick="deleteDriver('${driverId}')" title="Delete Driver">🗑️</button>
+                    </div>
+                    <input type="file" accept="image/*" class="client-upload-input" id="driver-file-${driverId}" onchange="uploadDriverPhoto('${driverId}', this)">
+                    <button class="client-upload-btn ${hasPhoto ? 'hidden' : ''}" id="driver-upload-btn-${driverId}" onclick="document.getElementById('driver-file-${driverId}').click()">📷 Upload Photo</button>
+                </div>
+            `;
         } catch (e) {
             console.error("❌ [DEBUG] Failed parsing row index", i, "Driver:", driver, "Error:", e);
         }
