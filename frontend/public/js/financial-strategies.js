@@ -172,13 +172,17 @@ function showFinancialStrategiesForm() {
             <div id="financialStrategiesDashboard" style="margin-top: 25px; display: none;">
                 <h4 style="margin: 0 0 15px 0;">📊 Financial Overview Dashboard</h4>
                 <div style="display: flex; flex-wrap: wrap; gap: 20px;">
-                    <div style="flex: 1; min-width: 300px; background: white; border: 1px solid #dee2e6; border-radius: 5px; padding: 15px;">
-                        <h5 style="margin: 0 0 10px 0; color: #0b3d91; text-align: center; font-size: 12px;">Costs vs Funding Structure</h5>
-                        <canvas id="financialStructureChart" style="max-height: 250px;"></canvas>
+                    <div style="flex: 1; min-width: 300px; background: white; border: 1px solid #dee2e6; border-radius: 5px; padding: 10px;">
+                        <h5 style="margin: 0 0 5px 0; color: #0b3d91; text-align: center; font-size: 11px;">Costs vs Funding Structure</h5>
+                        <div style="position: relative; height: 160px; width: 100%;">
+                            <canvas id="financialStructureChart"></canvas>
+                        </div>
                     </div>
-                    <div style="flex: 1; min-width: 300px; background: white; border: 1px solid #dee2e6; border-radius: 5px; padding: 15px;">
-                        <h5 style="margin: 0 0 10px 0; color: #0b3d91; text-align: center; font-size: 12px;">Profitability Targets (ROI & IRR)</h5>
-                        <canvas id="profitabilityTargetsChart" style="max-height: 250px;"></canvas>
+                    <div style="flex: 1; min-width: 300px; background: white; border: 1px solid #dee2e6; border-radius: 5px; padding: 10px;">
+                        <h5 style="margin: 0 0 5px 0; color: #0b3d91; text-align: center; font-size: 11px;">Profitability Targets (ROI & IRR)</h5>
+                        <div style="position: relative; height: 160px; width: 100%;">
+                            <canvas id="profitabilityTargetsChart"></canvas>
+                        </div>
                     </div>
                 </div>
             </div>
