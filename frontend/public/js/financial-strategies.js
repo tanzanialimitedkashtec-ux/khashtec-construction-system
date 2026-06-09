@@ -315,13 +315,15 @@ async function loadProjectsForFinancials() {
         const data = await res.json();
         const select = document.getElementById('fsProjectId');
         
-        if (!data || !data.length) {
+        const projects = Array.isArray(data) ? data : (data.data || data.projects || []);
+        
+        if (!projects || !projects.length) {
             select.innerHTML = '<option value="">No projects available</option>';
             return;
         }
 
         select.innerHTML = '<option value="">Select a Project...</option>';
-        data.forEach(p => {
+        projects.forEach(p => {
             select.innerHTML += `<option value="${p.id}">${p.project_name || p.name || 'Project ' + p.id}</option>`;
         });
     } catch (e) {
