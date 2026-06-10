@@ -10114,7 +10114,7 @@ font-weight: bold;
 
     border: 1px solid #dee2e6;
 
-    border-radius: 8px;
+    border-radius: 2px;
 
     overflow: hidden;
 
@@ -10132,7 +10132,7 @@ font-weight: bold;
 
     border-collapse: collapse;
 
-    font-size: 11px;
+    font-size: 12px;
 
     background: white;
 
@@ -10168,7 +10168,7 @@ font-weight: bold;
 
     vertical-align: middle;
 
-    font-size: 11px;
+    font-size: 12px;
 
 }
 
@@ -10210,7 +10210,7 @@ font-weight: bold;
 
     color: #333;
 
-    font-size: 11px;
+    font-size: 12px;
 
     text-transform: uppercase;
 
@@ -10244,7 +10244,7 @@ font-weight: bold;
 
     color: #333;
 
-    font-size: 11px;
+    font-size: 12px;
 
 }
 
@@ -10270,7 +10270,7 @@ font-weight: bold;
 
     color: #333;
 
-    font-size: 11px;
+    font-size: 12px;
 
     line-height: 1.2;
 
@@ -44313,8 +44313,6 @@ function recordIncidentReports(){
 
             <div class="incidents-registry">
 
-                <h4>Incidents Registry</h4>
-
                 <div class="incidents-table-container">
 
                     <table class="incidents-table">
@@ -48958,8 +48956,6 @@ function uploadSafetyPolicies(){
 
             <div class="policy-records">
 
-                <h4>Safety Policy Library</h4>
-
                 <div class="policy-table-container">
 
                     <table class="policy-table">
@@ -49047,8 +49043,6 @@ function registerCompanyCar(){
                 </button>
 
             </div>
-
-            <p><strong>Fleet Management:</strong> Register new company vehicles for tracking and management</p>
 
             
 
@@ -49640,11 +49634,7 @@ function manageCompanyCars() {
 
         <div class="card">
 
-            <h3>Manage Company Cars</h3>
-
-            <p><strong>Fleet Management:</strong> View and manage all registered company vehicles in the fleet</p>
-
-            
+            <h3>Manage Company Cars</h3>            
 
             <div class="form-header">
 
@@ -50488,11 +50478,7 @@ function manageTransportCosts(){
 
         <div class="card">
 
-            <h3>Transport Costs Management</h3>
-
-            <p><strong>Cost Tracking:</strong> Manage transport costs for services maintenance and extras</p>
-
-            
+            <h3>Transport Costs Management</h3>    
 
             <div class="form-header">
 
@@ -51381,16 +51367,10 @@ function manageDrivers() {
         <div class="card">
 
             <h3>Manage Drivers</h3>
-
-            <p><strong>Driver Management:</strong> View and manage all registered company drivers</p>
-
             
-
             <div class="driver-actions">
 
                 <button class="btn-primary" onclick="registerDriver()">Register New Driver</button>
-
-                <button class="btn-secondary" onclick="exportDrivers()">Export Drivers</button>
 
             </div>
 
@@ -52396,8 +52376,6 @@ function trackPpeIssuance(){
 
             <div class="ppe-tracking">
 
-                <h4>PPE Issuance Registry</h4>
-
                 <div class="search-section">
 
                     <input type="text" id="ppeSearchInput" placeholder="Search by worker name or ID..." onkeyup="filterPpeRecords()">
@@ -52852,8 +52830,6 @@ function markSafetyViolations(){
             
 
             <div class="violations-registry">
-
-                <h4>Safety Violations Registry</h4>
 
                 <div class="violations-table-container" style="overflow-x: auto; width: 100%;">
 
@@ -54382,8 +54358,6 @@ function uploadInspectionReports(){
 
             <div class="inspection-records">
 
-                <h4>Inspection Reports Library</h4>
-
                 <div class="inspection-table-container">
 
                     <table class="inspection-table">
@@ -55474,8 +55448,6 @@ async function viewProjectSafetyStatus(){
         <div class="card">
 
             <h3>Project Safety Status</h3>
-
-            <p><strong>HSE Authority:</strong> Monitor safety performance across all projects</p>
 
             
 
@@ -60914,15 +60886,9 @@ function financialManagement(){
 
     showContent(`<div class="card">
 
-        <h3>Financial Management</h3>
-
-        <p><strong>Financial Authority:</strong> Manage company finances, cash flow, and financial operations</p>
-
-        
+        <h3>Financial Management</h3> 
 
         <div class="finance-overview">
-
-            <h4>Financial Overview</h4>
 
             <div class="finance-bars" style="display: flex; justify-content: space-around; align-items: flex-end; height: 200px; margin-top: 20px; padding-bottom: 10px; border-bottom: 2px solid #e9ecef;">
 
@@ -60957,8 +60923,6 @@ function financialManagement(){
         
 
         <div class="financial-actions">
-
-            <h4>Financial Operations</h4>
 
             <div class="action-grid">
 
@@ -61716,8 +61680,6 @@ function payrollProcessing(){
 
         <h3>Payroll Processing</h3>
 
-        <p><strong>Financial Authority:</strong> Manage payroll, salary payments, and employee compensation</p>
-
         
 
         <div class="payroll-tabs">
@@ -62121,8 +62083,6 @@ function expenseControl(){
 
         <h3>Expense Control</h3>
 
-        <p><strong>Financial Authority:</strong> Monitor and confirm company expenses</p>
-
         <div class="expense-overview">
 
             <h4>Expense Overview</h4>
@@ -62272,8 +62232,6 @@ function financialReporting(){
 
         <h3>Financial Reporting</h3>
 
-        <p><strong>Financial Authority:</strong> Generate comprehensive financial reports and analytics</p>
-
         <div class="reporting-dashboard">
 
             <div class="report-tabs">
@@ -62334,11 +62292,7 @@ function financeAudits(){
 
     showContent(`<div class="card audits-main-card">
 
-        <h3>System Audits & Overview</h3>
-
-        <p><strong>System Authority:</strong> Monitor system status, track all changes, and manage financial audits</p>
-
-        
+        <h3>System Audits & Overview</h3>   
 
         <!-- Main Audits Navigation Tabs -->
 
@@ -64363,17 +64317,13 @@ function manageLuggageCampaigns() {
 
         <div class="card">
 
-            <h3>Luggage Purchase Campaigns</h3>
-
-            <p><strong>Campaign Management:</strong> Create and manage luggage purchase campaigns</p>
-
-            
+            <h3>Luggage Purchase Campaigns</h3>         
 
             <div class="campaign-actions">
 
                 <button class="btn-primary" onclick="createLuggageCampaign()">Create New Campaign</button>
 
-                <button class="btn-secondary" onclick="viewActiveCampaigns()">View Active Campaigns</button>
+
 
             </div>
 
@@ -64535,17 +64485,11 @@ function trackLuggagePayments() {
 
         <div class="card">
 
-            <h3>Payment Tracking</h3>
-
-            <p><strong>Payment Management:</strong> Track and manage payment progress</p>
-
-            
+            <h3>Payment Tracking</h3>          
 
             <div class="tracking-actions">
 
                 <button class="btn-primary" onclick="generateTrackingNumber()">Generate Tracking Number</button>
-
-                <button class="btn-secondary" onclick="viewPaymentStatus()">View Payment Status</button>
 
             </div>
 
@@ -74428,8 +74372,6 @@ function recordSiteReports(){
 
             <div class="site-reports-records">
 
-                <h4>Site Reports Registry</h4>
-
                 <div class="site-reports-table-container">
 
                     <table class="site-reports-table">
@@ -78094,8 +78036,6 @@ function addProperty(){
 
             <div class="properties-records">
 
-                <h4>Property Inventory</h4>
-
                 <div class="properties-table-container">
 
                     <table class="properties-table">
@@ -79504,8 +79444,6 @@ function registerClient(){
             
 
             <div class="clients-records">
-
-                <h4>Client Registry</h4>
 
                 <div class="clients-table-container">
 
@@ -82066,11 +82004,7 @@ function generateSalesReport(){
 
     showContent(`<div class="card">
 
-        <h3>Generate Sales Report</h3>
-
-        <p><strong>Real Estate Authority:</strong> Generate comprehensive sales and performance reports</p>
-
-        
+        <h3>Generate Sales Report</h3>  
 
         <div class="report-filters">
 
@@ -82202,8 +82136,6 @@ function generateSalesReport(){
 
         <div class="report-preview">
 
-            <h4>Q1 2026 Sales Summary</h4>
-
             <div class="report-metrics" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 30px;">
                 <div class="metric-card" style="background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%); padding: 10px 14px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); border-left: 3px solid #4CAF50; transition: transform 0.3s ease;">
                     <h5 style="color: #666; font-size: 0.72rem; margin: 0 0 3px 0; text-transform: uppercase; letter-spacing: 0.5px;">Total Sales</h5>
@@ -82233,8 +82165,6 @@ function generateSalesReport(){
             
 
             <div class="sales-records">
-
-                <h5>Sales Transaction Records</h5>
 
                 <div class="sales-table-container">
 
@@ -84098,54 +84028,6 @@ function uploadDocs(){
 
                 <div class="documents-table-container">
 
-                    <table class="documents-table">
-
-                        <thead>
-
-                            <tr>
-
-                                <th>Document ID</th>
-
-                                <th>Title</th>
-
-                                <th>Type</th>
-
-                                <th>Department</th>
-
-                                <th>Description</th>
-
-                                <th>Uploaded Date</th>
-
-                                <th>File Size</th>
-
-                                <th>Priority</th>
-
-                                <th>Status</th>
-
-                                <th>Uploaded By</th>
-
-                                <th>Actions</th>
-
-                            </tr>
-
-                        </thead>
-
-                        <tbody id="documentsList">
-
-                            <tr>
-
-                                <td colspan="11">
-
-                                    <div class="loading">Loading documents...</div>
-
-                                </td>
-
-                            </tr>
-
-                        </tbody>
-
-                    </table>
-
                 </div>
 
             </div>
@@ -85364,33 +85246,14 @@ function editDocuments(){
 
         <h3>Edit Documents</h3>
 
-        <p><strong>Document Management:</strong> Edit and manage non-sensitive company documents</p>
-
         
 
         <div class="document-list">
-
-            <h4>Available Documents for Editing</h4>
 
             <div class="search-section">
 
                 <input type="text" id="docSearchInput" placeholder="Search documents..." onkeyup="filterDocs()">
 
-                <select id="deptFilter" onchange="filterDocsByDept()">
-
-                    <option value="">All Departments</option>
-
-                    <option value="management">Management</option>
-
-                    <option value="hr">Human Resources</option>
-
-                    <option value="finance">Finance</option>
-
-                    <option value="projects">Projects</option>
-
-                    <option value="operations">Operations</option>
-
-                </select>
 
             </div>
 
@@ -88567,8 +88430,6 @@ function scheduleMeeting(){
 
             <div class="scheduled-meetings">
 
-                <h4>Upcoming Meetings</h4>
-
                 <div class="meeting-table-container">
 
                     <table class="meeting-table">
@@ -89231,11 +89092,7 @@ async function complianceManagement(){
 
         <div class="card">
 
-            <h3>Compliance Management</h3>
-
-            <p><strong>Regulatory Compliance:</strong> Monitor and manage all legal documents and regulatory requirements</p>
-
-            
+            <h3>Compliance Management</h3>       
 
             <div class="doc-upload collapsed" id="docUpload">
 
@@ -90788,11 +90645,7 @@ async function documentManagement(){
 
         <div class="card">
 
-            <h3>Document Management System</h3>
-
-            <p><strong>Document Control:</strong> Manage all company documents and certificates</p>
-
-            
+            <h3>Document Management System</h3> 
 
             <div class="doc-management">
 
@@ -91632,8 +91485,6 @@ async function userAccountManagement(){
             
 
             <div class="disclaimer">
-
-                <p><strong>Note:</strong> Director of Administration cannot suspend MD accounts.</p>
 
             </div>
 
@@ -92725,28 +92576,6 @@ function renderOfficePortal(officePortalUsers, clients, portalDrivers, documents
             <div class="portal-search compact">
 
                 <input type="text" placeholder="Search..." onkeyup="searchPortal(this.value)">
-
-                <select onchange="filterPortal(this.value)">
-
-                    <option value="">All</option>
-
-                    <option value="hr">HR</option>
-
-                    <option value="projects">Projects</option>
-
-                    <option value="admin">Admin</option>
-
-                    <option value="management">Management</option>
-
-                    <option value="it">IT</option>
-
-                    <option value="finance">Finance</option>
-
-                    <option value="operations">Operations</option>
-
-                    <option value="safety">Safety</option>
-
-                </select>
 
             </div>
 
@@ -107912,15 +107741,6 @@ function showPaymentManagement() {
             <div class="form-section">
                 <h4>📋 Payment Requests</h4>
                 <div class="filter-controls">
-                    <select id="statusFilter" onchange="filterPaymentRequests()">
-                        <option value="">All Status</option>
-                        <option value="pending_finance_approval">Pending Finance Approval</option>
-                        <option value="approved">Approved</option>
-                        <option value="rejected">Rejected</option>
-                        <option value="processed">Processed</option>
-                        <option value="paid">Paid</option>
-                        <option value="cancelled">Cancelled</option>
-                    </select>
                     <select id="currencyFilter" onchange="filterPaymentRequests()">
                         <option value="">All Currencies</option>
                         <option value="TZS">TZS</option>
