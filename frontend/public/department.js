@@ -4941,10 +4941,6 @@ function reviewEmployeeCount(){
 
             <div class="workforce-review">
 
-                <h4>Current Workforce Overview</h4>
-
-                
-
                 <div class="workforce-table-container">
 
                     <table class="workforce-table">
@@ -44607,8 +44603,6 @@ function createNewProject(){
 
             <div class="projects-registry">
 
-                <h4>Projects Registry</h4>
-
                 <div class="projects-table-container">
 
                     <table class="projects-table">
@@ -45915,10 +45909,6 @@ function updateProjectProgress(){
 
         <h3>Update Project Progress</h3>
 
-        <p><strong>Project Authority:</strong> Monitor and update project status and milestones</p>
-
-        
-
         <div class="project-selection">
 
             <div class="form-group">
@@ -46376,8 +46366,6 @@ async function assignTasks(){
             
 
             <div class="active-tasks">
-
-                <h4>Active Task Assignments</h4>
 
                 <div class="task-table-container">
 
