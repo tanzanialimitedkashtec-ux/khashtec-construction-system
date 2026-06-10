@@ -2358,10 +2358,8 @@ function displaySeniorHiringRequests(requests) {
 
     let html = `<div class="card">
         <h3>Approve Senior Staff Hiring</h3>
-        <p><strong>High-Level Authority:</strong> Approve hiring decisions for senior positions (Manager level and above)</p>
         
         <div class="hiring-section">
-            <h4>Senior Staff Hiring Requests Pending Approval</h4>
             <div class="hiring-table-container">
                 <table class="hiring-table">
                     <thead>
