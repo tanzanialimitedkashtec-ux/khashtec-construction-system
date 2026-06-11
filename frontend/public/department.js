@@ -45980,6 +45980,11 @@ function updateProjectProgress(){
 
             <h4>Recent Progress Updates</h4>
 
+            <div style="margin-bottom: 20px; display: flex; gap: 10px; align-items: center;">
+                <input type="text" id="recentProgressSearchInput" placeholder="🔍 Search progress updates..." style="padding: 10px 15px; border: 1px solid #ddd; border-radius: 6px; flex: 1; font-size: 14px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);" onkeyup="filterRecentProgressTable()">
+                <button onclick="clearRecentProgressSearch()" style="padding: 10px 20px; background: #6c757d; color: #fff; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: 500;">Clear</button>
+            </div>
+
             <div style="overflow-x:auto;">
 
             <table class="data-table" id="recentProgressTable" style="width:100%;border-collapse:collapse;">
