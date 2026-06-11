@@ -462,11 +462,11 @@ function loadSeniorHiringRequests() {
 
         <div class="hiring-section">
 
-            <div class="search-container" style="margin-bottom: 15px;">
+            <div style="margin-bottom: 20px; display: flex; gap: 10px; align-items: center;">
 
-                <input type="text" id="hiringSearchInput" placeholder="ðŸ” Search candidates..." style="width: 100%; padding: 8px; border: 2px solid #ddd; border-radius: 6px; font-size: 12px; box-sizing: border-box;" onkeyup="filterHiringRequests()" />
+                <input type="text" id="hiringSearchInputDynamic" placeholder="🔍 Search candidates..." style="padding: 10px 15px; border: 1px solid #ddd; border-radius: 6px; flex: 1; font-size: 14px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);" onkeyup="filterHiringRequestsTable('hiringSearchInputDynamic', this.parentElement.parentElement)">
 
-                <div id="hiringSearchResults" style="margin-top:3px; font-size: 10px; color: #666;"></div>
+                <button onclick="clearHiringSearch('hiringSearchInputDynamic', this.parentElement.parentElement)" style="padding: 10px 20px; background: #6c757d; color: #fff; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: 500;">Clear</button>
 
             </div>
 
@@ -2918,7 +2918,6 @@ function loadSeniorHiringRequests() {
 
 
 function showSeniorHiringForm(requests) {
-
     // Generate hiring HTML
 
     let hiringHTML = '';
@@ -2933,15 +2932,11 @@ function showSeniorHiringForm(requests) {
 
         <div class="hiring-section">
 
-            <div class="search-container" style="margin-bottom: 15px;">
+            <div style="margin-bottom: 20px; display: flex; gap: 10px; align-items: center;">
 
-                <input type="text" id="hiringSearchInput" placeholder="ðŸ” Search candidates..." 
+                <input type="text" id="hiringSearchInputDynamic2" placeholder="🔍 Search candidates..." style="padding: 10px 15px; border: 1px solid #ddd; border-radius: 6px; flex: 1; font-size: 14px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);" onkeyup="filterHiringRequestsTable('hiringSearchInputDynamic2', this.parentElement.parentElement)">
 
-                       style="width: 100%; padding: 8px; border: 2px solid #ddd; border-radius: 6px; font-size: 12px; box-sizing: border-box;"
-
-                       onkeyup="filterHiringRequests()" />
-
-                <div id="hiringSearchResults" style="margin-top: 3px; font-size: 10px; color: #666;"></div>
+                <button onclick="clearHiringSearch('hiringSearchInputDynamic2', this.parentElement.parentElement)" style="padding: 10px 20px; background: #6c757d; color: #fff; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: 500;">Clear</button>
 
             </div>
 

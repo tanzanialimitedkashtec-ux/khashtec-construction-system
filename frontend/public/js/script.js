@@ -2360,6 +2360,10 @@ function displaySeniorHiringRequests(requests) {
         <h3>Approve Senior Staff Hiring</h3>
         
         <div class="hiring-section">
+            <div style="margin-bottom: 20px; display: flex; gap: 10px; align-items: center;">
+                <input type="text" id="hiringSearchInputScript" placeholder="🔍 Search candidates..." style="padding: 10px 15px; border: 1px solid #ddd; border-radius: 6px; flex: 1; font-size: 14px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);" onkeyup="filterHiringRequestsTable('hiringSearchInputScript', this.parentElement.parentElement)">
+                <button onclick="clearHiringSearch('hiringSearchInputScript', this.parentElement.parentElement)" style="padding: 10px 20px; background: #6c757d; color: #fff; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: 500;">Clear</button>
+            </div>
             <div class="hiring-table-container">
                 <table class="hiring-table">
                     <thead>
