@@ -64333,6 +64333,11 @@ function manageLuggageCampaigns() {
 
                 <div class="campaign-table-container">
 
+                    <div style="margin-bottom: 20px; display: flex; gap: 10px; align-items: center;">
+                        <input type="text" id="campaignSearchInput" placeholder="🔍 Search campaigns..." style="padding: 10px 15px; border: 1px solid #ddd; border-radius: 6px; flex: 1; font-size: 14px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);" onkeyup="filterCampaignTable()">
+                        <button onclick="clearCampaignSearch()" style="padding: 10px 20px; background: #6c757d; color: #fff; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: 500;">Clear</button>
+                    </div>
+
                     <table class="campaign-table">
 
                         <thead>
@@ -64422,6 +64427,11 @@ function manageLuggagePurchases() {
             <div class="purchase-records">
 
                 <div class="purchase-table-container">
+
+                    <div style="margin-bottom: 20px; display: flex; gap: 10px; align-items: center;">
+                        <input type="text" id="purchaseSearchInput" placeholder="🔍 Search purchases..." style="padding: 10px 15px; border: 1px solid #ddd; border-radius: 6px; flex: 1; font-size: 14px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);" onkeyup="filterPurchaseTable()">
+                        <button onclick="clearPurchaseSearch()" style="padding: 10px 20px; background: #6c757d; color: #fff; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: 500;">Clear</button>
+                    </div>
 
                     <table class="purchase-table">
 
@@ -109630,6 +109640,54 @@ function filterSalesTable() {
 function clearSalesSearch() {
     var input = document.getElementById("salesSearchInput");
     if (input) { input.value = ""; filterSalesTable(); }
+}
+
+function filterCampaignTable() {
+    var input = document.getElementById("campaignSearchInput");
+    if(!input) return;
+    var filter = input.value.toUpperCase();
+    var tbody = document.getElementById("campaignRecordsList");
+    if (!tbody) return;
+    var tr = tbody.getElementsByTagName("tr");
+    for (var i = 0; i < tr.length; i++) {
+        var tdArray = tr[i].getElementsByTagName("td");
+        var match = false;
+        for (var j = 0; j < tdArray.length; j++) {
+            if (tdArray[j] && tdArray[j].textContent.toUpperCase().indexOf(filter) > -1) {
+                match = true;
+                break;
+            }
+        }
+        tr[i].style.display = match ? "" : "none";
+    }
+}
+function clearCampaignSearch() {
+    var input = document.getElementById("campaignSearchInput");
+    if (input) { input.value = ""; filterCampaignTable(); }
+}
+
+function filterPurchaseTable() {
+    var input = document.getElementById("purchaseSearchInput");
+    if(!input) return;
+    var filter = input.value.toUpperCase();
+    var tbody = document.getElementById("purchaseRecordsList");
+    if (!tbody) return;
+    var tr = tbody.getElementsByTagName("tr");
+    for (var i = 0; i < tr.length; i++) {
+        var tdArray = tr[i].getElementsByTagName("td");
+        var match = false;
+        for (var j = 0; j < tdArray.length; j++) {
+            if (tdArray[j] && tdArray[j].textContent.toUpperCase().indexOf(filter) > -1) {
+                match = true;
+                break;
+            }
+        }
+        tr[i].style.display = match ? "" : "none";
+    }
+}
+function clearPurchaseSearch() {
+    var input = document.getElementById("purchaseSearchInput");
+    if (input) { input.value = ""; filterPurchaseTable(); }
 }
 </script>
 
