@@ -5109,8 +5109,6 @@ function reviewEmployeeCount(){
 
                 <div class="department-breakdown">
 
-                    <h5>Department Breakdown</h5>
-
                     <div class="department-table-container">
 
                         <table class="department-table">
@@ -5154,10 +5152,6 @@ function reviewEmployeeCount(){
                 
 
                 <div class="workforce-actions">
-
-                    <h5>Workforce Management Actions</h5>
-
-                    <button class="action" onclick="generateWorkforceReport()">Generate Full Report</button>
 
                 </div>
 

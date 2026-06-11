@@ -29285,8 +29285,6 @@ function reviewEmployeeCount(){
 
                 <div class="department-breakdown">
 
-                    <h5>Department Breakdown</h5>
-
                     <div class="department-table-container">
 
                         <table class="department-table">
@@ -29330,10 +29328,6 @@ function reviewEmployeeCount(){
                 
 
                 <div class="workforce-actions">
-
-                    <h5>Workforce Management Actions</h5>
-
-                    <button class="action" onclick="generateWorkforceReport()">Generate Full Report</button>
 
                 </div>
 
@@ -50498,8 +50492,6 @@ function manageTransportCosts(){
 
                     <button onclick="showAddTransportCostForm()" class="action" style="background: #007bff;">➕ Add Cost</button>
 
-                    <button onclick="loadTransportCostSummary()" class="action" style="background: #6c757d;">📊 Summary</button>
-
                 </div>
 
                 <div style="display: flex; gap: 10px;">
@@ -69344,7 +69336,6 @@ function calculateTotalBudget() {
 function processInvoices() {
     showContent(`<div class="card">
         <h3 style="display:flex;align-items:center;gap:10px;"><span onclick="financialManagement()" style="cursor:pointer;font-size:20px;" title="Back">&#8592;</span> Process Invoices</h3>
-        <p><strong>Financial Authority:</strong> Create and manage invoices</p>
 
         <div style="display:flex;gap:20px;flex-wrap:wrap;">
             <div style="flex:1;min-width:320px;">
@@ -73926,6 +73917,12 @@ function displayWorkforceRequests(requests) {
 
     requestsList.innerHTML = requestsHTML;
 
+    
+
+    // Setup search functionality
+
+    setTimeout(() => setupWorkforceSearch(), 100);
+
 }
 
 
@@ -73993,6 +73990,71 @@ async function rejectWorkforceRequest(requestId) {
     } catch (error) {
         console.error('Error rejecting workforce request:', error);
         customAlert(error.message, 'Error', 'error');
+    }
+}
+
+
+
+// Workforce Search and Filter Functions
+
+function setupWorkforceSearch() {
+    const searchInput = document.getElementById('workforceSearchInput');
+    if (!searchInput) return;
+    
+    searchInput.addEventListener('keyup', filterWorkforceRequests);
+}
+
+function filterWorkforceRequests() {
+    const searchInput = document.getElementById('workforceSearchInput');
+    const table = document.getElementById('workforceRequestsTable');
+    const rows = table.getElementsByTagName('tbody')[0].getElementsByTagName('tr');
+    
+    if (!searchInput) return;
+    
+    const searchTerm = searchInput.value.toLowerCase().trim();
+    let visibleCount = 0;
+    
+    for (let i = 0; i < rows.length; i++) {
+        const row = rows[i];
+        const text = row.textContent.toLowerCase();
+        
+        if (searchTerm === '') {
+            row.style.display = '';
+            visibleCount++;
+        } else if (text.includes(searchTerm)) {
+            row.style.display = '';
+            visibleCount++;
+        } else {
+            row.style.display = 'none';
+        }
+    }
+    
+    // Show message if no results
+    if (visibleCount === 0 && searchTerm !== '') {
+        const tbody = table.getElementsByTagName('tbody')[0];
+        if (!document.getElementById('no-search-results')) {
+            const noResultsRow = document.createElement('tr');
+            noResultsRow.id = 'no-search-results';
+            noResultsRow.innerHTML = `
+                <td colspan="13" style="text-align: center; padding: 20px; color: #6c757d;">
+                    <strong>No results found for "${searchTerm}"</strong>
+                </td>
+            `;
+            tbody.appendChild(noResultsRow);
+        }
+    } else {
+        const noResultsRow = document.getElementById('no-search-results');
+        if (noResultsRow) {
+            noResultsRow.remove();
+        }
+    }
+}
+
+function clearWorkforceSearch() {
+    const searchInput = document.getElementById('workforceSearchInput');
+    if (searchInput) {
+        searchInput.value = '';
+        filterWorkforceRequests();
     }
 }
 
@@ -108863,6 +108925,10 @@ function showWorkforceApprovals() {
     showContent(`
         <div class="card workforce-approvals">
             <h3>Approve Workforce Requests</h3>
+            <div style="margin-bottom: 20px; display: flex; gap: 10px; align-items: center;">
+                <input type="text" id="workforceSearchInput" placeholder="Search by Request ID, Project, Status..." style="padding: 10px 15px; border: 1px solid #ddd; border-radius: 6px; flex: 1; font-size: 14px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+                <button onclick="clearWorkforceSearch()" style="padding: 10px 20px; background: #6c757d; color: #fff; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: 500;">Clear</button>
+            </div>
             <div style="overflow-x: auto;">
                 <table id="workforceRequestsTable" class="workforce-table">
                     <thead>

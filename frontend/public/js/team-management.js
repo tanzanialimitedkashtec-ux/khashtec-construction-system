@@ -292,10 +292,6 @@
 
                 <h3>Team Management</h3>
 
-                <p>Create teams, assign leaders, and manage team members.</p>
-
-
-
                 <div style="display:flex;gap:10px;flex-wrap:wrap;margin:15px 0;align-items:center;">
 
                     <button class="btn btn-primary" onclick="showCreateTeamForm()">Create Team</button>
