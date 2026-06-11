@@ -20373,6 +20373,11 @@ function recordIncidentReports(){
 
                 <div class="incidents-table-container">
 
+                    <div style="margin-bottom: 20px; display: flex; gap: 10px; align-items: center;">
+                        <input type="text" id="incidentSearchInput" placeholder="🔍 Search incidents..." style="padding: 10px 15px; border: 1px solid #ddd; border-radius: 6px; flex: 1; font-size: 14px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);" onkeyup="filterIncidentTable()">
+                        <button onclick="clearIncidentSearch()" style="padding: 10px 20px; background: #6c757d; color: #fff; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: 500;">Clear</button>
+                    </div>
+
                     <table class="incidents-table">
 
                         <thead>
@@ -79631,4 +79636,28 @@ function filterPurchaseTable() {
 function clearPurchaseSearch() {
     var input = document.getElementById("purchaseSearchInput");
     if (input) { input.value = ""; filterPurchaseTable(); }
+}
+
+function filterIncidentTable() {
+    var input = document.getElementById("incidentSearchInput");
+    if(!input) return;
+    var filter = input.value.toUpperCase();
+    var tbody = document.getElementById("incidentsList");
+    if (!tbody) return;
+    var tr = tbody.getElementsByTagName("tr");
+    for (var i = 0; i < tr.length; i++) {
+        var tdArray = tr[i].getElementsByTagName("td");
+        var match = false;
+        for (var j = 0; j < tdArray.length; j++) {
+            if (tdArray[j] && tdArray[j].textContent.toUpperCase().indexOf(filter) > -1) {
+                match = true;
+                break;
+            }
+        }
+        tr[i].style.display = match ? "" : "none";
+    }
+}
+function clearIncidentSearch() {
+    var input = document.getElementById("incidentSearchInput");
+    if (input) { input.value = ""; filterIncidentTable(); }
 }
