@@ -60798,6 +60798,11 @@ function financeBudgeting(){
 
                 <h4>Active Budgets</h4>
 
+                <div style="margin-bottom: 20px; display: flex; gap: 10px; align-items: center;">
+                    <input type="text" id="budgetRecordsSearchInput" placeholder="🔍 Search budgets..." style="padding: 10px 15px; border: 1px solid #ddd; border-radius: 6px; flex: 1; font-size: 14px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);" onkeyup="filterBudgetRecordsTable()">
+                    <button onclick="clearBudgetRecordsSearch()" style="padding: 10px 20px; background: #6c757d; color: #fff; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: 500;">Clear</button>
+                </div>
+
                 <div class="budget-table-container">
 
                     <table class="budget-table">
@@ -60933,6 +60938,11 @@ function financialManagement(){
         <div class="financial-records">
 
             <h4>Recent Financial Transactions</h4>
+
+            <div style="margin-bottom: 20px; display: flex; gap: 10px; align-items: center;">
+                <input type="text" id="financialRecordsSearchInput" placeholder="🔍 Search transactions..." style="padding: 10px 15px; border: 1px solid #ddd; border-radius: 6px; flex: 1; font-size: 14px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);" onkeyup="filterFinancialRecordsTable()">
+                <button onclick="clearFinancialRecordsSearch()" style="padding: 10px 20px; background: #6c757d; color: #fff; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: 500;">Clear</button>
+            </div>
 
             <div class="financial-table-container">
 
@@ -64498,6 +64508,11 @@ function trackLuggagePayments() {
             
 
             <div class="tracking-records">
+
+                <div style="margin-bottom: 20px; display: flex; gap: 10px; align-items: center;">
+                    <input type="text" id="trackingSearchInput" placeholder="🔍 Search tracking records..." style="padding: 10px 15px; border: 1px solid #ddd; border-radius: 6px; flex: 1; font-size: 14px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);" onkeyup="filterTrackingTable()">
+                    <button onclick="clearTrackingSearch()" style="padding: 10px 20px; background: #6c757d; color: #fff; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: 500;">Clear</button>
+                </div>
 
                 <div class="tracking-table-container">
 
@@ -69400,6 +69415,10 @@ function processInvoices() {
 
         <div style="margin-top:30px;">
             <h4>Recent Invoices</h4>
+            <div style="margin-bottom: 20px; display: flex; gap: 10px; align-items: center;">
+                <input type="text" id="invoicesSearchInput" placeholder="🔍 Search invoices..." style="padding: 10px 15px; border: 1px solid #ddd; border-radius: 6px; flex: 1; font-size: 14px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);" onkeyup="filterInvoicesTable()">
+                <button onclick="clearInvoicesSearch()" style="padding: 10px 20px; background: #6c757d; color: #fff; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: 500;">Clear</button>
+            </div>
             <div id="invoicesList"><p>Loading invoices...</p></div>
         </div>
     </div>`);
@@ -69767,6 +69786,10 @@ function showMDInvoiceApproval() {
     showContent('<div class="card">' +
         '<h3>Approve Invoices</h3>' +
         '<p><strong>Managing Director:</strong> Review and approve or reject pending invoices submitted by the Finance department.</p>' +
+        '<div style="margin-bottom: 20px; display: flex; gap: 10px; align-items: center;">' +
+        '    <input type="text" id="mdInvoicesSearchInput" placeholder="🔍 Search MD invoices..." style="padding: 10px 15px; border: 1px solid #ddd; border-radius: 6px; flex: 1; font-size: 14px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);" onkeyup="filterMDInvoicesTable()">' +
+        '    <button onclick="clearMDInvoicesSearch()" style="padding: 10px 20px; background: #6c757d; color: #fff; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: 500;">Clear</button>' +
+        '</div>' +
         '<div id="mdInvoicesList"><p>Loading pending invoices...</p></div>' +
     '</div>');
 
@@ -99523,6 +99546,11 @@ function showProcurementSales() {
 
                 </div>
 
+                <div style="margin-bottom: 20px; display: flex; gap: 10px; align-items: center;">
+                    <input type="text" id="procurementSearchInput" placeholder="🔍 Search procurement records..." style="padding: 10px 15px; border: 1px solid #ddd; border-radius: 6px; flex: 1; font-size: 14px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);" onkeyup="filterProcurementTable()">
+                    <button onclick="clearProcurementSearch()" style="padding: 10px 20px; background: #6c757d; color: #fff; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: 500;">Clear</button>
+                </div>
+
                 <div id="procurementTableContainer">
 
                     <p style="text-align: center; color: #888;">Loading records...</p>
@@ -107963,6 +107991,7 @@ async function loadPaymentRequests() {
         
         if (result.success) {
             displayPaymentRequests(result.data);
+            filterPaymentRequests();
         } else {
             throw new Error(result.error || 'Failed to load payment requests');
         }
@@ -108254,13 +108283,32 @@ function resetPaymentForm() {
 
 // Filter payment requests
 function filterPaymentRequests() {
-    const statusFilter = document.getElementById('statusFilter').value;
-    const currencyFilter = document.getElementById('currencyFilter').value;
-    const searchTerm = document.getElementById('searchPayment').value.toLowerCase();
+    var statusFilter = document.getElementById('statusFilter') ? document.getElementById('statusFilter').value : '';
+    var currencyFilter = document.getElementById('currencyFilter') ? document.getElementById('currencyFilter').value : '';
+    var searchPayment = document.getElementById('searchPayment');
+    var searchTerm = searchPayment ? searchPayment.value.toLowerCase() : '';
     
-    // This would need to be implemented with server-side filtering
-    // For now, just reload all requests
-    loadPaymentRequests();
+    var container = document.getElementById('paymentRequestsList');
+    if (!container) return;
+    var table = container.querySelector('.data-table');
+    if (!table) return;
+    var tr = table.getElementsByTagName('tr');
+    
+    for (var i = 1; i < tr.length; i++) {
+        var tdArray = tr[i].getElementsByTagName('td');
+        if (tdArray.length === 0) continue;
+        
+        var matchSearch = false;
+        var rowText = tr[i].textContent.toLowerCase();
+        if (rowText.indexOf(searchTerm) > -1) {
+            matchSearch = true;
+        }
+        
+        var matchStatus = true; // Implement if status filter exists in UI
+        var matchCurrency = true; // Implement if currency filter exists in UI
+        
+        tr[i].style.display = (matchSearch && matchStatus && matchCurrency) ? "" : "none";
+    }
 }
 
 // Show payment statistics
@@ -109097,6 +109145,158 @@ window.showDocumentQR = function(docId, docName) {
     } else {
         renderQR();
     }
+}
+
+// --- Search Filter Functions for Various Tables ---
+
+function filterBudgetRecordsTable() {
+    var input = document.getElementById("budgetRecordsSearchInput");
+    if(!input) return;
+    var filter = input.value.toUpperCase();
+    var table = document.querySelector(".budget-table");
+    if (!table) return;
+    var tr = table.getElementsByTagName("tr");
+    for (var i = 1; i < tr.length; i++) {
+        var tdArray = tr[i].getElementsByTagName("td");
+        var match = false;
+        for (var j = 0; j < tdArray.length; j++) {
+            if (tdArray[j] && tdArray[j].innerHTML.toUpperCase().indexOf(filter) > -1) {
+                match = true;
+                break;
+            }
+        }
+        tr[i].style.display = match ? "" : "none";
+    }
+}
+function clearBudgetRecordsSearch() {
+    var input = document.getElementById("budgetRecordsSearchInput");
+    if (input) { input.value = ""; filterBudgetRecordsTable(); }
+}
+
+function filterFinancialRecordsTable() {
+    var input = document.getElementById("financialRecordsSearchInput");
+    if(!input) return;
+    var filter = input.value.toUpperCase();
+    var table = document.querySelector(".financial-table");
+    if (!table) return;
+    var tr = table.getElementsByTagName("tr");
+    for (var i = 1; i < tr.length; i++) {
+        var tdArray = tr[i].getElementsByTagName("td");
+        var match = false;
+        for (var j = 0; j < tdArray.length; j++) {
+            if (tdArray[j] && tdArray[j].innerHTML.toUpperCase().indexOf(filter) > -1) {
+                match = true;
+                break;
+            }
+        }
+        tr[i].style.display = match ? "" : "none";
+    }
+}
+function clearFinancialRecordsSearch() {
+    var input = document.getElementById("financialRecordsSearchInput");
+    if (input) { input.value = ""; filterFinancialRecordsTable(); }
+}
+
+function filterTrackingTable() {
+    var input = document.getElementById("trackingSearchInput");
+    if(!input) return;
+    var filter = input.value.toUpperCase();
+    var table = document.querySelector(".tracking-table");
+    if (!table) return;
+    var tr = table.getElementsByTagName("tr");
+    for (var i = 1; i < tr.length; i++) {
+        var tdArray = tr[i].getElementsByTagName("td");
+        var match = false;
+        for (var j = 0; j < tdArray.length; j++) {
+            if (tdArray[j] && tdArray[j].innerHTML.toUpperCase().indexOf(filter) > -1) {
+                match = true;
+                break;
+            }
+        }
+        tr[i].style.display = match ? "" : "none";
+    }
+}
+function clearTrackingSearch() {
+    var input = document.getElementById("trackingSearchInput");
+    if (input) { input.value = ""; filterTrackingTable(); }
+}
+
+function filterInvoicesTable() {
+    var input = document.getElementById("invoicesSearchInput");
+    if(!input) return;
+    var filter = input.value.toUpperCase();
+    var list = document.getElementById("invoicesList");
+    if (!list) return;
+    var tr = list.getElementsByTagName("tr");
+    for (var i = 1; i < tr.length; i++) {
+        var tdArray = tr[i].getElementsByTagName("td");
+        var match = false;
+        for (var j = 0; j < tdArray.length; j++) {
+            if (tdArray[j] && tdArray[j].innerHTML.toUpperCase().indexOf(filter) > -1) {
+                match = true;
+                break;
+            }
+        }
+        tr[i].style.display = match ? "" : "none";
+    }
+}
+function clearInvoicesSearch() {
+    var input = document.getElementById("invoicesSearchInput");
+    if (input) { input.value = ""; filterInvoicesTable(); }
+}
+
+function filterMDInvoicesTable() {
+    var input = document.getElementById("mdInvoicesSearchInput");
+    if(!input) return;
+    var filter = input.value.toUpperCase();
+    var list = document.getElementById("mdInvoicesList");
+    if (!list) return;
+    var tr = list.getElementsByTagName("tr");
+    for (var i = 1; i < tr.length; i++) {
+        var ths = tr[i].getElementsByTagName("th");
+        if (ths.length > 0) continue; // Skip header rows
+
+        var tdArray = tr[i].getElementsByTagName("td");
+        var match = false;
+        for (var j = 0; j < tdArray.length; j++) {
+            if (tdArray[j] && tdArray[j].innerHTML.toUpperCase().indexOf(filter) > -1) {
+                match = true;
+                break;
+            }
+        }
+        tr[i].style.display = match ? "" : "none";
+    }
+}
+function clearMDInvoicesSearch() {
+    var input = document.getElementById("mdInvoicesSearchInput");
+    if (input) { input.value = ""; filterMDInvoicesTable(); }
+}
+
+function filterProcurementTable() {
+    var input = document.getElementById("procurementSearchInput");
+    if(!input) return;
+    var filter = input.value.toUpperCase();
+    var list = document.getElementById("procurementTableContainer");
+    if (!list) return;
+    var tr = list.getElementsByTagName("tr");
+    for (var i = 1; i < tr.length; i++) {
+        var ths = tr[i].getElementsByTagName("th");
+        if (ths.length > 0) continue; // Skip header rows
+
+        var tdArray = tr[i].getElementsByTagName("td");
+        var match = false;
+        for (var j = 0; j < tdArray.length; j++) {
+            if (tdArray[j] && tdArray[j].innerHTML.toUpperCase().indexOf(filter) > -1) {
+                match = true;
+                break;
+            }
+        }
+        tr[i].style.display = match ? "" : "none";
+    }
+}
+function clearProcurementSearch() {
+    var input = document.getElementById("procurementSearchInput");
+    if (input) { input.value = ""; filterProcurementTable(); }
 }
 </script>
 
