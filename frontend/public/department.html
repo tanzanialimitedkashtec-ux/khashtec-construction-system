@@ -24549,12 +24549,9 @@ function loadSeniorHiringRequests() {
         <h3>Approve Senior Staff Hiring</h3>
         <div class="hiring-section">
 
-            <div class="search-container" style="margin-bottom: 15px;">
-
-                <input type="text" id="hiringSearchInput" placeholder="🔍 Search candidates..." style="width: 100%; padding: 8px; border: 2px solid #ddd; border-radius: 6px; font-size: 12px; box-sizing: border-box;" onkeyup="filterHiringRequests()">
-
-                <div id="hiringSearchResults" style="margin-top:3px; font-size: 10px; color: #666;"></div>
-
+            <div style="margin-bottom: 20px; display: flex; gap: 10px; align-items: center;">
+                <input type="text" id="hiringSearchInput1" placeholder="🔍 Search candidates..." style="padding: 10px 15px; border: 1px solid #ddd; border-radius: 6px; flex: 1; font-size: 14px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);" onkeyup="filterHiringRequestsTable('hiringSearchInput1', this.parentElement.parentElement)">
+                <button onclick="clearHiringSearch('hiringSearchInput1', this.parentElement.parentElement)" style="padding: 10px 20px; background: #6c757d; color: #fff; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: 500;">Clear</button>
             </div>
 
             <h4 style="font-size: 14px; margin-bottom: 10px;">Senior Staff Hiring Requests</h4>
@@ -26316,57 +26313,34 @@ function filterHRHiringRequests() {
 
 // Hiring search functionality
 
-function filterHiringRequests() {
-
-    const searchTerm = document.getElementById('hiringSearchInput').value.toLowerCase();
-
-    const searchResults = document.getElementById('hiringSearchResults');
-
-    const hiringRequests = document.querySelectorAll('.hiring-request');
-
+function filterHiringRequestsTable(inputId, container) {
+    var input = document.getElementById(inputId);
+    if (!input) return;
+    var filter = input.value.toLowerCase();
     
-
-    if (hiringRequests.length === 0) return;
-
+    // Find the specific table within this container
+    var table = container.querySelector('.hiring-table');
+    if (!table) return;
     
-
-    let visibleCount = 0;
-
-    
-
-    hiringRequests.forEach(request => {
-
-        const text = request.textContent.toLowerCase();
-
-        if (text.includes(searchTerm)) {
-
-            request.style.display = 'table-row';
-
-            visibleCount++;
-
+    var tr = table.getElementsByTagName("tr");
+    for (var i = 1; i < tr.length; i++) {
+        var text = tr[i].textContent.toLowerCase();
+        if (text.indexOf(filter) > -1) {
+            tr[i].style.display = "";
         } else {
-
-            request.style.display = 'none';
-
+            tr[i].style.display = "none";
         }
-
-    });
-
-    
-
-    // Update search results count
-
-    if (searchTerm) {
-
-        searchResults.textContent = `Found ${visibleCount} candidate(s) matching "${searchTerm}"`;
-
-    } else {
-
-        searchResults.textContent = '';
-
     }
-
 }
+
+function clearHiringSearch(inputId, container) {
+    var input = document.getElementById(inputId);
+    if (input) { 
+        input.value = ""; 
+        filterHiringRequestsTable(inputId, container); 
+    }
+}
+
 
 
 
@@ -27118,16 +27092,9 @@ function showSeniorHiringForm(requests) {
 
         <div class="hiring-section">
 
-            <div class="search-container" style="margin-bottom: 15px;">
-
-                <input type="text" id="hiringSearchInput" placeholder="🔍 Search candidates..." 
-
-                       style="width: 100%; padding: 8px; border: 2px solid #ddd; border-radius: 6px; font-size: 12px; box-sizing: border-box;"
-
-                       onkeyup="filterHiringRequests()">
-
-                <div id="hiringSearchResults" style="margin-top: 3px; font-size: 10px; color: #666;"></div>
-
+            <div style="margin-bottom: 20px; display: flex; gap: 10px; align-items: center;">
+                <input type="text" id="hiringSearchInput2" placeholder="🔍 Search candidates..." style="padding: 10px 15px; border: 1px solid #ddd; border-radius: 6px; flex: 1; font-size: 14px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);" onkeyup="filterHiringRequestsTable('hiringSearchInput2', this.parentElement.parentElement)">
+                <button onclick="clearHiringSearch('hiringSearchInput2', this.parentElement.parentElement)" style="padding: 10px 20px; background: #6c757d; color: #fff; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: 500;">Clear</button>
             </div>
 
             <h4 style="font-size: 14px; margin-bottom: 10px;">Senior Staff Hiring Requests</h4>
