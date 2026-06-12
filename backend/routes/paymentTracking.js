@@ -88,11 +88,11 @@ router.get('/', async (req, res) => {
             // Also pull real estate sales with installment data from financial_transactions
             try {
                 const salesResult = await db.execute(`
-                    SELECT id, description, amount, transaction_date, status,
+                    SELECT id, description, amount, date as transaction_date, status,
                            payment_method, installment_period, down_payment,
                            monthly_installment, interest_rate, created_at
                     FROM financial_transactions 
-                    WHERE transaction_type = 'income' 
+                    WHERE type = 'Income' 
                       AND (payment_method = 'installments' OR payment_method = 'installment')
                     ORDER BY created_at DESC
                 `);
@@ -580,7 +580,7 @@ router.get('/statistics', async (req, res) => {
                            SUM(COALESCE(down_payment, 0)) as total_down_payments,
                            SUM(COALESCE(monthly_installment, 0)) as total_monthly
                     FROM financial_transactions
-                    WHERE transaction_type = 'income'
+                    WHERE type = 'Income'
                       AND (payment_method = 'installments' OR payment_method = 'installment')
                       AND (status != 'completed' OR status IS NULL)
                 `);
