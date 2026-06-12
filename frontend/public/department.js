@@ -62068,7 +62068,7 @@ async function adminOperations(){
             const statusClass = doc.status === 'Approved' ? 'active' : (doc.status === 'Draft' ? 'warning' : 'pending');
             const date = doc.updated_at ? new Date(doc.updated_at).toLocaleDateString() : 'N/A';
             
-            const downloadUrl = window.location.origin + '/uploads/' + encodeURIComponent(doc.file_name || '');
+            const downloadUrl = window.location.origin + '/api/documents/' + doc.id + '/download?view=true';
             const qrImageUrl = 'https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=' + encodeURIComponent(downloadUrl);
             
             docRows += `<tr>
