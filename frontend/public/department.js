@@ -62069,7 +62069,7 @@ async function adminOperations(){
             const date = doc.updated_at ? new Date(doc.updated_at).toLocaleDateString() : 'N/A';
             
             const downloadUrl = window.location.origin + '/uploads/' + encodeURIComponent(doc.file_name || '');
-            const qrImageUrl = 'https://api.qrserver.com/v1/create-qr-code/?size=60x60&data=' + encodeURIComponent(downloadUrl);
+            const qrImageUrl = 'https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=' + encodeURIComponent(downloadUrl);
             
             docRows += `<tr>
                 <td>${doc.id}</td>
@@ -62080,7 +62080,7 @@ async function adminOperations(){
                 <td>${date}</td>
                 <td style="text-align:center;">
                     <a href="${downloadUrl}" target="_blank" title="Click or Scan to download">
-                        <img src="${qrImageUrl}" alt="QR" style="width:40px;height:40px;border-radius:4px;border:1px solid #ddd;padding:2px;background:#fff;transition:transform 0.2s;" onmouseover="this.style.transform='scale(1.2)'" onmouseout="this.style.transform='scale(1)'">
+                        <img src="${qrImageUrl}" alt="QR" style="width:65px;height:65px;border-radius:6px;border:1px solid #ccc;padding:3px;background:#fff;transition:transform 0.2s;" onmouseover="this.style.transform='scale(1.3)'" onmouseout="this.style.transform='scale(1)'">
                     </a>
                 </td>
             </tr>`;
