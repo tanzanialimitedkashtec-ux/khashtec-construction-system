@@ -37154,7 +37154,7 @@ function payrollProcessing(){
 
         
 
-        <div id="payrollOverview" class="tab-content">
+        <div id="payrollOverview" class="tab-content active">
 
             <h4>Payroll Overview</h4>
 
