@@ -108635,15 +108635,71 @@ async function showMaterialsDashboard() {
         if (result.success && dDiv) {
             const d = result.data;
             dDiv.innerHTML = `
-                <div class="stats-grid">
-                    <div class="stat-card"><h4>Total Materials</h4><div class="stat-number">${d.totalMaterials || 0}</div></div>
-                    <div class="stat-card"><h4>Stock Value (TZS)</h4><div class="stat-number">${parseFloat(d.totalStockValue || 0).toLocaleString()}</div></div>
-                    <div class="stat-card"><h4>Low Stock Items</h4><div class="stat-number" style="color:${(d.lowStockItems||0)>0?'#dc3545':'#28a745'}">${d.lowStockItems || 0}</div></div>
-                    <div class="stat-card"><h4>Materials In (30d)</h4><div class="stat-number">${parseFloat(d.recentInValue || 0).toLocaleString()}</div></div>
-                    <div class="stat-card"><h4>Materials Out (30d)</h4><div class="stat-number">${parseFloat(d.recentOutValue || 0).toLocaleString()}</div></div>
-                    <div class="stat-card"><h4>Total Transactions</h4><div class="stat-number">${(d.totalInTransactions||0)+(d.totalOutTransactions||0)}</div></div>
+                <div style="position: relative; height: 240px; width: 100%; margin-bottom: 20px;">
+                    <canvas id="materialsDashboardChart"></canvas>
                 </div>
             `;
+            
+            const ctx = document.getElementById('materialsDashboardChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['Total Materials', 'Stock Value (M)', 'Low Stock', 'Mat. In (30d) (M)', 'Mat. Out (30d) (M)', 'Transactions'],
+                    datasets: [{
+                        label: 'Materials Data',
+                        data: [
+                            d.totalMaterials || 0,
+                            (d.totalStockValue || 0) / 1000000,
+                            d.lowStockItems || 0,
+                            (d.recentInValue || 0) / 1000000,
+                            (d.recentOutValue || 0) / 1000000,
+                            (d.totalInTransactions || 0) + (d.totalOutTransactions || 0)
+                        ],
+                        backgroundColor: [
+                            'rgba(54, 162, 235, 0.6)',
+                            'rgba(75, 192, 192, 0.6)',
+                            'rgba(255, 99, 132, 0.6)',
+                            'rgba(255, 206, 86, 0.6)',
+                            'rgba(153, 102, 255, 0.6)',
+                            'rgba(255, 159, 64, 0.6)'
+                        ],
+                        borderColor: [
+                            'rgba(54, 162, 235, 1)',
+                            'rgba(75, 192, 192, 1)',
+                            'rgba(255, 99, 132, 1)',
+                            'rgba(255, 206, 86, 1)',
+                            'rgba(153, 102, 255, 1)',
+                            'rgba(255, 159, 64, 1)'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    let val = context.parsed.y;
+                                    if (context.label.includes('(M)')) {
+                                        return (val * 1000000).toLocaleString() + ' TZS';
+                                    }
+                                    return val.toLocaleString();
+                                }
+                            }
+                        }
+                    }
+                }
+            });
         }
     } catch (e) { console.error('Dashboard error:', e); }
 }
