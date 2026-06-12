@@ -11161,6 +11161,17 @@ function loadPayrollData() {
 
             // Populate month selects
             populatePayrollMonthSelects();
+
+            // Render Chart
+            if (typeof Chart === 'undefined') {
+                const script = document.createElement('script');
+                script.src = 'https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js';
+                script.onload = () => renderPayrollChart(monthlyPayroll, totalDeductions);
+                document.head.appendChild(script);
+            } else {
+                renderPayrollChart(monthlyPayroll, totalDeductions);
+            }
+
         } else {
             console.error('âŒ Failed to load payroll overview:', data.error);
         }
