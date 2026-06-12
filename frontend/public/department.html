@@ -61705,54 +61705,8 @@ function payrollProcessing(){
 
             <h4>Payroll Overview</h4>
 
-            <div class="payroll-stats">
-
-                <div class="stat-card">
-
-                    <h5>Total Employees</h5>
-
-                    <div class="stat-number" id="overviewTotalEmployees">--</div>
-
-                    <div class="stat-change">Active Staff</div>
-
-                </div>
-
-                
-
-                <div class="stat-card">
-
-                    <h5>Monthly Payroll</h5>
-
-                    <div class="stat-number" id="overviewMonthlyPayroll">--</div>
-
-                    <div class="stat-change" id="overviewMonthLabel">Current Month</div>
-
-                </div>
-
-                
-
-                <div class="stat-card">
-
-                    <h5>Average Salary</h5>
-
-                    <div class="stat-number" id="overviewAvgSalary">--</div>
-
-                    <div class="stat-change">Per Employee</div>
-
-                </div>
-
-                
-
-                <div class="stat-card">
-
-                    <h5>Next Pay Date</h5>
-
-                    <div class="stat-number" id="overviewNextPayDate">--</div>
-
-                    <div class="stat-change" id="overviewDaysLeft">--</div>
-
-                </div>
-
+            <div id="payrollDashboardChartContainer" style="position: relative; height: 240px; width: 100%; margin-bottom: 20px;">
+                <canvas id="payrollOverviewChart"></canvas>
             </div>
 
             
