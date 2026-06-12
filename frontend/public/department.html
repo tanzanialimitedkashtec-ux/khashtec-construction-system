@@ -62232,6 +62232,42 @@ function financialReporting(){
 
     showContent(`<div class="card">
 
+        <style>
+        /* Modern Finance Reports CSS */
+        .reporting-dashboard { background: #f8fafc; padding: 20px; border-radius: 16px; border: 1px solid #e2e8f0; }
+        .income-statement-graph, .balance-sheet, .cash-flow, .budget-analysis { display: flex; flex-direction: column; gap: 24px; font-family: 'Inter', sans-serif; animation: fadeIn 0.4s ease-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .income-summary-cards, .balance-section, .flow-section { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 20px; }
+        .summary-card, .balance-item, .flow-item, .analysis-item { background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(8px); padding: 20px; border-radius: 16px; box-shadow: 0 4px 15px rgba(0,0,0,0.03); border: 1px solid rgba(226, 232, 240, 0.8); transition: transform 0.3s ease, box-shadow 0.3s ease; }
+        .summary-card:hover, .balance-item:hover, .flow-item:hover, .analysis-item:hover { transform: translateY(-5px); box-shadow: 0 12px 25px rgba(0,0,0,0.06); }
+        .summary-title, .graph-label { font-size: 13px; font-weight: 600; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; }
+        .summary-value { font-size: 26px; font-weight: 800; color: #0f172a; }
+        .summary-profit.positive .summary-value { color: #10b981; }
+        .summary-profit.negative .summary-value { color: #ef4444; }
+        .section-header, h5 { font-size: 18px; font-weight: 700; color: #1e293b; margin-bottom: 16px; border-bottom: 2px solid #e2e8f0; padding-bottom: 8px; }
+        .graph-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; background: #ffffff; padding: 14px 18px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.02); border: 1px solid #f1f5f9; transition: transform 0.2s; }
+        .graph-row:hover { transform: scale(1.01); box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
+        .graph-label { margin: 0; min-width: 140px; }
+        .graph-bar-wrap { flex-grow: 1; height: 12px; background: #f1f5f9; border-radius: 12px; margin: 0 24px; overflow: hidden; box-shadow: inset 0 1px 3px rgba(0,0,0,0.1); }
+        .graph-bar { height: 100%; border-radius: 12px; transition: width 1.2s cubic-bezier(0.4, 0, 0.2, 1); }
+        .bar-revenue { background: linear-gradient(90deg, #3b82f6, #60a5fa); }
+        .bar-expense { background: linear-gradient(90deg, #ef4444, #f87171); }
+        .bar-category { background: linear-gradient(90deg, #8b5cf6, #a78bfa); }
+        .graph-value { font-weight: 700; color: #334155; min-width: 150px; text-align: right; }
+        .balance-item, .flow-item, .analysis-item { display: flex; flex-direction: column; gap: 8px; }
+        .balance-item span:first-child, .flow-item span:first-child, .analysis-item span:first-child { font-size: 14px; font-weight: 600; color: #64748b; }
+        .balance-item span:nth-child(2), .flow-item span:nth-child(2), .analysis-item span:nth-child(2) { font-size: 22px; font-weight: 700; color: #0f172a; }
+        .balance-item.total, .flow-item.total { background: linear-gradient(135deg, #f8fafc, #f1f5f9); border: 2px solid #cbd5e1; box-shadow: inset 0 2px 4px rgba(255,255,255,0.5); }
+        .balance-item.total span:nth-child(2), .flow-item.total span:nth-child(2) { color: #2563eb; }
+        .analysis-item span:nth-child(3) { font-size: 15px; font-weight: 500; color: #475569; }
+        .variance { font-size: 14px; font-weight: 600; padding: 6px 12px; border-radius: 8px; width: fit-content; display: inline-block; margin-top: 4px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        .variance.positive { background: #dcfce7; color: #166534; border: 1px solid #bbf7d0; }
+        .variance.negative { background: #fee2e2; color: #991b1b; border: 1px solid #fecaca; }
+        .report-actions { display: flex; gap: 12px; margin-top: 24px; padding-top: 20px; border-top: 1px solid #e2e8f0; }
+        .report-actions button { background: #ffffff; border: 1px solid #cbd5e1; padding: 10px 20px; border-radius: 8px; font-weight: 600; color: #334155; cursor: pointer; transition: all 0.2s; box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
+        .report-actions button:hover { background: #f8fafc; border-color: #94a3b8; transform: translateY(-2px); box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+        </style>
+
         <h3>Financial Reporting</h3>
 
         <div class="reporting-dashboard">
