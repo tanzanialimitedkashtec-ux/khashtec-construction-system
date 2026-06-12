@@ -37479,11 +37479,54 @@ function expenseControl(){
 
             <h4>Expense Overview</h4>
 
-            <div class="expense-stats" id="expenseOverviewStats">
-                <div class="stat-card"><h5>Monthly Budget</h5><div class="stat-number" id="expStatBudget">Loading...</div><div class="stat-change" id="expStatMonth">--</div></div>
-                <div class="stat-card"><h5>Expenses This Month</h5><div class="stat-number" id="expStatUsed">Loading...</div><div class="stat-change" id="expStatPercent">--</div></div>
-                <div class="stat-card"><h5>Remaining Budget</h5><div class="stat-number" id="expStatRemaining">Loading...</div><div class="stat-change" id="expStatAvailable">--</div></div>
-                <div class="stat-card"><h5>Pending Confirmation</h5><div class="stat-number" id="expStatPending">Loading...</div><div class="stat-change">Awaiting Review</div></div>
+            <div class="expense-stats" id="expenseOverviewStats" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin-top: 15px;">
+                <div class="metric-card" style="background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%); padding: 20px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border-left: 4px solid #2196F3; transition: transform 0.3s ease;">
+                    <h5 style="color: #666; font-size: 0.9rem; margin-top: 0; text-transform: uppercase; letter-spacing: 0.5px;">Monthly Budget</h5>
+                    <div class="metric-value" style="font-size: 1.8rem; font-weight: 700; color: #2c3e50; margin: 10px 0;">TZS <span id="expStatBudget">Loading...</span></div>
+                    <div class="metric-bar-container" style="background: #eef2f3; height: 8px; border-radius: 4px; margin: 10px 0 6px 0; overflow: hidden; position: relative;">
+                        <div class="metric-bar" style="background: #2196F3; height: 100%; width: 100%; border-radius: 4px; transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);"></div>
+                    </div>
+                    <div class="metric-change" style="color: #7f8c8d; font-size: 0.75rem; font-weight: 600; display: flex; justify-content: space-between; align-items: center; margin-top: 6px;">
+                        <span>Target allocation</span>
+                        <span style="color: #2196F3;" id="expStatMonth">--</span>
+                    </div>
+                </div>
+
+                <div class="metric-card" style="background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%); padding: 20px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border-left: 4px solid #F44336; transition: transform 0.3s ease;">
+                    <h5 style="color: #666; font-size: 0.9rem; margin-top: 0; text-transform: uppercase; letter-spacing: 0.5px;">Expenses This Month</h5>
+                    <div class="metric-value" style="font-size: 1.8rem; font-weight: 700; color: #2c3e50; margin: 10px 0;">TZS <span id="expStatUsed">Loading...</span></div>
+                    <div class="metric-bar-container" style="background: #eef2f3; height: 8px; border-radius: 4px; margin: 10px 0 6px 0; overflow: hidden; position: relative;">
+                        <div class="metric-bar" id="expStatUsedBar" style="background: #F44336; height: 100%; width: 0%; border-radius: 4px; transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);"></div>
+                    </div>
+                    <div class="metric-change" style="color: #7f8c8d; font-size: 0.75rem; font-weight: 600; display: flex; justify-content: space-between; align-items: center; margin-top: 6px;">
+                        <span>Current usage</span>
+                        <span style="color: #F44336;" id="expStatPercent">--</span>
+                    </div>
+                </div>
+
+                <div class="metric-card" style="background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%); padding: 20px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border-left: 4px solid #4CAF50; transition: transform 0.3s ease;">
+                    <h5 style="color: #666; font-size: 0.9rem; margin-top: 0; text-transform: uppercase; letter-spacing: 0.5px;">Remaining Budget</h5>
+                    <div class="metric-value" style="font-size: 1.8rem; font-weight: 700; color: #2c3e50; margin: 10px 0;">TZS <span id="expStatRemaining">Loading...</span></div>
+                    <div class="metric-bar-container" style="background: #eef2f3; height: 8px; border-radius: 4px; margin: 10px 0 6px 0; overflow: hidden; position: relative;">
+                        <div class="metric-bar" id="expStatRemainingBar" style="background: #4CAF50; height: 100%; width: 0%; border-radius: 4px; transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);"></div>
+                    </div>
+                    <div class="metric-change" style="color: #7f8c8d; font-size: 0.75rem; font-weight: 600; display: flex; justify-content: space-between; align-items: center; margin-top: 6px;">
+                        <span>Available balance</span>
+                        <span style="color: #4CAF50;" id="expStatAvailable">--</span>
+                    </div>
+                </div>
+
+                <div class="metric-card" style="background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%); padding: 20px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border-left: 4px solid #FF9800; transition: transform 0.3s ease;">
+                    <h5 style="color: #666; font-size: 0.9rem; margin-top: 0; text-transform: uppercase; letter-spacing: 0.5px;">Pending Confirmation</h5>
+                    <div class="metric-value" style="font-size: 1.8rem; font-weight: 700; color: #2c3e50; margin: 10px 0;" id="expStatPending">Loading...</div>
+                    <div class="metric-bar-container" style="background: #eef2f3; height: 8px; border-radius: 4px; margin: 10px 0 6px 0; overflow: hidden; position: relative;">
+                        <div class="metric-bar" style="background: #FF9800; height: 100%; width: 100%; border-radius: 4px; animation: pulse 2s infinite;"></div>
+                    </div>
+                    <div class="metric-change" style="color: #7f8c8d; font-size: 0.75rem; font-weight: 600; display: flex; justify-content: space-between; align-items: center; margin-top: 6px;">
+                        <span>Action required</span>
+                        <span style="color: #FF9800;">Awaiting Review</span>
+                    </div>
+                </div>
             </div>
 
         </div>
@@ -43531,12 +43574,19 @@ async function loadExpenseOverview() {
             var now = new Date();
             document.getElementById('expStatBudget').textContent = formatTZS(data.monthlyBudget);
             document.getElementById('expStatMonth').textContent = monthNames[now.getMonth()] + ' ' + now.getFullYear();
+            
             document.getElementById('expStatUsed').textContent = formatTZS(data.monthExpenses);
             document.getElementById('expStatPercent').textContent = data.usedPercent + '% Used';
-            document.getElementById('expStatPercent').className = 'stat-change ' + (data.usedPercent > 80 ? 'negative' : '');
+            document.getElementById('expStatPercent').className = data.usedPercent > 80 ? 'negative' : '';
+            let usedBar = document.getElementById('expStatUsedBar');
+            if (usedBar) usedBar.style.width = Math.min(data.usedPercent, 100) + '%';
+            
             document.getElementById('expStatRemaining').textContent = formatTZS(data.remaining);
             document.getElementById('expStatAvailable').textContent = (100 - data.usedPercent) + '% Available';
-            document.getElementById('expStatAvailable').className = 'stat-change positive';
+            document.getElementById('expStatAvailable').className = 'positive';
+            let remBar = document.getElementById('expStatRemainingBar');
+            if (remBar) remBar.style.width = Math.max(100 - data.usedPercent, 0) + '%';
+            
             document.getElementById('expStatPending').textContent = data.pendingCount;
         }
     } catch (error) {
