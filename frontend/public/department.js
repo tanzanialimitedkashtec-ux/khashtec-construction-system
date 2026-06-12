@@ -55464,54 +55464,54 @@ function generateSalesReport(){
 
         <div class="report-preview">
 
-            <div class="report-metrics">
-
-                <div class="metric-card">
-
-                    <h5>Total Sales</h5>
-
-                    <div class="metric-value">TZS 485,000,000</div>
-
-                    <div class="metric-change positive">+23% vs Q4 2025</div>
-
+            <div class="report-metrics" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 30px;">
+                <div class="metric-card" style="background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%); padding: 20px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border-left: 4px solid #4CAF50; transition: transform 0.3s ease;">
+                    <h5 style="color: #666; font-size: 0.9rem; margin-top: 0; text-transform: uppercase; letter-spacing: 0.5px;">Total Sales</h5>
+                    <div class="metric-value" style="font-size: 1.8rem; font-weight: 700; color: #2c3e50; margin: 10px 0;">TZS 485,000,000</div>
+                    <div class="metric-bar-container" style="background: #eef2f3; height: 8px; border-radius: 4px; margin: 10px 0 6px 0; overflow: hidden; position: relative;">
+                        <div class="metric-bar" style="background: #4CAF50; height: 100%; width: 48.5%; border-radius: 4px; transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);"></div>
+                    </div>
+                    <div class="metric-change positive" style="color: #7f8c8d; font-size: 0.75rem; font-weight: 600; display: flex; justify-content: space-between; align-items: center; margin-top: 6px;">
+                        <span>48.5% of target (TZS 1B)</span>
+                        <span style="color: #4CAF50;">+23% vs Q4 2025</span>
+                    </div>
                 </div>
-
                 
-
-                <div class="metric-card">
-
-                    <h5>Properties Sold</h5>
-
-                    <div class="metric-value">12</div>
-
-                    <div class="metric-change positive">+20% vs Q4 2025</div>
-
+                <div class="metric-card" style="background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%); padding: 20px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border-left: 4px solid #2196F3; transition: transform 0.3s ease;">
+                    <h5 style="color: #666; font-size: 0.9rem; margin-top: 0; text-transform: uppercase; letter-spacing: 0.5px;">Properties Sold</h5>
+                    <div class="metric-value" style="font-size: 1.8rem; font-weight: 700; color: #2c3e50; margin: 10px 0;">12</div>
+                    <div class="metric-bar-container" style="background: #eef2f3; height: 8px; border-radius: 4px; margin: 10px 0 6px 0; overflow: hidden; position: relative;">
+                        <div class="metric-bar" style="background: #2196F3; height: 100%; width: 60%; border-radius: 4px; transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);"></div>
+                    </div>
+                    <div class="metric-change positive" style="color: #7f8c8d; font-size: 0.75rem; font-weight: 600; display: flex; justify-content: space-between; align-items: center; margin-top: 6px;">
+                        <span>60% of target (20 Sold)</span>
+                        <span style="color: #4CAF50;">+20% vs Q4 2025</span>
+                    </div>
                 </div>
-
                 
-
-                <div class="metric-card">
-
-                    <h5>Average Sale Price</h5>
-
-                    <div class="metric-value">TZS 40,416,667</div>
-
-                    <div class="metric-change positive">+2.5% vs Q4 2025</div>
-
+                <div class="metric-card" style="background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%); padding: 20px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border-left: 4px solid #9C27B0; transition: transform 0.3s ease;">
+                    <h5 style="color: #666; font-size: 0.9rem; margin-top: 0; text-transform: uppercase; letter-spacing: 0.5px;">Average Sale Price</h5>
+                    <div class="metric-value" style="font-size: 1.8rem; font-weight: 700; color: #2c3e50; margin: 10px 0;">TZS 40,416,667</div>
+                    <div class="metric-bar-container" style="background: #eef2f3; height: 8px; border-radius: 4px; margin: 10px 0 6px 0; overflow: hidden; position: relative;">
+                        <div class="metric-bar" style="background: #9C27B0; height: 100%; width: 40%; border-radius: 4px; transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);"></div>
+                    </div>
+                    <div class="metric-change positive" style="color: #7f8c8d; font-size: 0.75rem; font-weight: 600; display: flex; justify-content: space-between; align-items: center; margin-top: 6px;">
+                        <span>40% of target (TZS 100M)</span>
+                        <span style="color: #4CAF50;">+2.5% vs Q4 2025</span>
+                    </div>
                 </div>
-
                 
-
-                <div class="metric-card">
-
-                    <h5>Commission Earned</h5>
-
-                    <div class="metric-value">TZS 24,250,000</div>
-
-                    <div class="metric-change positive">+18% vs Q4 2025</div>
-
+                <div class="metric-card" style="background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%); padding: 20px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border-left: 4px solid #FF9800; transition: transform 0.3s ease;">
+                    <h5 style="color: #666; font-size: 0.9rem; margin-top: 0; text-transform: uppercase; letter-spacing: 0.5px;">Commission Earned</h5>
+                    <div class="metric-value" style="font-size: 1.8rem; font-weight: 700; color: #2c3e50; margin: 10px 0;">TZS 24,250,000</div>
+                    <div class="metric-bar-container" style="background: #eef2f3; height: 8px; border-radius: 4px; margin: 10px 0 6px 0; overflow: hidden; position: relative;">
+                        <div class="metric-bar" style="background: #FF9800; height: 100%; width: 48.5%; border-radius: 4px; transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);"></div>
+                    </div>
+                    <div class="metric-change positive" style="color: #7f8c8d; font-size: 0.75rem; font-weight: 600; display: flex; justify-content: space-between; align-items: center; margin-top: 6px;">
+                        <span>48.5% of target (TZS 50M)</span>
+                        <span style="color: #4CAF50;">+18% vs Q4 2025</span>
+                    </div>
                 </div>
-
             </div>
 
             

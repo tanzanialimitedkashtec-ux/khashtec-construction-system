@@ -82259,28 +82259,52 @@ function generateSalesReport(){
         <div class="report-preview">
 
             <div class="report-metrics" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 30px;">
-                <div class="metric-card" style="background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%); padding: 10px 14px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); border-left: 3px solid #4CAF50; transition: transform 0.3s ease;">
-                    <h5 style="color: #666; font-size: 0.72rem; margin: 0 0 3px 0; text-transform: uppercase; letter-spacing: 0.5px;">Total Sales</h5>
-                    <div id="totalSalesValue" class="metric-value" style="font-size: 1.1rem; font-weight: 700; color: #2c3e50; margin: 2px 0;">TZS 0</div>
-                    <div class="metric-change positive" style="color: #4CAF50; font-size: 0.72rem; font-weight: 600;">Updated automatically</div>
+                <div class="metric-card" style="background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%); padding: 20px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border-left: 4px solid #4CAF50; transition: transform 0.3s ease;">
+                    <h5 style="color: #666; font-size: 0.9rem; margin-top: 0; text-transform: uppercase; letter-spacing: 0.5px;">Total Sales</h5>
+                    <div id="totalSalesValue" class="metric-value" style="font-size: 1.8rem; font-weight: 700; color: #2c3e50; margin: 10px 0;">TZS 470,909,090</div>
+                    <div class="metric-bar-container" style="background: #eef2f3; height: 8px; border-radius: 4px; margin: 10px 0 6px 0; overflow: hidden; position: relative;">
+                        <div id="totalSalesBar" class="metric-bar" style="background: #4CAF50; height: 100%; width: 47%; border-radius: 4px; transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);"></div>
+                    </div>
+                    <div class="metric-change positive" style="color: #7f8c8d; font-size: 0.75rem; font-weight: 600; display: flex; justify-content: space-between; align-items: center; margin-top: 6px;">
+                        <span id="totalSalesPct">47% of target (TZS 1B)</span>
+                        <span style="color: #4CAF50;">Auto-updated</span>
+                    </div>
                 </div>
                 
                 <div class="metric-card" style="background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%); padding: 20px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border-left: 4px solid #2196F3; transition: transform 0.3s ease;">
                     <h5 style="color: #666; font-size: 0.9rem; margin-top: 0; text-transform: uppercase; letter-spacing: 0.5px;">Properties Sold</h5>
-                    <div id="propertiesSoldValue" class="metric-value" style="font-size: 1.8rem; font-weight: 700; color: #2c3e50; margin: 10px 0;">0</div>
-                    <div class="metric-change positive" style="color: #4CAF50; font-size: 0.85rem; font-weight: 600;">Updated automatically</div>
+                    <div id="propertiesSoldValue" class="metric-value" style="font-size: 1.8rem; font-weight: 700; color: #2c3e50; margin: 10px 0;">2</div>
+                    <div class="metric-bar-container" style="background: #eef2f3; height: 8px; border-radius: 4px; margin: 10px 0 6px 0; overflow: hidden; position: relative;">
+                        <div id="propertiesSoldBar" class="metric-bar" style="background: #2196F3; height: 100%; width: 20%; border-radius: 4px; transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);"></div>
+                    </div>
+                    <div class="metric-change positive" style="color: #7f8c8d; font-size: 0.75rem; font-weight: 600; display: flex; justify-content: space-between; align-items: center; margin-top: 6px;">
+                        <span id="propertiesSoldPct">20% of target (10 Sold)</span>
+                        <span style="color: #4CAF50;">Auto-updated</span>
+                    </div>
                 </div>
                 
                 <div class="metric-card" style="background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%); padding: 20px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border-left: 4px solid #9C27B0; transition: transform 0.3s ease;">
                     <h5 style="color: #666; font-size: 0.9rem; margin-top: 0; text-transform: uppercase; letter-spacing: 0.5px;">Average Sale Price</h5>
-                    <div id="avgSalePriceValue" class="metric-value" style="font-size: 1.8rem; font-weight: 700; color: #2c3e50; margin: 10px 0;">TZS 0</div>
-                    <div class="metric-change positive" style="color: #4CAF50; font-size: 0.85rem; font-weight: 600;">Updated automatically</div>
+                    <div id="avgSalePriceValue" class="metric-value" style="font-size: 1.8rem; font-weight: 700; color: #2c3e50; margin: 10px 0;">TZS 235,454,545</div>
+                    <div class="metric-bar-container" style="background: #eef2f3; height: 8px; border-radius: 4px; margin: 10px 0 6px 0; overflow: hidden; position: relative;">
+                        <div id="avgSalePriceBar" class="metric-bar" style="background: #9C27B0; height: 100%; width: 47%; border-radius: 4px; transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);"></div>
+                    </div>
+                    <div class="metric-change positive" style="color: #7f8c8d; font-size: 0.75rem; font-weight: 600; display: flex; justify-content: space-between; align-items: center; margin-top: 6px;">
+                        <span id="avgSalePricePct">47% of target (TZS 500M)</span>
+                        <span style="color: #4CAF50;">Auto-updated</span>
+                    </div>
                 </div>
                 
                 <div class="metric-card" style="background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%); padding: 20px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border-left: 4px solid #FF9800; transition: transform 0.3s ease;">
                     <h5 style="color: #666; font-size: 0.9rem; margin-top: 0; text-transform: uppercase; letter-spacing: 0.5px;">Commission Earned</h5>
-                    <div id="commissionEarnedValue" class="metric-value" style="font-size: 1.8rem; font-weight: 700; color: #2c3e50; margin: 10px 0;">TZS 0</div>
-                    <div class="metric-change positive" style="color: #4CAF50; font-size: 0.85rem; font-weight: 600;">Updated automatically</div>
+                    <div id="commissionEarnedValue" class="metric-value" style="font-size: 1.8rem; font-weight: 700; color: #2c3e50; margin: 10px 0;">TZS 23,545,454.5</div>
+                    <div class="metric-bar-container" style="background: #eef2f3; height: 8px; border-radius: 4px; margin: 10px 0 6px 0; overflow: hidden; position: relative;">
+                        <div id="commissionEarnedBar" class="metric-bar" style="background: #FF9800; height: 100%; width: 47%; border-radius: 4px; transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);"></div>
+                    </div>
+                    <div class="metric-change positive" style="color: #7f8c8d; font-size: 0.75rem; font-weight: 600; display: flex; justify-content: space-between; align-items: center; margin-top: 6px;">
+                        <span id="commissionEarnedPct">47% of target (TZS 50M)</span>
+                        <span style="color: #4CAF50;">Auto-updated</span>
+                    </div>
                 </div>
             </div>
 
@@ -82977,6 +83001,35 @@ function displaySalesRecords(records) {
     
     const tcEl = document.getElementById('commissionEarnedValue');
     if (tcEl) tcEl.textContent = 'TZS ' + totalCommission.toLocaleString();
+
+    // Update progress bars and target percentage texts
+    const totalSalesTarget = 1000000000;
+    const salesPct = Math.min((totalSales / totalSalesTarget) * 100, 100) || 0;
+    const tsBar = document.getElementById('totalSalesBar');
+    if (tsBar) tsBar.style.width = salesPct + '%';
+    const tsPct = document.getElementById('totalSalesPct');
+    if (tsPct) tsPct.textContent = Math.round(salesPct) + '% of target (TZS 1B)';
+
+    const propertiesSoldTarget = 10;
+    const soldPct = Math.min((propertiesSold / propertiesSoldTarget) * 100, 100) || 0;
+    const psBar = document.getElementById('propertiesSoldBar');
+    if (psBar) psBar.style.width = soldPct + '%';
+    const psPct = document.getElementById('propertiesSoldPct');
+    if (psPct) psPct.textContent = Math.round(soldPct) + '% of target (10 Sold)';
+
+    const avgPriceTarget = 500000000;
+    const avgPricePct = Math.min((avgPrice / avgPriceTarget) * 100, 100) || 0;
+    const apBar = document.getElementById('avgSalePriceBar');
+    if (apBar) apBar.style.width = avgPricePct + '%';
+    const apPct = document.getElementById('avgSalePricePct');
+    if (apPct) apPct.textContent = Math.round(avgPricePct) + '% of target (TZS 500M)';
+
+    const commissionTarget = 50000000;
+    const commissionPct = Math.min((totalCommission / commissionTarget) * 100, 100) || 0;
+    const tcBar = document.getElementById('commissionEarnedBar');
+    if (tcBar) tcBar.style.width = commissionPct + '%';
+    const tcPct = document.getElementById('commissionEarnedPct');
+    if (tcPct) tcPct.textContent = Math.round(commissionPct) + '% of target (TZS 50M)';
 
     let recordsHTML = '';
 
