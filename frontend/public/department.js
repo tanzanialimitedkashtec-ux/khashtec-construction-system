@@ -37479,50 +37479,50 @@ function expenseControl(){
 
             <h4>Expense Overview</h4>
 
-            <div class="expense-stats" id="expenseOverviewStats" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin-top: 15px;">
-                <div class="metric-card" style="background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%); padding: 20px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border-left: 4px solid #2196F3; transition: transform 0.3s ease;">
-                    <h5 style="color: #666; font-size: 0.9rem; margin-top: 0; text-transform: uppercase; letter-spacing: 0.5px;">Monthly Budget</h5>
-                    <div class="metric-value" style="font-size: 1.8rem; font-weight: 700; color: #2c3e50; margin: 10px 0;">TZS <span id="expStatBudget">Loading...</span></div>
-                    <div class="metric-bar-container" style="background: #eef2f3; height: 8px; border-radius: 4px; margin: 10px 0 6px 0; overflow: hidden; position: relative;">
-                        <div class="metric-bar" style="background: #2196F3; height: 100%; width: 100%; border-radius: 4px; transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);"></div>
+            <div class="expense-stats" id="expenseOverviewStats" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; margin-top: 10px;">
+                <div class="metric-card" style="background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%); padding: 12px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); border-left: 3px solid #2196F3; transition: transform 0.2s ease;">
+                    <h5 style="color: #666; font-size: 0.75rem; margin-top: 0; margin-bottom: 5px; text-transform: uppercase; letter-spacing: 0.5px;">Monthly Budget</h5>
+                    <div class="metric-value" style="font-size: 1.2rem; font-weight: 700; color: #2c3e50; margin: 5px 0;">TZS <span id="expStatBudget">Loading...</span></div>
+                    <div class="metric-bar-container" style="background: #eef2f3; height: 6px; border-radius: 3px; margin: 8px 0 4px 0; overflow: hidden; position: relative;">
+                        <div class="metric-bar" style="background: #2196F3; height: 100%; width: 100%; border-radius: 3px; transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);"></div>
                     </div>
-                    <div class="metric-change" style="color: #7f8c8d; font-size: 0.75rem; font-weight: 600; display: flex; justify-content: space-between; align-items: center; margin-top: 6px;">
+                    <div class="metric-change" style="color: #7f8c8d; font-size: 0.65rem; font-weight: 600; display: flex; justify-content: space-between; align-items: center; margin-top: 4px;">
                         <span>Target allocation</span>
                         <span style="color: #2196F3;" id="expStatMonth">--</span>
                     </div>
                 </div>
 
-                <div class="metric-card" style="background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%); padding: 20px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border-left: 4px solid #F44336; transition: transform 0.3s ease;">
-                    <h5 style="color: #666; font-size: 0.9rem; margin-top: 0; text-transform: uppercase; letter-spacing: 0.5px;">Expenses This Month</h5>
-                    <div class="metric-value" style="font-size: 1.8rem; font-weight: 700; color: #2c3e50; margin: 10px 0;">TZS <span id="expStatUsed">Loading...</span></div>
-                    <div class="metric-bar-container" style="background: #eef2f3; height: 8px; border-radius: 4px; margin: 10px 0 6px 0; overflow: hidden; position: relative;">
-                        <div class="metric-bar" id="expStatUsedBar" style="background: #F44336; height: 100%; width: 0%; border-radius: 4px; transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);"></div>
+                <div class="metric-card" style="background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%); padding: 12px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); border-left: 3px solid #F44336; transition: transform 0.2s ease;">
+                    <h5 style="color: #666; font-size: 0.75rem; margin-top: 0; margin-bottom: 5px; text-transform: uppercase; letter-spacing: 0.5px;">Expenses This Month</h5>
+                    <div class="metric-value" style="font-size: 1.2rem; font-weight: 700; color: #2c3e50; margin: 5px 0;">TZS <span id="expStatUsed">Loading...</span></div>
+                    <div class="metric-bar-container" style="background: #eef2f3; height: 6px; border-radius: 3px; margin: 8px 0 4px 0; overflow: hidden; position: relative;">
+                        <div class="metric-bar" id="expStatUsedBar" style="background: #F44336; height: 100%; width: 0%; border-radius: 3px; transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);"></div>
                     </div>
-                    <div class="metric-change" style="color: #7f8c8d; font-size: 0.75rem; font-weight: 600; display: flex; justify-content: space-between; align-items: center; margin-top: 6px;">
+                    <div class="metric-change" style="color: #7f8c8d; font-size: 0.65rem; font-weight: 600; display: flex; justify-content: space-between; align-items: center; margin-top: 4px;">
                         <span>Current usage</span>
                         <span style="color: #F44336;" id="expStatPercent">--</span>
                     </div>
                 </div>
 
-                <div class="metric-card" style="background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%); padding: 20px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border-left: 4px solid #4CAF50; transition: transform 0.3s ease;">
-                    <h5 style="color: #666; font-size: 0.9rem; margin-top: 0; text-transform: uppercase; letter-spacing: 0.5px;">Remaining Budget</h5>
-                    <div class="metric-value" style="font-size: 1.8rem; font-weight: 700; color: #2c3e50; margin: 10px 0;">TZS <span id="expStatRemaining">Loading...</span></div>
-                    <div class="metric-bar-container" style="background: #eef2f3; height: 8px; border-radius: 4px; margin: 10px 0 6px 0; overflow: hidden; position: relative;">
-                        <div class="metric-bar" id="expStatRemainingBar" style="background: #4CAF50; height: 100%; width: 0%; border-radius: 4px; transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);"></div>
+                <div class="metric-card" style="background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%); padding: 12px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); border-left: 3px solid #4CAF50; transition: transform 0.2s ease;">
+                    <h5 style="color: #666; font-size: 0.75rem; margin-top: 0; margin-bottom: 5px; text-transform: uppercase; letter-spacing: 0.5px;">Remaining Budget</h5>
+                    <div class="metric-value" style="font-size: 1.2rem; font-weight: 700; color: #2c3e50; margin: 5px 0;">TZS <span id="expStatRemaining">Loading...</span></div>
+                    <div class="metric-bar-container" style="background: #eef2f3; height: 6px; border-radius: 3px; margin: 8px 0 4px 0; overflow: hidden; position: relative;">
+                        <div class="metric-bar" id="expStatRemainingBar" style="background: #4CAF50; height: 100%; width: 0%; border-radius: 3px; transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);"></div>
                     </div>
-                    <div class="metric-change" style="color: #7f8c8d; font-size: 0.75rem; font-weight: 600; display: flex; justify-content: space-between; align-items: center; margin-top: 6px;">
+                    <div class="metric-change" style="color: #7f8c8d; font-size: 0.65rem; font-weight: 600; display: flex; justify-content: space-between; align-items: center; margin-top: 4px;">
                         <span>Available balance</span>
                         <span style="color: #4CAF50;" id="expStatAvailable">--</span>
                     </div>
                 </div>
 
-                <div class="metric-card" style="background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%); padding: 20px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border-left: 4px solid #FF9800; transition: transform 0.3s ease;">
-                    <h5 style="color: #666; font-size: 0.9rem; margin-top: 0; text-transform: uppercase; letter-spacing: 0.5px;">Pending Confirmation</h5>
-                    <div class="metric-value" style="font-size: 1.8rem; font-weight: 700; color: #2c3e50; margin: 10px 0;" id="expStatPending">Loading...</div>
-                    <div class="metric-bar-container" style="background: #eef2f3; height: 8px; border-radius: 4px; margin: 10px 0 6px 0; overflow: hidden; position: relative;">
-                        <div class="metric-bar" style="background: #FF9800; height: 100%; width: 100%; border-radius: 4px; animation: pulse 2s infinite;"></div>
+                <div class="metric-card" style="background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%); padding: 12px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); border-left: 3px solid #FF9800; transition: transform 0.2s ease;">
+                    <h5 style="color: #666; font-size: 0.75rem; margin-top: 0; margin-bottom: 5px; text-transform: uppercase; letter-spacing: 0.5px;">Pending Confirmation</h5>
+                    <div class="metric-value" style="font-size: 1.2rem; font-weight: 700; color: #2c3e50; margin: 5px 0;" id="expStatPending">Loading...</div>
+                    <div class="metric-bar-container" style="background: #eef2f3; height: 6px; border-radius: 3px; margin: 8px 0 4px 0; overflow: hidden; position: relative;">
+                        <div class="metric-bar" style="background: #FF9800; height: 100%; width: 100%; border-radius: 3px; animation: pulse 2s infinite;"></div>
                     </div>
-                    <div class="metric-change" style="color: #7f8c8d; font-size: 0.75rem; font-weight: 600; display: flex; justify-content: space-between; align-items: center; margin-top: 6px;">
+                    <div class="metric-change" style="color: #7f8c8d; font-size: 0.65rem; font-weight: 600; display: flex; justify-content: space-between; align-items: center; margin-top: 4px;">
                         <span>Action required</span>
                         <span style="color: #FF9800;">Awaiting Review</span>
                     </div>
