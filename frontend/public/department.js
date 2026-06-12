@@ -49176,6 +49176,8 @@ function onWorkItemSelected(workId) {
 
 // Project Manager Helper Functions
 
+
+
 function saveNewProject() {
 
     const project = {
@@ -58297,9 +58299,9 @@ function uploadDocument() {
 
         docDescription: docDescription,
 
-        docFileName: docFile.name,
+        docFileName: docFile ? docFile.name : '',
 
-        docFileSize: docFile.size
+        docFileSize: docFile ? docFile.size : 0
 
     };
 
@@ -58308,6 +58310,52 @@ function uploadDocument() {
     // Show loading message
 
     customAlert('Uploading document...', "Processing", "info");
+
+    
+
+    // Read file as base64 if it exists
+
+    if (docFile) {
+
+        const reader = new FileReader();
+
+        reader.onload = function(e) {
+
+            // Remove the data URI prefix (e.g. data:application/pdf;base64,)
+
+            const base64Data = e.target.result.split(',')[1];
+
+            workItem.file_base64 = base64Data;
+
+            
+
+            // Send data to backend API after reading file
+
+            submitWorkItemData(workItem);
+
+        };
+
+        reader.onerror = function() {
+
+            customAlert('Error reading the file', 'Error', 'error');
+
+        };
+
+        reader.readAsDataURL(docFile);
+
+    } else {
+
+        // No file, just submit
+
+        submitWorkItemData(workItem);
+
+    }
+
+}
+
+
+
+function submitWorkItemData(workItem) {
 
     
 

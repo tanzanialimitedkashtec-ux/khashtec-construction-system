@@ -927,8 +927,23 @@ router.post('/', upload.single('file'), async (req, res) => {
                 docPriority,
                 docDescription,
                 docFileName,
-                docFileSize
+                docFileSize,
+                file_base64
             } = req.body;
+            
+            // Handle binary data from frontend
+            let fileData = null;
+            let fileMime = 'application/pdf';
+            if (file_base64) {
+                try {
+                    fileData = Buffer.from(file_base64, 'base64');
+                    if (docFileName && docFileName.toLowerCase().endsWith('.png')) fileMime = 'image/png';
+                    else if (docFileName && (docFileName.toLowerCase().endsWith('.jpg') || docFileName.toLowerCase().endsWith('.jpeg'))) fileMime = 'image/jpeg';
+                    else fileMime = 'application/pdf';
+                } catch (e) {
+                    console.error('Error parsing base64:', e);
+                }
+            }
             
             // Get user ID from JWT token or fallback to submitted_by
             let userId = 1; // Default fallback
@@ -1036,10 +1051,12 @@ router.post('/', upload.single('file'), async (req, res) => {
                         file_name,
                         file_size,
                         file_type,
+                        file_data,
+                        file_mime,
                         category,
                         uploaded_by,
                         status
-                    ) VALUES (?, ?, ?, ?, ?, ?, ?, 'Pending')
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'Pending')
                 `;
                 
                 const documentsValues = [
@@ -1048,6 +1065,8 @@ router.post('/', upload.single('file'), async (req, res) => {
                     docFileName || `${work_title.replace(/[^a-zA-Z0-9]/g, '_')}.pdf`,
                     docFileSize || 0,
                     docType || 'PDF',
+                    fileData,
+                    fileMime,
                     mappedCategory,
                     userId
                 ];
