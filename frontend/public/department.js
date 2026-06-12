@@ -11105,6 +11105,67 @@ function handleGeneratePayslips(event){
     return false;
 }
 
+// Render Payroll Chart
+function renderPayrollChart(monthlyPayroll, totalDeductions) {
+    const ctx = document.getElementById('payrollOverviewChart');
+    if (!ctx) return;
+    
+    if (window.payrollChartInstance) {
+        window.payrollChartInstance.destroy();
+    }
+
+    const netPayment = monthlyPayroll - totalDeductions;
+
+    window.payrollChartInstance = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: ['Gross Payroll', 'Total Deductions', 'Net Payment'],
+            datasets: [{
+                label: 'Amount (TZS)',
+                data: [monthlyPayroll, totalDeductions, netPayment],
+                backgroundColor: [
+                    'rgba(59, 130, 246, 0.7)',
+                    'rgba(239, 68, 68, 0.7)',
+                    'rgba(16, 185, 129, 0.7)'
+                ],
+                borderColor: [
+                    'rgb(59, 130, 246)',
+                    'rgb(239, 68, 68)',
+                    'rgb(16, 185, 129)'
+                ],
+                borderWidth: 1,
+                borderRadius: 4
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        callback: function(value) {
+                            if (value >= 1000000) return (value / 1000000).toFixed(1) + 'M';
+                            if (value >= 1000) return (value / 1000).toFixed(1) + 'k';
+                            return value;
+                        }
+                    }
+                }
+            },
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            return 'TZS ' + context.parsed.y.toLocaleString();
+                        }
+                    }
+                }
+            }
+        }
+    });
+}
+
 // Load all payroll data from the database
 function loadPayrollData() {
     const baseUrl = window.location.origin;
