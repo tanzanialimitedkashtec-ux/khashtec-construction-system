@@ -91161,7 +91161,7 @@ async function uploadCertificate() {
             uploaded_by: 1 // Default user for now
         };
         
-        console.log('📤 Request body:', { ...requestBody, file_base64: file_base64 ? 'present' : 'missing' });
+        console.log('📤 Request body:', { ...requestBody, file_base64: fileBase64 ? 'present' : 'missing' });
         
         const response = await fetch(`${baseUrl}/api/documents/upload`, {
 
