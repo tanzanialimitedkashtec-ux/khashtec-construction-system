@@ -85259,7 +85259,27 @@ function uploadDocument() {
 
     
 
-    // Send data to backend API
+    // Read file as base64 if it exists
+    if (docFile) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            // Remove the data URI prefix (e.g. data:application/pdf;base64,)
+            const base64Data = e.target.result.split(',')[1];
+            workItem.file_base64 = base64Data;
+            
+            // Send data to backend API after reading file
+            submitWorkItemDataHTMLLocal(workItem);
+        };
+        reader.onerror = function() {
+            customAlert('Error reading the file', 'Error', 'error');
+        };
+        reader.readAsDataURL(docFile);
+    } else {
+        submitWorkItemDataHTMLLocal(workItem);
+    }
+}
+
+function submitWorkItemDataHTMLLocal(workItem) {
 
     fetch('/api/documents', {
 
@@ -85307,7 +85327,7 @@ function uploadDocument() {
 
             documentId: data.id,
 
-            fileName: docFile.name,
+            fileName: workItem.docFileName,
 
             uploadDate: new Date().toLocaleString()
 
@@ -85403,7 +85423,7 @@ function uploadDocument() {
 
             message: `❌ Document upload failed!\n\n🔍 Error Cause: ${errorCause}\n\n🛠️ Troubleshooting:\n${troubleshooting}\n\n📝 Technical Details:\n${error.message}\n\n💡 Please fix the issue and try again.`,
 
-            fileName: docFile?.name || 'No file selected',
+            fileName: workItem.docFileName || 'No file selected',
 
             timestamp: new Date().toLocaleString()
 
@@ -91114,18 +91134,34 @@ async function uploadCertificate() {
 
     try {
         const baseUrl = window.location.origin;
+        
+        let fileBase64 = null;
+        if (certFile) {
+            fileBase64 = await new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = () => {
+                    const base64 = reader.result.split(',')[1];
+                    resolve(base64);
+                };
+                reader.onerror = reject;
+                reader.readAsDataURL(certFile);
+            });
+            console.log('File read as base64, length:', fileBase64.length);
+        }
+
         const requestBody = {
             type: certType,
             name: `${certType} Certificate`,
             filename: fileName,
             file_size: fileSize,
             mime_type: mimeType,
+            file_base64: fileBase64,
             expiry_date: certExpiry,
             description: certDescription,
             uploaded_by: 1 // Default user for now
         };
         
-        console.log('📤 Request body:', requestBody);
+        console.log('📤 Request body:', { ...requestBody, file_base64: file_base64 ? 'present' : 'missing' });
         
         const response = await fetch(`${baseUrl}/api/documents/upload`, {
 
