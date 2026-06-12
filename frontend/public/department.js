@@ -62067,6 +62067,10 @@ async function adminOperations(){
         documents.forEach(doc => {
             const statusClass = doc.status === 'Approved' ? 'active' : (doc.status === 'Draft' ? 'warning' : 'pending');
             const date = doc.updated_at ? new Date(doc.updated_at).toLocaleDateString() : 'N/A';
+            
+            const downloadUrl = window.location.origin + '/uploads/' + encodeURIComponent(doc.file_name || '');
+            const qrImageUrl = 'https://api.qrserver.com/v1/create-qr-code/?size=60x60&data=' + encodeURIComponent(downloadUrl);
+            
             docRows += `<tr>
                 <td>${doc.id}</td>
                 <td>${doc.title || 'N/A'}</td>
@@ -62074,10 +62078,15 @@ async function adminOperations(){
                 <td><span class="status-badge ${statusClass}">${doc.status || 'N/A'}</span></td>
                 <td>${doc.file_name || 'N/A'}</td>
                 <td>${date}</td>
+                <td style="text-align:center;">
+                    <a href="${downloadUrl}" target="_blank" title="Click or Scan to download">
+                        <img src="${qrImageUrl}" alt="QR" style="width:40px;height:40px;border-radius:4px;border:1px solid #ddd;padding:2px;background:#fff;transition:transform 0.2s;" onmouseover="this.style.transform='scale(1.2)'" onmouseout="this.style.transform='scale(1)'">
+                    </a>
+                </td>
             </tr>`;
         });
     } else {
-        docRows = '<tr><td colspan="6" style="text-align:center;">No document records found</td></tr>';
+        docRows = '<tr><td colspan="7" style="text-align:center;">No document records found</td></tr>';
     }
 
     // Build office resources table rows
@@ -62183,6 +62192,7 @@ async function adminOperations(){
                         <th>Status</th>
                         <th>File Name</th>
                         <th>Last Updated</th>
+                        <th style="text-align:center;">QR Download</th>
                     </tr>
                 </thead>
                 <tbody>
