@@ -1393,25 +1393,9 @@ router.get('/:id/download', async (req, res) => {
                         }
                     }
                     
-                    // 3) Last resort: generate an HTML summary page from metadata
-                    const mappedItem = {
-                        work_title: doc.title,
-                        work_description: doc.description,
-                        work_type: doc.category,
-                        department_code: 'admin',
-                        status: doc.status,
-                        submitted_date: doc.created_at ? new Date(doc.created_at).toISOString().split('T')[0] : new Date().toISOString().split('T')[0]
-                    };
-                    const pdfContent = generatePDF(mappedItem);
-                    const fileName = `${doc.title.replace(/[^a-zA-Z0-9\s]/g, '_').trim()}.pdf`;
-                    if (req.query.view === 'true') {
-                        res.setHeader('Content-Type', 'text/html; charset=utf-8');
-                    } else {
-                        res.setHeader('Content-Type', 'application/pdf');
-                        res.setHeader('Content-Disposition', `attachment; filename="${fileName}"`);
-                    }
-                    res.setHeader('Content-Length', Buffer.byteLength(pdfContent, 'utf8'));
-                    return res.send(pdfContent);
+                    // 3) Last resort: if file is completely missing, return an error rather than generating a description
+                    // Users expect the actual uploaded binary file. If it's missing (e.g. uploaded before file_data was supported), tell them.
+                    return res.status(404).send("The original uploaded file could not be found. If this was uploaded before binary storage was enabled, please re-upload the document.");
                 }
             } catch (docError) {
                 console.error('❌ Database error querying documents table:', docError);
