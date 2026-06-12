@@ -93,7 +93,6 @@ router.get('/', async (req, res) => {
                            monthly_installment, interest_rate, created_at
                     FROM financial_transactions 
                     WHERE type = 'Income' 
-                      AND (payment_method = 'installments' OR payment_method = 'installment')
                     ORDER BY created_at DESC
                 `);
                 const salesRows = normalizeRows(salesResult);
@@ -105,10 +104,28 @@ router.get('/', async (req, res) => {
                         const monthlyAmt = parseFloat(sale.monthly_installment) || 0;
                         const period = parseInt(sale.installment_period) || 12;
                         const saleDate = sale.transaction_date || sale.created_at;
-                        const monthsElapsed = saleDate ? Math.max(0, Math.floor((Date.now() - new Date(saleDate).getTime()) / (30.44 * 24 * 60 * 60 * 1000))) : 0;
-                        const paidSoFar = Math.min(totalAmt, downPmt + (monthlyAmt * Math.min(monthsElapsed, period)));
-                        const outstanding = Math.max(0, totalAmt - paidSoFar);
-                        const isCompleted = outstanding <= 0 || sale.status === 'completed';
+                        let paidSoFar, outstanding, isCompleted, nextPaymentDate;
+                        
+                        if (sale.payment_method === 'installments' || sale.payment_method === 'installment') {
+                            const monthsElapsed = saleDate ? Math.max(0, Math.floor((Date.now() - new Date(saleDate).getTime()) / (30.44 * 24 * 60 * 60 * 1000))) : 0;
+                            paidSoFar = Math.min(totalAmt, downPmt + (monthlyAmt * Math.min(monthsElapsed, period)));
+                            outstanding = Math.max(0, totalAmt - paidSoFar);
+                            isCompleted = outstanding <= 0 || sale.status === 'completed';
+                            
+                            if (!isCompleted && saleDate) {
+                                const nextMonth = new Date(saleDate);
+                                nextMonth.setMonth(nextMonth.getMonth() + monthsElapsed + 1);
+                                nextPaymentDate = nextMonth.toISOString().split('T')[0];
+                            } else {
+                                nextPaymentDate = null;
+                            }
+                        } else {
+                            // Non-installment payments (e.g. full-payment, bank-financing)
+                            isCompleted = sale.status === 'completed' || sale.status === 'Processed' || sale.status === 'Approved';
+                            paidSoFar = isCompleted ? totalAmt : (parseFloat(sale.down_payment) || 0);
+                            outstanding = Math.max(0, totalAmt - paidSoFar);
+                            nextPaymentDate = null;
+                        }
                         
                         // Parse client/property from description "Property Sale: {property} to {client}"
                         let clientName = 'Client';
@@ -120,22 +137,14 @@ router.get('/', async (req, res) => {
                             clientName = parts[1] || 'Client';
                         }
                         
-                        // Calculate next payment date
-                        let nextPaymentDate = null;
-                        if (!isCompleted && saleDate) {
-                            const nextMonth = new Date(saleDate);
-                            nextMonth.setMonth(nextMonth.getMonth() + monthsElapsed + 1);
-                            nextPaymentDate = nextMonth.toISOString().split('T')[0];
-                        }
-                        
                         return {
                             id: sale.id,
                             tracking_reference: `SALE-${sale.id}`,
                             transaction_type: 'sale',
                             amount: totalAmt,
                             currency: 'TZS',
-                            payment_method: 'installments',
-                            payment_status: isCompleted ? 'completed' : (monthsElapsed > 0 && paidSoFar > downPmt ? 'processing' : 'pending'),
+                            payment_method: sale.payment_method || 'full-payment',
+                            payment_status: isCompleted ? 'completed' : (paidSoFar > 0 ? 'processing' : 'pending'),
                             paid_by: clientName,
                             paid_to: 'KashTec Real Estate',
                             payment_date: saleDate,
