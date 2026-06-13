@@ -1181,45 +1181,95 @@ router.post('/', upload.single('file'), async (req, res) => {
 });
 
 // Update document
-router.put('/:id', (req, res) => {
-    // Ensure documents array exists
-    if (!documents || !Array.isArray(documents)) {
-        return res.status(500).json({
-            error: 'Document storage not initialized'
+router.put('/:id', async (req, res) => {
+    try {
+        const docId = req.params.id;
+        const { title, category, description, status } = req.body;
+        
+        // Try database first
+        let db;
+        try {
+            db = require('../../database/config/database');
+        } catch (e) {
+            console.warn('⚠️ Database module not available for PUT /:id', e.message);
+        }
+
+        if (db) {
+            let updated = false;
+
+            // 1. Try updating documents table
+            let updateDocsQuery = 'UPDATE documents SET ';
+            let docsParams = [];
+            if (title) { updateDocsQuery += 'title = ?, '; docsParams.push(title); }
+            if (category) { updateDocsQuery += 'category = ?, '; docsParams.push(category); }
+            if (description !== undefined) { updateDocsQuery += 'description = ?, '; docsParams.push(description); }
+            if (status) { updateDocsQuery += 'status = ?, '; docsParams.push(status); }
+
+            if (docsParams.length > 0) {
+                updateDocsQuery = updateDocsQuery.slice(0, -2) + ' WHERE id = ?';
+                docsParams.push(docId);
+                try {
+                    const result = await db.execute(updateDocsQuery, docsParams);
+                    const affected = Array.isArray(result) && result[0] ? result[0].affectedRows : (result && result.affectedRows);
+                    if (affected > 0) updated = true;
+                } catch (e) {
+                    console.error('Error updating documents table:', e);
+                }
+            }
+
+            // 2. Try updating admin_work table
+            let updateAdminQuery = 'UPDATE admin_work SET ';
+            let adminParams = [];
+            if (title) { updateAdminQuery += 'work_title = ?, '; adminParams.push(title); }
+            if (category) { updateAdminQuery += 'work_type = ?, '; adminParams.push(category); }
+            if (description !== undefined) { updateAdminQuery += 'work_description = ?, '; adminParams.push(description); }
+            if (status) { updateAdminQuery += 'status = ?, '; adminParams.push(status); }
+
+            if (adminParams.length > 0) {
+                updateAdminQuery = updateAdminQuery.slice(0, -2) + ' WHERE id = ?';
+                adminParams.push(docId);
+                try {
+                    const result = await db.execute(updateAdminQuery, adminParams);
+                    const affected = Array.isArray(result) && result[0] ? result[0].affectedRows : (result && result.affectedRows);
+                    if (affected > 0) updated = true;
+                } catch (e) {
+                    console.error('Error updating admin_work table:', e);
+                }
+            }
+
+            if (updated) {
+                return res.json({ message: 'Document updated successfully in database' });
+            }
+        }
+
+        // Fallback to memory array if DB is not available or no rows updated
+        if (!documents || !Array.isArray(documents)) {
+            return res.status(500).json({ error: 'Document storage not initialized' });
+        }
+        
+        const documentIndex = documents.findIndex(doc => doc.id === parseInt(docId));
+        
+        if (documentIndex === -1) {
+            return res.status(404).json({ error: 'Document not found' });
+        }
+        
+        const existingDocument = documents[documentIndex];
+        documents[documentIndex] = {
+            ...existingDocument,
+            ...(title && { title }),
+            ...(category && { category }),
+            ...(description !== undefined && { description }),
+            ...(status && { status })
+        };
+        
+        res.json({
+            message: 'Document updated successfully',
+            document: documents[documentIndex]
         });
+    } catch (err) {
+        console.error('Error in PUT /api/documents/:id:', err);
+        res.status(500).json({ error: 'Internal server error' });
     }
-    
-    const documentIndex = documents.findIndex(doc => doc.id === parseInt(req.params.id));
-    
-    if (documentIndex === -1) {
-        return res.status(404).json({
-            error: 'Document not found'
-        });
-    }
-    
-    // Ensure the document exists before spreading
-    const existingDocument = documents[documentIndex];
-    if (!existingDocument) {
-        return res.status(404).json({
-            error: 'Document not found at index'
-        });
-    }
-    
-    const { title, category, description, status } = req.body;
-    
-    // Update document with safe spread
-    documents[documentIndex] = {
-        ...existingDocument,
-        ...(title && { title }),
-        ...(category && { category }),
-        ...(description !== undefined && { description }),
-        ...(status && { status })
-    };
-    
-    res.json({
-        message: 'Document updated successfully',
-        document: documents[documentIndex]
-    });
 });
 
 // Delete document
