@@ -62053,6 +62053,27 @@ function payrollProcessing(){
                 </div>
                 <button type="submit" class="action" style="background: #28a745;">Confirm Payment</button>
             </form>
+            <div id="payEmployeeRecords" style="margin-top: 20px;">
+                <h5>Recent Payments</h5>
+                <div style="overflow-x: auto;">
+                    <table style="width:100%; border-collapse:collapse; margin-top:10px;" class="simple-table">
+                        <thead>
+                            <tr style="background:#f8f9fa;">
+                                <th style="padding:8px; border:1px solid #ddd; text-align:left;">Employee</th>
+                                <th style="padding:8px; border:1px solid #ddd; text-align:right;">Amount</th>
+                                <th style="padding:8px; border:1px solid #ddd; text-align:left;">Method</th>
+                                <th style="padding:8px; border:1px solid #ddd; text-align:left;">Date</th>
+                                <th style="padding:8px; border:1px solid #ddd; text-align:center;">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="payEmployeeTableBody">
+                            <tr id="no-payments-row">
+                                <td colspan="5" style="padding:8px; border:1px solid #ddd; text-align:center; color:#6c757d;">No recent payments in this session.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
         </div>
 
     </div>`);
@@ -110246,14 +110267,35 @@ function confirmPayEmployee(e) {
     const employeeId = employeeSelect.value;
     const employeeName = employeeSelect.options[employeeSelect.selectedIndex].text.split(' - ')[0];
     const amount = document.getElementById('payEmployeeAmount').value;
+    const methodSelect = document.getElementById('payEmployeeMethod');
+    const methodText = methodSelect.options[methodSelect.selectedIndex].text;
+    const paymentDate = document.getElementById('payEmployeeDate').value || new Date().toISOString().split('T')[0];
+
     if (!employeeId || !amount || amount === 'No salary structure found') {
         if(typeof customAlert === 'function') customAlert('Please select a valid employee with a salary structure.', 'Error', 'error');
         else alert('Please select a valid employee with a salary structure.');
         return false;
     }
-    if (confirm(`Are you sure you want to process payment of TZS ${amount} for ${employeeName}?`)) {
-        if(typeof customAlert === 'function') customAlert(`Payment of TZS ${amount} processed successfully for ${employeeName}.`, 'Success', 'success');
-        else alert(`Payment of TZS ${amount} processed successfully for ${employeeName}.`);
+    if (confirm(`Are you sure you want to process payment of ${amount} for ${employeeName}?`)) {
+        if(typeof customAlert === 'function') customAlert(`Payment of ${amount} processed successfully for ${employeeName}.`, 'Success', 'success');
+        else alert(`Payment of ${amount} processed successfully for ${employeeName}.`);
+        
+        const tbody = document.getElementById('payEmployeeTableBody');
+        const noPaymentsRow = document.getElementById('no-payments-row');
+        if (noPaymentsRow) noPaymentsRow.style.display = 'none';
+
+        if (tbody) {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td style="padding:8px; border:1px solid #ddd;">${employeeName}</td>
+                <td style="padding:8px; border:1px solid #ddd; text-align:right;">${amount}</td>
+                <td style="padding:8px; border:1px solid #ddd;">${methodText}</td>
+                <td style="padding:8px; border:1px solid #ddd;">${paymentDate}</td>
+                <td style="padding:8px; border:1px solid #ddd; text-align:center;"><span style="padding:2px 8px; border-radius:4px; background:#d4edda; color:#155724;">Processed</span></td>
+            `;
+            tbody.insertBefore(tr, tbody.firstChild);
+        }
+
         document.getElementById('payEmployeeForm').reset();
     }
     return false;
