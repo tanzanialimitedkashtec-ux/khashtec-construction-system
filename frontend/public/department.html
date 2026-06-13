@@ -110110,6 +110110,12 @@ async function uploadLeadershipPhoto(leaderId, inputElement) {
     const file = inputElement.files[0];
     if (!file) return;
 
+    if (file.size > 15 * 1024 * 1024) {
+        if (typeof customAlert === 'function') customAlert('File is too large. Please select an image under 15MB.', 'Error', 'error');
+        else alert('File is too large. Please select an image under 15MB.');
+        return;
+    }
+
     const formData = new FormData();
     formData.append('profileImage', file);
     formData.append('employeeId', leaderId);
@@ -110123,9 +110129,10 @@ async function uploadLeadershipPhoto(leaderId, inputElement) {
 
         const data = await response.json();
         if (data.success) {
+            const returnedPath = data.filePath || data.profileImage || `/api/profile-image/lead-${leaderId}?type=leader`;
             const imgElems = document.querySelectorAll(`[id="client-img-lead-${leaderId}"]`);
             imgElems.forEach(img => {
-                const basePath = data.profileImage.includes('?') ? data.profileImage : `${data.profileImage}?type=leader`;
+                const basePath = returnedPath.includes('?') ? returnedPath : `${returnedPath}?type=leader`;
                 img.src = basePath + (basePath.includes('?') ? '&' : '?') + 't=' + Date.now();
                 img.classList.add('loaded');
             });
