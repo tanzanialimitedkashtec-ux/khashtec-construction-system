@@ -65357,25 +65357,39 @@ async function loadOfficePortalData() {
 
         // Store data globally for other functions
 
+        // Load leadership records
+        let leadershipRecords = [];
+        try {
+            const leadershipResponse = await fetch(`${baseUrl}/api/leadership/leadership`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${sessionManager.getAuthToken()}`
+                }
+            });
+            
+            if (leadershipResponse.ok) {
+                const payload = await leadershipResponse.json();
+                leadershipRecords = payload?.data || payload?.leadership || payload?.records || payload || [];
+                if (!Array.isArray(leadershipRecords)) leadershipRecords = [];
+                console.log(`✅ Loaded ${leadershipRecords.length} leadership records for portal`);
+            }
+        } catch (error) {
+            console.error('❌ Error loading leadership records for portal:', error);
+        }
+
+        // Store data globally for other functions
         window.currentPortalData = {
-
             personnel: officePortalUsers,
-
             clients: clients,
-
             documents: documents,
-
             policies: policies,
-
-            contracts: contracts
-
+            contracts: contracts,
+            leadership: leadershipRecords
         };
 
-        
-
         // Render the portal with real data
-
-        renderOfficePortal(officePortalUsers, clients, documents, policies, contracts);
+        renderOfficePortal(officePortalUsers, clients, documents, policies, contracts, leadershipRecords);
 
         
 
@@ -65409,7 +65423,7 @@ async function loadOfficePortalData() {
 
 // Render office portal with loaded data
 
-function renderOfficePortal(officePortalUsers, clients, documents, policies, contracts) {
+function renderOfficePortal(officePortalUsers, clients, documents, policies, contracts, leadershipRecords = []) {
 
     
 
@@ -65666,6 +65680,35 @@ function renderOfficePortal(officePortalUsers, clients, documents, policies, con
         </div>
     `;
 
+    
+    // Generate HTML for leadership
+    const leadershipHTML = `
+        <div class="personnel-grid-cards">
+            ${leadershipRecords.map(leader => {
+                const name = leader.current_holder || leader.currentHolder || 'Unknown';
+                const letter = name.charAt(0).toUpperCase();
+                const colors = ['#667eea','#f093fb','#4facfe','#43e97b','#fa709a','#fee140','#a18cd1','#fbc2eb','#ff9a9e','#fad0c4','#ffecd2','#0ba360','#3cba92','#30cfd0','#38f9d7','#c471f5','#fa71cd','#9795f0','#fbc8d4','#a6c0fe'];
+                const colorIndex = letter.charCodeAt(0) % colors.length;
+                const bgColor = colors[colorIndex];
+                const id = leader.id || Math.random().toString(36).substr(2, 9);
+                return \`
+                <div class="personnel-card" data-department="\${leader.department || 'Management'}" data-role="\${leader.position || 'Leader'}" data-person-id="lead-\${id}">
+                    <div class="client-avatar-wrapper">
+                        <div class="client-letter-avatar" style="background:\${bgColor};" id="client-letter-lead-\${id}">\${letter}</div>
+                        <img class="client-real-avatar" id="client-img-lead-\${id}" src="/api/profile-image/lead-\${id}?type=leader" alt="\${name}" onerror="this.classList.remove('loaded');" onload="if(this.naturalWidth>0){this.classList.add('loaded');}">
+                    </div>
+                    <div class="name">\${name}</div>
+                    <div class="role">\${leader.position || 'Leader'}</div>
+                    <div class="dept">\${leader.department || 'Management'}</div>
+                    <div class="contact">
+                        <div class="contact-item" title="\${leader.reports_to || 'Board'}">👔 Reports To: \${leader.reports_to || 'Board'}</div>
+                        <div class="contact-item" title="\${leader.status || 'Active'}">📌 Status: \${leader.status || 'Active'}</div>
+                    </div>
+                </div>
+                \`;
+            }).join('')}
+        </div>
+    `;
 
     
 
@@ -65910,6 +65953,24 @@ function renderOfficePortal(officePortalUsers, clients, documents, policies, con
 
                 </div>
 
+            </div>
+
+            
+
+            <!-- Leadership Section -->
+            <div id="leadership-section" class="portal-section" style="display: none;">
+                <div class="section-header compact">
+                    <div class="section-title">
+                        <span class="section-icon">👑</span>
+                        <h4>Leadership Team</h4>
+                    </div>
+                    <div class="section-stats compact">
+                        <span class="stat-compact">${leadershipRecords.length} Leaders</span>
+                    </div>
+                </div>
+                <div class="personnel-grid">
+                    ${leadershipHTML}
+                </div>
             </div>
 
             
