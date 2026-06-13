@@ -61701,7 +61701,7 @@ function payrollProcessing(){
 
         
 
-        <div id="payrollOverview" class="tab-content">
+        <div id="payrollOverview" class="tab-content active">
 
             <h4>Payroll Overview</h4>
 
@@ -70666,6 +70666,79 @@ function updateOverviewStats(structures) {
     // Render salary structures table if container exists
     renderSalaryStructuresTable(structures);
 
+    // Calculate deductions
+    const totalDeductions = totalMonthly * 0.15; // standard deduction logic
+
+    // Render Chart
+    if (typeof Chart === 'undefined') {
+        const script = document.createElement('script');
+        script.src = 'https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js';
+        script.onload = () => renderPayrollChart(totalMonthly, totalDeductions);
+        document.head.appendChild(script);
+    } else {
+        renderPayrollChart(totalMonthly, totalDeductions);
+    }
+}
+
+// Render Payroll Chart
+function renderPayrollChart(monthlyPayroll, totalDeductions) {
+    const ctx = document.getElementById('payrollOverviewChart');
+    if (!ctx) return;
+    
+    if (window.payrollChartInstance) {
+        window.payrollChartInstance.destroy();
+    }
+
+    const netPayment = monthlyPayroll - totalDeductions;
+
+    window.payrollChartInstance = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: ['Gross Payroll', 'Total Deductions', 'Net Payment'],
+            datasets: [{
+                label: 'Amount (TZS)',
+                data: [monthlyPayroll, totalDeductions, netPayment],
+                backgroundColor: [
+                    'rgba(59, 130, 246, 0.7)',
+                    'rgba(239, 68, 68, 0.7)',
+                    'rgba(16, 185, 129, 0.7)'
+                ],
+                borderColor: [
+                    'rgb(59, 130, 246)',
+                    'rgb(239, 68, 68)',
+                    'rgb(16, 185, 129)'
+                ],
+                borderWidth: 1,
+                borderRadius: 4
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        callback: function(value) {
+                            if (value >= 1000000) return (value / 1000000).toFixed(1) + 'M';
+                            if (value >= 1000) return (value / 1000).toFixed(1) + 'k';
+                            return value;
+                        }
+                    }
+                }
+            },
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            return 'TZS ' + context.parsed.y.toLocaleString();
+                        }
+                    }
+                }
+            }
+        }
+    });
 }
 
 function populatePayrollMonthDropdowns(records) {
