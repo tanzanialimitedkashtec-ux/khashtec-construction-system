@@ -65691,21 +65691,21 @@ function renderOfficePortal(officePortalUsers, clients, documents, policies, con
                 const colorIndex = letter.charCodeAt(0) % colors.length;
                 const bgColor = colors[colorIndex];
                 const id = leader.id || Math.random().toString(36).substr(2, 9);
-                return \`
-                <div class="personnel-card" data-department="\${leader.department || 'Management'}" data-role="\${leader.position || 'Leader'}" data-person-id="lead-\${id}">
+                return `
+                <div class="personnel-card" data-department="${leader.department || 'Management'}" data-role="${leader.position || 'Leader'}" data-person-id="lead-${id}">
                     <div class="client-avatar-wrapper">
-                        <div class="client-letter-avatar" style="background:\${bgColor};" id="client-letter-lead-\${id}">\${letter}</div>
-                        <img class="client-real-avatar" id="client-img-lead-\${id}" src="/api/profile-image/lead-\${id}?type=leader" alt="\${name}" onerror="this.classList.remove('loaded');" onload="if(this.naturalWidth>0){this.classList.add('loaded');}">
+                        <div class="client-letter-avatar" style="background:${bgColor};" id="client-letter-lead-${id}">${letter}</div>
+                        <img class="client-real-avatar" id="client-img-lead-${id}" src="/api/profile-image/lead-${id}?type=leader" alt="${name}" onerror="this.classList.remove('loaded');" onload="if(this.naturalWidth>0){this.classList.add('loaded');}">
                     </div>
-                    <div class="name">\${name}</div>
-                    <div class="role">\${leader.position || 'Leader'}</div>
-                    <div class="dept">\${leader.department || 'Management'}</div>
+                    <div class="name">${name}</div>
+                    <div class="role">${leader.position || 'Leader'}</div>
+                    <div class="dept">${leader.department || 'Management'}</div>
                     <div class="contact">
-                        <div class="contact-item" title="\${leader.reports_to || 'Board'}">👔 Reports To: \${leader.reports_to || 'Board'}</div>
-                        <div class="contact-item" title="\${leader.status || 'Active'}">📌 Status: \${leader.status || 'Active'}</div>
+                        <div class="contact-item" title="${leader.reports_to || 'Board'}">👔 Reports To: ${leader.reports_to || 'Board'}</div>
+                        <div class="contact-item" title="${leader.status || 'Active'}">📌 Status: ${leader.status || 'Active'}</div>
                     </div>
                 </div>
-                \`;
+                `;
             }).join('')}
         </div>
     `;
