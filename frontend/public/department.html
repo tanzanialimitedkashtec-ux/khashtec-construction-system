@@ -89123,17 +89123,22 @@ async function adminOperations(){
     let docRows = '';
     if (documents.length > 0) {
         documents.forEach(doc => {
-            const statusClass = doc.status === 'Approved' ? 'active' : (doc.status === 'Draft' ? 'warning' : 'pending');
+            const isApprovedOrActive = doc.status === 'Approved' || doc.status === 'Active';
+            const statusClass = isApprovedOrActive ? 'active' : (doc.status === 'Draft' ? 'warning' : 'pending');
             const date = doc.updated_at ? new Date(doc.updated_at).toLocaleDateString() : 'N/A';
             
             const downloadUrl = window.location.origin + '/api/documents/' + doc.id + '/download?view=true';
             const qrImageUrl = 'https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=' + encodeURIComponent(downloadUrl);
             
+            const badgeHtml = (doc.status === 'Pending' || doc.status === 'Draft') 
+                ? `<span class="status-badge ${statusClass}" style="cursor:pointer;" onclick="approveAdminDocument(${doc.id})" title="Click to approve/activate">${doc.status || 'N/A'}</span>`
+                : `<span class="status-badge ${statusClass}">${doc.status || 'N/A'}</span>`;
+
             docRows += `<tr>
                 <td>${doc.id}</td>
                 <td>${doc.title || 'N/A'}</td>
                 <td>${doc.category || 'N/A'}</td>
-                <td><span class="status-badge ${statusClass}">${doc.status || 'N/A'}</span></td>
+                <td>${badgeHtml}</td>
                 <td>${doc.file_name || 'N/A'}</td>
                 <td>${date}</td>
                 <td style="text-align:center;">
@@ -89281,6 +89286,32 @@ async function adminOperations(){
         </div>
     </div>`);
 
+}
+
+async function approveAdminDocument(docId) {
+    if (!confirm('Are you sure you want to approve this document and mark it as Active?')) return;
+    try {
+        const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+        const baseUrl = window.location.origin;
+        const response = await fetch(`${baseUrl}/api/documents/${docId}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+            },
+            body: JSON.stringify({ status: 'Active' })
+        });
+        if (response.ok) {
+            alert('Document approved successfully!');
+            adminOperations(); // Reload the data
+        } else {
+            const data = await response.json();
+            alert('Failed to approve document: ' + (data.error || 'Unknown error'));
+        }
+    } catch (err) {
+        console.error(err);
+        alert('An error occurred while approving the document.');
+    }
 }
 
 
@@ -98409,13 +98440,19 @@ async function updateFilingSystem() {
     let docRows = '';
     if (documents.length > 0) {
         documents.forEach(doc => {
-            const statusClass = doc.status === 'Approved' ? 'active' : (doc.status === 'Draft' ? 'warning' : 'pending');
+            const isApprovedOrActive = doc.status === 'Approved' || doc.status === 'Active';
+            const statusClass = isApprovedOrActive ? 'active' : (doc.status === 'Draft' ? 'warning' : 'pending');
             const date = doc.updated_at ? new Date(doc.updated_at).toLocaleDateString() : 'N/A';
+            
+            const badgeHtml = (doc.status === 'Pending' || doc.status === 'Draft') 
+                ? `<span class="status-badge ${statusClass}" style="cursor:pointer;" onclick="approveAdminDocument(${doc.id})" title="Click to approve/activate">${doc.status || 'N/A'}</span>`
+                : `<span class="status-badge ${statusClass}">${doc.status || 'N/A'}</span>`;
+
             docRows += `<tr>
                 <td>${doc.id}</td>
                 <td>${doc.title || 'N/A'}</td>
                 <td>${doc.category || 'N/A'}</td>
-                <td><span class="status-badge ${statusClass}">${doc.status || 'N/A'}</span></td>
+                <td>${badgeHtml}</td>
                 <td>${doc.file_name || 'N/A'}</td>
                 <td>${date}</td>
             </tr>`;
