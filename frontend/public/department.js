@@ -1797,11 +1797,15 @@ function approveRecruitmentPolicies(){
 
                 <h3>Approve Recruitment Policies</h3>
 
-                <button type="button" id="togglePolicySearchBtn" onclick="togglePolicySearch()" class="action" style="background: #007bff;">
+            </div>
 
-                    ðŸ” Search & Filter Policies
+            
 
-                </button>
+            <div style="margin-bottom: 20px; display: flex; gap: 10px; align-items: center;">
+
+                <input type="text" id="policySearchInput" placeholder="Search by Title, Submitter, Status..." oninput="filterPolicies()" style="padding: 10px 15px; border: 1px solid #ddd; border-radius: 6px; flex: 1; font-size: 14px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+
+                <button onclick="clearPolicySearch()" style="padding: 10px 20px; background: #6c757d; color: #fff; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: 500;">Clear</button>
 
             </div>
 
@@ -1849,47 +1853,10 @@ function approveRecruitmentPolicies(){
 
             
 
-            <div id="policySearchContainer" style="display: none;">
-
-                <div class="form-header">
-
-                    <h4>Policy Search and Management Interface</h4>
-
-                    <p>Review and approve comprehensive recruitment policies and procedures with detailed filtering capabilities. Search policies by title, description, or submitter. Ensure proper policy governance and organizational compliance through systematic review and approval processes.</p>
-
-                </div>
-
-                
-
-                <div class="policy-section">
-
-                    <div class="search-container" style="margin-bottom: 20px;">
-
-                        <input type="text" id="policySearchInput" placeholder="ðŸ” Search policies by title, description, or submitter..." 
-
-                               style="width: 100%; padding: 6px; border: 2px solid #ddd; border-radius: 2px; font-size: 9px; box-sizing: border-box;"
-
-                               onkeyup="filterPolicies()" />
-
-                        <div id="searchResults" style="margin-top: 5px; font-size: 12px; color: #666;"></div>
-
-                    </div>
-
-                    
-
-                    <div class="form-actions">
-
-                        <button type="button" class="action" onclick="clearPolicySearch()" style="background: #6c757d;">Clear Search</button>
-
-                        <button type="button" class="action" onclick="togglePolicySearch()" style="background: #dc3545;">Close Search</button>
-
-                    </div>
-
-                </div>
-
+            <div style="margin-bottom: 20px; display: flex; gap: 10px; align-items: center;">
+                <input type="text" id="policySearchInput" placeholder="Search by Title, Submitter, Status..." oninput="filterPolicies()" style="padding: 10px 15px; border: 1px solid #ddd; border-radius: 6px; flex: 1; font-size: 14px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+                <button onclick="clearPolicySearch()" style="padding: 10px 20px; background: #6c757d; color: #fff; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: 500;">Clear</button>
             </div>
-
-            
 
             <div class="policy-section">
 
@@ -2695,14 +2662,16 @@ function filterPolicies() {
 
     // Update search results count
 
-    if (searchTerm) {
+    if (searchResults) {
+        if (searchTerm) {
 
-        searchResults.textContent = `Found ${filteredPolicies.length} policy(ies) matching "${searchTerm}"`;
+            searchResults.textContent = `Found ${filteredPolicies.length} policy(ies) matching "${searchTerm}"`;
 
-    } else {
+        } else {
 
-        searchResults.textContent = '';
+            searchResults.textContent = '';
 
+        }
     }
 
     
