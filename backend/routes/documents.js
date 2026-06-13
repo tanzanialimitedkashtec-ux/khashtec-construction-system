@@ -1203,7 +1203,14 @@ router.put('/:id', async (req, res) => {
             if (title) { updateDocsQuery += 'title = ?, '; docsParams.push(title); }
             if (category) { updateDocsQuery += 'category = ?, '; docsParams.push(category); }
             if (description !== undefined) { updateDocsQuery += 'description = ?, '; docsParams.push(description); }
-            if (status) { updateDocsQuery += 'status = ?, '; docsParams.push(status); }
+            if (status) { 
+                let docsStatus = status;
+                if (status.toLowerCase() === 'active' || status.toLowerCase() === 'completed') {
+                    docsStatus = 'Approved';
+                }
+                updateDocsQuery += 'status = ?, '; 
+                docsParams.push(docsStatus); 
+            }
 
             if (docsParams.length > 0) {
                 updateDocsQuery = updateDocsQuery.slice(0, -2) + ' WHERE id = ?';
@@ -1223,7 +1230,14 @@ router.put('/:id', async (req, res) => {
             if (title) { updateAdminQuery += 'work_title = ?, '; adminParams.push(title); }
             if (category) { updateAdminQuery += 'work_type = ?, '; adminParams.push(category); }
             if (description !== undefined) { updateAdminQuery += 'work_description = ?, '; adminParams.push(description); }
-            if (status) { updateAdminQuery += 'status = ?, '; adminParams.push(status); }
+            if (status) { 
+                let adminStatus = status;
+                if (status.toLowerCase() === 'active' || status.toLowerCase() === 'approved') {
+                    adminStatus = 'Completed';
+                }
+                updateAdminQuery += 'status = ?, '; 
+                adminParams.push(adminStatus); 
+            }
 
             if (adminParams.length > 0) {
                 updateAdminQuery = updateAdminQuery.slice(0, -2) + ' WHERE id = ?';
