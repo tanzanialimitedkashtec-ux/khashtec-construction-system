@@ -92646,9 +92646,9 @@ function renderOfficePortal(officePortalUsers, clients, portalDrivers, documents
                 <div class="personnel-card" data-department="${leader.department || 'Management'}" data-role="${leader.position || 'Leader'}" data-person-id="lead-${id}">
                     <div class="client-avatar-wrapper">
                         <div class="client-letter-avatar" style="background:${bgColor};" id="client-letter-lead-${id}">${letter}</div>
-                        <img class="client-real-avatar" id="client-img-lead-${id}" src="/api/profile-image/lead-${id}?type=leader" alt="${name}" onerror="this.classList.remove('loaded'); document.getElementById('upload-btn-lead-${id}').style.display='block';" onload="if(this.naturalWidth>0){this.classList.add('loaded'); document.getElementById('upload-btn-lead-${id}').style.display='none';}">
+                        <img class="client-real-avatar" id="client-img-lead-${id}" src="/api/profile-image/lead-${id}?type=leader" alt="${name}" onerror="this.classList.remove('loaded');" onload="if(this.naturalWidth>0){this.classList.add('loaded');}">
                         <input type="file" id="upload-input-lead-${id}" accept="image/*" style="display:none" onchange="uploadLeadershipPhoto('${id}', this)">
-                        <button class="upload-btn" id="upload-btn-lead-${id}" onclick="document.getElementById('upload-input-lead-${id}').click()" title="Upload Photo" style="display: none; position: absolute; bottom: -10px; right: -10px; border-radius: 50%; width: 30px; height: 30px; background: white; border: 1px solid #ccc; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.2); z-index: 10;">📷</button>
+                        <button class="upload-btn" id="upload-btn-lead-${id}" onclick="document.getElementById('upload-input-lead-${id}').click()" title="Upload Photo" style="display: block; position: absolute; bottom: -10px; right: -10px; border-radius: 50%; width: 30px; height: 30px; background: white; border: 1px solid #ccc; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.2); z-index: 10;">📷</button>
                     </div>
                     <div class="name">${name}</div>
                     <div class="role">${leader.position || 'Leader'}</div>
