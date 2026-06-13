@@ -4500,7 +4500,76 @@ app.post('/api/clients/:id/upload-photo', (req, res, next) => {
     }
 });
 
+// Leadership profile image upload (also handles general office-portal upload)
+app.post('/api/office-portal/upload/profile-image', (req, res, next) => {
+    upload.single('profileImage')(req, res, (err) => {
+        if (err) {
+            console.error('❌ Leadership photo upload error:', err.message);
+            return res.status(400).json({ success: false, error: 'File upload failed', details: err.message });
+        }
+        next();
+    });
+}, async (req, res) => {
+    try {
+        const file = req.file;
+        const { employeeId, type } = req.body;
 
+        if (!file) {
+            return res.status(400).json({ success: false, error: 'No image file provided' });
+        }
+
+        if (!employeeId) {
+            return res.status(400).json({ success: false, error: 'Employee ID is required' });
+        }
+
+        const db = require('./database/config/database');
+        const mimeType = file.mimetype;
+        let fileBuffer = null;
+        try {
+            fileBuffer = require('fs').readFileSync(file.path);
+        } catch (readErr) {
+            console.warn('⚠️ Could not read uploaded file for BLOB:', readErr.message);
+        }
+
+        const isLeader = type === 'leader';
+        const filePath = fileBuffer
+            ? `/api/profile-image/${isLeader ? 'lead-' + employeeId : employeeId}${isLeader ? '?type=leader' : ''}`
+            : `/uploads/profiles/${file.filename}`;
+
+        try {
+            if (isLeader) {
+                await db.execute(
+                    'UPDATE leadership_management SET profile_image = ?, profile_image_data = ?, profile_image_mime = ? WHERE id = ?',
+                    [filePath, fileBuffer, mimeType, employeeId]
+                );
+            } else {
+                await db.execute(
+                    'UPDATE employee_details SET profile_image = ?, profile_image_data = ?, profile_image_mime = ? WHERE employee_id = ?',
+                    [filePath, fileBuffer, mimeType, employeeId]
+                );
+            }
+        } catch (blobErr) {
+            console.warn('⚠️ BLOB update failed, retrying path-only:', blobErr.message);
+            if (isLeader) {
+                await db.execute('UPDATE leadership_management SET profile_image = ? WHERE id = ?', [filePath, employeeId]);
+            } else {
+                await db.execute('UPDATE employee_details SET profile_image = ? WHERE employee_id = ?', [filePath, employeeId]);
+            }
+        }
+
+        console.log('✅ Profile image uploaded successfully:', filePath, 'type:', type, 'BLOB stored:', !!fileBuffer);
+
+        res.json({
+            success: true,
+            message: 'Profile image uploaded successfully',
+            filePath: filePath,
+            profileImage: filePath
+        });
+    } catch (error) {
+        console.error('❌ Error uploading profile image:', error);
+        res.status(500).json({ success: false, error: 'Failed to upload profile image', details: error.message });
+    }
+});
 
 // Database health check
 
