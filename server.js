@@ -363,6 +363,12 @@ app.get('/api/profile-image/:employeeId', async (req, res) => {
                 'SELECT profile_image, profile_image_data, profile_image_mime FROM clients WHERE id = ? LIMIT 1',
                 [req.params.employeeId]
             );
+        } else if (req.query.type === 'leader') {
+            const leaderId = req.params.employeeId.startsWith('lead-') ? req.params.employeeId.replace('lead-', '') : req.params.employeeId;
+            dbResult = await db.execute(
+                'SELECT profile_image, profile_image_data, profile_image_mime FROM leadership_management WHERE id = ? LIMIT 1',
+                [leaderId]
+            );
         } else {
             dbResult = await db.execute(
                 'SELECT profile_image, profile_image_data, profile_image_mime FROM employee_details WHERE employee_id = ? LIMIT 1',

@@ -736,22 +736,31 @@ router.post('/upload/profile-image', upload.single('profileImage'), async (req, 
             catch (readErr) { console.warn('⚠️ Could not read uploaded file for BLOB:', readErr.message); }
 
             // Prefer DB-backed URL so it works after redeploys; fall back to disk URL
+            const isLeader = req.body.type === 'leader';
             const filePath = imageBuffer
-                ? `/api/profile-image/${employeeId}`
+                ? `/api/profile-image/${isLeader ? 'lead-' + employeeId : employeeId}${isLeader ? '?type=leader' : ''}`
                 : `/uploads/profiles/${req.file.filename}`;
 
             // Try BLOB-aware update first; gracefully fall back if columns aren't present
             try {
-                await db.execute(
-                    'UPDATE employee_details SET profile_image = ?, profile_image_data = ?, profile_image_mime = ? WHERE employee_id = ?',
-                    [filePath, imageBuffer, imageMime, employeeId]
-                );
+                if (isLeader) {
+                    await db.execute(
+                        'UPDATE leadership_management SET profile_image = ?, profile_image_data = ?, profile_image_mime = ? WHERE id = ?',
+                        [filePath, imageBuffer, imageMime, employeeId]
+                    );
+                } else {
+                    await db.execute(
+                        'UPDATE employee_details SET profile_image = ?, profile_image_data = ?, profile_image_mime = ? WHERE employee_id = ?',
+                        [filePath, imageBuffer, imageMime, employeeId]
+                    );
+                }
             } catch (blobErr) {
                 console.warn('⚠️ BLOB update failed, retrying path-only:', blobErr.message);
-                await db.execute(
-                    'UPDATE employee_details SET profile_image = ? WHERE employee_id = ?',
-                    [filePath, employeeId]
-                );
+                if (isLeader) {
+                    await db.execute('UPDATE leadership_management SET profile_image = ? WHERE id = ?', [filePath, employeeId]);
+                } else {
+                    await db.execute('UPDATE employee_details SET profile_image = ? WHERE employee_id = ?', [filePath, employeeId]);
+                }
             }
 
             // Also update users table if needed

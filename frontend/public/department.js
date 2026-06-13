@@ -65695,7 +65695,9 @@ function renderOfficePortal(officePortalUsers, clients, documents, policies, con
                 <div class="personnel-card" data-department="${leader.department || 'Management'}" data-role="${leader.position || 'Leader'}" data-person-id="lead-${id}">
                     <div class="client-avatar-wrapper">
                         <div class="client-letter-avatar" style="background:${bgColor};" id="client-letter-lead-${id}">${letter}</div>
-                        <img class="client-real-avatar" id="client-img-lead-${id}" src="/api/profile-image/lead-${id}?type=leader" alt="${name}" onerror="this.classList.remove('loaded');" onload="if(this.naturalWidth>0){this.classList.add('loaded');}">
+                        <img class="client-real-avatar" id="client-img-lead-${id}" src="/api/profile-image/lead-${id}?type=leader" alt="${name}" onerror="this.classList.remove('loaded'); document.getElementById('upload-btn-lead-${id}').style.display='block';" onload="if(this.naturalWidth>0){this.classList.add('loaded'); document.getElementById('upload-btn-lead-${id}').style.display='none';}">
+                        <input type="file" id="upload-input-lead-${id}" accept="image/*" style="display:none" onchange="uploadLeadershipPhoto('${id}', this)">
+                        <button class="upload-btn" id="upload-btn-lead-${id}" onclick="document.getElementById('upload-input-lead-${id}').click()" title="Upload Photo" style="display: none; position: absolute; bottom: -10px; right: -10px; border-radius: 50%; width: 30px; height: 30px; background: white; border: 1px solid #ccc; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.2); z-index: 10;">📷</button>
                     </div>
                     <div class="name">${name}</div>
                     <div class="role">${leader.position || 'Leader'}</div>
@@ -79947,4 +79949,48 @@ function filterIncidentTable() {
 function clearIncidentSearch() {
     var input = document.getElementById("incidentSearchInput");
     if (input) { input.value = ""; filterIncidentTable(); }
+}
+
+async function uploadLeadershipPhoto(leaderId, inputElement) {
+    const file = inputElement.files[0];
+    if (!file) return;
+
+    const formData = new FormData();
+    formData.append('profileImage', file);
+    formData.append('employeeId', leaderId);
+    formData.append('type', 'leader');
+
+    try {
+        const response = await fetch('/api/office-portal/upload/profile-image', {
+            method: 'POST',
+            body: formData
+        });
+
+        const data = await response.json();
+        if (data.success) {
+            const imgElems = document.querySelectorAll(`[id="client-img-lead-${leaderId}"]`);
+            imgElems.forEach(img => {
+                const basePath = data.profileImage.includes('?') ? data.profileImage : `${data.profileImage}?type=leader`;
+                img.src = basePath + (basePath.includes('?') ? '&' : '?') + 't=' + Date.now();
+                img.classList.add('loaded');
+            });
+            const btnElems = document.querySelectorAll(`[id="upload-btn-lead-${leaderId}"]`);
+            btnElems.forEach(btn => btn.style.display = 'none');
+            
+            if (typeof showNotification === 'function') {
+                showNotification('Success', 'Leadership profile photo updated', 'success');
+            } else if (typeof customAlert === 'function') {
+                customAlert('Leadership profile photo updated successfully!', 'Success', 'success');
+            } else {
+                alert('Leadership profile photo updated successfully!');
+            }
+        } else {
+            if (typeof customAlert === 'function') customAlert(data.error || 'Failed to upload photo', 'Error', 'error');
+            else alert(data.error || 'Failed to upload photo');
+        }
+    } catch (error) {
+        console.error('Error uploading leadership photo:', error);
+        if (typeof customAlert === 'function') customAlert('An unexpected error occurred', 'Error', 'error');
+        else alert('An unexpected error occurred');
+    }
 }
