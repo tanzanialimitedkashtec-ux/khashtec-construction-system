@@ -192,7 +192,7 @@ function showFinancialStrategiesForm() {
                     <h4 style="margin: 0;">📋 Recorded Financial Strategies</h4>
                     <button type="button" class="action" style="background: #0b3d91;" onclick="loadFinancialStrategies()">🔄 Refresh Data</button>
                 </div>
-                <div style="overflow: auto; border: 1px solid #dee2e6; border-radius: 5px;">
+                <div style="overflow-x: auto; border: 1px solid #dee2e6; border-radius: 5px; white-space: nowrap;">
                     <table id="financialStrategiesTable" style="width: 100%; border-collapse: collapse; text-align: left; font-size: 11px;">
                         <thead>
                             <tr style="background: #f8f9fa;">
@@ -202,7 +202,15 @@ function showFinancialStrategiesForm() {
                                 <th style="padding: 8px; border-bottom: 1px solid #dee2e6;">Permits/Fees</th>
                                 <th style="padding: 8px; border-bottom: 1px solid #dee2e6;">Contingency (%)</th>
                                 <th style="padding: 8px; border-bottom: 1px solid #dee2e6;">Total Cost (Est)</th>
+                                <th style="padding: 8px; border-bottom: 1px solid #dee2e6;">Dev. Equity</th>
+                                <th style="padding: 8px; border-bottom: 1px solid #dee2e6;">Bank Loan</th>
+                                <th style="padding: 8px; border-bottom: 1px solid #dee2e6;">Interest Rate (%)</th>
+                                <th style="padding: 8px; border-bottom: 1px solid #dee2e6;">Repayment (Yrs)</th>
+                                <th style="padding: 8px; border-bottom: 1px solid #dee2e6;">Grace Pd (Mo)</th>
                                 <th style="padding: 8px; border-bottom: 1px solid #dee2e6;">Strategy</th>
+                                <th style="padding: 8px; border-bottom: 1px solid #dee2e6;">Selling Price/Unit</th>
+                                <th style="padding: 8px; border-bottom: 1px solid #dee2e6;">Monthly Rent/Unit</th>
+                                <th style="padding: 8px; border-bottom: 1px solid #dee2e6;">Occupancy (%)</th>
                                 <th style="padding: 8px; border-bottom: 1px solid #dee2e6;">Target ROI (%)</th>
                                 <th style="padding: 8px; border-bottom: 1px solid #dee2e6;">Target IRR (%)</th>
                                 <th style="padding: 8px; border-bottom: 1px solid #dee2e6;">Min DSCR</th>
@@ -211,7 +219,7 @@ function showFinancialStrategiesForm() {
                         </thead>
                         <tbody id="financialStrategiesTbody">
                             <tr>
-                                <td colspan="11" style="text-align: center; padding: 10px;">Loading records...</td>
+                                <td colspan="19" style="text-align: center; padding: 10px;">Loading records...</td>
                             </tr>
                         </tbody>
                     </table>
@@ -425,7 +433,7 @@ async function submitFinancialStrategiesForm(event) {
 async function loadFinancialStrategies() {
     try {
         const tbody = document.getElementById('financialStrategiesTbody');
-        tbody.innerHTML = '<tr><td colspan="11" style="text-align: center; padding: 10px;">Loading records...</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="19" style="text-align: center; padding: 10px;">Loading records...</td></tr>';
         
         const response = await fetch('/api/financial-strategies', {
             headers: {
@@ -436,13 +444,13 @@ async function loadFinancialStrategies() {
         const resData = await response.json();
         
         if (!response.ok || !resData.success) {
-            tbody.innerHTML = `<tr><td colspan="11" style="text-align: center; padding: 10px; color: red;">Failed to load records.</td></tr>`;
+            tbody.innerHTML = `<tr><td colspan="19" style="text-align: center; padding: 10px; color: red;">Failed to load records.</td></tr>`;
             return;
         }
 
         const records = resData.data;
         if (!records || records.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="11" style="text-align: center; padding: 10px;">No financial strategies found.</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="19" style="text-align: center; padding: 10px;">No financial strategies found.</td></tr>';
             return;
         }
 
@@ -457,17 +465,25 @@ async function loadFinancialStrategies() {
             const totalCost = baseCost + (baseCost * (contPercent/100));
             
             html += `<tr>
-                <td style="padding: 8px; border-bottom: 1px solid #dee2e6;">${r.project_name || ('Project ' + r.project_id)}</td>
-                <td style="padding: 8px; border-bottom: 1px solid #dee2e6;">TZS ${land.toLocaleString()}</td>
-                <td style="padding: 8px; border-bottom: 1px solid #dee2e6;">TZS ${construction.toLocaleString()}</td>
-                <td style="padding: 8px; border-bottom: 1px solid #dee2e6;">TZS ${fees.toLocaleString()}</td>
-                <td style="padding: 8px; border-bottom: 1px solid #dee2e6;">${contPercent}%</td>
-                <td style="padding: 8px; border-bottom: 1px solid #dee2e6;">TZS ${totalCost.toLocaleString()}</td>
-                <td style="padding: 8px; border-bottom: 1px solid #dee2e6;">${r.revenue_strategy === 'build_to_sell' ? 'Build to Sell' : 'Build to Rent'}</td>
-                <td style="padding: 8px; border-bottom: 1px solid #dee2e6;">${r.target_roi_percent}%</td>
-                <td style="padding: 8px; border-bottom: 1px solid #dee2e6;">${r.target_irr_percent}%</td>
-                <td style="padding: 8px; border-bottom: 1px solid #dee2e6;">${r.minimum_dscr}</td>
-                <td style="padding: 8px; border-bottom: 1px solid #dee2e6;">${new Date(r.created_at).toLocaleDateString()}</td>
+                <td style="padding: 8px; border-bottom: 1px solid #dee2e6; white-space: nowrap;">${r.project_name || ('Project ' + r.project_id)}</td>
+                <td style="padding: 8px; border-bottom: 1px solid #dee2e6; white-space: nowrap;">TZS ${land.toLocaleString()}</td>
+                <td style="padding: 8px; border-bottom: 1px solid #dee2e6; white-space: nowrap;">TZS ${construction.toLocaleString()}</td>
+                <td style="padding: 8px; border-bottom: 1px solid #dee2e6; white-space: nowrap;">TZS ${fees.toLocaleString()}</td>
+                <td style="padding: 8px; border-bottom: 1px solid #dee2e6; white-space: nowrap;">${contPercent}%</td>
+                <td style="padding: 8px; border-bottom: 1px solid #dee2e6; white-space: nowrap;">TZS ${totalCost.toLocaleString()}</td>
+                <td style="padding: 8px; border-bottom: 1px solid #dee2e6; white-space: nowrap;">TZS ${parseFloat(r.developer_equity || 0).toLocaleString()}</td>
+                <td style="padding: 8px; border-bottom: 1px solid #dee2e6; white-space: nowrap;">TZS ${parseFloat(r.bank_loan_amount || 0).toLocaleString()}</td>
+                <td style="padding: 8px; border-bottom: 1px solid #dee2e6; white-space: nowrap;">${r.annual_interest_rate || 0}%</td>
+                <td style="padding: 8px; border-bottom: 1px solid #dee2e6; white-space: nowrap;">${r.loan_repayment_period_years || 0}</td>
+                <td style="padding: 8px; border-bottom: 1px solid #dee2e6; white-space: nowrap;">${r.grace_period_months || 0}</td>
+                <td style="padding: 8px; border-bottom: 1px solid #dee2e6; white-space: nowrap;">${r.revenue_strategy === 'build_to_sell' ? 'Build to Sell' : 'Build to Rent'}</td>
+                <td style="padding: 8px; border-bottom: 1px solid #dee2e6; white-space: nowrap;">TZS ${parseFloat(r.target_selling_price_per_unit || 0).toLocaleString()}</td>
+                <td style="padding: 8px; border-bottom: 1px solid #dee2e6; white-space: nowrap;">TZS ${parseFloat(r.expected_monthly_rent_per_unit || 0).toLocaleString()}</td>
+                <td style="padding: 8px; border-bottom: 1px solid #dee2e6; white-space: nowrap;">${r.target_occupancy_percent || 0}%</td>
+                <td style="padding: 8px; border-bottom: 1px solid #dee2e6; white-space: nowrap;">${r.target_roi_percent}%</td>
+                <td style="padding: 8px; border-bottom: 1px solid #dee2e6; white-space: nowrap;">${r.target_irr_percent}%</td>
+                <td style="padding: 8px; border-bottom: 1px solid #dee2e6; white-space: nowrap;">${r.minimum_dscr}</td>
+                <td style="padding: 8px; border-bottom: 1px solid #dee2e6; white-space: nowrap;">${new Date(r.created_at).toLocaleDateString()}</td>
             </tr>`;
         });
         
