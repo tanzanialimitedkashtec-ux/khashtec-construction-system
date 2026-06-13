@@ -73458,11 +73458,21 @@ function requestWorkforce(){
 
             
 
+            <div style="margin-bottom: 20px; display: flex; gap: 10px; align-items: center;">
+
+                <input type="text" id="workforceSearchInput" placeholder="Search by Request ID, Project, Status..." style="padding: 10px 15px; border: 1px solid #ddd; border-radius: 6px; flex: 1; font-size: 14px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+
+                <button onclick="clearWorkforceSearch()" style="padding: 10px 20px; background: #6c757d; color: #fff; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: 500;">Clear</button>
+
+            </div>
+
+            
+
             <div class="workforce-requests-records">
 
                 <div class="workforce-requests-table-container">
 
-                    <table class="workforce-requests-table">
+                    <table id="workforceRequestsTable" class="workforce-requests-table">
 
                         <thead>
 
@@ -74075,9 +74085,15 @@ function displayWorkforceRequests(requests) {
 
     
 
-    // Setup search functionality
+    // Setup search functionality and re-apply active filter
 
-    setTimeout(() => setupWorkforceSearch(), 100);
+    setTimeout(() => {
+
+        setupWorkforceSearch();
+
+        filterWorkforceRequests();
+
+    }, 100);
 
 }
 
@@ -74155,40 +74171,49 @@ async function rejectWorkforceRequest(requestId) {
 
 function setupWorkforceSearch() {
     const searchInput = document.getElementById('workforceSearchInput');
-    if (!searchInput) return;
-    
+    if (!searchInput || searchInput.dataset.searchBound === 'true') return;
+
+    searchInput.dataset.searchBound = 'true';
     searchInput.addEventListener('keyup', filterWorkforceRequests);
+    searchInput.addEventListener('input', filterWorkforceRequests);
+}
+
+function getWorkforceRequestsTable() {
+    return document.getElementById('workforceRequestsTable')
+        || document.querySelector('.workforce-requests-table');
 }
 
 function filterWorkforceRequests() {
     const searchInput = document.getElementById('workforceSearchInput');
-    const table = document.getElementById('workforceRequestsTable');
-    const rows = table.getElementsByTagName('tbody')[0].getElementsByTagName('tr');
-    
-    if (!searchInput) return;
-    
+    const table = getWorkforceRequestsTable();
+    if (!searchInput || !table) return;
+
+    const tbody = table.getElementsByTagName('tbody')[0];
+    if (!tbody) return;
+
+    const rows = tbody.getElementsByTagName('tr');
     const searchTerm = searchInput.value.toLowerCase().trim();
     let visibleCount = 0;
-    
+
     for (let i = 0; i < rows.length; i++) {
         const row = rows[i];
+        if (row.id === 'no-search-results' || row.querySelector('.loading, .no-records')) {
+            row.style.display = 'none';
+            continue;
+        }
+
         const text = row.textContent.toLowerCase();
-        
-        if (searchTerm === '') {
-            row.style.display = '';
-            visibleCount++;
-        } else if (text.includes(searchTerm)) {
+        if (searchTerm === '' || text.includes(searchTerm)) {
             row.style.display = '';
             visibleCount++;
         } else {
             row.style.display = 'none';
         }
     }
-    
-    // Show message if no results
+
+    const existingNoResults = document.getElementById('no-search-results');
     if (visibleCount === 0 && searchTerm !== '') {
-        const tbody = table.getElementsByTagName('tbody')[0];
-        if (!document.getElementById('no-search-results')) {
+        if (!existingNoResults) {
             const noResultsRow = document.createElement('tr');
             noResultsRow.id = 'no-search-results';
             noResultsRow.innerHTML = `
@@ -74198,11 +74223,8 @@ function filterWorkforceRequests() {
             `;
             tbody.appendChild(noResultsRow);
         }
-    } else {
-        const noResultsRow = document.getElementById('no-search-results');
-        if (noResultsRow) {
-            noResultsRow.remove();
-        }
+    } else if (existingNoResults) {
+        existingNoResults.remove();
     }
 }
 
@@ -109437,6 +109459,7 @@ function showWorkforceApprovals() {
         </div>
     `);
     loadWorkforceRequests();
+    setTimeout(() => setupWorkforceSearch(), 100);
 }
 
 function showPaymentApprovals() {
