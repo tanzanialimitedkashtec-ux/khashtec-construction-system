@@ -110105,6 +110105,50 @@ function clearIncidentSearch() {
     var input = document.getElementById("incidentSearchInput");
     if (input) { input.value = ""; filterIncidentTable(); }
 }
+
+async function uploadLeadershipPhoto(leaderId, inputElement) {
+    const file = inputElement.files[0];
+    if (!file) return;
+
+    const formData = new FormData();
+    formData.append('profileImage', file);
+    formData.append('employeeId', leaderId);
+    formData.append('type', 'leader');
+
+    try {
+        const response = await fetch('/api/office-portal/upload/profile-image', {
+            method: 'POST',
+            body: formData
+        });
+
+        const data = await response.json();
+        if (data.success) {
+            const imgElems = document.querySelectorAll(`[id="client-img-lead-${leaderId}"]`);
+            imgElems.forEach(img => {
+                const basePath = data.profileImage.includes('?') ? data.profileImage : `${data.profileImage}?type=leader`;
+                img.src = basePath + (basePath.includes('?') ? '&' : '?') + 't=' + Date.now();
+                img.classList.add('loaded');
+            });
+            const btnElems = document.querySelectorAll(`[id="upload-btn-lead-${leaderId}"]`);
+            btnElems.forEach(btn => btn.style.display = 'none');
+            
+            if (typeof showNotification === 'function') {
+                showNotification('Success', 'Leadership profile photo updated', 'success');
+            } else if (typeof customAlert === 'function') {
+                customAlert('Leadership profile photo updated successfully!', 'Success', 'success');
+            } else {
+                alert('Leadership profile photo updated successfully!');
+            }
+        } else {
+            if (typeof customAlert === 'function') customAlert(data.error || 'Failed to upload photo', 'Error', 'error');
+            else alert(data.error || 'Failed to upload photo');
+        }
+    } catch (error) {
+        console.error('Error uploading leadership photo:', error);
+        if (typeof customAlert === 'function') customAlert('An unexpected error occurred', 'Error', 'error');
+        else alert('An unexpected error occurred');
+    }
+}
 </script>
 
 
