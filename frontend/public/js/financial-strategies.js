@@ -197,6 +197,10 @@ function showFinancialStrategiesForm() {
                         <thead>
                             <tr style="background: #f8f9fa;">
                                 <th style="padding: 8px; border-bottom: 1px solid #dee2e6;">Project Name</th>
+                                <th style="padding: 8px; border-bottom: 1px solid #dee2e6;">Land Cost</th>
+                                <th style="padding: 8px; border-bottom: 1px solid #dee2e6;">Const. Cost</th>
+                                <th style="padding: 8px; border-bottom: 1px solid #dee2e6;">Permits/Fees</th>
+                                <th style="padding: 8px; border-bottom: 1px solid #dee2e6;">Contingency (%)</th>
                                 <th style="padding: 8px; border-bottom: 1px solid #dee2e6;">Total Cost (Est)</th>
                                 <th style="padding: 8px; border-bottom: 1px solid #dee2e6;">Strategy</th>
                                 <th style="padding: 8px; border-bottom: 1px solid #dee2e6;">Target ROI (%)</th>
@@ -207,7 +211,7 @@ function showFinancialStrategiesForm() {
                         </thead>
                         <tbody id="financialStrategiesTbody">
                             <tr>
-                                <td colspan="7" style="text-align: center; padding: 10px;">Loading records...</td>
+                                <td colspan="11" style="text-align: center; padding: 10px;">Loading records...</td>
                             </tr>
                         </tbody>
                     </table>
@@ -421,7 +425,7 @@ async function submitFinancialStrategiesForm(event) {
 async function loadFinancialStrategies() {
     try {
         const tbody = document.getElementById('financialStrategiesTbody');
-        tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 10px;">Loading records...</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="11" style="text-align: center; padding: 10px;">Loading records...</td></tr>';
         
         const response = await fetch('/api/financial-strategies', {
             headers: {
@@ -432,13 +436,13 @@ async function loadFinancialStrategies() {
         const resData = await response.json();
         
         if (!response.ok || !resData.success) {
-            tbody.innerHTML = `<tr><td colspan="7" style="text-align: center; padding: 10px; color: red;">Failed to load records.</td></tr>`;
+            tbody.innerHTML = `<tr><td colspan="11" style="text-align: center; padding: 10px; color: red;">Failed to load records.</td></tr>`;
             return;
         }
 
         const records = resData.data;
         if (!records || records.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 10px;">No financial strategies found.</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="11" style="text-align: center; padding: 10px;">No financial strategies found.</td></tr>';
             return;
         }
 
@@ -454,6 +458,10 @@ async function loadFinancialStrategies() {
             
             html += `<tr>
                 <td style="padding: 8px; border-bottom: 1px solid #dee2e6;">${r.project_name || ('Project ' + r.project_id)}</td>
+                <td style="padding: 8px; border-bottom: 1px solid #dee2e6;">TZS ${land.toLocaleString()}</td>
+                <td style="padding: 8px; border-bottom: 1px solid #dee2e6;">TZS ${construction.toLocaleString()}</td>
+                <td style="padding: 8px; border-bottom: 1px solid #dee2e6;">TZS ${fees.toLocaleString()}</td>
+                <td style="padding: 8px; border-bottom: 1px solid #dee2e6;">${contPercent}%</td>
                 <td style="padding: 8px; border-bottom: 1px solid #dee2e6;">TZS ${totalCost.toLocaleString()}</td>
                 <td style="padding: 8px; border-bottom: 1px solid #dee2e6;">${r.revenue_strategy === 'build_to_sell' ? 'Build to Sell' : 'Build to Rent'}</td>
                 <td style="padding: 8px; border-bottom: 1px solid #dee2e6;">${r.target_roi_percent}%</td>
