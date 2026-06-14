@@ -72840,75 +72840,65 @@ async function loadMaterialsInRecords() {
 
         }
 
-        tableDiv.innerHTML = `
-
-            <h4 style="margin-bottom: 10px;">Materials In (Receiving Records)</h4>
-
-            <table class="data-table" style="width: 100%; border-collapse: collapse;">
-
-                <thead>
-
-                    <tr style="background: #0b3d91; color: white;">
-
-                        <th style="padding: 10px;">Track #</th>
-
-                        <th style="padding: 10px;">Material</th>
-
-                        <th style="padding: 10px;">Date</th>
-
-                        <th style="padding: 10px;">Qty</th>
-
-                        <th style="padding: 10px;">Unit Price</th>
-
-                        <th style="padding: 10px;">Total Cost</th>
-
-                        <th style="padding: 10px;">Supplier</th>
-
-                        <th style="padding: 10px;">Condition</th>
-
-                        <th style="padding: 10px;">Received By</th>
-
-                    </tr>
-
-                </thead>
-
-                <tbody>
-
-                    ${records.map(r => `
-
-                        <tr style="border-bottom: 1px solid #ddd;">
-
-                            <td style="padding: 8px;">${r.track_number}</td>
-
-                            <td style="padding: 8px;">${r.material_name || r.material_id}</td>
-
-                            <td style="padding: 8px;">${r.receipt_date}</td>
-
-                            <td style="padding: 8px; text-align: center;">${r.quantity_received}</td>
-
-                            <td style="padding: 8px; text-align: right;">TZS ${(r.unit_price || 0).toLocaleString()}</td>
-
-                            <td style="padding: 8px; text-align: right;">TZS ${(r.total_cost || 0).toLocaleString()}</td>
-
-                            <td style="padding: 8px;">${r.supplier_name}</td>
-
-                            <td style="padding: 8px; text-align: center;">
-
-                                <span class="status-badge ${r.delivery_condition === 'Good' ? 'status-active' : r.delivery_condition === 'Partial' ? 'status-pending' : 'status-inactive'}">${r.delivery_condition}</span>
-
-                            </td>
-
-                            <td style="padding: 8px;">${r.received_by}</td>
-
-                        </tr>
-
-                    `).join('')}
-
-                </tbody>
-
-            </table>
-
-        `;
+        tableDiv.innerHTML =
+            '<h4 style="margin-bottom: 10px;">Materials In (Receiving Records)</h4>' +
+            '<div style="overflow-x:auto;">' +
+            '<table class="data-table" style="width: 100%; border-collapse: collapse;">' +
+                '<thead>' +
+                    '<tr style="background: #0b3d91; color: white;">' +
+                        '<th style="padding:10px;">Track #</th>' +
+                        '<th style="padding:10px;">Material</th>' +
+                        '<th style="padding:10px;">Date</th>' +
+                        '<th style="padding:10px;">Qty</th>' +
+                        '<th style="padding:10px;">Unit Price</th>' +
+                        '<th style="padding:10px;">Total Cost</th>' +
+                        '<th style="padding:10px;">Transport Cost</th>' +
+                        '<th style="padding:10px;">Supplier</th>' +
+                        '<th style="padding:10px;">Supplier Contact</th>' +
+                        '<th style="padding:10px;">Invoice No</th>' +
+                        '<th style="padding:10px;">PO No</th>' +
+                        '<th style="padding:10px;">Delivery Note No</th>' +
+                        '<th style="padding:10px;">Condition</th>' +
+                        '<th style="padding:10px;">Quality</th>' +
+                        '<th style="padding:10px;">Quality Remarks</th>' +
+                        '<th style="padding:10px;">Received By</th>' +
+                        '<th style="padding:10px;">Receiver Role</th>' +
+                        '<th style="padding:10px;">Location</th>' +
+                        '<th style="padding:10px;">Project</th>' +
+                        '<th style="padding:10px;">Transport Issue</th>' +
+                        '<th style="padding:10px;">Notes</th>' +
+                    '</tr>' +
+                '</thead>' +
+                '<tbody>' +
+                    records.map(function(r) {
+                        var d = r.receipt_date ? String(r.receipt_date).slice(0,10) : '';
+                        return '<tr style="border-bottom: 1px solid #ddd;">' +
+                            '<td style="padding:8px;">' + (r.track_number||'') + '</td>' +
+                            '<td style="padding:8px;">' + (r.material_name || r.material_id) + '</td>' +
+                            '<td style="padding:8px;">' + d + '</td>' +
+                            '<td style="padding:8px;text-align:center;">' + parseFloat(r.quantity_received||0).toLocaleString() + ' ' + (r.unit_of_measure||'') + '</td>' +
+                            '<td style="padding:8px;text-align:right;">TZS ' + parseFloat(r.unit_price||0).toLocaleString() + '</td>' +
+                            '<td style="padding:8px;text-align:right;">TZS ' + parseFloat(r.total_cost||0).toLocaleString() + '</td>' +
+                            '<td style="padding:8px;text-align:right;">TZS ' + parseFloat(r.transport_cost||0).toLocaleString() + '</td>' +
+                            '<td style="padding:8px;">' + (r.supplier_name||'') + '</td>' +
+                            '<td style="padding:8px;">' + (r.supplier_contact||'') + '</td>' +
+                            '<td style="padding:8px;">' + (r.invoice_number||'') + '</td>' +
+                            '<td style="padding:8px;">' + (r.purchase_order_number||'') + '</td>' +
+                            '<td style="padding:8px;">' + (r.delivery_note_number||'') + '</td>' +
+                            '<td style="padding:8px;text-align:center;"><span class="status-badge ' + (r.delivery_condition === 'Good' ? 'status-active' : r.delivery_condition === 'Partial' ? 'status-pending' : 'status-inactive') + '">' + (r.delivery_condition||'') + '</span></td>' +
+                            '<td style="padding:8px;">' + (r.quality_check_status||'') + '</td>' +
+                            '<td style="padding:8px;">' + (r.quality_remarks||'') + '</td>' +
+                            '<td style="padding:8px;">' + (r.received_by||'') + '</td>' +
+                            '<td style="padding:8px;">' + (r.received_by_role||'') + '</td>' +
+                            '<td style="padding:8px;">' + (r.warehouse_location||'') + '</td>' +
+                            '<td style="padding:8px;">' + (r.project_name||'') + '</td>' +
+                            '<td style="padding:8px;">' + (r.transport_issue||'') + '</td>' +
+                            '<td style="padding:8px;">' + (r.notes||'') + '</td>' +
+                        '</tr>';
+                    }).join('') +
+                '</tbody>' +
+            '</table>' +
+            '</div>';
 
     } catch (error) {
 
@@ -72942,67 +72932,67 @@ async function loadMaterialsOutRecords() {
 
         }
 
-        tableDiv.innerHTML = `
-
-            <h4 style="margin-bottom: 10px;">Materials Out (Issue/Sale Records)</h4>
-
-            <table class="data-table" style="width: 100%; border-collapse: collapse;">
-
-                <thead>
-
-                    <tr style="background: #0b3d91; color: white;">
-
-                        <th style="padding: 10px;">Track #</th>
-
-                        <th style="padding: 10px;">Material</th>
-
-                        <th style="padding: 10px;">Date</th>
-
-                        <th style="padding: 10px;">Qty</th>
-
-                        <th style="padding: 10px;">Type</th>
-
-                        <th style="padding: 10px;">Issued To</th>
-
-                        <th style="padding: 10px;">Project</th>
-
-                        <th style="padding: 10px;">Authorized By</th>
-
-                    </tr>
-
-                </thead>
-
-                <tbody>
-
-                    ${records.map(r => `
-
-                        <tr style="border-bottom: 1px solid #ddd;">
-
-                            <td style="padding: 8px;">${r.track_number}</td>
-
-                            <td style="padding: 8px;">${r.material_name || r.material_id}</td>
-
-                            <td style="padding: 8px;">${r.issue_date}</td>
-
-                            <td style="padding: 8px; text-align: center;">${r.quantity_out}</td>
-
-                            <td style="padding: 8px;">${r.issue_type}</td>
-
-                            <td style="padding: 8px;">${r.issued_to}</td>
-
-                            <td style="padding: 8px;">${r.project_name || '-'}</td>
-
-                            <td style="padding: 8px;">${r.authorized_by}</td>
-
-                        </tr>
-
-                    `).join('')}
-
-                </tbody>
-
-            </table>
-
-        `;
+        tableDiv.innerHTML =
+            '<h4 style="margin-bottom: 10px;">Materials Out (Issue/Sale Records)</h4>' +
+            '<div style="overflow-x:auto;">' +
+            '<table class="data-table" style="width: 100%; border-collapse: collapse;">' +
+                '<thead>' +
+                    '<tr style="background: #0b3d91; color: white;">' +
+                        '<th style="padding:10px;">Track #</th>' +
+                        '<th style="padding:10px;">Material</th>' +
+                        '<th style="padding:10px;">Date</th>' +
+                        '<th style="padding:10px;">Qty</th>' +
+                        '<th style="padding:10px;">Unit Price</th>' +
+                        '<th style="padding:10px;">Total Value</th>' +
+                        '<th style="padding:10px;">Type</th>' +
+                        '<th style="padding:10px;">Issued To</th>' +
+                        '<th style="padding:10px;">Issued To Role</th>' +
+                        '<th style="padding:10px;">Department</th>' +
+                        '<th style="padding:10px;">Project</th>' +
+                        '<th style="padding:10px;">Destination</th>' +
+                        '<th style="padding:10px;">Authorized By</th>' +
+                        '<th style="padding:10px;">Authorizer Role</th>' +
+                        '<th style="padding:10px;">Delivery Method</th>' +
+                        '<th style="padding:10px;">Delivery Receipt No</th>' +
+                        '<th style="padding:10px;">Condition</th>' +
+                        '<th style="padding:10px;">Return Expected</th>' +
+                        '<th style="padding:10px;">Return Date</th>' +
+                        '<th style="padding:10px;">Purpose</th>' +
+                        '<th style="padding:10px;">Notes</th>' +
+                    '</tr>' +
+                '</thead>' +
+                '<tbody>' +
+                    records.map(function(r) {
+                        var d = r.issue_date ? String(r.issue_date).slice(0,10) : '';
+                        var retExp = r.return_expected ? 'Yes' : 'No';
+                        var retDate = r.expected_return_date ? String(r.expected_return_date).slice(0,10) : '';
+                        return '<tr style="border-bottom: 1px solid #ddd;">' +
+                            '<td style="padding:8px;">' + (r.track_number||'') + '</td>' +
+                            '<td style="padding:8px;">' + (r.material_name || r.material_id) + '</td>' +
+                            '<td style="padding:8px;">' + d + '</td>' +
+                            '<td style="padding:8px;text-align:center;">' + parseFloat(r.quantity_out||0).toLocaleString() + ' ' + (r.unit_of_measure||'') + '</td>' +
+                            '<td style="padding:8px;text-align:right;">TZS ' + parseFloat(r.unit_price||0).toLocaleString() + '</td>' +
+                            '<td style="padding:8px;text-align:right;">TZS ' + parseFloat(r.total_value||0).toLocaleString() + '</td>' +
+                            '<td style="padding:8px;">' + (r.issue_type||'') + '</td>' +
+                            '<td style="padding:8px;">' + (r.issued_to||'') + '</td>' +
+                            '<td style="padding:8px;">' + (r.issued_to_role||'') + '</td>' +
+                            '<td style="padding:8px;">' + (r.issued_to_department||'') + '</td>' +
+                            '<td style="padding:8px;">' + (r.project_name||'-') + '</td>' +
+                            '<td style="padding:8px;">' + (r.destination||'') + '</td>' +
+                            '<td style="padding:8px;">' + (r.authorized_by||'') + '</td>' +
+                            '<td style="padding:8px;">' + (r.authorized_by_role||'') + '</td>' +
+                            '<td style="padding:8px;">' + (r.delivery_method||'') + '</td>' +
+                            '<td style="padding:8px;">' + (r.delivery_receipt_number||'') + '</td>' +
+                            '<td style="padding:8px;">' + (r.condition_on_issue||'') + '</td>' +
+                            '<td style="padding:8px;">' + retExp + '</td>' +
+                            '<td style="padding:8px;">' + retDate + '</td>' +
+                            '<td style="padding:8px;">' + (r.purpose||'') + '</td>' +
+                            '<td style="padding:8px;">' + (r.notes||'') + '</td>' +
+                        '</tr>';
+                    }).join('') +
+                '</tbody>' +
+            '</table>' +
+            '</div>';
 
     } catch (error) {
 
@@ -79296,76 +79286,102 @@ async function showMaterialsInRecords() {
     const records = await fetchMaterialsIn();
     let rowsHtml = '';
     if (!Array.isArray(records) || records.length === 0) {
-        rowsHtml = '<tr><td colspan="10" style="text-align:center;">No materials in records found.</td></tr>';
+        rowsHtml = '<tr><td colspan="21" style="text-align:center;">No materials in records found.</td></tr>';
     } else {
         records.forEach(r => {
-            rowsHtml += `<tr>
-                <td>${r.track_number||''}</td>
-                <td>${r.receipt_date||''}</td>
-                <td>${r.material_code||''} - ${r.material_name||''}</td>
-                <td>${parseFloat(r.quantity_received||0).toLocaleString()} ${r.unit_of_measure||''}</td>
-                <td>TZS ${parseFloat(r.total_cost||0).toLocaleString()}</td>
-                <td>${r.supplier_name||''}</td>
-                <td>${r.delivery_condition||''}</td>
-                <td>${r.quality_check_status||''}</td>
-                <td>${r.received_by||''}</td>
-                <td>${r.warehouse_location||''}</td>
-            </tr>`;
+            var date = r.receipt_date ? String(r.receipt_date).slice(0,10) : '';
+            rowsHtml += '<tr>' +
+                '<td>' + (r.track_number||'') + '</td>' +
+                '<td>' + date + '</td>' +
+                '<td>' + (r.material_code||'') + ' - ' + (r.material_name||'') + '</td>' +
+                '<td>' + parseFloat(r.quantity_received||0).toLocaleString() + ' ' + (r.unit_of_measure||'') + '</td>' +
+                '<td>TZS ' + parseFloat(r.unit_price||0).toLocaleString() + '</td>' +
+                '<td>TZS ' + parseFloat(r.total_cost||0).toLocaleString() + '</td>' +
+                '<td>TZS ' + parseFloat(r.transport_cost||0).toLocaleString() + '</td>' +
+                '<td>' + (r.supplier_name||'') + '</td>' +
+                '<td>' + (r.supplier_contact||'') + '</td>' +
+                '<td>' + (r.invoice_number||'') + '</td>' +
+                '<td>' + (r.purchase_order_number||'') + '</td>' +
+                '<td>' + (r.delivery_note_number||'') + '</td>' +
+                '<td>' + (r.delivery_condition||'') + '</td>' +
+                '<td>' + (r.quality_check_status||'') + '</td>' +
+                '<td>' + (r.quality_remarks||'') + '</td>' +
+                '<td>' + (r.received_by||'') + '</td>' +
+                '<td>' + (r.received_by_role||'') + '</td>' +
+                '<td>' + (r.warehouse_location||'') + '</td>' +
+                '<td>' + (r.project_name||'') + '</td>' +
+                '<td>' + (r.transport_issue||'') + '</td>' +
+                '<td>' + (r.notes||'') + '</td>' +
+            '</tr>';
         });
     }
-    showContent(`
-        <div class="card">
-            <h3>Materials In Records</h3>
-            <div class="table-responsive">
-                <table class="projects-table">
-                    <thead><tr><th>Track No</th><th>Date</th><th>Material</th><th>Qty</th><th>Total Cost</th><th>Supplier</th><th>Condition</th><th>Quality</th><th>Received By</th><th>Location</th></tr></thead>
-                    <tbody>${rowsHtml}</tbody>
-                </table>
-            </div>
-            <div class="form-actions" style="margin-top:15px;">
-                <button onclick="showMaterialsInventory()" class="action" style="background:#6c757d;">Back to Inventory</button>
-                <button onclick="showMaterialsDashboard()" class="action" style="background:#17a2b8;">Dashboard</button>
-            </div>
-        </div>
-    `);
+    showContent(
+        '<div class="card">' +
+            '<h3>Materials In Records</h3>' +
+            '<div class="table-responsive">' +
+                '<table class="projects-table">' +
+                    '<thead><tr><th>Track No</th><th>Date</th><th>Material</th><th>Qty</th><th>Unit Price</th><th>Total Cost</th><th>Transport Cost</th><th>Supplier</th><th>Supplier Contact</th><th>Invoice No</th><th>PO No</th><th>Delivery Note No</th><th>Condition</th><th>Quality</th><th>Quality Remarks</th><th>Received By</th><th>Receiver Role</th><th>Location</th><th>Project</th><th>Transport Issue</th><th>Notes</th></tr></thead>' +
+                    '<tbody>' + rowsHtml + '</tbody>' +
+                '</table>' +
+            '</div>' +
+            '<div class="form-actions" style="margin-top:15px;">' +
+                '<button onclick="showMaterialsInventory()" class="action" style="background:#6c757d;">Back to Inventory</button>' +
+                '<button onclick="showMaterialsDashboard()" class="action" style="background:#17a2b8;">Dashboard</button>' +
+            '</div>' +
+        '</div>'
+    );
 }
 
 async function showMaterialsOutRecords() {
     const records = await fetchMaterialsOut();
     let rowsHtml = '';
     if (!Array.isArray(records) || records.length === 0) {
-        rowsHtml = '<tr><td colspan="10" style="text-align:center;">No materials out records found.</td></tr>';
+        rowsHtml = '<tr><td colspan="21" style="text-align:center;">No materials out records found.</td></tr>';
     } else {
         records.forEach(r => {
-            rowsHtml += `<tr>
-                <td>${r.track_number||''}</td>
-                <td>${r.issue_date||''}</td>
-                <td>${r.material_code||''} - ${r.material_name||''}</td>
-                <td>${parseFloat(r.quantity_out||0).toLocaleString()} ${r.unit_of_measure||''}</td>
-                <td>${r.issue_type||''}</td>
-                <td>${r.issued_to||''}</td>
-                <td>${r.project_name||''}</td>
-                <td>${r.authorized_by||''}</td>
-                <td>${r.delivery_method||''}</td>
-                <td>${r.condition_on_issue||''}</td>
-            </tr>`;
+            var date = r.issue_date ? String(r.issue_date).slice(0,10) : '';
+            var retExpected = r.return_expected ? 'Yes' : 'No';
+            var retDate = r.expected_return_date ? String(r.expected_return_date).slice(0,10) : '';
+            rowsHtml += '<tr>' +
+                '<td>' + (r.track_number||'') + '</td>' +
+                '<td>' + date + '</td>' +
+                '<td>' + (r.material_code||'') + ' - ' + (r.material_name||'') + '</td>' +
+                '<td>' + parseFloat(r.quantity_out||0).toLocaleString() + ' ' + (r.unit_of_measure||'') + '</td>' +
+                '<td>TZS ' + parseFloat(r.unit_price||0).toLocaleString() + '</td>' +
+                '<td>TZS ' + parseFloat(r.total_value||0).toLocaleString() + '</td>' +
+                '<td>' + (r.issue_type||'') + '</td>' +
+                '<td>' + (r.issued_to||'') + '</td>' +
+                '<td>' + (r.issued_to_role||'') + '</td>' +
+                '<td>' + (r.issued_to_department||'') + '</td>' +
+                '<td>' + (r.project_name||'') + '</td>' +
+                '<td>' + (r.destination||'') + '</td>' +
+                '<td>' + (r.authorized_by||'') + '</td>' +
+                '<td>' + (r.authorized_by_role||'') + '</td>' +
+                '<td>' + (r.delivery_method||'') + '</td>' +
+                '<td>' + (r.delivery_receipt_number||'') + '</td>' +
+                '<td>' + (r.condition_on_issue||'') + '</td>' +
+                '<td>' + retExpected + '</td>' +
+                '<td>' + retDate + '</td>' +
+                '<td>' + (r.purpose||'') + '</td>' +
+                '<td>' + (r.notes||'') + '</td>' +
+            '</tr>';
         });
     }
-    showContent(`
-        <div class="card">
-            <h3>Materials Out Records</h3>
-            <div class="table-responsive">
-                <table class="projects-table">
-                    <thead><tr><th>Track No</th><th>Date</th><th>Material</th><th>Qty</th><th>Type</th><th>Issued To</th><th>Project</th><th>Authorized By</th><th>Delivery</th><th>Condition</th></tr></thead>
-                    <tbody>${rowsHtml}</tbody>
-                </table>
-            </div>
-            <div class="form-actions" style="margin-top:15px;">
-                <button onclick="showMaterialsInventory()" class="action" style="background:#6c757d;">Back to Inventory</button>
-                <button onclick="showMaterialsDashboard()" class="action" style="background:#17a2b8;">Dashboard</button>
-            </div>
-        </div>
-    `);
+    showContent(
+        '<div class="card">' +
+            '<h3>Materials Out Records</h3>' +
+            '<div class="table-responsive">' +
+                '<table class="projects-table">' +
+                    '<thead><tr><th>Track No</th><th>Date</th><th>Material</th><th>Qty</th><th>Unit Price</th><th>Total Value</th><th>Type</th><th>Issued To</th><th>Issued To Role</th><th>Department</th><th>Project</th><th>Destination</th><th>Authorized By</th><th>Authorizer Role</th><th>Delivery Method</th><th>Delivery Receipt No</th><th>Condition</th><th>Return Expected</th><th>Return Date</th><th>Purpose</th><th>Notes</th></tr></thead>' +
+                    '<tbody>' + rowsHtml + '</tbody>' +
+                '</table>' +
+            '</div>' +
+            '<div class="form-actions" style="margin-top:15px;">' +
+                '<button onclick="showMaterialsInventory()" class="action" style="background:#6c757d;">Back to Inventory</button>' +
+                '<button onclick="showMaterialsDashboard()" class="action" style="background:#17a2b8;">Dashboard</button>' +
+            '</div>' +
+        '</div>'
+    );
 }
 
 let html5QrcodeScanner = null;
