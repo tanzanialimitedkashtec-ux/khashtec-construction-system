@@ -559,99 +559,41 @@ router.post('/', upload.fields([
         try {
             console.log('?? Attempting to create worker account directly...');
             
-            // First check if worker_accounts table exists
-            let tableExists = false;
+            // Fast duplicate check (skipping slow INFORMATION_SCHEMA)
             try {
-                const tableCheckResult = await db.execute(
-                    `SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES 
-                     WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'worker_accounts'`
-                );
-                
-                console.log('?? Table check result:', tableCheckResult);
-                
-                // Handle different MySQL2 return formats
-                if (Array.isArray(tableCheckResult)) {
-                    tableExists = tableCheckResult.length > 0 || (tableCheckResult[0] && tableCheckResult[0].length > 0);
-                } else if (tableCheckResult && tableCheckResult[0]) {
-                    tableExists = tableCheckResult[0].length > 0;
-                }
-                
-                console.log('?? Table exists:', tableExists);
-            } catch (tableCheckError) {
-                console.log('?? Error checking table existence:', tableCheckError.message);
-                tableExists = false;
-            }
-            
-            if (!tableExists) {
-                console.log('?? Worker accounts table does not exist, allowing creation without duplicate check');
-            } else {
-                console.log('?? Table exists, checking for duplicates...');
-                // Check if worker account already exists with specific field checking
-                console.log('?? Querying for existing workers with:', { finalEmployeeId, finalWorkEmail });
+                console.log('?? Checking for duplicates directly...');
                 const existingWorkersResult = await db.execute(
                     'SELECT id, employee_id, work_email FROM worker_accounts WHERE employee_id = ? OR work_email = ?',
                     [finalEmployeeId, finalWorkEmail]
                 );
                 
-                console.log('?? Raw query result:', existingWorkersResult);
-                console.log('?? Result type:', typeof existingWorkersResult);
-                console.log('?? Result constructor:', existingWorkersResult?.constructor?.name);
-                
-                // Handle different MySQL2 return formats
                 let existingWorkers = [];
                 if (Array.isArray(existingWorkersResult)) {
-                    console.log('?? Result is array, length:', existingWorkersResult.length);
-                    // MySQL2 with mysql2/promise returns [rows, fields, metadata]
-                    if (existingWorkersResult.length >= 1) {
-                        existingWorkers = existingWorkersResult[0];
-                        console.log('?? Using first element as data:', existingWorkers);
-                    } else {
-                        existingWorkers = [];
-                        console.log('?? No data found, using empty array');
-                    }
+                    if (existingWorkersResult.length >= 1) existingWorkers = existingWorkersResult[0];
                 } else if (existingWorkersResult && existingWorkersResult[0]) {
                     existingWorkers = existingWorkersResult[0];
-                    console.log('?? Using result[0] as data');
                 } else if (existingWorkersResult && existingWorkersResult.rows) {
                     existingWorkers = existingWorkersResult.rows;
-                    console.log('?? Using result.rows as data');
-                } else {
-                    existingWorkers = [];
-                    console.log('?? No recognizable data format, using empty array');
                 }
-                
-                console.log('?? Final existing workers array:', existingWorkers);
                 
                 if (existingWorkers && existingWorkers.length > 0) {
                     console.log('?? Worker account already exists');
+                    const empIdExists = existingWorkers.some(w => w.employee_id === finalEmployeeId);
+                    const emailExists = existingWorkers.some(w => w.work_email === finalWorkEmail);
                     
-                    // Check which specific field caused the conflict
-                    const empIdExists = existingWorkers.some(worker => worker.employee_id === finalEmployeeId);
-                    const emailExists = existingWorkers.some(worker => worker.work_email === finalWorkEmail);
-                    
-                    let conflictDetails = {
-                        employeeId: empIdExists,
-                        email: emailExists,
-                        message: []
-                    };
-                    
-                    if (empIdExists) {
-                        conflictDetails.message.push(`Employee ID '${finalEmployeeId}' is already registered`);
-                    }
-                    if (emailExists) {
-                        conflictDetails.message.push(`Email '${finalWorkEmail}' is already registered`);
-                    }
+                    let conflictDetails = { employeeId: empIdExists, email: emailExists, message: [] };
+                    if (empIdExists) conflictDetails.message.push(`Employee ID '${finalEmployeeId}' is already registered`);
+                    if (emailExists) conflictDetails.message.push(`Email '${finalWorkEmail}' is already registered`);
                     
                     return res.status(409).json({
                         error: 'Worker account already exists',
                         details: conflictDetails,
                         message: conflictDetails.message.join(' and '),
-                        field_conflicts: {
-                            employee_id: empIdExists,
-                            work_email: emailExists
-                        }
+                        field_conflicts: { employee_id: empIdExists, work_email: emailExists }
                     });
                 }
+            } catch (tableCheckError) {
+                console.log('?? Duplicate check failed (table likely does not exist yet). Proceeding to create.');
             }
             
             console.log('?? No existing workers found, proceeding with creation');
