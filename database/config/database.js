@@ -247,8 +247,27 @@ class Database {
         );
     }
 
-    async query(query, params = []) {
-        return this.execute(query, params);
+    async query(sql, params = []) {
+        // Use pool.query() instead of pool.execute() for DDL support
+        // pool.execute() uses prepared statements which don't support ALTER TABLE, CREATE TABLE, etc.
+        for (let attempt = 1; attempt <= 3; attempt++) {
+            try {
+                if (!this.isConnected) {
+                    await this.connect();
+                }
+                
+                const [rows] = await this.pool.query(sql, params);
+                return rows;
+            } catch (error) {
+                if (this.isConnectionError(error) && attempt < 3) {
+                    console.warn(`⚠️ Connection error on query attempt ${attempt}, retrying...`);
+                    this.isConnected = false;
+                    await new Promise(resolve => setTimeout(resolve, 1000 * attempt));
+                    continue;
+                }
+                throw error;
+            }
+        }
     }
 
     async close() {

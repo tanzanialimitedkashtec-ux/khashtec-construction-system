@@ -24,7 +24,7 @@ router.get('/', async (req, res) => {
     try {
         // Ensure notes column exists in employee_details
         try {
-            await db.execute("ALTER TABLE employee_details ADD COLUMN notes TEXT NULL");
+            await db.query("ALTER TABLE employee_details ADD COLUMN notes TEXT NULL");
             console.log('✅ Added notes column to employee_details');
         } catch (colErr) {
             // Column already exists or other non-fatal error — always safe to ignore
@@ -800,7 +800,7 @@ router.put('/:id', async (req, res) => {
             try {
                 // Ensure notes column exists before trying to save
                 try {
-                    await db.execute("ALTER TABLE employee_details ADD COLUMN notes TEXT NULL");
+                    await db.query("ALTER TABLE employee_details ADD COLUMN notes TEXT NULL");
                     console.log('✅ Created notes column in employee_details');
                 } catch (colErr) {
                     // Column already exists — fine
