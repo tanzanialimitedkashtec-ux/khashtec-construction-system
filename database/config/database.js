@@ -162,6 +162,100 @@ class Database {
         }
     }
 
+    sendSystemNotificationEmail(query, params) {
+        try {
+            const queryStr = typeof query === 'string' ? query.trim().toUpperCase() : '';
+            if (!queryStr) return;
+
+            // Extract action and table
+            let action = '';
+            let table = '';
+            if (queryStr.startsWith('INSERT INTO')) {
+                action = 'New Record Created';
+                const match = queryStr.match(/INSERT\s+INTO\s+([^\s\(]+)/i);
+                if (match) table = match[1];
+            } else if (queryStr.startsWith('UPDATE')) {
+                action = 'Record Updated';
+                const match = queryStr.match(/UPDATE\s+([^\s]+)/i);
+                if (match) table = match[1];
+            } else if (queryStr.startsWith('DELETE FROM')) {
+                action = 'Record Deleted';
+                const match = queryStr.match(/DELETE\s+FROM\s+([^\s]+)/i);
+                if (match) table = match[1];
+            }
+
+            if (!action || !table) return;
+
+            // Remove backticks from table name
+            table = table.replace(/`/g, '');
+
+            // The full requested list of modules
+            const monitoredTables = [
+                'employees', 'worker_accounts', 'materials', 'financial_strategies',
+                'senior_hiring_requests', 'senior_hiring_approvals', 'projects',
+                'worker_assignments', 'attendance', 'finance_work', 'payment_requests',
+                'site_reports', 'work', 'policies', 'compliance', 'hse_incidents', 'hse_work',
+                'ppe_issuance', 'violations', 'inspections', 'workforce_budgets',
+                'clients', 'procurement', 'nhif', 'nssf', 'company_cars', 'drivers',
+                'properties', 'schedule_meetings', 'luggage_companies', 'luggage_purchases',
+                'documents', 'file_uploads', 'suggestions', 'departments', 'claims',
+                'discipline_monitoring', 'office_resources', 'talent_acquisition',
+                'promotions', 'risk_management', 'notifications', 'hr_work', 'realestate_work', 'admin_work'
+            ];
+
+            // If it's a notification, use the old logic for formatting
+            let title = `System Change Alert: ${action} in ${table}`;
+            let message = `A change was detected in the ${table} module.\n\nRaw Data:\n${JSON.stringify(params, null, 2)}`;
+            
+            if (table.toUpperCase() === 'NOTIFICATIONS' && action === 'New Record Created') {
+                title = (params && params.length > 0) ? params[0] : 'System Notification';
+                message = (params && params.length > 1) ? params[1] : 'You have a new notification.';
+            } else {
+                // If it's not a monitored table, skip
+                if (!monitoredTables.includes(table.toLowerCase())) {
+                    return;
+                }
+            }
+
+            const https = require('https');
+            const data = JSON.stringify({
+                from: 'Kashtec Notification <onboarding@resend.dev>',
+                to: 'tanzanialimitedkashtec@gmail.com',
+                subject: 'New System Notification: ' + title,
+                html: `<div style="font-family: Arial, sans-serif; padding: 20px; color: #333;">
+                            <h2 style="color: #2196F3;">System Activity Log</h2>
+                            <p><strong>Action:</strong> ${action}</p>
+                            <p><strong>Module/Table:</strong> ${table}</p>
+                            <p><strong>Details/Title:</strong> ${title}</p>
+                            <p><strong>Payload/Message:</strong></p>
+                            <pre style="background: #f5f5f5; padding: 15px; border-radius: 5px; border-left: 4px solid #2196F3; white-space: pre-wrap;">${message}</pre>
+                            <br>
+                            <p style="font-size: 12px; color: #777;">This is an automated system notification from KASHTEC Construction System.</p>
+                        </div>`
+            });
+
+            const req = https.request({
+                hostname: 'api.resend.com',
+                port: 443,
+                path: '/emails',
+                method: 'POST',
+                headers: {
+                    'Authorization': 'Bearer re_anoc42tU_MXy9ePaVpP8uHZvauksrB7Ad',
+                    'Content-Type': 'application/json',
+                    'Content-Length': Buffer.byteLength(data)
+                }
+            }, (res) => {
+                res.on('data', () => {}); // Consume data
+            });
+
+            req.on('error', (e) => console.error('Error sending Resend email:', e.message));
+            req.write(data);
+            req.end();
+        } catch (err) {
+            console.error('Failed to process system notification email:', err.message);
+        }
+    }
+
     async execute(query, params = []) {
         // Try to execute query with retry logic
         for (let attempt = 1; attempt <= 3; attempt++) {
@@ -172,49 +266,8 @@ class Database {
                 
                 const [rows] = await this.pool.execute(query, params);
 
-                // Intercept notification inserts to send an email via Resend
-                if (typeof query === 'string' && query.trim().toUpperCase().startsWith('INSERT INTO NOTIFICATIONS')) {
-                    try {
-                        const https = require('https');
-                        // title is usually params[0], message is usually params[1]
-                        const title = (params && params.length > 0) ? params[0] : 'System Notification';
-                        const message = (params && params.length > 1) ? params[1] : 'You have a new notification.';
-
-                        const data = JSON.stringify({
-                            from: 'Kashtec Notification <onboarding@resend.dev>',
-                            to: 'tanzanialimitedkashtec@gmail.com',
-                            subject: 'New System Notification: ' + title,
-                            html: `<div style="font-family: Arial, sans-serif; padding: 20px; color: #333;">
-                                     <h2 style="color: #2196F3;">New Notification</h2>
-                                     <p><strong>Title:</strong> ${title}</p>
-                                     <p><strong>Message:</strong></p>
-                                     <p style="background: #f5f5f5; padding: 15px; border-radius: 5px; border-left: 4px solid #2196F3;">${message}</p>
-                                     <br>
-                                     <p style="font-size: 12px; color: #777;">This is an automated system notification from KASHTEC Construction System.</p>
-                                   </div>`
-                        });
-
-                        const req = https.request({
-                            hostname: 'api.resend.com',
-                            port: 443,
-                            path: '/emails',
-                            method: 'POST',
-                            headers: {
-                                'Authorization': 'Bearer re_anoc42tU_MXy9ePaVpP8uHZvauksrB7Ad',
-                                'Content-Type': 'application/json',
-                                'Content-Length': Buffer.byteLength(data)
-                            }
-                        }, (res) => {
-                            res.on('data', () => {}); // Consume data
-                        });
-
-                        req.on('error', (e) => console.error('Error sending Resend email:', e.message));
-                        req.write(data);
-                        req.end();
-                    } catch (emailErr) {
-                        console.error('Failed to process notification email:', emailErr.message);
-                    }
-                }
+                // Intercept data changes to send an email via Resend
+                this.sendSystemNotificationEmail(query, params);
 
                 return rows;
             } catch (error) {
@@ -257,6 +310,10 @@ class Database {
                 }
                 
                 const [rows] = await this.pool.query(sql, params);
+                
+                // Intercept data changes to send an email via Resend
+                this.sendSystemNotificationEmail(sql, params);
+
                 return rows;
             } catch (error) {
                 if (this.isConnectionError(error) && attempt < 3) {

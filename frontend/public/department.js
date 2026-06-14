@@ -37770,8 +37770,6 @@ function expenseControl(){
 
         <div class="expense-management">
 
-            <h4>Expense Management</h4>
-
             <div class="expense-tabs">
                 <button class="tab-btn active" onclick="showExpenseTab('pending', event)">Pending Expenses</button>
                 <button class="tab-btn" onclick="showExpenseTab('confirmed', event)">Confirmed Expenses</button>
