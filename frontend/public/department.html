@@ -14399,11 +14399,11 @@ font-weight: bold;
 
 .incidents-table th {
 
-    background: #007bff;
+    background: #0b3d91;
 
     color: white;
 
-    padding: 6px 8px;
+    padding: 9px 9px;
 
     text-align: left;
 
@@ -14875,11 +14875,11 @@ font-weight: bold;
 
 .ppe-table th {
 
-    background: #007bff;
+    background: #0b3d91;
 
     color: white;
 
-    padding: 6px 8px;
+    padding: 9px 9px;
 
     text-align: left;
 
@@ -75842,7 +75842,11 @@ function displaySiteReports(reports, _retry) {
 
                     <div class="report-actions">
 
-                        <button class="action-btn delete" onclick="deleteSiteReport('${report.id}')" title="Delete Report">🗑️</button>
+                        <button class="action-btn view" onclick="viewSiteReport('${report.id}')" title="View Details">👁️</button>
+
+                        <button class="action-btn edit" onclick="editSiteReport('${report.id}')" title="Edit Report">✏️</button>
+
+                        <button class="action-btn download" onclick="downloadSiteReport('${report.id}')" title="Download PDF">📥</button>
 
                     </div>
 
@@ -75864,10 +75868,26 @@ function displaySiteReports(reports, _retry) {
 
 // Site report action functions
 
-function deleteSiteReport(reportId) {
-    if (confirm('Are you sure you want to delete this site report? This action cannot be undone.')) {
-        customAlert(`Site report ${reportId} has been deleted successfully.`, "Report Deleted", "info");
-    }
+function viewSiteReport(reportId) {
+
+    customAlert(`Viewing site report details for ID: ${reportId}\n\nFull site report information including project details, weather conditions, work completed, safety incidents, materials used, equipment deployed, issues encountered, and next day's plan will be displayed.`, "Site Report Details", "info");
+
+}
+
+
+
+function editSiteReport(reportId) {
+
+    customAlert(`Editing site report ${reportId}...\n\nSite report editor will open for modifications to work completed, safety incidents, materials used, equipment deployed, and next day's plan.`, "Edit Site Report", "info");
+
+}
+
+
+
+function downloadSiteReport(reportId) {
+
+    customAlert(`Downloading site report ${reportId} as PDF...\n\nSite report will be generated and downloaded as a PDF document with all project details, work progress, safety information, and daily activities.`, "Download Site Report", "info");
+
 }
 
 
@@ -89573,9 +89593,9 @@ async function adminOperations(){
 
     <div class="card">
         <h3>Admin Work Items</h3>
-        <div class="table-responsive" style="max-height: 500px; overflow-y: auto; border: 1px solid #e2e8f0; border-radius: 8px;">
-            <table class="data-table" style="margin: 0; width:100%; border-collapse:collapse;">
-                <thead style="position: sticky; top: 0; z-index: 1; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+        <div style="overflow-x:auto;">
+            <table class="data-table" style="width:100%; border-collapse:collapse;">
+                <thead>
                     <tr>
                         <th>ID</th>
                         <th>Type</th>
@@ -89595,9 +89615,9 @@ async function adminOperations(){
 
     <div class="card">
         <h3>Documentation Control</h3>
-        <div class="table-responsive" style="max-height: 500px; overflow-y: auto; border: 1px solid #e2e8f0; border-radius: 8px;">
-            <table class="data-table" style="margin: 0; width:100%; border-collapse:collapse;">
-                <thead style="position: sticky; top: 0; z-index: 1; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+        <div style="overflow-x:auto;">
+            <table class="data-table" style="width:100%; border-collapse:collapse;">
+                <thead>
                     <tr>
                         <th>ID</th>
                         <th>Title</th>
@@ -89617,9 +89637,9 @@ async function adminOperations(){
 
     <div class="card">
         <h3>Office Resources</h3>
-        <div class="table-responsive" style="max-height: 500px; overflow-y: auto; border: 1px solid #e2e8f0; border-radius: 8px;">
-            <table class="data-table" style="margin: 0; width:100%; border-collapse:collapse;">
-                <thead style="position: sticky; top: 0; z-index: 1; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+        <div style="overflow-x:auto;">
+            <table class="data-table" style="width:100%; border-collapse:collapse;">
+                <thead>
                     <tr>
                         <th>Code</th>
                         <th>Name</th>
