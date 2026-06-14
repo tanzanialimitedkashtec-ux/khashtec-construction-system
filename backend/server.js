@@ -125,6 +125,99 @@ app.post('/api/auth/login', async (req, res) => {
     }
 });
 
+// ===== DEBUG NOTES ENDPOINT (standalone, always works) =====
+app.get('/api/debug-notes', async (req, res) => {
+    const results = { version: 'v3-standalone', timestamp: new Date().toISOString(), steps: [] };
+    
+    try {
+        // Step 1: Check table exists
+        try {
+            const tableCheck = await db.execute('SELECT COUNT(*) as cnt FROM employee_details');
+            results.steps.push({ step: '1_table_exists', status: 'YES', count: tableCheck });
+        } catch (e) {
+            results.steps.push({ step: '1_table_exists', status: 'NO', error: e.message });
+            return res.json(results);
+        }
+        
+        // Step 2: Check current columns via SHOW COLUMNS
+        try {
+            const cols = await db.execute("SHOW COLUMNS FROM employee_details");
+            results.steps.push({ step: '2_columns', data: cols });
+        } catch (e) {
+            results.steps.push({ step: '2_columns', error: e.message });
+        }
+        
+        // Step 3: Try ALTER TABLE with db.query (should use pool.query)
+        try {
+            const alterResult = await db.query("ALTER TABLE employee_details ADD COLUMN notes TEXT NULL");
+            results.steps.push({ step: '3_alter_via_query', status: 'ADDED', result: JSON.stringify(alterResult) });
+        } catch (e) {
+            results.steps.push({ step: '3_alter_via_query', caught: e.message, code: e.code, errno: e.errno });
+        }
+        
+        // Step 4: Try ALTER TABLE with db.execute (uses pool.execute/prepared stmts)
+        try {
+            const alterResult2 = await db.execute("ALTER TABLE employee_details ADD COLUMN notes_test_col TEXT NULL");
+            results.steps.push({ step: '4_alter_via_execute', status: 'ADDED', result: JSON.stringify(alterResult2) });
+            // Clean up
+            try { await db.query("ALTER TABLE employee_details DROP COLUMN notes_test_col"); } catch(e) {}
+        } catch (e) {
+            results.steps.push({ step: '4_alter_via_execute', caught: e.message, code: e.code, errno: e.errno });
+        }
+        
+        // Step 5: Verify columns after ALTER
+        try {
+            const cols2 = await db.execute("SHOW COLUMNS FROM employee_details");
+            const colNames = Array.isArray(cols2) ? cols2.map(c => c.Field || c.field || Object.values(c)[0]) : 'not_array';
+            results.steps.push({ step: '5_columns_after', columns: colNames });
+        } catch (e) {
+            results.steps.push({ step: '5_columns_after', error: e.message });
+        }
+        
+        // Step 6: Direct pool.query test (bypass db wrapper entirely)
+        try {
+            if (db.pool) {
+                const [rows] = await db.pool.query("SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = 'employee_details' AND TABLE_SCHEMA = DATABASE()");
+                results.steps.push({ step: '6_info_schema', columns: rows.map(r => r.COLUMN_NAME) });
+            } else {
+                results.steps.push({ step: '6_info_schema', error: 'db.pool not available' });
+            }
+        } catch (e) {
+            results.steps.push({ step: '6_info_schema', error: e.message });
+        }
+        
+        // Step 7: Try direct pool.query ALTER TABLE
+        try {
+            if (db.pool) {
+                const [result] = await db.pool.query("ALTER TABLE employee_details ADD COLUMN notes TEXT NULL");
+                results.steps.push({ step: '7_direct_pool_alter', status: 'ADDED' });
+            }
+        } catch (e) {
+            results.steps.push({ step: '7_direct_pool_alter', caught: e.message, code: e.code });
+        }
+        
+        // Step 8: Try writing and reading a note
+        try {
+            await db.execute("UPDATE employee_details SET notes = 'DEBUG_TEST_NOTE' WHERE employee_id = (SELECT MIN(employee_id) FROM (SELECT employee_id FROM employee_details LIMIT 1) as t)");
+            results.steps.push({ step: '8_write_note', status: 'SUCCESS' });
+        } catch (e) {
+            results.steps.push({ step: '8_write_note', error: e.message });
+        }
+        
+        try {
+            const readBack = await db.execute("SELECT employee_id, notes FROM employee_details LIMIT 3");
+            results.steps.push({ step: '9_read_notes', data: readBack });
+        } catch (e) {
+            results.steps.push({ step: '9_read_notes', error: e.message });
+        }
+        
+    } catch (e) {
+        results.steps.push({ step: 'FATAL', error: e.message, stack: e.stack });
+    }
+    
+    res.json(results);
+});
+
 // ===== EMPLOYEE ROUTES =====
 console.log('🔍 Mounting employee routes from routes/employees.js...');
 
