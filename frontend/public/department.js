@@ -11246,7 +11246,42 @@ function loadPayrollData() {
     .catch(err => {
         console.error('âŒ Error loading payroll history:', err);
     });
+
+    // Load saved employee payments from database
+    loadEmployeePayments(baseUrl);
+
 }
+
+function loadEmployeePayments(baseUrl) {
+    if (!baseUrl) baseUrl = window.KashTecAPI && window.KashTecAPI.baseUrl ? window.KashTecAPI.baseUrl : window.location.origin;
+    fetch(baseUrl + '/api/payroll/employee-payments')
+    .then(function(res) { return res.json(); })
+    .then(function(data) {
+        if (!data.success) return;
+        var payments = data.data || [];
+        var tbody = document.getElementById('payEmployeeTableBody');
+        if (!tbody) return;
+        var noPaymentsRow = document.getElementById('no-payments-row');
+        if (payments.length > 0 && noPaymentsRow) noPaymentsRow.style.display = 'none';
+        payments.forEach(function(p) {
+            var tr = document.createElement('tr');
+            var amt = parseFloat(p.amount) || 0;
+            var methodMap = { bank_transfer: 'Bank Transfer', mobile_money: 'Mobile Money', cash: 'Cash' };
+            var methodLabel = methodMap[p.payment_method] || p.payment_method || 'N/A';
+            var dateStr = p.payment_date ? String(p.payment_date).slice(0, 10) : '';
+            tr.innerHTML =
+                '<td style="padding:8px; border:1px solid #ddd;">' + (p.employee_name || 'Employee #' + p.employee_id) + '</td>' +
+                '<td style="padding:8px; border:1px solid #ddd; text-align:right;">' + amt.toLocaleString() + '</td>' +
+                '<td style="padding:8px; border:1px solid #ddd;">' + methodLabel + '</td>' +
+                '<td style="padding:8px; border:1px solid #ddd;">' + dateStr + '</td>' +
+                '<td style="padding:8px; border:1px solid #ddd; text-align:center;"><span style="padding:2px 8px; border-radius:4px; background:#d4edda; color:#155724;">' + (p.status || 'Processed') + '</span></td>';
+            tbody.appendChild(tr);
+        });
+        console.log('Loaded ' + payments.length + ' employee payments from database');
+    })
+    .catch(function(err) { console.error('Error loading employee payments:', err); });
+}
+
 
 function populatePayrollEmployeeDropdowns(employees) {
     const selectors = ['salaryEmployee', 'payslipEmployee', 'emailPayslipsEmployee'];
