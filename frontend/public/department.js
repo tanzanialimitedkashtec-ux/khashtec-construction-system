@@ -17564,8 +17564,206 @@ function createWorkerAccount(){
 
         </div>
 
+        <!-- Worker Accounts Table -->
+        <div class="card" style="margin-top: 20px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                <h3>📋 Worker Accounts List</h3>
+                <button type="button" onclick="loadWorkerAccounts()" class="action" style="background: #17a2b8;">🔄 Refresh</button>
+            </div>
+            <div style="margin-bottom: 15px; display: flex; gap: 10px; align-items: center;">
+                <input type="text" id="workerAccountSearchInput" placeholder="Search by Name, Email, Department, Job Title..." oninput="filterWorkerAccountsTable()" style="padding: 10px 15px; border: 1px solid #ddd; border-radius: 6px; flex: 1; font-size: 14px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+                <button onclick="document.getElementById('workerAccountSearchInput').value=''; filterWorkerAccountsTable();" style="padding: 10px 20px; background: #6c757d; color: #fff; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: 500;">Clear</button>
+            </div>
+            <div style="overflow-x: auto;">
+                <table class="data-table" style="width: 100%; border-collapse: collapse; white-space: nowrap;">
+                    <thead>
+                        <tr style="background: #f8f9fa;">
+                            <th style="padding: 10px; border: 1px solid #dee2e6; text-align: left;">#</th>
+                            <th style="padding: 10px; border: 1px solid #dee2e6; text-align: left;">Employee ID</th>
+                            <th style="padding: 10px; border: 1px solid #dee2e6; text-align: left;">Full Name</th>
+                            <th style="padding: 10px; border: 1px solid #dee2e6; text-align: left;">Work Email</th>
+                            <th style="padding: 10px; border: 1px solid #dee2e6; text-align: left;">Phone Number</th>
+                            <th style="padding: 10px; border: 1px solid #dee2e6; text-align: left;">Department</th>
+                            <th style="padding: 10px; border: 1px solid #dee2e6; text-align: left;">Job Title</th>
+                            <th style="padding: 10px; border: 1px solid #dee2e6; text-align: left;">Account Type</th>
+                            <th style="padding: 10px; border: 1px solid #dee2e6; text-align: left;">Access Level</th>
+                            <th style="padding: 10px; border: 1px solid #dee2e6; text-align: left;">Account Notes</th>
+                            <th style="padding: 10px; border: 1px solid #dee2e6; text-align: left;">Profile Picture</th>
+                            <th style="padding: 10px; border: 1px solid #dee2e6; text-align: left;">ID Document</th>
+                            <th style="padding: 10px; border: 1px solid #dee2e6; text-align: left;">Contract Document</th>
+                            <th style="padding: 10px; border: 1px solid #dee2e6; text-align: left;">Status</th>
+                            <th style="padding: 10px; border: 1px solid #dee2e6; text-align: left;">Created At</th>
+                            <th style="padding: 10px; border: 1px solid #dee2e6; text-align: left;">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="workerAccountsTbody">
+                        <tr><td colspan="16" style="padding: 20px; text-align: center; color: #888;">Loading worker accounts...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
     `);
 
+    // Load worker accounts into the table after render
+    loadWorkerAccounts();
+
+}
+
+
+
+function loadWorkerAccounts() {
+    const tbody = document.getElementById('workerAccountsTbody');
+    if (!tbody) return;
+
+    tbody.innerHTML = '<tr><td colspan="16" style="padding: 20px; text-align: center; color: #888;">⏳ Loading worker accounts...</td></tr>';
+
+    const baseUrl = window.location.origin;
+
+    fetch(`${baseUrl}/api/worker-accounts`, {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'Authorization': `Bearer ${sessionManager.getAuthToken()}`
+        }
+    })
+    .then(response => {
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        return response.json();
+    })
+    .then(workers => {
+        console.log('📋 Worker accounts loaded:', workers.length);
+        
+        // Store globally for filtering
+        window.allWorkerAccounts = workers || [];
+
+        if (!workers || workers.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="16" style="padding: 20px; text-align: center; color: #888;">No worker accounts found. Create one using the form above.</td></tr>';
+            return;
+        }
+
+        displayWorkerAccountsTable(workers);
+    })
+    .catch(error => {
+        console.error('❌ Error loading worker accounts:', error);
+        tbody.innerHTML = '<tr><td colspan="16" style="padding: 20px; text-align: center; color: #dc3545;">❌ Failed to load worker accounts: ' + error.message + '</td></tr>';
+    });
+}
+
+
+function displayWorkerAccountsTable(workers) {
+    const tbody = document.getElementById('workerAccountsTbody');
+    if (!tbody) return;
+
+    if (!workers || workers.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="16" style="padding: 20px; text-align: center; color: #888;">No worker accounts match your search.</td></tr>';
+        return;
+    }
+
+    const deptMap = {
+        'projects': 'Projects',
+        'admin': 'Administration',
+        'finance': 'Finance',
+        'hr': 'Human Resources',
+        'hse': 'Health & Safety',
+        'realestate': 'Real Estate'
+    };
+
+    const acctTypeMap = {
+        'staff': 'Staff Account',
+        'worker': 'Worker Account',
+        'contractor': 'Contractor Account'
+    };
+
+    const accessMap = {
+        'basic': 'Basic Access',
+        'standard': 'Standard Access',
+        'supervisor': 'Supervisor Access'
+    };
+
+    tbody.innerHTML = workers.map((w, index) => {
+        const statusColor = w.status === 'active' ? '#28a745' : w.status === 'suspended' ? '#ffc107' : '#dc3545';
+        const statusLabel = (w.status || 'active').charAt(0).toUpperCase() + (w.status || 'active').slice(1);
+        const createdDate = w.created_at ? new Date(w.created_at).toLocaleDateString() : 'N/A';
+        const profileLink = w.profile_picture ? '<a href="' + w.profile_picture + '" target="_blank" style="color:#17a2b8;">📷 View</a>' : '—';
+        const idDocLink = w.id_document ? '<a href="' + w.id_document + '" target="_blank" style="color:#17a2b8;">📄 View</a>' : '—';
+        const contractLink = w.contract_document ? '<a href="' + w.contract_document + '" target="_blank" style="color:#17a2b8;">📑 View</a>' : '—';
+
+        return `<tr>
+            <td style="padding: 8px 10px; border: 1px solid #dee2e6;">${index + 1}</td>
+            <td style="padding: 8px 10px; border: 1px solid #dee2e6;">${w.employee_id || '—'}</td>
+            <td style="padding: 8px 10px; border: 1px solid #dee2e6; font-weight: 600;">${w.full_name || '—'}</td>
+            <td style="padding: 8px 10px; border: 1px solid #dee2e6;">${w.work_email || '—'}</td>
+            <td style="padding: 8px 10px; border: 1px solid #dee2e6;">${w.phone_number || '—'}</td>
+            <td style="padding: 8px 10px; border: 1px solid #dee2e6;">${deptMap[w.department] || w.department || '—'}</td>
+            <td style="padding: 8px 10px; border: 1px solid #dee2e6;">${w.job_title || '—'}</td>
+            <td style="padding: 8px 10px; border: 1px solid #dee2e6;">${acctTypeMap[w.account_type] || w.account_type || '—'}</td>
+            <td style="padding: 8px 10px; border: 1px solid #dee2e6;">${accessMap[w.access_level] || w.access_level || '—'}</td>
+            <td style="padding: 8px 10px; border: 1px solid #dee2e6; max-width: 200px; white-space: normal; word-wrap: break-word;">${w.account_notes || '—'}</td>
+            <td style="padding: 8px 10px; border: 1px solid #dee2e6; text-align: center;">${profileLink}</td>
+            <td style="padding: 8px 10px; border: 1px solid #dee2e6; text-align: center;">${idDocLink}</td>
+            <td style="padding: 8px 10px; border: 1px solid #dee2e6; text-align: center;">${contractLink}</td>
+            <td style="padding: 8px 10px; border: 1px solid #dee2e6;"><span style="background: ${statusColor}; color: #fff; padding: 3px 10px; border-radius: 4px; font-size: 12px;">${statusLabel}</span></td>
+            <td style="padding: 8px 10px; border: 1px solid #dee2e6;">${createdDate}</td>
+            <td style="padding: 8px 10px; border: 1px solid #dee2e6;">
+                <button onclick="deleteWorkerAccount('${w.id}')" class="action" style="background: #dc3545; padding: 4px 10px; font-size: 12px;">🗑️ Delete</button>
+            </td>
+        </tr>`;
+    }).join('');
+}
+
+
+function filterWorkerAccountsTable() {
+    const searchTerm = (document.getElementById('workerAccountSearchInput')?.value || '').toLowerCase();
+    const workers = window.allWorkerAccounts || [];
+
+    if (!searchTerm) {
+        displayWorkerAccountsTable(workers);
+        return;
+    }
+
+    const filtered = workers.filter(w => {
+        return (w.employee_id || '').toLowerCase().includes(searchTerm) ||
+               (w.full_name || '').toLowerCase().includes(searchTerm) ||
+               (w.work_email || '').toLowerCase().includes(searchTerm) ||
+               (w.phone_number || '').toLowerCase().includes(searchTerm) ||
+               (w.department || '').toLowerCase().includes(searchTerm) ||
+               (w.job_title || '').toLowerCase().includes(searchTerm) ||
+               (w.account_type || '').toLowerCase().includes(searchTerm) ||
+               (w.access_level || '').toLowerCase().includes(searchTerm) ||
+               (w.status || '').toLowerCase().includes(searchTerm);
+    });
+
+    displayWorkerAccountsTable(filtered);
+}
+
+
+function deleteWorkerAccount(id) {
+    if (!confirm('Are you sure you want to delete this worker account? This action cannot be undone.')) return;
+
+    const baseUrl = window.location.origin;
+
+    fetch(`${baseUrl}/api/worker-accounts/${id}`, {
+        method: 'DELETE',
+        headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'Authorization': `Bearer ${sessionManager.getAuthToken()}`
+        }
+    })
+    .then(response => {
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        return response.json();
+    })
+    .then(data => {
+        customAlert('✅ Worker account deleted successfully!', 'Deleted', 'success');
+        loadWorkerAccounts();
+    })
+    .catch(error => {
+        console.error('❌ Error deleting worker account:', error);
+        customAlert('❌ Failed to delete worker account: ' + error.message, 'Error', 'error');
+    });
 }
 
 
@@ -18837,6 +19035,11 @@ function saveWorkerAccount() {
             document.getElementById('workerAccountForm').reset();
 
             
+
+            // Reload the worker accounts table to show the new entry
+            if (typeof loadWorkerAccounts === 'function') {
+                loadWorkerAccounts();
+            }
 
             // Reset button
 
