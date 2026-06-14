@@ -770,12 +770,16 @@ router.get('/report/income-statement', async (req, res) => {
         const revenueArr = Array.isArray(revenue) ? revenue : [];
         const expensesArr = Array.isArray(expenses) ? expenses : [];
 
-        // Include salary expenses from payroll_records (real processed payroll data only)
+        // Include salary expenses from payroll_records + employee_payments
         const payrollRows = await db.execute(
             `SELECT SUM(net_payment) as sum FROM payroll_records WHERE payment_date BETWEEN ? AND ?`,
             [start, end]
         ).catch(() => []);
-        const salaryExpense = sqlSumRow(payrollRows, ['sum']);
+        const empPayRows = await db.execute(
+            `SELECT SUM(amount) as sum FROM employee_payments WHERE payment_date BETWEEN ? AND ?`,
+            [start, end]
+        ).catch(() => []);
+        const salaryExpense = sqlSumRow(payrollRows, ['sum']) + sqlSumRow(empPayRows, ['sum']);
 
         if (salaryExpense > 0) {
             const hasSalaryCategory = expensesArr.some(e => (e.category || '').toLowerCase() === 'salaries');
@@ -870,10 +874,14 @@ router.get('/report/cash-flow', async (req, res) => {
             `SELECT SUM(net_payment) as sum FROM payroll_records WHERE payment_date BETWEEN ? AND ?`,
             [start, end]
         ).catch(() => []);
+        const empPayCashRows = await db.execute(
+            `SELECT SUM(amount) as sum FROM employee_payments WHERE payment_date BETWEEN ? AND ?`,
+            [start, end]
+        ).catch(() => []);
 
         const cashFromCustomers = sqlSumRow(cashFromCustomersRows, ['sum']);
         const cashPaidToSuppliers = sqlSumRow(cashPaidToSuppliersRows, ['sum']);
-        const salariesPaid = sqlSumRow(salariesRows, ['sum']);
+        const salariesPaid = sqlSumRow(salariesRows, ['sum']) + sqlSumRow(empPayCashRows, ['sum']);
 
         const netOperatingCash = cashFromCustomers - cashPaidToSuppliers - salariesPaid;
 
