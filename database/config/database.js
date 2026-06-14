@@ -164,32 +164,44 @@ class Database {
 
     sendSystemNotificationEmail(query, params) {
         try {
-            const queryStr = typeof query === 'string' ? query.trim().toUpperCase() : '';
+            const queryStr = typeof query === 'string' ? query.trim() : '';
             if (!queryStr) return;
+            const queryUpper = queryStr.toUpperCase();
 
-            // Extract action and table
+            // Extract action, table, and column names
             let action = '';
             let table = '';
-            if (queryStr.startsWith('INSERT INTO')) {
+            let columns = [];
+            
+            if (queryUpper.startsWith('INSERT INTO')) {
                 action = 'New Record Created';
-                const match = queryStr.match(/INSERT\s+INTO\s+([^\s\(]+)/i);
-                if (match) table = match[1];
-            } else if (queryStr.startsWith('UPDATE')) {
+                const tableMatch = queryStr.match(/INSERT\s+INTO\s+([^\s\(]+)/i);
+                if (tableMatch) table = tableMatch[1];
+                
+                const colMatch = queryStr.match(/\(([^)]+)\)/);
+                if (colMatch) {
+                    columns = colMatch[1].split(',').map(c => c.trim().replace(/`/g, ''));
+                }
+            } else if (queryUpper.startsWith('UPDATE')) {
                 action = 'Record Updated';
-                const match = queryStr.match(/UPDATE\s+([^\s]+)/i);
-                if (match) table = match[1];
-            } else if (queryStr.startsWith('DELETE FROM')) {
+                const tableMatch = queryStr.match(/UPDATE\s+([^\s]+)/i);
+                if (tableMatch) table = tableMatch[1];
+                
+                const setMatch = queryStr.match(/SET\s+(.+?)(?:\s+WHERE|$)/i);
+                if (setMatch) {
+                    const parts = setMatch[1].split(',');
+                    columns = parts.map(p => p.split('=')[0].trim().replace(/`/g, ''));
+                }
+            } else if (queryUpper.startsWith('DELETE FROM')) {
                 action = 'Record Deleted';
-                const match = queryStr.match(/DELETE\s+FROM\s+([^\s]+)/i);
-                if (match) table = match[1];
+                const tableMatch = queryStr.match(/DELETE\s+FROM\s+([^\s]+)/i);
+                if (tableMatch) table = tableMatch[1];
             }
 
             if (!action || !table) return;
 
-            // Remove backticks from table name
             table = table.replace(/`/g, '');
 
-            // The full requested list of modules
             const monitoredTables = [
                 'employees', 'worker_accounts', 'materials', 'financial_strategies',
                 'senior_hiring_requests', 'senior_hiring_approvals', 'projects',
@@ -203,15 +215,67 @@ class Database {
                 'promotions', 'risk_management', 'notifications', 'hr_work', 'realestate_work', 'admin_work'
             ];
 
-            // If it's a notification, use the old logic for formatting
             let title = `System Change Alert: ${action} in ${table}`;
-            let message = `A change was detected in the ${table} module.\n\nRaw Data:\n${JSON.stringify(params, null, 2)}`;
+            
+            // Format details nicely into an HTML table instead of raw JSON
+            let htmlDetails = '<table style="width: 100%; border-collapse: collapse; margin-top: 15px;">';
+            if (params && params.length > 0) {
+                for (let i = 0; i < params.length; i++) {
+                    const key = columns[i] ? columns[i] : `Field ${i + 1}`;
+                    let val = params[i];
+                    if (val === undefined || val === null) val = 'N/A';
+                    val = String(val);
+                    if (val.length > 300) val = val.substring(0, 300) + '... (truncated)';
+                    
+                    htmlDetails += `
+                        <tr>
+                            <td style="padding: 10px; border-bottom: 1px solid #ddd; width: 35%; font-weight: bold; color: #555; background-color: #f9f9f9;">${key}</td>
+                            <td style="padding: 10px; border-bottom: 1px solid #ddd; color: #333;">${val}</td>
+                        </tr>
+                    `;
+                }
+            } else {
+                htmlDetails += '<tr><td style="padding: 10px;">No specific parameters provided in query.</td></tr>';
+            }
+            htmlDetails += '</table>';
+
+            // Add action buttons for requests and approvals
+            let actionButtons = '';
+            const requiresApproval = [
+                'senior_hiring_requests', 
+                'workforce_budgets', 
+                'leave_requests', 
+                'payment_requests',
+                'work', 'hr_work', 'finance_work', 'realestate_work', 'admin_work',
+                'worker_assignments'
+            ];
+
+            if (requiresApproval.some(t => table.toLowerCase().includes(t))) {
+                const systemUrl = process.env.PUBLIC_URL || 'https://khashtec-construction-system-production.up.railway.app';
+                // Find ID if possible (usually the first param or 'id' column)
+                let recordId = 'unknown';
+                const idIndex = columns.findIndex(c => c.toLowerCase() === 'id');
+                if (idIndex !== -1 && params[idIndex]) {
+                    recordId = params[idIndex];
+                } else if (params && params.length > 0) {
+                    recordId = params[0]; // fallback
+                }
+
+                actionButtons = `
+                    <div style="margin-top: 30px; padding-top: 20px; border-top: 2px solid #eee; text-align: center;">
+                        <p style="margin-bottom: 15px; color: #555; font-size: 16px; font-weight: bold;">Action Required for this Request:</p>
+                        <a href="${systemUrl}/approve?module=${table}&id=${recordId}" style="display: inline-block; padding: 12px 24px; margin: 5px 10px; background-color: #4CAF50; color: white; text-decoration: none; border-radius: 5px; font-weight: bold; font-family: sans-serif;">✅ Approve</a>
+                        <a href="${systemUrl}/reject?module=${table}&id=${recordId}" style="display: inline-block; padding: 12px 24px; margin: 5px 10px; background-color: #F44336; color: white; text-decoration: none; border-radius: 5px; font-weight: bold; font-family: sans-serif;">❌ Reject</a>
+                        <a href="${systemUrl}/request-info?module=${table}&id=${recordId}" style="display: inline-block; padding: 12px 24px; margin: 5px 10px; background-color: #2196F3; color: white; text-decoration: none; border-radius: 5px; font-weight: bold; font-family: sans-serif;">ℹ️ Request Info</a>
+                    </div>
+                `;
+            }
             
             if (table.toUpperCase() === 'NOTIFICATIONS' && action === 'New Record Created') {
                 title = (params && params.length > 0) ? params[0] : 'System Notification';
-                message = (params && params.length > 1) ? params[1] : 'You have a new notification.';
+                const msg = (params && params.length > 1) ? params[1] : 'You have a new notification.';
+                htmlDetails = `<p style="background: #f5f5f5; padding: 15px; border-radius: 5px; border-left: 4px solid #2196F3; white-space: pre-wrap;">${msg}</p>`;
             } else {
-                // If it's not a monitored table, skip
                 if (!monitoredTables.includes(table.toLowerCase())) {
                     return;
                 }
@@ -222,15 +286,23 @@ class Database {
                 from: 'Kashtec Notification <onboarding@resend.dev>',
                 to: 'tanzanialimitedkashtec@gmail.com',
                 subject: 'New System Notification: ' + title,
-                html: `<div style="font-family: Arial, sans-serif; padding: 20px; color: #333;">
-                            <h2 style="color: #2196F3;">System Activity Log</h2>
-                            <p><strong>Action:</strong> ${action}</p>
-                            <p><strong>Module/Table:</strong> ${table}</p>
-                            <p><strong>Details/Title:</strong> ${title}</p>
-                            <p><strong>Payload/Message:</strong></p>
-                            <pre style="background: #f5f5f5; padding: 15px; border-radius: 5px; border-left: 4px solid #2196F3; white-space: pre-wrap;">${message}</pre>
-                            <br>
-                            <p style="font-size: 12px; color: #777;">This is an automated system notification from KASHTEC Construction System.</p>
+                html: `<div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #e0e0e0; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
+                            <div style="background-color: #1a237e; color: white; padding: 20px; text-align: center;">
+                                <h2 style="margin: 0; font-size: 24px;">KASHTEC System Alert</h2>
+                            </div>
+                            <div style="padding: 25px; background-color: #ffffff;">
+                                <h3 style="color: #333; margin-top: 0; border-bottom: 2px solid #2196F3; padding-bottom: 10px; display: inline-block;">${title}</h3>
+                                <div style="margin: 20px 0;">
+                                    <p style="margin: 5px 0;"><strong>Action Performed:</strong> <span style="color: #2196F3;">${action}</span></p>
+                                    <p style="margin: 5px 0;"><strong>Module Affected:</strong> <span style="background-color: #e3f2fd; padding: 2px 8px; border-radius: 4px; color: #0d47a1;">${table.toUpperCase()}</span></p>
+                                </div>
+                                <h4 style="margin-bottom: 10px; color: #444;">Record Details:</h4>
+                                ${htmlDetails}
+                                ${actionButtons}
+                            </div>
+                            <div style="background-color: #f5f5f5; padding: 15px; text-align: center; border-top: 1px solid #eee;">
+                                <p style="margin: 0; font-size: 12px; color: #888;">This is an automated system notification from KASHTEC Construction Management System.</p>
+                            </div>
                         </div>`
             });
 
