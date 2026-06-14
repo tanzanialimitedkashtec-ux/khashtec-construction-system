@@ -2833,6 +2833,15 @@ async function runMigrationsOnStartup() {
         
         console.log('\n=== MIGRATION COMPLETE ===\n');
         
+        // Ensure notes column exists in employee_details table
+        try {
+            await db.query("ALTER TABLE employee_details ADD COLUMN notes TEXT NULL");
+            console.log('✅ Added notes column to employee_details');
+        } catch (notesErr) {
+            // Column already exists — this is fine
+            console.log('ℹ️ Notes column status:', notesErr.code || '', notesErr.message || '');
+        }
+        
         // Fallback: Create missing critical tables directly if they don't exist
         try {
             console.log('🔧 Checking and creating missing critical tables...');

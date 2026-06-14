@@ -798,6 +798,14 @@ router.put('/:id', async (req, res) => {
             console.log('📝 Updating employee details...');
             
             try {
+                // Ensure notes column exists before trying to save
+                try {
+                    await db.execute("ALTER TABLE employee_details ADD COLUMN notes TEXT NULL");
+                    console.log('✅ Created notes column in employee_details');
+                } catch (colErr) {
+                    // Column already exists — fine
+                }
+                
                 const detailUpdates = [];
                 const detailValues = [];
                 
@@ -873,16 +881,32 @@ router.put('/:id', async (req, res) => {
         }
         
         // Return updated employee
-        const [updatedEmployee] = await db.execute(
-            'SELECT e.*, ed.full_name, ed.gmail, ed.phone, ed.nida, ed.passport, ed.contract_type, ed.notes FROM employees e LEFT JOIN employee_details ed ON e.id = ed.employee_id WHERE e.id = ?',
-            [req.params.id]
-        );
+        let returnedEmployee = null;
+        try {
+            const [updatedRows] = await db.execute(
+                'SELECT e.*, ed.full_name, ed.gmail, ed.phone, ed.nida, ed.passport, ed.contract_type, ed.notes FROM employees e LEFT JOIN employee_details ed ON e.id = ed.employee_id WHERE e.id = ?',
+                [req.params.id]
+            );
+            returnedEmployee = updatedRows && updatedRows.length > 0 ? updatedRows[0] : null;
+            console.log('✅ Return query with notes succeeded');
+        } catch (returnErr) {
+            console.log('⚠️ Return query with notes failed:', returnErr.message);
+            try {
+                const [updatedRows] = await db.execute(
+                    'SELECT e.*, ed.full_name, ed.gmail, ed.phone, ed.nida, ed.passport, ed.contract_type FROM employees e LEFT JOIN employee_details ed ON e.id = ed.employee_id WHERE e.id = ?',
+                    [req.params.id]
+                );
+                returnedEmployee = updatedRows && updatedRows.length > 0 ? updatedRows[0] : null;
+            } catch (returnErr2) {
+                console.log('⚠️ Fallback return query also failed:', returnErr2.message);
+            }
+        }
         
-        console.log('✅ Employee update completed successfully');
+        console.log('✅ Employee update completed. Returning:', returnedEmployee ? JSON.stringify(Object.keys(returnedEmployee)) : 'null');
         
         res.json({
             message: 'Employee updated successfully',
-            employee: updatedEmployee && updatedEmployee.length > 0 ? updatedEmployee[0] : null
+            employee: returnedEmployee
         });
         
     } catch (error) {

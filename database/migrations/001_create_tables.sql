@@ -77,6 +77,7 @@ CREATE TABLE IF NOT EXISTS employee_details (
   passport VARCHAR(50),
   contract_type VARCHAR(100),
   profile_image VARCHAR(255),
+  notes TEXT,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   FOREIGN KEY (employee_id) REFERENCES employees(id) ON DELETE CASCADE,
