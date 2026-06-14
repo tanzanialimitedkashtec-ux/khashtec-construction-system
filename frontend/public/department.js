@@ -1808,6 +1808,8 @@ function approveRecruitmentPolicies(){
                 <button onclick="clearPolicySearch()" style="padding: 10px 20px; background: #6c757d; color: #fff; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: 500;">Clear</button>
 
             </div>
+            
+            <div id="searchResults" style="margin-bottom: 15px; font-size: 14px; color: #555;"></div>
 
             
 
@@ -1857,6 +1859,7 @@ function approveRecruitmentPolicies(){
                 <input type="text" id="policySearchInput" placeholder="Search by Title, Submitter, Status..." oninput="filterPolicies()" style="padding: 10px 15px; border: 1px solid #ddd; border-radius: 6px; flex: 1; font-size: 14px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
                 <button onclick="clearPolicySearch()" style="padding: 10px 20px; background: #6c757d; color: #fff; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: 500;">Clear</button>
             </div>
+            <div id="searchResults" style="margin-bottom: 15px; font-size: 14px; color: #555;"></div>
 
             <div class="policy-section">
 
@@ -25273,9 +25276,10 @@ function uploadSafetyPolicies(){
                 <div class="policy-table-container">
 
                     <div style="margin-bottom: 20px; display: flex; gap: 10px; align-items: center;">
-                        <input type="text" id="policySearchInput" placeholder="🔍 Search policies..." style="padding: 10px 15px; border: 1px solid #ddd; border-radius: 6px; flex: 1; font-size: 14px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);" onkeyup="filterPolicyTable()">
-                        <button onclick="clearPolicySearch()" style="padding: 10px 20px; background: #6c757d; color: #fff; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: 500;">Clear</button>
+                        <input type="text" id="policyTableSearchInput" placeholder="🔍 Search policies..." style="padding: 10px 15px; border: 1px solid #ddd; border-radius: 6px; flex: 1; font-size: 14px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);" onkeyup="filterPolicyTable()">
+                        <button onclick="clearPolicyTableSearch()" style="padding: 10px 20px; background: #6c757d; color: #fff; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: 500;">Clear</button>
                     </div>
+                    <div id="searchTableResults" style="margin-bottom: 15px; font-size: 14px; color: #555;"></div>
 
                     <table class="policy-table">
 
@@ -79980,12 +79984,13 @@ function clearDriverSearch() {
 }
 
 function filterPolicyTable() {
-    var input = document.getElementById("policySearchInput");
+    var input = document.getElementById("policyTableSearchInput");
     if(!input) return;
     var filter = input.value.toUpperCase();
     var tbody = document.getElementById("policyRecordsList");
     if (!tbody) return;
     var tr = tbody.getElementsByTagName("tr");
+    var matchCount = 0;
     for (var i = 0; i < tr.length; i++) {
         var tdArray = tr[i].getElementsByTagName("td");
         var match = false;
@@ -79995,11 +80000,21 @@ function filterPolicyTable() {
                 break;
             }
         }
+        if (match) matchCount++;
         tr[i].style.display = match ? "" : "none";
     }
+    
+    var searchResults = document.getElementById('searchTableResults');
+    if (searchResults) {
+        if (filter) {
+            searchResults.textContent = `Found ${matchCount} policy(ies) matching "${input.value}"`;
+        } else {
+            searchResults.textContent = '';
+        }
+    }
 }
-function clearPolicySearch() {
-    var input = document.getElementById("policySearchInput");
+function clearPolicyTableSearch() {
+    var input = document.getElementById("policyTableSearchInput");
     if (input) { input.value = ""; filterPolicyTable(); }
 }
 
