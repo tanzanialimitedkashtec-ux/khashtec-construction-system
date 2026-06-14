@@ -1118,4 +1118,92 @@ router.get('/stats/overview', async (req, res) => {
     }
 });
 
+// ===== Serve worker files from database BLOBs (Railway-safe) =====
+
+// Serve profile picture
+router.get('/:id/profile-picture', async (req, res) => {
+    try {
+        const [rows] = await db.execute(
+            'SELECT profile_picture_data, profile_picture_mime, profile_picture FROM worker_accounts WHERE id = ?',
+            [req.params.id]
+        );
+        if (!rows || rows.length === 0) return res.status(404).json({ error: 'Worker not found' });
+        const worker = rows[0];
+
+        // Serve from BLOB if available
+        if (worker.profile_picture_data && worker.profile_picture_data.length > 0) {
+            res.set('Content-Type', worker.profile_picture_mime || 'image/jpeg');
+            res.set('Content-Disposition', 'inline');
+            return res.send(worker.profile_picture_data);
+        }
+
+        // Fallback: try disk file
+        if (worker.profile_picture) {
+            const filePath = path.join(__dirname, '../..', worker.profile_picture);
+            if (fsSync.existsSync(filePath)) return res.sendFile(filePath);
+        }
+
+        res.status(404).json({ error: 'Profile picture not found' });
+    } catch (error) {
+        console.error('Error serving profile picture:', error);
+        res.status(500).json({ error: 'Failed to serve profile picture' });
+    }
+});
+
+// Serve ID document
+router.get('/:id/id-document', async (req, res) => {
+    try {
+        const [rows] = await db.execute(
+            'SELECT id_document_data, id_document_mime, id_document FROM worker_accounts WHERE id = ?',
+            [req.params.id]
+        );
+        if (!rows || rows.length === 0) return res.status(404).json({ error: 'Worker not found' });
+        const worker = rows[0];
+
+        if (worker.id_document_data && worker.id_document_data.length > 0) {
+            res.set('Content-Type', worker.id_document_mime || 'application/pdf');
+            res.set('Content-Disposition', 'inline');
+            return res.send(worker.id_document_data);
+        }
+
+        if (worker.id_document) {
+            const filePath = path.join(__dirname, '../..', worker.id_document);
+            if (fsSync.existsSync(filePath)) return res.sendFile(filePath);
+        }
+
+        res.status(404).json({ error: 'ID document not found' });
+    } catch (error) {
+        console.error('Error serving ID document:', error);
+        res.status(500).json({ error: 'Failed to serve ID document' });
+    }
+});
+
+// Serve contract document
+router.get('/:id/contract-document', async (req, res) => {
+    try {
+        const [rows] = await db.execute(
+            'SELECT contract_document_data, contract_document_mime, contract_document FROM worker_accounts WHERE id = ?',
+            [req.params.id]
+        );
+        if (!rows || rows.length === 0) return res.status(404).json({ error: 'Worker not found' });
+        const worker = rows[0];
+
+        if (worker.contract_document_data && worker.contract_document_data.length > 0) {
+            res.set('Content-Type', worker.contract_document_mime || 'application/pdf');
+            res.set('Content-Disposition', 'inline');
+            return res.send(worker.contract_document_data);
+        }
+
+        if (worker.contract_document) {
+            const filePath = path.join(__dirname, '../..', worker.contract_document);
+            if (fsSync.existsSync(filePath)) return res.sendFile(filePath);
+        }
+
+        res.status(404).json({ error: 'Contract document not found' });
+    } catch (error) {
+        console.error('Error serving contract document:', error);
+        res.status(500).json({ error: 'Failed to serve contract document' });
+    }
+});
+
 module.exports = router;

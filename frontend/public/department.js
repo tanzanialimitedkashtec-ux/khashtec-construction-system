@@ -17686,9 +17686,9 @@ function displayWorkerAccountsTable(workers) {
         const statusColor = w.status === 'active' ? '#28a745' : w.status === 'suspended' ? '#ffc107' : '#dc3545';
         const statusLabel = (w.status || 'active').charAt(0).toUpperCase() + (w.status || 'active').slice(1);
         const createdDate = w.created_at ? new Date(w.created_at).toLocaleDateString() : 'N/A';
-        const profileLink = w.profile_picture ? '<a href="' + w.profile_picture + '" target="_blank" style="color:#17a2b8;">📷 View</a>' : '—';
-        const idDocLink = w.id_document ? '<a href="' + w.id_document + '" target="_blank" style="color:#17a2b8;">📄 View</a>' : '—';
-        const contractLink = w.contract_document ? '<a href="' + w.contract_document + '" target="_blank" style="color:#17a2b8;">📑 View</a>' : '—';
+        const profileLink = w.profile_picture ? '<a href="/api/worker-accounts/' + w.id + '/profile-picture" target="_blank" style="color:#17a2b8;">📷 View</a>' : '—';
+        const idDocLink = w.id_document ? '<a href="/api/worker-accounts/' + w.id + '/id-document" target="_blank" style="color:#17a2b8;">📄 View</a>' : '—';
+        const contractLink = w.contract_document ? '<a href="/api/worker-accounts/' + w.id + '/contract-document" target="_blank" style="color:#17a2b8;">📑 View</a>' : '—';
 
         return `<tr>
             <td style="padding: 8px 10px; border: 1px solid #dee2e6;">${index + 1}</td>
