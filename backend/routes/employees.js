@@ -22,8 +22,18 @@ router.get('/', async (req, res) => {
     console.log('📋 Request headers:', req.headers);
     
     try {
+        // Ensure notes column exists in employee_details
+        try {
+            await db.execute("ALTER TABLE employee_details ADD COLUMN notes TEXT NULL");
+            console.log('✅ Added notes column to employee_details');
+        } catch (colErr) {
+            // Column already exists — ignore
+            if (!colErr.message.includes('Duplicate column')) {
+                console.log('ℹ️ Notes column check:', colErr.message);
+            }
+        }
+
         console.log('🗄️ Executing employee query...');
-        console.log('📝 SQL Query: SELECT e.*, ed.full_name, ed.gmail, ed.phone, ed.nida, ed.passport, ed.contract_type, ed.profile_image FROM employees e LEFT JOIN employee_details ed ON e.id = ed.employee_id ORDER BY e.hire_date DESC');
         
         console.log('🔍 Checking employee details table...');
         
@@ -89,7 +99,7 @@ router.get('/', async (req, res) => {
         let employees;
         try {
             const empResult = await db.execute(
-                'SELECT e.*, ed.full_name, ed.gmail, ed.phone, ed.nida, ed.passport, ed.contract_type, ed.profile_image FROM employees e LEFT JOIN employee_details ed ON e.id = ed.employee_id ORDER BY e.hire_date DESC'
+                'SELECT e.*, ed.full_name, ed.gmail, ed.phone, ed.nida, ed.passport, ed.contract_type, ed.profile_image, ed.notes FROM employees e LEFT JOIN employee_details ed ON e.id = ed.employee_id ORDER BY e.hire_date DESC'
             );
             
             // Handle different database response formats
@@ -719,8 +729,8 @@ router.get('/:id', async (req, res) => {
 
 // Update employee
 router.put('/:id', async (req, res) => {
-    console.log('🔄 PUT employee endpoint called - DEBUG VERSION 2');
-    const { fullName, gmail, phone, department, jobCategory, status, nida, passport, contract } = req.body;
+    console.log('🔄 PUT employee endpoint called - DEBUG VERSION 3');
+    const { fullName, gmail, phone, department, jobCategory, status, nida, passport, contract, notes } = req.body;
     
     console.log('🔍 Received update data:', {
         fullName,
@@ -731,7 +741,8 @@ router.put('/:id', async (req, res) => {
         status,
         nida,
         passport,
-        contract
+        contract,
+        notes
     });
     
     try {
@@ -788,7 +799,7 @@ router.put('/:id', async (req, res) => {
         console.log('✅ Employees table updated:', updateResult);
         
         // Update employee_details table separately if detailed fields are provided
-        if (fullName || gmail || phone || nida || passport || contract) {
+        if (fullName || gmail || phone || nida || passport || contract || notes !== undefined) {
             console.log('📝 Updating employee details...');
             
             try {
@@ -819,6 +830,10 @@ router.put('/:id', async (req, res) => {
                     detailUpdates.push('contract_type = ?');
                     detailValues.push(contract);
                 }
+                if (notes !== undefined) {
+                    detailUpdates.push('notes = ?');
+                    detailValues.push(notes || null);
+                }
                 
                 if (detailUpdates.length > 0) {
                     // Check if employee_details record exists
@@ -837,7 +852,6 @@ router.put('/:id', async (req, res) => {
                         console.log('✅ Updated existing employee_details record');
                     } else {
                         // Insert new record with all fields
-                        const allDetailFields = ['full_name', 'gmail', 'phone', 'nida', 'passport', 'contract_type'];
                         const allDetailValues = [];
                         
                         if (fullName) allDetailValues.push(fullName); else allDetailValues.push(null);
@@ -846,11 +860,12 @@ router.put('/:id', async (req, res) => {
                         if (nida) allDetailValues.push(nida); else allDetailValues.push(null);
                         if (passport) allDetailValues.push(passport); else allDetailValues.push(null);
                         if (contract) allDetailValues.push(contract); else allDetailValues.push(null);
+                        allDetailValues.push(notes || null);
                         
                         allDetailValues.push(req.params.id);
                         
                         await db.execute(
-                            `INSERT INTO employee_details (full_name, gmail, phone, nida, passport, contract_type, employee_id) VALUES (?, ?, ?, ?, ?, ?, ?)`,
+                            `INSERT INTO employee_details (full_name, gmail, phone, nida, passport, contract_type, notes, employee_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
                             allDetailValues
                         );
                         console.log('✅ Created new employee_details record');
@@ -864,7 +879,7 @@ router.put('/:id', async (req, res) => {
         
         // Return updated employee
         const [updatedEmployee] = await db.execute(
-            'SELECT e.*, ed.full_name, ed.gmail, ed.phone, ed.nida, ed.passport, ed.contract_type FROM employees e LEFT JOIN employee_details ed ON e.id = ed.employee_id WHERE e.id = ?',
+            'SELECT e.*, ed.full_name, ed.gmail, ed.phone, ed.nida, ed.passport, ed.contract_type, ed.notes FROM employees e LEFT JOIN employee_details ed ON e.id = ed.employee_id WHERE e.id = ?',
             [req.params.id]
         );
         

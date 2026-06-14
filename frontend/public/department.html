@@ -41833,7 +41833,7 @@ function editEmployee(employeeId) {
     document.getElementById('updateJobCategory').value = emp.position || emp.job_category || '';
     document.getElementById('updateContract').value = emp.contract_type || '';
     document.getElementById('updateStatus').value = emp.status || 'Active';
-    document.getElementById('updateNotes').value = '';
+    document.getElementById('updateNotes').value = emp.notes || '';
 
     // Scroll to form
     updateForm.scrollIntoView({ behavior: 'smooth', block: 'start' });
