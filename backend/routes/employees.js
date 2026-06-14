@@ -27,10 +27,8 @@ router.get('/', async (req, res) => {
             await db.execute("ALTER TABLE employee_details ADD COLUMN notes TEXT NULL");
             console.log('✅ Added notes column to employee_details');
         } catch (colErr) {
-            // Column already exists — ignore
-            if (!colErr.message.includes('Duplicate column')) {
-                console.log('ℹ️ Notes column check:', colErr.message);
-            }
+            // Column already exists or other non-fatal error — always safe to ignore
+            console.log('ℹ️ Notes column migration:', colErr.code || colErr.errno || '', colErr.message);
         }
 
         console.log('🗄️ Executing employee query...');
@@ -97,62 +95,58 @@ router.get('/', async (req, res) => {
         
         // Get employees with details
         let employees;
+        
+        // Helper to parse db result into array
+        function parseDbResult(result) {
+            if (Array.isArray(result) && Array.isArray(result[0])) return result[0];
+            if (Array.isArray(result)) return result;
+            if (result && result.rows) return result.rows;
+            return [];
+        }
+        
+        // Helper to deduplicate by ID
+        function deduplicateById(arr) {
+            const unique = [];
+            const seen = new Set();
+            for (const item of arr) {
+                if (!seen.has(item.id)) {
+                    seen.add(item.id);
+                    unique.push(item);
+                }
+            }
+            return unique;
+        }
+        
         try {
+            // Try with notes column
             const empResult = await db.execute(
                 'SELECT e.*, ed.full_name, ed.gmail, ed.phone, ed.nida, ed.passport, ed.contract_type, ed.profile_image, ed.notes FROM employees e LEFT JOIN employee_details ed ON e.id = ed.employee_id ORDER BY e.hire_date DESC'
             );
-            
-            // Handle different database response formats
-            // mysql2 returns [rows, fields], so check nested array first
-            if (Array.isArray(empResult) && Array.isArray(empResult[0])) {
-                employees = empResult[0];
-            } else if (Array.isArray(empResult)) {
-                employees = empResult;
-            } else if (empResult && empResult.rows) {
-                employees = empResult.rows;
-            } else {
-                console.warn('⚠️ Unexpected employee query result format:', empResult);
-                employees = [];
-            }
-            
-            // Deduplicate employees by ID to prevent duplicates from JOIN
-            const uniqueEmployees = [];
-            const seenIds = new Set();
-            
-            for (const emp of employees) {
-                if (!seenIds.has(emp.id)) {
-                    seenIds.add(emp.id);
-                    uniqueEmployees.push(emp);
-                }
-            }
-            
-            employees = uniqueEmployees;
-            console.log('✅ Employee query executed successfully');
-            console.log(`📊 Deduplicated employees: ${employees.length} unique records`);
+            employees = deduplicateById(parseDbResult(empResult));
+            console.log('✅ Employee query with notes executed successfully');
         } catch (empQueryError) {
-            console.log('❌ Error in main employee query:', empQueryError.message);
-            console.log('🔄 Trying simple employee query without JOIN...');
+            console.log('⚠️ Query with ed.notes failed:', empQueryError.message);
+            console.log('🔄 Trying query WITHOUT ed.notes...');
             
             try {
-                const simpleResult = await db.execute('SELECT * FROM employees ORDER BY hire_date DESC');
+                // Fallback: join employee_details but skip notes column
+                const fallbackResult = await db.execute(
+                    'SELECT e.*, ed.full_name, ed.gmail, ed.phone, ed.nida, ed.passport, ed.contract_type, ed.profile_image FROM employees e LEFT JOIN employee_details ed ON e.id = ed.employee_id ORDER BY e.hire_date DESC'
+                );
+                employees = deduplicateById(parseDbResult(fallbackResult));
+                console.log('✅ Fallback query without notes succeeded');
+            } catch (fallback2Error) {
+                console.log('⚠️ Fallback JOIN query also failed:', fallback2Error.message);
                 
-                // Handle different database response formats
-                // mysql2 returns [rows, fields], so check nested array first
-                if (Array.isArray(simpleResult) && Array.isArray(simpleResult[0])) {
-                    employees = simpleResult[0];
-                } else if (Array.isArray(simpleResult)) {
-                    employees = simpleResult;
-                } else if (simpleResult && simpleResult.rows) {
-                    employees = simpleResult.rows;
-                } else {
-                    console.warn('⚠️ Unexpected simple employee query result format:', simpleResult);
-                    employees = [];
+                try {
+                    // Last resort: just employees table
+                    const simpleResult = await db.execute('SELECT * FROM employees ORDER BY hire_date DESC');
+                    employees = parseDbResult(simpleResult);
+                    console.log('✅ Simple query without JOIN succeeded');
+                } catch (simpleError) {
+                    console.log('❌ All employee queries failed:', simpleError.message);
+                    throw simpleError;
                 }
-                
-                console.log('✅ Simple employee query executed successfully');
-            } catch (simpleError) {
-                console.log('❌ Even simple employee query failed:', simpleError.message);
-                throw simpleError;
             }
         }
         console.log('✅ Employee query executed successfully');
@@ -173,6 +167,7 @@ router.get('/', async (req, res) => {
             console.log('  - passport:', emp.passport);
             console.log('  - contract_type:', emp.contract_type);
             console.log('  - profile_image:', emp.profile_image);
+            console.log('  - notes:', emp.notes);
             console.log('  - employee_id:', emp.employee_id);
             console.log('  - position:', emp.position);
             console.log('  - department:', emp.department);
