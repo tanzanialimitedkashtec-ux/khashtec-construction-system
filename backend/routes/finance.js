@@ -3,6 +3,7 @@ const router = express.Router();
 const fs = require('fs');
 const path = require('path');
 const db = require('../../database/config/database');
+var notify = require('../utils/notify');
 const upload = require('../middleware/upload');
 const { sendInvoiceEmail, sendExpenseEmail } = require('../services/emailService');
 
@@ -142,6 +143,7 @@ router.post('/budget', async (req, res) => {
             ]
         );
 
+        notify('Budget Created', department + ' budget for ' + period + ': TZS ' + Number(totalBudget).toLocaleString(), 'info');
         res.status(201).json({
             message: 'Budget created successfully',
             work_id: result.insertId,
@@ -296,6 +298,7 @@ router.post('/expense', upload.single('receipt'), async (req, res) => {
             status: 'Pending'
         }, 'created').catch(err => console.error('Expense email error:', err.message));
 
+        notify('Expense Submitted', category + ' expense: TZS ' + Number(amount).toLocaleString() + ' - ' + description, 'info');
         res.status(201).json({
             message: 'Expense submitted successfully',
             transaction_id: txRes.insertId,
@@ -529,6 +532,7 @@ router.post('/invoice', async (req, res) => {
             work_id: result.insertId
         }, 'created').catch(err => console.error('⚠️ Email send error:', err.message));
 
+        notify('New Invoice', invoice_number + ' from ' + vendor_name + ': TZS ' + Number(amount).toLocaleString(), 'info');
         res.status(201).json({
             message: 'Invoice created successfully',
             work_id: result.insertId,

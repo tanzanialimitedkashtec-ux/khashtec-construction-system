@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const db = require('../../database/config/database');
+var notify = require('../utils/notify');
 
 // GET /api/safety - Get all project safety records from database
 router.get('/', async (req, res) => {
@@ -311,6 +312,7 @@ router.post('/', async (req, res) => {
                 ]
             );
 
+            notify('Safety Record Updated', project_name + ' - Risk: ' + (risk_level || 'Medium') + ', Score: ' + (safety_score || 0), risk_level === 'High' ? 'warning' : 'info');
             res.status(201).json({
                 success: true,
                 message: 'Safety record saved successfully',

@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const fs = require('fs');
 const db = require('../../database/config/database');
+var notify = require('../utils/notify');
 const upload = require('../middleware/upload');
 
 // Normalize legacy/absolute upload paths (e.g. /app/uploads/...) to web URLs
@@ -985,6 +986,7 @@ router.put('/:id', async (req, res) => {
         
         console.log('✅ Employee update completed. Returning:', returnedEmployee ? JSON.stringify(Object.keys(returnedEmployee)) : 'null');
         
+        notify('Employee Updated', 'Employee #' + req.params.id + ' updated' + (fullName ? ' - ' + fullName : ''), 'info');
         res.json({
             message: 'Employee updated successfully',
             employee: returnedEmployee
@@ -1080,6 +1082,7 @@ router.delete('/:id', async (req, res) => {
             return res.status(404).json({ error: 'Employee not found' });
         }
         
+        notify('Employee Deleted', 'Employee #' + req.params.id + ' removed from system', 'warning');
         res.json({ message: 'Employee deleted successfully' });
         
     } catch (error) {

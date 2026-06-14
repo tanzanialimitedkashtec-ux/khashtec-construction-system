@@ -24963,7 +24963,7 @@ function getTimeAgo(dateStr) {
 function startNotificationPolling() {
     updateNotificationBadge();
     if (notificationPollInterval) clearInterval(notificationPollInterval);
-    notificationPollInterval = setInterval(updateNotificationBadge, 30000);
+    notificationPollInterval = setInterval(updateNotificationBadge, 15000);
 }
 
 function showNotifications() { toggleNotificationPanel(); }

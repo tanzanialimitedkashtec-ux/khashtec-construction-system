@@ -1,7 +1,8 @@
 const express = require('express');
 const router = express.Router();
 
-console.log('🏗️ Projects route file is being loaded...');
+var notify = require('../utils/notify');
+console.log('Projects route file is being loaded...');
 
 // Test endpoint to verify route is working
 router.get('/test', (req, res) => {
@@ -297,6 +298,7 @@ router.post('/', async (req, res) => {
             SELECT * FROM projects WHERE id = ?
         `, [result.insertId]);
         
+        notify('New Project Created', name + ' - Client: ' + client + ', Budget: TZS ' + parseFloat(budget).toLocaleString(), 'success');
         res.status(201).json({
             message: 'Project created successfully',
             project: {
@@ -381,6 +383,7 @@ router.put('/:id', async (req, res) => {
             SELECT * FROM projects WHERE id = ?
         `, [req.params.id]);
         
+        notify('Project Updated', 'Project #' + req.params.id + ' updated' + (status ? ' - Status: ' + status : ''), 'info');
         res.json({
             message: 'Project updated successfully',
             project: updatedProjects[0]
@@ -409,6 +412,7 @@ router.delete('/:id', async (req, res) => {
         // Delete project
         await db.execute('DELETE FROM projects WHERE id = ?', [req.params.id]);
         
+        notify('Project Deleted', 'Project #' + req.params.id + ' deleted', 'warning');
         res.json({
             message: 'Project deleted successfully'
         });
