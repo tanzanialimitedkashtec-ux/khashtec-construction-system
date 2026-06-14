@@ -43940,9 +43940,11 @@ function saveEmployeeUpdate() {
 
         document.getElementById('updateForm').classList.add('hidden');
 
-        document.getElementById('employeeSearchResults').innerHTML = '';
+        const searchResults = document.getElementById('employeeSearchResults');
+        if (searchResults) searchResults.innerHTML = '';
 
-        
+        // Refresh table to show updated notes
+        loadUpdateEmployeeTable();
 
     })
 
