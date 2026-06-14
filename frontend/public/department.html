@@ -41593,229 +41593,158 @@ function deleteWorkerAccount(id) {
 
 
 
-function updateEmployeeRecords(){
-
-    // Load existing employees for display
-
-    const employees = []; // TODO: Load from API
-
-    
+function updateEmployeeRecords() {
 
     showContent(`<div class="card">
 
         <h3>Update Employee Records</h3>
 
-        
-
-        <div class="employee-list">
-
-            <h4>Existing Employees</h4>
-
-            <div class="search-section">
-
-                <input type="text" id="searchEmployee" placeholder="Search by name, ID, or department...">
-
-                <button class="action" onclick="loadEmployeeForUpdate()">Search Employee</button>
-
-            </div>
-
-            
-
-            <div id="employeeSearchResults" class="search-results"><p style="color: #666;">Enter search terms and click "Search Employee" button</p></div>
-
-            
-
-            <div id="updateForm" class="hidden">
-
-                <form id="updateEmployeeForm" onsubmit="return saveEmployeeUpdate()">
-
-                    <div class="form-row">
-
-                        <div class="form-group">
-
-                            <label>Employee ID</label>
-
-                            <input type="text" id="updateEmpID" readonly>
-
-                        </div>
-
-                        <div class="form-group">
-
-                            <label>Full Name *</label>
-
-                            <input type="text" id="updateFullName" required>
-
-                        </div>
-
-                    </div>
-
-                    
-
-                    <div class="form-row">
-
-                        <div class="form-group">
-
-                            <label>Phone Number *</label>
-
-                            <input type="tel" id="updatePhone" required>
-
-                        </div>
-
-                        <div class="form-group">
-
-                            <label>Gmail Address *</label>
-
-                            <input type="email" id="updateGmail" required>
-
-                        </div>
-
-                    </div>
-
-                    
-
-                    <div class="form-row">
-
-                        <div class="form-group">
-
-                            <label>Department *</label>
-
-                            <select id="updateDepartment" required>
-
-                                <option value="">Select Department</option>
-
-                                <option value="projects">Projects</option>
-
-                                <option value="admin">Administration</option>
-
-                                <option value="finance">Finance</option>
-
-                                <option value="hr">Human Resources</option>
-
-                                <option value="hse">Health & Safety</option>
-
-                                <option value="realestate">Real Estate</option>
-
-                            </select>
-
-                        </div>
-
-                        <div class="form-group">
-
-                            <label>Job Category *</label>
-
-                            <select id="updateJobCategory" required>
-
-                                <option value="">Select Job Category</option>
-
-                                <option value="management">Management</option>
-
-                                <option value="engineering">Engineering</option>
-
-                                <option value="construction">Construction Worker</option>
-
-                                <option value="admin">Administration</option>
-
-                                <option value="finance">Finance/Accounting</option>
-
-                                <option value="hr">Human Resources</option>
-
-                                <option value="hse">Health & Safety</option>
-
-                                <option value="it">IT/Technical</option>
-
-                                <option value="driver">Driver/Operator</option>
-
-                                <option value="labor">General Labor</option>
-
-                            </select>
-
-                        </div>
-
-                    </div>
-
-                    
-
-                    <div class="form-row">
-
-                        <div class="form-group">
-
-                            <label>Contract Type *</label>
-
-                            <select id="updateContract" required>
-
-                                <option value="">Select Contract Type</option>
-
-                                <option value="permanent">Permanent</option>
-
-                                <option value="temporary">Temporary</option>
-
-                                <option value="contract">Contract</option>
-
-                                <option value="probation">Probation</option>
-
-                            </select>
-
-                        </div>
-
-                        <div class="form-group">
-
-                            <label>Status</label>
-
-                            <select id="updateStatus">
-
-                                <option value="Active">Active</option>
-
-                                <option value="Inactive">Inactive</option>
-
-                                <option value="Terminated">Terminated</option>
-
-                            </select>
-
-                        </div>
-
-                    </div>
-
-                    
-
+        <!-- Search & Filter Bar -->
+        <div style="margin-bottom: 20px; display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+            <input type="text" id="updateEmpSearchInput" placeholder="🔍 Search by name, ID, department..." style="flex: 1; min-width: 200px; padding: 10px 14px; border: 1px solid #dee2e6; border-radius: 6px; font-size: 14px;" oninput="filterUpdateEmployeeTable()">
+            <select id="updateEmpDeptFilter" style="padding: 10px 14px; border: 1px solid #dee2e6; border-radius: 6px; font-size: 14px;" onchange="filterUpdateEmployeeTable()">
+                <option value="">All Departments</option>
+                <option value="projects">Projects</option>
+                <option value="admin">Administration</option>
+                <option value="finance">Finance</option>
+                <option value="hr">Human Resources</option>
+                <option value="hse">Health & Safety</option>
+                <option value="realestate">Real Estate</option>
+            </select>
+            <select id="updateEmpStatusFilter" style="padding: 10px 14px; border: 1px solid #dee2e6; border-radius: 6px; font-size: 14px;" onchange="filterUpdateEmployeeTable()">
+                <option value="">All Statuses</option>
+                <option value="Active">Active</option>
+                <option value="Inactive">Inactive</option>
+                <option value="Terminated">Terminated</option>
+            </select>
+        </div>
+
+        <!-- Employee Table -->
+        <div style="overflow-x: auto; border: 1px solid #dee2e6; border-radius: 8px;">
+            <table id="updateEmployeeTable" style="width: 100%; border-collapse: collapse; font-size: 13px; white-space: nowrap;">
+                <thead>
+                    <tr style="background: linear-gradient(135deg, #0b3d91, #1a5276); color: white;">
+                        <th style="padding: 10px 12px; border: 1px solid #dee2e6; text-align: left;">#</th>
+                        <th style="padding: 10px 12px; border: 1px solid #dee2e6; text-align: left;">Employee ID</th>
+                        <th style="padding: 10px 12px; border: 1px solid #dee2e6; text-align: left;">Full Name</th>
+                        <th style="padding: 10px 12px; border: 1px solid #dee2e6; text-align: left;">Phone</th>
+                        <th style="padding: 10px 12px; border: 1px solid #dee2e6; text-align: left;">Gmail</th>
+                        <th style="padding: 10px 12px; border: 1px solid #dee2e6; text-align: left;">Department</th>
+                        <th style="padding: 10px 12px; border: 1px solid #dee2e6; text-align: left;">Job Category</th>
+                        <th style="padding: 10px 12px; border: 1px solid #dee2e6; text-align: left;">Contract Type</th>
+                        <th style="padding: 10px 12px; border: 1px solid #dee2e6; text-align: left;">Status</th>
+                        <th style="padding: 10px 12px; border: 1px solid #dee2e6; text-align: left; white-space: normal; min-width: 150px;">Notes</th>
+                        <th style="padding: 10px 12px; border: 1px solid #dee2e6; text-align: center;">Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="updateEmployeeTbody">
+                    <tr><td colspan="11" style="text-align: center; padding: 20px; color: #666;">Loading employees...</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Update Form (hidden by default) -->
+        <div id="updateForm" class="hidden" style="margin-top: 20px; background: #f8f9fa; padding: 20px; border-radius: 8px; border: 1px solid #dee2e6;">
+
+            <h4 style="margin-top: 0; color: #0b3d91;">✏️ Edit Employee Record</h4>
+
+            <form id="updateEmployeeForm" onsubmit="return saveEmployeeUpdate()">
+
+                <div class="form-row">
                     <div class="form-group">
-
-                        <label>Update Notes</label>
-
-                        <textarea id="updateNotes" rows="3" placeholder="Reason for update..."></textarea>
-
+                        <label>Employee ID</label>
+                        <input type="text" id="updateEmpID" readonly>
                     </div>
-
-                    
-
-                    <div class="form-actions">
-
-                        <button type="submit" class="action">Update Record</button>
-
-                        <button type="button" class="action" onclick="cancelUpdate()" style="background: #6c757d;">Cancel</button>
-
+                    <div class="form-group">
+                        <label>Full Name *</label>
+                        <input type="text" id="updateFullName" required>
                     </div>
+                </div>
 
-                </form>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Phone Number *</label>
+                        <input type="tel" id="updatePhone" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Gmail Address *</label>
+                        <input type="email" id="updateGmail" required>
+                    </div>
+                </div>
 
-            </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Department *</label>
+                        <select id="updateDepartment" required>
+                            <option value="">Select Department</option>
+                            <option value="projects">Projects</option>
+                            <option value="admin">Administration</option>
+                            <option value="finance">Finance</option>
+                            <option value="hr">Human Resources</option>
+                            <option value="hse">Health & Safety</option>
+                            <option value="realestate">Real Estate</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Job Category *</label>
+                        <select id="updateJobCategory" required>
+                            <option value="">Select Job Category</option>
+                            <option value="management">Management</option>
+                            <option value="engineering">Engineering</option>
+                            <option value="construction">Construction Worker</option>
+                            <option value="admin">Administration</option>
+                            <option value="finance">Finance/Accounting</option>
+                            <option value="hr">Human Resources</option>
+                            <option value="hse">Health & Safety</option>
+                            <option value="it">IT/Technical</option>
+                            <option value="driver">Driver/Operator</option>
+                            <option value="labor">General Labor</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Contract Type *</label>
+                        <select id="updateContract" required>
+                            <option value="">Select Contract Type</option>
+                            <option value="permanent">Permanent</option>
+                            <option value="temporary">Temporary</option>
+                            <option value="contract">Contract</option>
+                            <option value="probation">Probation</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Status</label>
+                        <select id="updateStatus">
+                            <option value="Active">Active</option>
+                            <option value="Inactive">Inactive</option>
+                            <option value="Terminated">Terminated</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Update Notes</label>
+                    <textarea id="updateNotes" rows="3" placeholder="Reason for update..."></textarea>
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit" class="action">Update Record</button>
+                    <button type="button" class="action" onclick="cancelUpdate()" style="background: #6c757d;">Cancel</button>
+                </div>
+
+            </form>
 
         </div>
 
     </div>`);
 
-    
-
-    // Display employee count
-
-    if (employees.length > 0) {
-
-        document.getElementById('employeeSearchResults').innerHTML = 
-
-            `<p style="color: #666; margin: 10px 0;">Total employees in system: ${employees.length}</p>`;
-
-    }
+    // Load employees into the table
+    loadUpdateEmployeeTable();
 
 }
+
 
 
 
