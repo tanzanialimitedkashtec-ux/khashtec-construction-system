@@ -12738,7 +12738,7 @@ font-weight: bold;
 
     color: white;
 
-    padding: 4px 5px;
+    padding: 9px 9px;
 
     text-align: left;
 
@@ -74957,6 +74957,11 @@ function recordSiteReports(){
 
                 <div class="site-reports-table-container">
 
+                    <div style="margin-bottom: 20px; display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+                        <input type="text" id="siteReportsSearchInput" placeholder="🔍 Search site reports..." style="padding: 10px 15px; border: 1px solid #ddd; border-radius: 6px; flex: 1; min-width: 250px; font-size: 14px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);" onkeyup="filterSiteReportsTable()">
+                        <button type="button" onclick="clearSiteReportsSearch()" style="padding: 10px 20px; background: #6c757d; color: #fff; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: 500;">Clear</button>
+                    </div>
+
                     <table class="site-reports-table">
 
                         <thead>
@@ -110249,6 +110254,29 @@ function filterProjectsTable() {
 function clearProjectsSearch() {
     var input = document.getElementById("projectsSearchInput");
     if (input) { input.value = ""; filterProjectsTable(); }
+}
+function filterSiteReportsTable() {
+    var input = document.getElementById("siteReportsSearchInput");
+    if (!input) return;
+    var filter = input.value.toUpperCase();
+    var tbody = document.getElementById("siteReportsList");
+    if (!tbody) return;
+    var tr = tbody.getElementsByTagName("tr");
+    for (var i = 0; i < tr.length; i++) {
+        var tdArray = tr[i].getElementsByTagName("td");
+        var match = false;
+        for (var j = 0; j < tdArray.length; j++) {
+            if (tdArray[j] && tdArray[j].textContent.toUpperCase().indexOf(filter) > -1) {
+                match = true;
+                break;
+            }
+        }
+        tr[i].style.display = match ? "" : "none";
+    }
+}
+function clearSiteReportsSearch() {
+    var input = document.getElementById("siteReportsSearchInput");
+    if (input) { input.value = ""; filterSiteReportsTable(); }
 }
 function filterRecentProgressTable() {
     var input = document.getElementById("recentProgressSearchInput");
