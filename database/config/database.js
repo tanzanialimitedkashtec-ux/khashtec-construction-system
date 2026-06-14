@@ -203,11 +203,11 @@ class Database {
             table = table.replace(/`/g, '');
 
             const monitoredTables = [
-                'employees', 'worker_accounts', 'materials', 'financial_strategies',
-                'senior_hiring_requests', 'senior_hiring_approvals', 'projects',
+                'employees', 'worker_accounts', 'materials', 'materials_inventory', 'materials_in', 'materials_out', 'financial_strategies',
+                'senior_hiring_requests', 'senior_hiring_approvals', 'projects', 'projects_work', 'project_progress_updates',
                 'worker_assignments', 'attendance', 'finance_work', 'payment_requests',
                 'site_reports', 'work', 'policies', 'compliance', 'hse_incidents', 'hse_work',
-                'ppe_issuance', 'violations', 'inspections', 'workforce_budgets',
+                'ppe_issuance', 'violations', 'inspections', 'workforce_budgets', 'workforce_requests',
                 'clients', 'procurement', 'nhif', 'nssf', 'company_cars', 'drivers',
                 'properties', 'schedule_meetings', 'luggage_companies', 'luggage_purchases',
                 'documents', 'file_uploads', 'suggestions', 'departments', 'claims',
@@ -216,6 +216,24 @@ class Database {
             ];
 
             let title = `System Change Alert: ${action} in ${table}`;
+            
+            // Custom titles based on user requirements
+            const lowerTable = table.toLowerCase();
+            if (lowerTable === 'workforce_requests' && action === 'New Record Created') {
+                title = 'Workforce Request Submitted';
+            } else if (lowerTable === 'projects' && action === 'New Record Created') {
+                title = 'New Project Created';
+            } else if (lowerTable === 'projects' && action === 'Record Updated') {
+                const statusIdx = columns.findIndex(c => c.toLowerCase() === 'status');
+                if (statusIdx !== -1 && (params[statusIdx] === 'Completed' || params[statusIdx] === 'Finished')) {
+                    title = 'Project Completed';
+                }
+            } else if (lowerTable === 'materials_inventory' && action === 'Record Updated') {
+                const statusIdx = columns.findIndex(c => c.toLowerCase() === 'status');
+                if (statusIdx !== -1 && params[statusIdx] === 'Low Stock') {
+                    title = '⚠️ Low Stock Alert';
+                }
+            }
             
             // Format details nicely into an HTML table instead of raw JSON
             let htmlDetails = '<table style="width: 100%; border-collapse: collapse; margin-top: 15px;">';
@@ -244,13 +262,14 @@ class Database {
             const requiresApproval = [
                 'senior_hiring_requests', 
                 'workforce_budgets', 
+                'workforce_requests',
                 'leave_requests', 
                 'payment_requests',
                 'work', 'hr_work', 'finance_work', 'realestate_work', 'admin_work',
                 'worker_assignments'
             ];
 
-            if (requiresApproval.some(t => table.toLowerCase().includes(t))) {
+            if (requiresApproval.some(t => lowerTable.includes(t))) {
                 const systemUrl = process.env.PUBLIC_URL || 'https://khashtec-construction-system-production.up.railway.app';
 
                 actionButtons = `
