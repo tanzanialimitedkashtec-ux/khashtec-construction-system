@@ -769,6 +769,46 @@ router.get('/report/income-statement', async (req, res) => {
 
         const revenueArr = Array.isArray(revenue) ? revenue : [];
         const expensesArr = Array.isArray(expenses) ? expenses : [];
+
+        // Include salary expenses from payroll
+        let salaryExpense = 0;
+        const payrollRows = await db.execute(
+            `SELECT SUM(net_payment) as sum FROM payroll_records WHERE payment_date BETWEEN ? AND ?`,
+            [start, end]
+        ).catch(() => []);
+        salaryExpense = sqlSumRow(payrollRows, ['sum']);
+
+        if (salaryExpense === 0) {
+            const salaryStructRows = await db.execute(
+                `SELECT SUM(gross_salary) as sum FROM salary_structures`
+            ).catch(() => []);
+            const structTotal = sqlSumRow(salaryStructRows, ['sum']);
+            if (structTotal > 0) {
+                const startDate = new Date(start);
+                const endDate = new Date(end);
+                const months = Math.max(1, Math.round((endDate - startDate) / (1000 * 60 * 60 * 24 * 30)));
+                salaryExpense = structTotal * months;
+            } else {
+                const empSalaryRows = await db.execute(
+                    `SELECT SUM(salary) as sum FROM employees WHERE status IN ('Active','active')`
+                ).catch(() => []);
+                const empTotal = sqlSumRow(empSalaryRows, ['sum']);
+                if (empTotal > 0) {
+                    const startDate = new Date(start);
+                    const endDate = new Date(end);
+                    const months = Math.max(1, Math.round((endDate - startDate) / (1000 * 60 * 60 * 24 * 30)));
+                    salaryExpense = empTotal * months;
+                }
+            }
+        }
+
+        if (salaryExpense > 0) {
+            const hasSalaryCategory = expensesArr.some(e => (e.category || '').toLowerCase() === 'salaries');
+            if (!hasSalaryCategory) {
+                expensesArr.push({ category: 'Salaries', total: salaryExpense });
+            }
+        }
+
         const totalRevenue = revenueArr.reduce((s, r) => s + (parseFloat(r.total) || 0), 0);
         const totalExpenses = expensesArr.reduce((s, r) => s + (parseFloat(r.total) || 0), 0);
         const netProfit = totalRevenue - totalExpenses;
@@ -858,7 +898,35 @@ router.get('/report/cash-flow', async (req, res) => {
 
         const cashFromCustomers = sqlSumRow(cashFromCustomersRows, ['sum']);
         const cashPaidToSuppliers = sqlSumRow(cashPaidToSuppliersRows, ['sum']);
-        const salariesPaid = sqlSumRow(salariesRows, ['sum']);
+        let salariesPaid = sqlSumRow(salariesRows, ['sum']);
+
+        // If no payroll records found, calculate from salary_structures / employees
+        if (salariesPaid === 0) {
+            const salaryStructRows = await db.execute(
+                `SELECT SUM(gross_salary) as sum FROM salary_structures`
+            ).catch(() => []);
+            const structTotal = sqlSumRow(salaryStructRows, ['sum']);
+
+            if (structTotal > 0) {
+                // Estimate months in period and multiply
+                const startDate = new Date(start);
+                const endDate = new Date(end);
+                const months = Math.max(1, Math.round((endDate - startDate) / (1000 * 60 * 60 * 24 * 30)));
+                salariesPaid = structTotal * months;
+            } else {
+                // Fallback: sum salary column from employees table
+                const empSalaryRows = await db.execute(
+                    `SELECT SUM(salary) as sum FROM employees WHERE status IN ('Active','active')`
+                ).catch(() => []);
+                const empTotal = sqlSumRow(empSalaryRows, ['sum']);
+                if (empTotal > 0) {
+                    const startDate = new Date(start);
+                    const endDate = new Date(end);
+                    const months = Math.max(1, Math.round((endDate - startDate) / (1000 * 60 * 60 * 24 * 30)));
+                    salariesPaid = empTotal * months;
+                }
+            }
+        }
 
         const netOperatingCash = cashFromCustomers - cashPaidToSuppliers - salariesPaid;
 

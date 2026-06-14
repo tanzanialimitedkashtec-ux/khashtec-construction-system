@@ -37925,7 +37925,7 @@ function financialReporting(){
 
             <div id="incomeStatement" class="tab-content">
 
-                <h4>Income Statement</h4>
+                <h4 id="incomeStatementTitle">Income Statement</h4>
 
                 <div id="incomeStatementContent" class="income-statement">
 
@@ -37947,7 +37947,7 @@ function financialReporting(){
 
             <div id="balanceSheet" class="tab-content hidden">
 
-                <h4>Balance Sheet</h4>
+                <h4 id="balanceSheetTitle">Balance Sheet</h4>
 
                 <div id="balanceSheetContent" class="balance-sheet">
 
@@ -37969,7 +37969,7 @@ function financialReporting(){
 
             <div id="cashFlow" class="tab-content hidden">
 
-                <h4>Cash Flow Statement</h4>
+                <h4 id="cashFlowTitle">Cash Flow Statement</h4>
 
                 <div id="cashFlowContent" class="cash-flow">
 
@@ -38015,655 +38015,187 @@ function financialReporting(){
 
 }
 
-// Load all financial reporting data from API
-
+// Load all financial reporting data from dedicated report API endpoints
 async function loadFinancialReportingData() {
-
-    console.log('ðŸ“Š Starting loadFinancialReportingData...');
-
+    console.log('Starting loadFinancialReportingData from report endpoints...');
+    const contentIds = ['incomeStatementContent', 'balanceSheetContent', 'cashFlowContent', 'budgetActualContent'];
     try {
-
-        console.log('ðŸ”— Fetching from /api/finance/records...');
-
-        const response = await fetch('/api/finance/records');
-
-        console.log('ðŸ“¡ Response status:', response.status);
-
-        
-
-        if (!response.ok) {
-
-            throw new Error(`HTTP error! status: ${response.status}`);
-
-        }
-
-        
-
-        const records = await response.json();
-
-        console.log('âœ… Successfully fetched records:', records);
-
-        console.log('ðŸ“ˆ Total records received:', records.length);
-
-        
-
-        if (!records || records.length === 0) {
-
-            console.warn('âš ï¸ No records received, showing empty state');
-
-        }
-
-        
-
-        // Load income statement data
-
-        console.log('ðŸ“‹ Displaying income statement...');
-
-        displayIncomeStatement(records);
-
-        
-
-        // Load balance sheet data
-
-        console.log('ðŸ“Š Displaying balance sheet...');
-
-        displayBalanceSheet(records);
-
-        
-
-        // Load cash flow data
-
-        console.log('ðŸ’° Displaying cash flow...');
-
-        displayCashFlow(records);
-
-        
-
-        // Load budget vs actual data
-
-        console.log('ðŸ“Š Displaying budget analysis...');
-
-        displayBudgetVsActual(records);
-
-        
-
-        console.log('âœ… All financial reports loaded successfully!');
-
+        const [incomeRes, balanceRes, cashFlowRes, budgetRes] = await Promise.all([
+            fetch('/api/finance/report/income-statement').then(r => r.ok ? r.json() : Promise.reject(r.status)),
+            fetch('/api/finance/report/balance-sheet').then(r => r.ok ? r.json() : Promise.reject(r.status)),
+            fetch('/api/finance/report/cash-flow').then(r => r.ok ? r.json() : Promise.reject(r.status)),
+            fetch('/api/finance/report/budget-vs-actual').then(r => r.ok ? r.json() : Promise.reject(r.status))
+        ]);
+        displayIncomeStatement(incomeRes);
+        displayBalanceSheet(balanceRes);
+        displayCashFlow(cashFlowRes);
+        displayBudgetVsActual(budgetRes);
+        console.log('All financial reports loaded successfully');
     } catch (error) {
-
-        console.error('âŒ Error loading financial reporting data:', error);
-
-        console.error('âŒ Error details:', error.message, error.stack);
-
-        showNotification('Error loading financial data: ' + error.message, 'error');
-
-        // Show fallback message
-
-        document.querySelectorAll('[id*="Content"]').forEach(el => {
-
-            el.innerHTML = '<div class="error">Unable to load data. Please try refreshing the page.</div>';
-
+        console.error('Error loading financial reporting data:', error);
+        showNotification('Error loading financial data: ' + error, 'error');
+        contentIds.forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.innerHTML = '<div class="error">Unable to load data. Please try refreshing the page.</div>';
         });
-
     }
-
 }
 
-// Display income statement with real data
-
-function displayIncomeStatement(records) {
-
+// Display income statement from /api/finance/report/income-statement
+function displayIncomeStatement(data) {
     try {
-
-        console.log('ðŸ“‹ displayIncomeStatement called with records:', records.length);
-
-        // Calculate totals by type
-
-        const revenue = records
-
-            .filter(r => r.type === 'income')
-
-            .reduce((sum, r) => sum + (r.amount || 0), 0);
-
-        console.log('ðŸ’° Total revenue:', revenue);
-
-            
-
-        const expenses = records
-
-            .filter(r => r.type === 'expense')
-
-            .reduce((sum, r) => sum + (r.amount || 0), 0);
-
-        console.log('ðŸ’¸ Total expenses:', expenses);
-
-        
-
-        const netProfit = revenue - expenses;
-
-        console.log('ðŸ“ˆ Net profit:', netProfit);
-
-        
-
-        // Group expenses by category
-
-        const expensesByCategory = {};
-
-        records
-
-            .filter(r => r.type === 'expense')
-
-            .forEach(r => {
-
-                const cat = r.category || 'Other';
-
-                expensesByCategory[cat] = (expensesByCategory[cat] || 0) + (r.amount || 0);
-
-            });
-
-        console.log('ðŸ“Š Expenses by category:', expensesByCategory);
-
-        
-
-        // Generate HTML
-
-        let html = `
-
-            <div class="statement-section">
-
-                <h5>Revenue</h5>
-
-                <div class="statement-item">
-
-                    <span>Total Revenue from Services</span>
-
-                    <span>TZS ${revenue.toLocaleString()}</span>
-
-                </div>
-
-                <div class="statement-item total">
-
-                    <span>Total Revenue</span>
-
-                    <span>TZS ${revenue.toLocaleString()}</span>
-
-                </div>
-
-            </div>
-
-            
-
-            <div class="statement-section">
-
-                <h5>Expenses</h5>
-
-        `;
-
-        
-
-                const container = document.getElementById('incomeStatementContent');
-
-        if (container) {
-
-            container.innerHTML = html;
-
-            console.log('âœ… Income statement displayed successfully');
-
-        } else {
-
-            console.error('âŒ Container incomeStatementContent not found');
-
-        }
-
-    } catch (error) {
-
-        console.error('âŒ Error displaying income statement:', error);
-
         const container = document.getElementById('incomeStatementContent');
-
-        if (container) {
-
-            container.innerHTML = `<div class="error">Error loading income statement data</div>`;
-
+        if (!container) return;
+        const titleEl = document.getElementById('incomeStatementTitle');
+        if (titleEl && data.period) {
+            titleEl.textContent = 'Income Statement (' + data.period.from + ' to ' + data.period.to + ')';
         }
 
-    }
-
-}
-
-// Display balance sheet with real data
-
-function displayBalanceSheet(records) {
-
-    try {
-
-        console.log('ðŸ“Š displayBalanceSheet called with records:', records.length);
-
-        // Calculate assets
-
-        const cash = records
-
-            .filter(r => (r.account === 'Cash' || r.account === 'Bank') && r.type === 'income')
-
-            .reduce((sum, r) => sum + (r.amount || 0), 0);
-
-        console.log('ðŸ¦ Cash & Bank:', cash);
-
-            
-
-        const receivables = records
-
-            .filter(r => r.type === 'income' && r.status === 'pending')
-
-            .reduce((sum, r) => sum + (r.amount || 0), 0);
-
-        console.log('ðŸ’³ Accounts Receivable:', receivables);
-
-        
-
-        const equipment = 280000000; // Base equipment value
-
-        const totalAssets = cash + receivables + equipment;
-
-        console.log('ðŸ“ˆ Total Assets:', totalAssets);
-
-        
-
-        // Calculate liabilities
-
-        const payables = records
-
-            .filter(r => r.type === 'expense' && r.status === 'pending')
-
-            .reduce((sum, r) => sum + (r.amount || 0), 0);
-
-        console.log('ðŸ“‹ Accounts Payable:', payables);
-
-        
-
-        const taxLiabilities = 15000000;
-
-        const totalLiabilities = payables + taxLiabilities;
-
-        const totalEquity = totalAssets - totalLiabilities;
-
-        console.log('ðŸ’° Total Liabilities:', totalLiabilities, 'Total Equity:', totalEquity);
-
-        
-
-        const html = `
-
-            <div class="balance-section">
-
-                <h5>Assets</h5>
-
-                <div class="balance-item">
-
-                    <span>Cash &amp; Bank</span>
-
-                    <span>TZS ${cash.toLocaleString()}</span>
-
-                </div>
-
-                <div class="balance-item">
-
-                    <span>Accounts Receivable</span>
-
-                    <span>TZS ${receivables.toLocaleString()}</span>
-
-                </div>
-
-                <div class="balance-item">
-
-                    <span>Equipment &amp; Machinery</span>
-
-                    <span>TZS ${equipment.toLocaleString()}</span>
-
-                </div>
-
-                <div class="balance-item total">
-
-                    <span>Total Assets</span>
-
-                    <span>TZS ${totalAssets.toLocaleString()}</span>
-
-                </div>
-
-            </div>
-
-            
-
-            <div class="balance-section">
-
-                <h5>Liabilities</h5>
-
-                <div class="balance-item">
-
-                    <span>Accounts Payable</span>
-
-                    <span>TZS ${payables.toLocaleString()}</span>
-
-                </div>
-
-                <div class="balance-item">
-
-                    <span>Tax Liabilities</span>
-
-                    <span>TZS ${taxLiabilities.toLocaleString()}</span>
-
-                </div>
-
-                <div class="balance-item total">
-
-                    <span>Total Liabilities</span>
-
-                    <span>TZS ${totalLiabilities.toLocaleString()}</span>
-
-                </div>
-
-            </div>
-
-            
-
-            <div class="balance-section">
-
-                <h5>Equity</h5>
-
-                <div class="balance-item total">
-
-                    <span>Total Equity</span>
-
-                    <span>TZS ${totalEquity.toLocaleString()}</span>
-
-                </div>
-
-            </div>
-
-        `;
-
-        
-
-        const container = document.getElementById('balanceSheetContent');
-
-        if (container) {
-
-            container.innerHTML = html;
-
-            console.log('âœ… Balance sheet displayed successfully');
-
-        } else {
-
-            console.error('âŒ Container balanceSheetContent not found');
-
-        }
-
-    } catch (error) {
-
-        console.error('âŒ Error displaying balance sheet:', error);
-
-        const container = document.getElementById('balanceSheetContent');
-
-        if (container) {
-
-            container.innerHTML = `<div class="error">Error loading balance sheet data</div>`;
-
-        }
-
-    }
-
-}
-
-// Display cash flow with real data
-
-function displayCashFlow(records) {
-
-    try {
-
-        console.log('ðŸ’° displayCashFlow called with records:', records.length);
-
-        // Operating activities
-
-        const cashFromCustomers = records
-
-            .filter(r => r.type === 'income' && r.status === 'completed')
-
-            .reduce((sum, r) => sum + (r.amount || 0), 0);
-
-        console.log('ðŸ“¥ Cash from Customers:', cashFromCustomers);
-
-            
-
-        const cashToPaid = records
-
-            .filter(r => r.type === 'expense' && r.status === 'completed')
-
-            .reduce((sum, r) => sum + (r.amount || 0), 0);
-
-        console.log('ðŸ“¤ Cash paid:', cashToPaid);
-
-        
-
-        const netOperatingCash = cashFromCustomers - cashToPaid;
-
-        const beginningCash = 50000000;
-
-        const endingCash = beginningCash + netOperatingCash;
-
-        console.log('ðŸ“Š Net Operating Cash:', netOperatingCash, 'Ending Cash:', endingCash);
-
-        
-
-        const html = `
-
-            <div class="flow-section">
-
-                <h5>Operating Activities</h5>
-
-                <div class="flow-item">
-
-                    <span>Cash from Customers</span>
-
-                    <span>TZS ${cashFromCustomers.toLocaleString()}</span>
-
-                </div>
-
-                <div class="flow-item">
-
-                    <span>Cash paid to Suppliers &amp; Expenses</span>
-
-                    <span>-TZS ${cashToPaid.toLocaleString()}</span>
-
-                </div>
-
-                <div class="flow-item total">
-
-                    <span>Net Operating Cash Flow</span>
-
-                    <span>TZS ${netOperatingCash.toLocaleString()}</span>
-
-                </div>
-
-            </div>
-
-            
-
-            <div class="flow-section">
-
-                <h5>Summary</h5>
-
-                <div class="flow-item">
-
-                    <span>Beginning Cash Balance</span>
-
-                    <span>TZS ${beginningCash.toLocaleString()}</span>
-
-                </div>
-
-                <div class="flow-item">
-
-                    <span>Cash Flow from Operations</span>
-
-                    <span>TZS ${netOperatingCash.toLocaleString()}</span>
-
-                </div>
-
-                <div class="flow-item total">
-
-                    <span>Ending Cash Balance</span>
-
-                    <span>TZS ${endingCash.toLocaleString()}</span>
-
-                </div>
-
-            </div>
-
-        `;
-
-        
-
-        const container = document.getElementById('cashFlowContent');
-
-        if (container) {
-
-            container.innerHTML = html;
-
-            console.log('âœ… Cash flow displayed successfully');
-
-        } else {
-
-            console.error('âŒ Container cashFlowContent not found');
-
-        }
-
-    } catch (error) {
-
-        console.error('âŒ Error displaying cash flow:', error);
-
-        const container = document.getElementById('cashFlowContent');
-
-        if (container) {
-
-            container.innerHTML = `<div class="error">Error loading cash flow data</div>`;
-
-        }
-
-    }
-
-}
-
-// Display budget vs actual analysis
-
-function displayBudgetVsActual(records) {
-
-    try {
-
-        console.log('ðŸ“Š displayBudgetVsActual called with records:', records.length);
-
-        // Group by category to compare budget vs actual
-
-        const byCategory = {};
-
-        records.forEach(r => {
-
-            const cat = r.category || 'Other';
-
-            if (!byCategory[cat]) {
-
-                byCategory[cat] = { actual: 0, budget: 0 };
-
-            }
-
-            byCategory[cat].actual += r.amount || 0;
-
+        const revenue = data.revenue || [];
+        const expenses = data.expenses || [];
+        const totals = data.totals || {};
+        const totalRevenue = totals.totalRevenue || 0;
+        const totalExpenses = totals.totalExpenses || 0;
+        const netProfit = totals.netProfit || 0;
+        const profitClass = netProfit >= 0 ? 'positive' : 'negative';
+        const maxVal = Math.max(totalRevenue, totalExpenses, 1);
+
+        // Build expense category rows
+        let expenseCatHtml = '';
+        expenses.forEach(function(e) {
+            const val = parseFloat(e.total) || 0;
+            const pct = Math.min(100, (val / maxVal) * 100);
+            expenseCatHtml += '<div class="graph-row">' +
+                '<div class="graph-label">' + (e.category || 'Other') + '</div>' +
+                '<div class="graph-bar-wrap"><div class="graph-bar bar-category" style="width:' + pct + '%"></div></div>' +
+                '<div class="graph-value">TZS ' + val.toLocaleString() + '</div></div>';
         });
 
-        console.log('ðŸ“ˆ Data by category:', byCategory);
+        const revPct = Math.min(100, (totalRevenue / maxVal) * 100);
+        const expPct = Math.min(100, (totalExpenses / maxVal) * 100);
 
-        
+        container.innerHTML = '<div class="income-statement-graph">' +
+            '<div class="income-summary-cards">' +
+                '<div class="summary-card summary-revenue"><div class="summary-title">Total Revenue</div><div class="summary-value">TZS ' + totalRevenue.toLocaleString() + '</div></div>' +
+                '<div class="summary-card summary-expenses"><div class="summary-title">Total Expenses</div><div class="summary-value">TZS ' + totalExpenses.toLocaleString() + '</div></div>' +
+                '<div class="summary-card summary-profit ' + profitClass + '"><div class="summary-title">Net Profit</div><div class="summary-value">TZS ' + netProfit.toLocaleString() + '</div></div>' +
+            '</div>' +
+            '<div class="income-section"><div class="section-header">Revenue vs Expenses</div>' +
+                '<div class="graph-row"><div class="graph-label">Revenue</div><div class="graph-bar-wrap"><div class="graph-bar bar-revenue" style="width:' + revPct + '%"></div></div><div class="graph-value">TZS ' + totalRevenue.toLocaleString() + '</div></div>' +
+                '<div class="graph-row"><div class="graph-label">Expenses</div><div class="graph-bar-wrap"><div class="graph-bar bar-expense" style="width:' + expPct + '%"></div></div><div class="graph-value">TZS ' + totalExpenses.toLocaleString() + '</div></div>' +
+            '</div>' +
+            '<div class="income-section"><div class="section-header">Expense Categories</div>' + expenseCatHtml + '</div>' +
+        '</div>';
+    } catch (error) {
+        console.error('Error displaying income statement:', error);
+        var c = document.getElementById('incomeStatementContent');
+        if (c) c.innerHTML = '<div class="error">Error loading income statement data</div>';
+    }
+}
 
-        // Sample budgets for comparison
+// Display balance sheet from /api/finance/report/balance-sheet
+function displayBalanceSheet(data) {
+    try {
+        const container = document.getElementById('balanceSheetContent');
+        if (!container) return;
+        const titleEl = document.getElementById('balanceSheetTitle');
+        if (titleEl && data.asOf) {
+            titleEl.textContent = 'Balance Sheet - As of ' + data.asOf;
+        }
 
-        const budgets = {
+        const assets = data.assets || {};
+        const liabilities = data.liabilities || {};
+        const equity = data.equity || {};
 
-            'Payroll': 90000000,
+        container.innerHTML = '<div class="balance-sheet">' +
+            '<div class="balance-section"><h5>Assets</h5>' +
+                '<div class="balance-item"><span>Cash &amp; Bank</span><span>TZS ' + (assets.cash_bank || 0).toLocaleString() + '</span></div>' +
+                '<div class="balance-item"><span>Accounts Receivable</span><span>TZS ' + (assets.accounts_receivable || 0).toLocaleString() + '</span></div>' +
+                '<div class="balance-item total"><span>Total Assets</span><span>TZS ' + (assets.total_assets || 0).toLocaleString() + '</span></div>' +
+            '</div>' +
+            '<div class="balance-section"><h5>Liabilities</h5>' +
+                '<div class="balance-item"><span>Accounts Payable</span><span>TZS ' + (liabilities.accounts_payable || 0).toLocaleString() + '</span></div>' +
+                '<div class="balance-item"><span>Tax Liabilities</span><span>TZS ' + (liabilities.tax_liabilities || 0).toLocaleString() + '</span></div>' +
+                '<div class="balance-item total"><span>Total Liabilities</span><span>TZS ' + (liabilities.total_liabilities || 0).toLocaleString() + '</span></div>' +
+            '</div>' +
+            '<div class="balance-section"><h5>Equity</h5>' +
+                '<div class="balance-item total"><span>Total Equity</span><span>TZS ' + (equity.total_equity || 0).toLocaleString() + '</span></div>' +
+            '</div>' +
+        '</div>';
+    } catch (error) {
+        console.error('Error displaying balance sheet:', error);
+        var c = document.getElementById('balanceSheetContent');
+        if (c) c.innerHTML = '<div class="error">Error loading balance sheet data</div>';
+    }
+}
 
-            'Materials': 120000000,
+// Display cash flow from /api/finance/report/cash-flow (includes salaries from payroll)
+function displayCashFlow(data) {
+    try {
+        const container = document.getElementById('cashFlowContent');
+        if (!container) return;
+        const titleEl = document.getElementById('cashFlowTitle');
+        if (titleEl && data.period) {
+            titleEl.textContent = 'Cash Flow Statement (' + data.period.from + ' to ' + data.period.to + ')';
+        }
 
-            'Capital Expenditure': 50000000,
+        const op = data.operating || {};
+        const cashFromCustomers = op.cash_from_customers || 0;
+        const cashPaidToSuppliers = op.cash_paid_to_suppliers || 0;
+        const salariesPaid = op.salaries_paid || 0;
+        const netOperatingCash = op.net_operating_cash || 0;
 
-            'Operating Expenses': 35000000,
+        container.innerHTML = '<div class="cash-flow">' +
+            '<div class="flow-section"><h5>Operating Activities</h5>' +
+                '<div class="flow-item"><span>Cash from Customers</span><span>TZS ' + cashFromCustomers.toLocaleString() + '</span></div>' +
+                '<div class="flow-item"><span>Cash paid to Suppliers</span><span>-TZS ' + cashPaidToSuppliers.toLocaleString() + '</span></div>' +
+                '<div class="flow-item"><span>Salaries Paid</span><span>-TZS ' + salariesPaid.toLocaleString() + '</span></div>' +
+                '<div class="flow-item total"><span>Net Operating Cash</span><span>TZS ' + netOperatingCash.toLocaleString() + '</span></div>' +
+            '</div>' +
+        '</div>';
+    } catch (error) {
+        console.error('Error displaying cash flow:', error);
+        var c = document.getElementById('cashFlowContent');
+        if (c) c.innerHTML = '<div class="error">Error loading cash flow data</div>';
+    }
+}
 
-            'Professional Services': 20000000
+// Display budget vs actual from /api/finance/report/budget-vs-actual
+function displayBudgetVsActual(data) {
+    try {
+        const container = document.getElementById('budgetActualContent');
+        if (!container) return;
 
-        };
+        const budgets = data.budgets || [];
+        const actual = data.actual || 0;
 
-        
+        if (budgets.length === 0) {
+            container.innerHTML = '<div class="no-data">No budget data available</div>';
+            return;
+        }
 
         let html = '';
-
-        Object.entries(byCategory).sort().forEach(([category, data]) => {
-
-            const budget = budgets[category] || 50000000;
-
-            const variance = data.actual - budget;
-
-            const variancePercent = budget > 0 ? ((variance / budget) * 100).toFixed(2) : 0;
-
+        budgets.forEach(function(b) {
+            const budgetAmt = parseFloat(b.total_proposed) || 0;
+            const variance = actual - budgetAmt;
+            const variancePercent = budgetAmt > 0 ? ((variance / budgetAmt) * 100).toFixed(2) : 0;
             const varianceClass = variance > 0 ? 'negative' : 'positive';
 
-            
-
-            console.log(`ðŸ“Š ${category}: Budget ${budget}, Actual ${data.actual}, Variance ${variance} (${variancePercent}%)`);
-
-            
-
-            html += `
-
-                <div class="analysis-item">
-
-                    <span><strong>${category}</strong></span>
-
-                    <span>Budget: TZS ${budget.toLocaleString()}</span>
-
-                    <span>Actual: TZS ${data.actual.toLocaleString()}</span>
-
-                    <span class="variance ${varianceClass}">Variance: ${variance > 0 ? '+' : ''}${variancePercent}%</span>
-
-                </div>
-
-            `;
-
+            html += '<div class="analysis-item">' +
+                '<span>' + (b.budget_period || data.period || 'Period') + '</span>' +
+                '<span>Budget: TZS ' + budgetAmt.toLocaleString() + '</span>' +
+                '<span>Actual: TZS ' + actual.toLocaleString() + '</span>' +
+                '<span class="variance ' + varianceClass + '">Variance: ' + variancePercent + '%</span>' +
+            '</div>';
         });
 
-        
-
-        const container = document.getElementById('budgetActualContent');
-
-        if (container) {
-
-            container.innerHTML = html || '<div class="no-data">No budget data available</div>';
-
-            console.log('âœ… Budget analysis displayed successfully');
-
-        } else {
-
-            console.error('âŒ Container budgetActualContent not found');
-
-        }
-
+        container.innerHTML = '<div class="budget-analysis">' + html + '</div>';
     } catch (error) {
-
-        console.error('âŒ Error displaying budget analysis:', error);
-
-        const container = document.getElementById('budgetActualContent');
-
-        if (container) {
-
-            container.innerHTML = `<div class="error">Error loading budget analysis data</div>`;
-
-        }
-
+        console.error('Error displaying budget analysis:', error);
+        var c = document.getElementById('budgetActualContent');
+        if (c) c.innerHTML = '<div class="error">Error loading budget analysis data</div>';
     }
+}
 
 }
 
