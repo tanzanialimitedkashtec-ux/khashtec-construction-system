@@ -252,12 +252,15 @@ class Database {
                 } else {
                     notificationMessage = 'A payment request record has been updated.';
                 }
-            } else if (action === 'New Record Created') {
-                notificationMessage = `A new record has been created in the ${table} module.`;
-            } else if (action === 'Record Updated') {
-                notificationMessage = `A record has been updated in the ${table} module.`;
-            } else if (action === 'Record Deleted') {
-                notificationMessage = `A record has been deleted in the ${table} module.`;
+            } else {
+                const readableTable = table.replace(/_/g, ' ');
+                if (action === 'New Record Created') {
+                    notificationMessage = `A new ${readableTable} record has been created in the system.`;
+                } else if (action === 'Record Updated') {
+                    notificationMessage = `An existing ${readableTable} record has been updated.`;
+                } else if (action === 'Record Deleted') {
+                    notificationMessage = `A ${readableTable} record has been removed from the system.`;
+                }
             }
 
             // Add action buttons for requests and approvals
