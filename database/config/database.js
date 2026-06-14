@@ -252,21 +252,12 @@ class Database {
 
             if (requiresApproval.some(t => table.toLowerCase().includes(t))) {
                 const systemUrl = process.env.PUBLIC_URL || 'https://khashtec-construction-system-production.up.railway.app';
-                // Find ID if possible (usually the first param or 'id' column)
-                let recordId = 'unknown';
-                const idIndex = columns.findIndex(c => c.toLowerCase() === 'id');
-                if (idIndex !== -1 && params[idIndex]) {
-                    recordId = params[idIndex];
-                } else if (params && params.length > 0) {
-                    recordId = params[0]; // fallback
-                }
 
                 actionButtons = `
                     <div style="margin-top: 30px; padding-top: 20px; border-top: 2px solid #eee; text-align: center;">
-                        <p style="margin-bottom: 15px; color: #555; font-size: 16px; font-weight: bold;">Action Required for this Request:</p>
-                        <a href="${systemUrl}/approve?module=${table}&id=${recordId}" style="display: inline-block; padding: 12px 24px; margin: 5px 10px; background-color: #4CAF50; color: white; text-decoration: none; border-radius: 5px; font-weight: bold; font-family: sans-serif;">✅ Approve</a>
-                        <a href="${systemUrl}/reject?module=${table}&id=${recordId}" style="display: inline-block; padding: 12px 24px; margin: 5px 10px; background-color: #F44336; color: white; text-decoration: none; border-radius: 5px; font-weight: bold; font-family: sans-serif;">❌ Reject</a>
-                        <a href="${systemUrl}/request-info?module=${table}&id=${recordId}" style="display: inline-block; padding: 12px 24px; margin: 5px 10px; background-color: #2196F3; color: white; text-decoration: none; border-radius: 5px; font-weight: bold; font-family: sans-serif;">ℹ️ Request Info</a>
+                        <p style="margin-bottom: 10px; color: #D32F2F; font-size: 16px; font-weight: bold;">Action Required for this Request</p>
+                        <p style="margin-bottom: 20px; color: #555; font-size: 14px;">This request requires your attention. Please log in to the KASHTEC system to review, approve, reject, or request more information.</p>
+                        <a href="${systemUrl}" style="display: inline-block; padding: 12px 30px; background-color: #2196F3; color: white; text-decoration: none; border-radius: 5px; font-weight: bold; font-family: sans-serif;">Go to System Dashboard</a>
                     </div>
                 `;
             }
