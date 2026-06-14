@@ -715,7 +715,7 @@ router.get('/:id', async (req, res) => {
         
         const empResult = await db.execute(`
             SELECT e.*, ed.full_name, ed.gmail, ed.phone, ed.nida, ed.passport, 
-                   ed.contract_type, ed.profile_image
+                   ed.contract_type, ed.profile_image, ed.notes
             FROM employees e 
             LEFT JOIN employee_details ed ON e.id = ed.employee_id 
             WHERE e.id = ?
@@ -825,9 +825,9 @@ router.put('/:id', async (req, res) => {
         console.log('🔄 Starting employee update for ID:', req.params.id);
         
         // Check if employee exists
-        const [existingEmployees] = await db.execute('SELECT id FROM employees WHERE id = ?', [req.params.id]);
+        const existingEmployees = await db.execute('SELECT id FROM employees WHERE id = ?', [req.params.id]);
         
-        if (!existingEmployees || existingEmployees.length === 0) {
+        if (!existingEmployees || !Array.isArray(existingEmployees) || existingEmployees.length === 0) {
             console.log('❌ Employee not found:', req.params.id);
             return res.status(404).json({ error: 'Employee not found' });
         }
@@ -921,12 +921,12 @@ router.put('/:id', async (req, res) => {
                 
                 if (detailUpdates.length > 0) {
                     // Check if employee_details record exists
-                    const [existingDetails] = await db.execute(
+                    const existingDetails = await db.execute(
                         'SELECT employee_id FROM employee_details WHERE employee_id = ?',
                         [req.params.id]
                     );
                     
-                    if (existingDetails && existingDetails.length > 0) {
+                    if (existingDetails && Array.isArray(existingDetails) && existingDetails.length > 0) {
                         // Update existing record
                         detailValues.push(req.params.id);
                         await db.execute(
@@ -964,20 +964,20 @@ router.put('/:id', async (req, res) => {
         // Return updated employee
         let returnedEmployee = null;
         try {
-            const [updatedRows] = await db.execute(
+            const updatedRows = await db.execute(
                 'SELECT e.*, ed.full_name, ed.gmail, ed.phone, ed.nida, ed.passport, ed.contract_type, ed.notes FROM employees e LEFT JOIN employee_details ed ON e.id = ed.employee_id WHERE e.id = ?',
                 [req.params.id]
             );
-            returnedEmployee = updatedRows && updatedRows.length > 0 ? updatedRows[0] : null;
+            returnedEmployee = Array.isArray(updatedRows) && updatedRows.length > 0 ? updatedRows[0] : null;
             console.log('✅ Return query with notes succeeded');
         } catch (returnErr) {
             console.log('⚠️ Return query with notes failed:', returnErr.message);
             try {
-                const [updatedRows] = await db.execute(
+                const updatedRows = await db.execute(
                     'SELECT e.*, ed.full_name, ed.gmail, ed.phone, ed.nida, ed.passport, ed.contract_type FROM employees e LEFT JOIN employee_details ed ON e.id = ed.employee_id WHERE e.id = ?',
                     [req.params.id]
                 );
-                returnedEmployee = updatedRows && updatedRows.length > 0 ? updatedRows[0] : null;
+                returnedEmployee = Array.isArray(updatedRows) && updatedRows.length > 0 ? updatedRows[0] : null;
             } catch (returnErr2) {
                 console.log('⚠️ Fallback return query also failed:', returnErr2.message);
             }
@@ -1051,11 +1051,11 @@ router.put('/:id', async (req, res) => {
                     
                     console.log('✅ Employee updated successfully with shortened status');
                     
-                    const [updatedEmployee] = await db.execute('SELECT * FROM employees WHERE id = ?', [req.params.id]);
+                    const updatedEmployee = await db.execute('SELECT * FROM employees WHERE id = ?', [req.params.id]);
                     
                     res.json({
                         message: 'Employee updated successfully',
-                        employee: updatedEmployee[0]
+                        employee: Array.isArray(updatedEmployee) ? updatedEmployee[0] : updatedEmployee
                     });
                     return;
                 } catch (retryError) {
@@ -1074,9 +1074,9 @@ router.put('/:id', async (req, res) => {
 // Delete employee
 router.delete('/:id', async (req, res) => {
     try {
-        const [result] = await db.execute('DELETE FROM employees WHERE id = ?', [req.params.id]);
+        const result = await db.execute('DELETE FROM employees WHERE id = ?', [req.params.id]);
         
-        if (result.affectedRows === 0) {
+        if (result && result.affectedRows === 0) {
             return res.status(404).json({ error: 'Employee not found' });
         }
         
@@ -1091,26 +1091,26 @@ router.delete('/:id', async (req, res) => {
 // Get employee statistics
 router.get('/stats/overview', async (req, res) => {
     try {
-        const [totalEmployees] = await db.execute('SELECT COUNT(*) as total FROM employees');
-        const [activeEmployees] = await db.execute('SELECT COUNT(*) as active FROM employees WHERE status = "active"');
-        const [inactiveEmployees] = await db.execute('SELECT COUNT(*) as inactive FROM employees WHERE status = "inactive"');
+        const totalEmployees = await db.execute('SELECT COUNT(*) as total FROM employees');
+        const activeEmployees = await db.execute('SELECT COUNT(*) as active FROM employees WHERE status = "active"');
+        const inactiveEmployees = await db.execute('SELECT COUNT(*) as inactive FROM employees WHERE status = "inactive"');
         
         // Department breakdown
-        const [departmentStats] = await db.execute('SELECT department, COUNT(*) as count FROM employees GROUP BY department');
+        const departmentStats = await db.execute('SELECT department, COUNT(*) as count FROM employees GROUP BY department');
         
         // Job category breakdown
-        const [jobStats] = await db.execute('SELECT job_category, COUNT(*) as count FROM employees GROUP BY job_category');
+        const jobStats = await db.execute('SELECT job_category, COUNT(*) as count FROM employees GROUP BY job_category');
         
         // Recent registrations
-        const [recentRegistrations] = await db.execute('SELECT * FROM employees ORDER BY registration_date DESC LIMIT 5');
+        const recentRegistrations = await db.execute('SELECT * FROM employees ORDER BY registration_date DESC LIMIT 5');
         
         res.json({
-            total: totalEmployees[0].total,
-            active: activeEmployees[0].active,
-            inactive: inactiveEmployees[0].inactive,
-            departments: departmentStats,
-            jobCategories: jobStats,
-            recentRegistrations: recentRegistrations
+            total: Array.isArray(totalEmployees) ? totalEmployees[0].total : 0,
+            active: Array.isArray(activeEmployees) ? activeEmployees[0].active : 0,
+            inactive: Array.isArray(inactiveEmployees) ? inactiveEmployees[0].inactive : 0,
+            departments: Array.isArray(departmentStats) ? departmentStats : [],
+            jobCategories: Array.isArray(jobStats) ? jobStats : [],
+            recentRegistrations: Array.isArray(recentRegistrations) ? recentRegistrations : []
         });
     } catch (error) {
         console.error('Error fetching employee statistics:', error);
@@ -1159,14 +1159,15 @@ router.get('/verify/:id', async (req, res) => {
 router.get('/debug/all-details', async (req, res) => {
     try {
         console.log('🔍 Debugging: Fetching all employee_details records');
-        const [allDetails] = await db.execute('SELECT * FROM employee_details ORDER BY created_at DESC LIMIT 10');
+        const allDetails = await db.execute('SELECT * FROM employee_details ORDER BY created_at DESC LIMIT 10');
         
-        console.log('📊 Employee details records found:', allDetails.length);
+        const detailsArray = Array.isArray(allDetails) ? allDetails : [];
+        console.log('📊 Employee details records found:', detailsArray.length);
         
         res.json({
             message: 'Employee details debug information',
-            count: allDetails.length,
-            records: allDetails,
+            count: detailsArray.length,
+            records: detailsArray,
             timestamp: new Date().toISOString()
         });
     } catch (error) {
