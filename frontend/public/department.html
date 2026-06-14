@@ -41870,51 +41870,7 @@ function editEmployee(employeeId) {
     window.currentEditEmployeeId = emp.id || emp.employee_id;
 }
 
-function saveEmployeeUpdate() {
-    const employeeId = window.currentEditEmployeeId;
-    if (!employeeId) {
-        customAlert('❌ No employee selected for update!', 'Error', 'error');
-        return false;
-    }
 
-    const baseUrl = window.location.origin;
-    const updateData = {
-        fullName: document.getElementById('updateFullName').value,
-        phone: document.getElementById('updatePhone').value,
-        gmail: document.getElementById('updateGmail').value,
-        department: document.getElementById('updateDepartment').value,
-        jobCategory: document.getElementById('updateJobCategory').value,
-        contract: document.getElementById('updateContract').value,
-        status: document.getElementById('updateStatus').value
-    };
-
-    console.log('📝 Saving employee update for ID:', employeeId, updateData);
-
-    fetch(`${baseUrl}/api/employees/${employeeId}`, {
-        method: 'PUT',
-        headers: {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-            'Authorization': `Bearer ${sessionManager.getAuthToken()}`
-        },
-        body: JSON.stringify(updateData)
-    })
-    .then(response => {
-        if (!response.ok) throw new Error(`HTTP ${response.status}`);
-        return response.json();
-    })
-    .then(data => {
-        customAlert('✅ Employee record updated successfully!', 'Updated', 'success');
-        cancelUpdate();
-        loadUpdateEmployeeTable(); // Refresh table
-    })
-    .catch(error => {
-        console.error('❌ Error updating employee:', error);
-        customAlert('❌ Failed to update employee: ' + error.message, 'Error', 'error');
-    });
-
-    return false; // Prevent form submission
-}
 
 function cancelUpdate() {
     const updateForm = document.getElementById('updateForm');
@@ -43883,9 +43839,9 @@ function saveEmployeeUpdate() {
 
     
 
-    // Get form values
+    // Get form values - use window.currentEditEmployeeId as fallback
 
-    const employeeId = document.getElementById('updateEmpID').value;
+    const employeeId = document.getElementById('updateEmpID').value || window.currentEditEmployeeId;
 
     const updatedEmployee = {
 
@@ -43915,6 +43871,14 @@ function saveEmployeeUpdate() {
 
     
 
+    if (!employeeId) {
+
+        customAlert('❌ No employee selected. Please select an employee to edit first.', 'Error', 'error');
+
+        return false;
+
+    }
+
     // Validate required fields
 
     if (!updatedEmployee.fullName || !updatedEmployee.phone || !updatedEmployee.gmail || !updatedEmployee.department || !updatedEmployee.jobCategory || !updatedEmployee.contract || !updatedEmployee.status) {
@@ -43939,21 +43903,28 @@ function saveEmployeeUpdate() {
 
     
 
+    const baseUrl = window.location.origin;
+
     // Update employee via API
 
-    fetch(`/api/employees/${employeeId}`, {
+    fetch(`${baseUrl}/api/employees/${employeeId}`, {
 
         method: 'PUT',
 
         headers: {
 
-            'Content-Type': 'application/json'
+            'Content-Type': 'application/json',
+
+            'Accept': 'application/json',
+
+            'Authorization': `Bearer ${sessionManager.getAuthToken()}`
 
         },
 
         body: JSON.stringify(updatedEmployee)
 
     })
+
 
     .then(response => {
 
