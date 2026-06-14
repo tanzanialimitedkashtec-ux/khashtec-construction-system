@@ -202,60 +202,63 @@ class Database {
 
             table = table.replace(/`/g, '');
 
-            const monitoredTables = [
-                'employees', 'worker_accounts', 'materials', 'materials_inventory', 'materials_in', 'materials_out', 'financial_strategies',
-                'senior_hiring_requests', 'senior_hiring_approvals', 'projects', 'projects_work', 'project_progress_updates',
-                'worker_assignments', 'attendance', 'finance_work', 'payment_requests',
-                'site_reports', 'work', 'policies', 'compliance', 'hse_incidents', 'hse_work',
-                'ppe_issuance', 'violations', 'inspections', 'workforce_budgets', 'workforce_requests',
-                'clients', 'procurement', 'nhif', 'nssf', 'company_cars', 'drivers',
-                'properties', 'schedule_meetings', 'luggage_companies', 'luggage_purchases',
-                'documents', 'file_uploads', 'suggestions', 'departments', 'claims',
-                'discipline_monitoring', 'office_resources', 'talent_acquisition',
-                'promotions', 'risk_management', 'notifications', 'hr_work', 'realestate_work', 'admin_work'
-            ];
+            // Exclude extremely noisy or internal database tables
+            const excludedTables = ['sessions', 'cache', 'logs', 'system_logs'];
+            if (excludedTables.includes(table.toLowerCase())) {
+                return;
+            }
 
             let title = `System Change Alert: ${action} in ${table}`;
+            let notificationMessage = `A change was detected in the ${table} module.`;
             
-            // Custom titles based on user requirements
+            // Custom titles and messages based on user requirements
             const lowerTable = table.toLowerCase();
             if (lowerTable === 'workforce_requests' && action === 'New Record Created') {
                 title = 'Workforce Request Submitted';
+                notificationMessage = 'A new workforce request has been submitted and is waiting for review.';
             } else if (lowerTable === 'projects' && action === 'New Record Created') {
                 title = 'New Project Created';
+                notificationMessage = 'A new project has been created in the system.';
             } else if (lowerTable === 'projects' && action === 'Record Updated') {
                 const statusIdx = columns.findIndex(c => c.toLowerCase() === 'status');
                 if (statusIdx !== -1 && (params[statusIdx] === 'Completed' || params[statusIdx] === 'Finished')) {
                     title = 'Project Completed';
+                    notificationMessage = 'A project has been marked as completed.';
+                } else {
+                    notificationMessage = 'A project record has been updated.';
                 }
             } else if (lowerTable === 'materials_inventory' && action === 'Record Updated') {
                 const statusIdx = columns.findIndex(c => c.toLowerCase() === 'status');
                 if (statusIdx !== -1 && params[statusIdx] === 'Low Stock') {
                     title = '⚠️ Low Stock Alert';
+                    notificationMessage = 'A material in the inventory has reached low stock levels.';
+                } else {
+                    notificationMessage = 'An inventory record has been updated.';
                 }
-            }
-            
-            // Format details nicely into an HTML table instead of raw JSON
-            let htmlDetails = '<table style="width: 100%; border-collapse: collapse; margin-top: 15px;">';
-            if (params && params.length > 0) {
-                for (let i = 0; i < params.length; i++) {
-                    const key = columns[i] ? columns[i] : `Field ${i + 1}`;
-                    let val = params[i];
-                    if (val === undefined || val === null) val = 'N/A';
-                    val = String(val);
-                    if (val.length > 300) val = val.substring(0, 300) + '... (truncated)';
-                    
-                    htmlDetails += `
-                        <tr>
-                            <td style="padding: 10px; border-bottom: 1px solid #ddd; width: 35%; font-weight: bold; color: #555; background-color: #f9f9f9;">${key}</td>
-                            <td style="padding: 10px; border-bottom: 1px solid #ddd; color: #333;">${val}</td>
-                        </tr>
-                    `;
+            } else if (lowerTable === 'worker_assignments' && action === 'New Record Created') {
+                title = 'New Worker Assigned';
+                notificationMessage = 'A new worker has been assigned to a project.';
+            } else if (lowerTable === 'task_assignments' && action === 'New Record Created') {
+                title = 'New Task Assigned';
+                notificationMessage = 'A new task has been assigned in the system.';
+            } else if (lowerTable === 'payment_requests' && action === 'New Record Created') {
+                title = 'Pending Payment for Approve';
+                notificationMessage = 'There is a pending payment request waiting for approval.';
+            } else if (lowerTable === 'payment_requests' && action === 'Record Updated') {
+                const statusIdx = columns.findIndex(c => c.toLowerCase() === 'status');
+                if (statusIdx !== -1 && params[statusIdx] === 'Pending') {
+                    title = 'Pending Payment for Approve';
+                    notificationMessage = 'There is a pending payment request waiting for approval.';
+                } else {
+                    notificationMessage = 'A payment request record has been updated.';
                 }
-            } else {
-                htmlDetails += '<tr><td style="padding: 10px;">No specific parameters provided in query.</td></tr>';
+            } else if (action === 'New Record Created') {
+                notificationMessage = `A new record has been created in the ${table} module.`;
+            } else if (action === 'Record Updated') {
+                notificationMessage = `A record has been updated in the ${table} module.`;
+            } else if (action === 'Record Deleted') {
+                notificationMessage = `A record has been deleted in the ${table} module.`;
             }
-            htmlDetails += '</table>';
 
             // Add action buttons for requests and approvals
             let actionButtons = '';
@@ -284,11 +287,7 @@ class Database {
             if (table.toUpperCase() === 'NOTIFICATIONS' && action === 'New Record Created') {
                 title = (params && params.length > 0) ? params[0] : 'System Notification';
                 const msg = (params && params.length > 1) ? params[1] : 'You have a new notification.';
-                htmlDetails = `<p style="background: #f5f5f5; padding: 15px; border-radius: 5px; border-left: 4px solid #2196F3; white-space: pre-wrap;">${msg}</p>`;
-            } else {
-                if (!monitoredTables.includes(table.toLowerCase())) {
-                    return;
-                }
+                notificationMessage = `<span style="white-space: pre-wrap;">${msg}</span>`;
             }
 
             const https = require('https');
@@ -302,12 +301,9 @@ class Database {
                             </div>
                             <div style="padding: 25px; background-color: #ffffff;">
                                 <h3 style="color: #333; margin-top: 0; border-bottom: 2px solid #2196F3; padding-bottom: 10px; display: inline-block;">${title}</h3>
-                                <div style="margin: 20px 0;">
-                                    <p style="margin: 5px 0;"><strong>Action Performed:</strong> <span style="color: #2196F3;">${action}</span></p>
-                                    <p style="margin: 5px 0;"><strong>Module Affected:</strong> <span style="background-color: #e3f2fd; padding: 2px 8px; border-radius: 4px; color: #0d47a1;">${table.toUpperCase()}</span></p>
+                                <div style="margin: 20px 0; background-color: #f5f5f5; padding: 20px; border-left: 4px solid #2196F3; border-radius: 4px;">
+                                    <p style="margin: 0; font-size: 16px; color: #444; line-height: 1.5;">${notificationMessage}</p>
                                 </div>
-                                <h4 style="margin-bottom: 10px; color: #444;">Record Details:</h4>
-                                ${htmlDetails}
                                 ${actionButtons}
                             </div>
                             <div style="background-color: #f5f5f5; padding: 15px; text-align: center; border-top: 1px solid #eee;">
