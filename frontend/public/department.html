@@ -41746,9 +41746,218 @@ function updateEmployeeRecords() {
 }
 
 
+// ========== Update Employee Records - Supporting Functions ==========
+
+function loadUpdateEmployeeTable() {
+    const baseUrl = window.location.origin;
+
+    fetch(`${baseUrl}/api/employees`, {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'Authorization': `Bearer ${sessionManager.getAuthToken()}`
+        }
+    })
+    .then(response => {
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        return response.json();
+    })
+    .then(data => {
+        let employees = Array.isArray(data) ? data : (data && typeof data === 'object' ? [data] : []);
+        window.allUpdateEmployees = employees;
+        console.log('📋 Update Employee table loaded:', employees.length, 'employees');
+        displayUpdateEmployeeRows(employees);
+    })
+    .catch(error => {
+        console.error('❌ Error loading employees for update table:', error);
+        const tbody = document.getElementById('updateEmployeeTbody');
+        if (tbody) {
+            tbody.innerHTML = `<tr><td colspan="11" style="text-align: center; padding: 20px; color: #dc3545;">❌ Failed to load employees: ${error.message}</td></tr>`;
+        }
+    });
+}
+
+function displayUpdateEmployeeRows(employees) {
+    const tbody = document.getElementById('updateEmployeeTbody');
+    if (!tbody) return;
+
+    if (!employees || employees.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="11" style="text-align: center; padding: 20px; color: #666;">No employees found.</td></tr>';
+        return;
+    }
+
+    tbody.innerHTML = employees.map((emp, index) => {
+        const statusColor = (emp.status || '').toLowerCase() === 'active' ? '#28a745' :
+                            (emp.status || '').toLowerCase() === 'inactive' ? '#ffc107' : '#dc3545';
+        return `<tr style="border-bottom: 1px solid #dee2e6; ${index % 2 === 0 ? 'background: #f8f9fa;' : ''}">
+            <td style="padding: 8px 12px; border: 1px solid #dee2e6;">${index + 1}</td>
+            <td style="padding: 8px 12px; border: 1px solid #dee2e6;">${emp.id || emp.employee_id || '-'}</td>
+            <td style="padding: 8px 12px; border: 1px solid #dee2e6; font-weight: 600;">${emp.full_name || emp.name || '-'}</td>
+            <td style="padding: 8px 12px; border: 1px solid #dee2e6;">${emp.phone || emp.phone_number || '-'}</td>
+            <td style="padding: 8px 12px; border: 1px solid #dee2e6;">${emp.gmail || emp.email || '-'}</td>
+            <td style="padding: 8px 12px; border: 1px solid #dee2e6;">${emp.department || '-'}</td>
+            <td style="padding: 8px 12px; border: 1px solid #dee2e6;">${emp.position || emp.job_category || emp.job_title || '-'}</td>
+            <td style="padding: 8px 12px; border: 1px solid #dee2e6;">${emp.contract_type || '-'}</td>
+            <td style="padding: 8px 12px; border: 1px solid #dee2e6;">
+                <span style="background: ${statusColor}; color: white; padding: 2px 8px; border-radius: 4px; font-size: 12px;">${emp.status || 'N/A'}</span>
+            </td>
+            <td style="padding: 8px 12px; border: 1px solid #dee2e6; white-space: normal; max-width: 200px;">${emp.notes || '-'}</td>
+            <td style="padding: 8px 12px; border: 1px solid #dee2e6; text-align: center;">
+                <button onclick="editEmployee(${emp.id || emp.employee_id})" class="action" style="background: #007bff; padding: 4px 10px; font-size: 12px; margin: 2px;">✏️ Edit</button>
+                <button onclick="deleteEmployeeRecord(${emp.id || emp.employee_id})" class="action" style="background: #dc3545; padding: 4px 10px; font-size: 12px; margin: 2px;">🗑️</button>
+            </td>
+        </tr>`;
+    }).join('');
+}
+
+function filterUpdateEmployeeTable() {
+    const searchTerm = (document.getElementById('updateEmpSearchInput')?.value || '').toLowerCase();
+    const deptFilter = (document.getElementById('updateEmpDeptFilter')?.value || '').toLowerCase();
+    const statusFilter = (document.getElementById('updateEmpStatusFilter')?.value || '');
+    const employees = window.allUpdateEmployees || [];
+
+    const filtered = employees.filter(emp => {
+        const matchesSearch = !searchTerm ||
+            (emp.full_name || emp.name || '').toLowerCase().includes(searchTerm) ||
+            (emp.id || emp.employee_id || '').toString().toLowerCase().includes(searchTerm) ||
+            (emp.department || '').toLowerCase().includes(searchTerm) ||
+            (emp.phone || emp.phone_number || '').toLowerCase().includes(searchTerm) ||
+            (emp.gmail || emp.email || '').toLowerCase().includes(searchTerm) ||
+            (emp.position || emp.job_category || '').toLowerCase().includes(searchTerm) ||
+            (emp.contract_type || '').toLowerCase().includes(searchTerm);
+
+        const matchesDept = !deptFilter || (emp.department || '').toLowerCase() === deptFilter;
+        const matchesStatus = !statusFilter || (emp.status || '') === statusFilter;
+
+        return matchesSearch && matchesDept && matchesStatus;
+    });
+
+    displayUpdateEmployeeRows(filtered);
+}
+
+function editEmployee(employeeId) {
+    const employees = window.allUpdateEmployees || [];
+    const emp = employees.find(e => (e.id || e.employee_id) == employeeId);
+
+    if (!emp) {
+        customAlert('❌ Employee not found!', 'Error', 'error');
+        return;
+    }
+
+    // Show the form
+    const updateForm = document.getElementById('updateForm');
+    if (updateForm) {
+        updateForm.classList.remove('hidden');
+        updateForm.style.display = 'block';
+    }
+
+    // Populate form fields
+    document.getElementById('updateEmpID').value = emp.id || emp.employee_id || '';
+    document.getElementById('updateFullName').value = emp.full_name || emp.name || '';
+    document.getElementById('updatePhone').value = emp.phone || emp.phone_number || '';
+    document.getElementById('updateGmail').value = emp.gmail || emp.email || '';
+    document.getElementById('updateDepartment').value = emp.department || '';
+    document.getElementById('updateJobCategory').value = emp.position || emp.job_category || '';
+    document.getElementById('updateContract').value = emp.contract_type || '';
+    document.getElementById('updateStatus').value = emp.status || 'Active';
+    document.getElementById('updateNotes').value = '';
+
+    // Scroll to form
+    updateForm.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+    // Store ID for saving
+    window.currentEditEmployeeId = emp.id || emp.employee_id;
+}
+
+function saveEmployeeUpdate() {
+    const employeeId = window.currentEditEmployeeId;
+    if (!employeeId) {
+        customAlert('❌ No employee selected for update!', 'Error', 'error');
+        return false;
+    }
+
+    const baseUrl = window.location.origin;
+    const updateData = {
+        fullName: document.getElementById('updateFullName').value,
+        phone: document.getElementById('updatePhone').value,
+        gmail: document.getElementById('updateGmail').value,
+        department: document.getElementById('updateDepartment').value,
+        jobCategory: document.getElementById('updateJobCategory').value,
+        contract: document.getElementById('updateContract').value,
+        status: document.getElementById('updateStatus').value
+    };
+
+    console.log('📝 Saving employee update for ID:', employeeId, updateData);
+
+    fetch(`${baseUrl}/api/employees/${employeeId}`, {
+        method: 'PUT',
+        headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'Authorization': `Bearer ${sessionManager.getAuthToken()}`
+        },
+        body: JSON.stringify(updateData)
+    })
+    .then(response => {
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        return response.json();
+    })
+    .then(data => {
+        customAlert('✅ Employee record updated successfully!', 'Updated', 'success');
+        cancelUpdate();
+        loadUpdateEmployeeTable(); // Refresh table
+    })
+    .catch(error => {
+        console.error('❌ Error updating employee:', error);
+        customAlert('❌ Failed to update employee: ' + error.message, 'Error', 'error');
+    });
+
+    return false; // Prevent form submission
+}
+
+function cancelUpdate() {
+    const updateForm = document.getElementById('updateForm');
+    if (updateForm) {
+        updateForm.classList.add('hidden');
+        updateForm.style.display = 'none';
+    }
+    document.getElementById('updateEmployeeForm')?.reset();
+    window.currentEditEmployeeId = null;
+}
+
+function deleteEmployeeRecord(employeeId) {
+    if (!confirm('Are you sure you want to delete this employee record? This action cannot be undone.')) return;
+
+    const baseUrl = window.location.origin;
+
+    fetch(`${baseUrl}/api/employees/${employeeId}`, {
+        method: 'DELETE',
+        headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'Authorization': `Bearer ${sessionManager.getAuthToken()}`
+        }
+    })
+    .then(response => {
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        return response.json();
+    })
+    .then(data => {
+        customAlert('✅ Employee record deleted successfully!', 'Deleted', 'success');
+        loadUpdateEmployeeTable(); // Refresh table
+    })
+    .catch(error => {
+        console.error('❌ Error deleting employee:', error);
+        customAlert('❌ Failed to delete employee: ' + error.message, 'Error', 'error');
+    });
+}
+
+// ========== End Update Employee Records Functions ==========
 
 
 function manageLeaveContracts(){
+
 
     showContent(`
 
