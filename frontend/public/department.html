@@ -69153,6 +69153,9 @@ function showPayrollTab(tabName, btnElement) {
 
     document.getElementById('generatePayslips').classList.add('hidden');
 
+    var payEmpTab = document.getElementById('payEmployeeTab');
+    if (payEmpTab) payEmpTab.classList.add('hidden');
+
     
 
     // Remove active class from all buttons
@@ -70886,6 +70889,9 @@ function loadPayrollData() {
 
     
 
+    // Load saved employee payments from database
+    loadEmployeePayments(baseUrl);
+
     const today = new Date();
 
     const endOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0);
@@ -70894,6 +70900,36 @@ function loadPayrollData() {
 
     if (paymentDateInput) paymentDateInput.value = endOfMonth.toISOString().split('T')[0];
 
+}
+
+function loadEmployeePayments(baseUrl) {
+    if (!baseUrl) baseUrl = window.KashTecAPI && window.KashTecAPI.baseUrl ? window.KashTecAPI.baseUrl : window.location.origin;
+    fetch(baseUrl + '/api/payroll/employee-payments')
+    .then(function(res) { return res.json(); })
+    .then(function(data) {
+        if (!data.success) return;
+        var payments = data.data || [];
+        var tbody = document.getElementById('payEmployeeTableBody');
+        if (!tbody) return;
+        var noPaymentsRow = document.getElementById('no-payments-row');
+        if (payments.length > 0 && noPaymentsRow) noPaymentsRow.style.display = 'none';
+        payments.forEach(function(p) {
+            var tr = document.createElement('tr');
+            var amt = parseFloat(p.amount) || 0;
+            var methodMap = { bank_transfer: 'Bank Transfer', mobile_money: 'Mobile Money', cash: 'Cash' };
+            var methodLabel = methodMap[p.payment_method] || p.payment_method || 'N/A';
+            var dateStr = p.payment_date ? String(p.payment_date).slice(0, 10) : '';
+            tr.innerHTML =
+                '<td style="padding:8px; border:1px solid #ddd;">' + (p.employee_name || 'Employee #' + p.employee_id) + '</td>' +
+                '<td style="padding:8px; border:1px solid #ddd; text-align:right;">' + amt.toLocaleString() + '</td>' +
+                '<td style="padding:8px; border:1px solid #ddd;">' + methodLabel + '</td>' +
+                '<td style="padding:8px; border:1px solid #ddd;">' + dateStr + '</td>' +
+                '<td style="padding:8px; border:1px solid #ddd; text-align:center;"><span style="padding:2px 8px; border-radius:4px; background:#d4edda; color:#155724;">' + (p.status || 'Processed') + '</span></td>';
+            tbody.appendChild(tr);
+        });
+        console.log('✅ Loaded ' + payments.length + ' employee payments from database');
+    })
+    .catch(function(err) { console.error('❌ Error loading employee payments:', err); });
 }
 
 function populateEmployeeDropdowns(employees) {
@@ -110517,40 +110553,65 @@ function autoFillEmployeeSalary() {
 
 function confirmPayEmployee(e) {
     e.preventDefault();
-    const employeeSelect = document.getElementById('payEmployeeSelect');
-    const employeeId = employeeSelect.value;
-    const employeeName = employeeSelect.options[employeeSelect.selectedIndex].text.split(' - ')[0];
-    const amount = document.getElementById('payEmployeeAmount').value;
-    const methodSelect = document.getElementById('payEmployeeMethod');
-    const methodText = methodSelect.options[methodSelect.selectedIndex].text;
-    const paymentDate = document.getElementById('payEmployeeDate').value || new Date().toISOString().split('T')[0];
+    var employeeSelect = document.getElementById('payEmployeeSelect');
+    var employeeId = employeeSelect.value;
+    var employeeName = employeeSelect.options[employeeSelect.selectedIndex].text.split(' - ')[0];
+    var amount = document.getElementById('payEmployeeAmount').value;
+    var rawAmount = document.getElementById('payEmployeeAmount').dataset.rawAmount || amount;
+    var methodSelect = document.getElementById('payEmployeeMethod');
+    var methodValue = methodSelect.value;
+    var methodText = methodSelect.options[methodSelect.selectedIndex].text;
+    var paymentDate = document.getElementById('payEmployeeDate').value || new Date().toISOString().split('T')[0];
 
     if (!employeeId || !amount || amount === 'No salary structure found') {
         if(typeof customAlert === 'function') customAlert('Please select a valid employee with a salary structure.', 'Error', 'error');
         else alert('Please select a valid employee with a salary structure.');
         return false;
     }
-    if (confirm(`Are you sure you want to process payment of ${amount} for ${employeeName}?`)) {
-        if(typeof customAlert === 'function') customAlert(`Payment of ${amount} processed successfully for ${employeeName}.`, 'Success', 'success');
-        else alert(`Payment of ${amount} processed successfully for ${employeeName}.`);
-        
-        const tbody = document.getElementById('payEmployeeTableBody');
-        const noPaymentsRow = document.getElementById('no-payments-row');
-        if (noPaymentsRow) noPaymentsRow.style.display = 'none';
+    if (confirm('Are you sure you want to process payment of ' + amount + ' for ' + employeeName + '?')) {
+        var baseUrl = window.KashTecAPI && window.KashTecAPI.baseUrl ? window.KashTecAPI.baseUrl : window.location.origin;
+        fetch(baseUrl + '/api/payroll/employee-payments', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                employeeId: employeeId,
+                employeeName: employeeName,
+                amount: rawAmount,
+                paymentMethod: methodValue,
+                paymentDate: paymentDate
+            })
+        })
+        .then(function(res) { return res.json(); })
+        .then(function(data) {
+            if (data.success) {
+                if(typeof customAlert === 'function') customAlert('Payment of ' + amount + ' saved and processed for ' + employeeName + '.', 'Success', 'success');
+                else alert('Payment of ' + amount + ' saved and processed for ' + employeeName + '.');
 
-        if (tbody) {
-            const tr = document.createElement('tr');
-            tr.innerHTML = `
-                <td style="padding:8px; border:1px solid #ddd;">${employeeName}</td>
-                <td style="padding:8px; border:1px solid #ddd; text-align:right;">${amount}</td>
-                <td style="padding:8px; border:1px solid #ddd;">${methodText}</td>
-                <td style="padding:8px; border:1px solid #ddd;">${paymentDate}</td>
-                <td style="padding:8px; border:1px solid #ddd; text-align:center;"><span style="padding:2px 8px; border-radius:4px; background:#d4edda; color:#155724;">Processed</span></td>
-            `;
-            tbody.insertBefore(tr, tbody.firstChild);
-        }
+                var tbody = document.getElementById('payEmployeeTableBody');
+                var noPaymentsRow = document.getElementById('no-payments-row');
+                if (noPaymentsRow) noPaymentsRow.style.display = 'none';
 
-        document.getElementById('payEmployeeForm').reset();
+                if (tbody) {
+                    var tr = document.createElement('tr');
+                    tr.innerHTML =
+                        '<td style="padding:8px; border:1px solid #ddd;">' + employeeName + '</td>' +
+                        '<td style="padding:8px; border:1px solid #ddd; text-align:right;">' + amount + '</td>' +
+                        '<td style="padding:8px; border:1px solid #ddd;">' + methodText + '</td>' +
+                        '<td style="padding:8px; border:1px solid #ddd;">' + paymentDate + '</td>' +
+                        '<td style="padding:8px; border:1px solid #ddd; text-align:center;"><span style="padding:2px 8px; border-radius:4px; background:#d4edda; color:#155724;">Processed</span></td>';
+                    tbody.insertBefore(tr, tbody.firstChild);
+                }
+                document.getElementById('payEmployeeForm').reset();
+            } else {
+                if(typeof customAlert === 'function') customAlert('Failed to save payment: ' + (data.error || 'Unknown error'), 'Error', 'error');
+                else alert('Failed to save payment: ' + (data.error || 'Unknown error'));
+            }
+        })
+        .catch(function(err) {
+            console.error('Error saving employee payment:', err);
+            if(typeof customAlert === 'function') customAlert('Network error saving payment. Please try again.', 'Error', 'error');
+            else alert('Network error saving payment. Please try again.');
+        });
     }
     return false;
 }

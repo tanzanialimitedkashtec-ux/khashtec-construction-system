@@ -62,6 +62,19 @@ async function ensurePayrollTables() {
                 INDEX idx_payroll_month (payroll_month)
             )
         `);
+        await db.execute(`
+            CREATE TABLE IF NOT EXISTS employee_payments (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                employee_id VARCHAR(50) NOT NULL,
+                employee_name VARCHAR(255),
+                amount DECIMAL(15,2) NOT NULL DEFAULT 0,
+                payment_method VARCHAR(50) DEFAULT 'bank_transfer',
+                payment_date DATE NOT NULL,
+                status VARCHAR(50) DEFAULT 'Processed',
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                INDEX idx_emp_payment_date (employee_id, payment_date)
+            )
+        `);
     } catch (error) {
         console.error('❌ Error ensuring payroll tables:', error.message);
     }
@@ -412,6 +425,58 @@ router.post('/payslips/email', async (req, res) => {
     } catch (error) {
         console.error('❌ Error emailing payslips:', error.message);
         res.status(500).json({ success: false, error: 'Failed to email payslips', details: error.message });
+    }
+});
+
+// ===== EMPLOYEE PAYMENTS (persisted to database) =====
+
+// POST /api/payroll/employee-payments - Save an employee payment
+router.post('/employee-payments', async (req, res) => {
+    try {
+        console.log('💰 POST /api/payroll/employee-payments called');
+        const { employeeId, employeeName, amount, paymentMethod, paymentDate } = req.body;
+
+        if (!employeeId || !amount) {
+            return res.status(400).json({ success: false, error: 'Employee ID and amount are required' });
+        }
+
+        const parsedAmount = parseFloat(String(amount).replace(/,/g, '')) || 0;
+        const date = paymentDate || new Date().toISOString().slice(0, 10);
+        const method = paymentMethod || 'bank_transfer';
+
+        const result = await db.execute(
+            `INSERT INTO employee_payments (employee_id, employee_name, amount, payment_method, payment_date, status)
+             VALUES (?, ?, ?, ?, ?, 'Processed')`,
+            [employeeId, employeeName || '', parsedAmount, method, date]
+        );
+
+        res.status(201).json({
+            success: true,
+            message: 'Payment saved successfully',
+            id: result ? result.insertId : null,
+            data: { employeeId, employeeName, amount: parsedAmount, paymentMethod: method, paymentDate: date, status: 'Processed' }
+        });
+    } catch (error) {
+        console.error('❌ Error saving employee payment:', error.message);
+        res.status(500).json({ success: false, error: 'Failed to save payment', details: error.message });
+    }
+});
+
+// GET /api/payroll/employee-payments - Fetch recent employee payments
+router.get('/employee-payments', async (req, res) => {
+    try {
+        const limit = parseInt(req.query.limit) || 50;
+        const rows = await db.execute(
+            `SELECT id, employee_id, employee_name, amount, payment_method, payment_date, status, created_at
+             FROM employee_payments
+             ORDER BY created_at DESC
+             LIMIT ?`,
+            [limit]
+        );
+        res.json({ success: true, data: Array.isArray(rows) ? rows : [] });
+    } catch (error) {
+        console.error('❌ Error fetching employee payments:', error.message);
+        res.status(500).json({ success: false, error: 'Failed to fetch payments', details: error.message });
     }
 });
 
