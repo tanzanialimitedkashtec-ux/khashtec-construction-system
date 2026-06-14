@@ -725,50 +725,52 @@ header h2 {
 
 /* Premium Sidebar Styles */
 .sidebar {
-    width: 280px;
+    width: 230px;
     background: linear-gradient(180deg, #0f172a 0%, #1e293b 100%);
     box-shadow: 4px 0 24px rgba(0, 0, 0, 0.2);
     color: #e2e8f0;
-    padding: 24px 16px;
+    padding: 16px 12px;
     overflow-y: auto;
+    overflow-x: hidden;
     height: 100%;
+    max-height: calc(100vh - 60px); /* Ensures vertical scroll activates if items overflow */
     box-sizing: border-box;
     border-right: 1px solid rgba(255, 255, 255, 0.05);
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-    font-size: 14px;
+    font-size: 13px;
     transition: width 0.4s cubic-bezier(0.16, 1, 0.3, 1), transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), padding 0.4s;
     z-index: 100;
 }
 
 /* Custom Scrollbar for Sidebar */
 .sidebar::-webkit-scrollbar {
-    width: 6px;
+    width: 5px;
 }
 .sidebar::-webkit-scrollbar-track {
     background: transparent;
 }
 .sidebar::-webkit-scrollbar-thumb {
-    background: rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.15);
     border-radius: 10px;
 }
 .sidebar::-webkit-scrollbar-thumb:hover {
-    background: rgba(255, 255, 255, 0.2);
+    background: rgba(255, 255, 255, 0.25);
 }
 
 .sidebar-header {
     display: flex;
     flex-direction: column;
-    gap: 16px;
-    margin-bottom: 32px;
-    padding: 0 8px;
+    gap: 12px;
+    margin-bottom: 24px;
+    padding: 0 4px;
 }
 
 .sidebar h3 {
     margin: 0;
-    font-size: 20px;
+    font-size: 16px;
     font-weight: 700;
     text-align: center;
-    padding-bottom: 16px;
+    padding-bottom: 12px;
     color: #ffffff;
     border-bottom: 1px solid rgba(255, 255, 255, 0.08);
     letter-spacing: 0.5px;
@@ -778,15 +780,15 @@ header h2 {
 .menu-tools {
     display: flex;
     flex-direction: column;
-    gap: 10px;
-    margin-bottom: 24px;
+    gap: 8px;
+    margin-bottom: 20px;
 }
 
 .menu-tools input {
     width: 100%;
-    padding: 12px 16px;
-    font-size: 14px;
-    border-radius: 8px;
+    padding: 10px 12px;
+    font-size: 13px;
+    border-radius: 6px;
     border: 1px solid rgba(255, 255, 255, 0.1);
     background: rgba(0, 0, 0, 0.2);
     color: #ffffff;
@@ -807,13 +809,13 @@ header h2 {
 
 .menu-tools .menu-clear {
     width: 100%;
-    padding: 10px;
-    font-size: 13px;
+    padding: 8px;
+    font-size: 12px;
     font-weight: 500;
     background: rgba(255, 255, 255, 0.05);
     color: #cbd5e1;
     border: 1px solid rgba(255, 255, 255, 0.08);
-    border-radius: 8px;
+    border-radius: 6px;
     cursor: pointer;
     transition: all 0.2s ease;
 }
@@ -824,18 +826,18 @@ header h2 {
 }
 
 .sidebar #menu {
-    margin-bottom: 24px;
+    margin-bottom: 20px;
 }
 
 .sidebar .menu-list {
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: 10px;
 }
 
 .menu-section {
     border: 1px solid rgba(255, 255, 255, 0.05);
-    border-radius: 10px;
+    border-radius: 8px;
     overflow: hidden;
     background: rgba(255, 255, 255, 0.02);
     transition: all 0.3s ease;
@@ -852,8 +854,8 @@ header h2 {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 14px 16px;
-    font-size: 14px;
+    padding: 10px 12px;
+    font-size: 13px;
     font-weight: 600;
     color: #f1f5f9;
     user-select: none;
