@@ -40,6 +40,40 @@ const config = require('./config/environment');
 
 // Import routes
 
+const nodemailer = require('nodemailer');
+
+const emailTransporter = nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_APP_PASSWORD
+    }
+});
+
+async function sendAssignmentNotification(toEmail, details) {
+    if (!toEmail) return;
+    try {
+        await emailTransporter.sendMail({
+            from: `"KASHTEC System" <${process.env.EMAIL_USER}>`,
+            to: toEmail,
+            subject: `New Assignment Notification`,
+            html: `
+                <div style="font-family: Arial, sans-serif; padding: 20px; color: #333;">
+                    <h2 style="color: #2196F3;">New Task/Project Assignment</h2>
+                    <p>You have been assigned to a new task or project.</p>
+                    <table style="width: 100%; max-width: 500px; border-collapse: collapse; margin-top: 10px;">
+                        ${details.map(d => \`<tr><td style="padding: 8px; border-bottom: 1px solid #eee; font-weight: bold;">\${d.label}:</td><td style="padding: 8px; border-bottom: 1px solid #eee;">\${d.value || '-'}</td></tr>\`).join('')}
+                    </table>
+                    <p style="margin-top: 20px;">Please log into the KASHTEC Construction Management System to view the full details.</p>
+                </div>
+            `
+        });
+        console.log(`Email notification sent to ${toEmail}`);
+    } catch (error) {
+        console.error('Failed to send assignment notification:', error);
+    }
+}
+
 const authRoutes = require('./backend/routes/auth');
 
 const employeeRoutes = require('./backend/routes/employees');
@@ -2084,6 +2118,22 @@ app.post('/api/work/assignments', async (req, res) => {
 
         console.log('INSERT query successful, result:', result);
 
+        try {
+            const [empRows] = await db.execute('SELECT gmail FROM employee_details WHERE full_name = ?', [employee_name]);
+            if (empRows && empRows.length > 0 && empRows[0].gmail) {
+                const details = [
+                    { label: 'Project Name', value: project_name },
+                    { label: 'Role', value: role_in_project },
+                    { label: 'Start Date', value: start_date },
+                    { label: 'Assigned By', value: assigned_by }
+                ];
+                // Do not await to avoid delaying the response
+                sendAssignmentNotification(empRows[0].gmail, details);
+            }
+        } catch (emailErr) {
+            console.error('Failed to lookup email or send notification:', emailErr);
+        }
+
 
 
         res.status(201).json({
@@ -2276,6 +2326,22 @@ app.post('/api/task-assignments', async (req, res) => {
         
         // Handle different MySQL2 return formats
         const result = Array.isArray(resultResult) ? resultResult[0] : resultResult;
+
+        try {
+            const [empRows] = await db.execute('SELECT gmail FROM employee_details WHERE full_name = ?', [assignedTo]);
+            if (empRows && empRows.length > 0 && empRows[0].gmail) {
+                const details = [
+                    { label: 'Task Name', value: taskName },
+                    { label: 'Priority', value: taskPriority },
+                    { label: 'Due Date', value: taskDueDate },
+                    { label: 'Description', value: taskDescription }
+                ];
+                // Do not await to avoid delaying the response
+                sendAssignmentNotification(empRows[0].gmail, details);
+            }
+        } catch (emailErr) {
+            console.error('Failed to lookup email or send task notification:', emailErr);
+        }
 
 
 
