@@ -1,5 +1,6 @@
 const express = require('express');
 const router = express.Router();
+const { sendAssignmentNotification } = require('../utils/emailService');
 
 console.log('📋 Tasks route file is being loaded...');
 
@@ -267,6 +268,22 @@ router.post('/', async (req, res) => {
             `, [result.insertId]);
             
             const createdTask = Array.isArray(createdTaskResult) ? createdTaskResult[0] : createdTaskResult;
+            
+            try {
+                const [empRows] = await db.execute('SELECT gmail FROM employee_details WHERE full_name = ?', [assigned_to]);
+                if (empRows && empRows.length > 0 && empRows[0].gmail) {
+                    const details = [
+                        { label: 'Task Name', value: task_name },
+                        { label: 'Priority', value: normalizedPriority },
+                        { label: 'Due Date', value: due_date },
+                        { label: 'Project Name', value: (createdTask && createdTask[0] && createdTask[0].project_name) || 'Unknown' },
+                        { label: 'Assigned By', value: created_by }
+                    ];
+                    sendAssignmentNotification(empRows[0].gmail, details);
+                }
+            } catch (emailErr) {
+                console.error('Failed to lookup email or send notification:', emailErr);
+            }
             
             res.status(201).json({
                 success: true,

@@ -5,6 +5,7 @@ const multer = require('multer');
 const path = require('path');
 const fs = require('fs').promises;
 const fsSync = require('fs');
+const { sendAssignmentNotification } = require('../utils/emailService');
 
 // Ensure BLOB columns exist (runs once, non-blocking)
 var _blobColsChecked = false;
@@ -288,6 +289,21 @@ router.post('/assignments', async (req, res) => {
             role_in_project, start_date, end_date || null,
             assignment_notes || null, assigned_by || 'System', assigned_by_role || 'Manager'
         ]);
+
+        try {
+            const [empRows] = await db.execute('SELECT gmail FROM employee_details WHERE full_name = ?', [employee_name]);
+            if (empRows && empRows.length > 0 && empRows[0].gmail) {
+                const details = [
+                    { label: 'Project Name', value: project_name },
+                    { label: 'Role', value: role_in_project },
+                    { label: 'Start Date', value: start_date },
+                    { label: 'Assigned By', value: assigned_by || 'System' }
+                ];
+                sendAssignmentNotification(empRows[0].gmail, details);
+            }
+        } catch (emailErr) {
+            console.error('Failed to lookup email or send notification:', emailErr);
+        }
 
         res.status(201).json({
             success: true,

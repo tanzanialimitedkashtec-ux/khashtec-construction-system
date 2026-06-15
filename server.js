@@ -40,43 +40,7 @@ const config = require('./config/environment');
 
 // Import routes
 
-const nodemailer = require('nodemailer');
-
-const emailTransporter = nodemailer.createTransport({
-    service: 'gmail',
-    auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_APP_PASSWORD
-    }
-});
-
-async function sendAssignmentNotification(toEmail, details) {
-    if (!toEmail) return;
-    try {
-        const detailsRows = details.map(d =>
-            '<tr><td style="padding: 8px; border-bottom: 1px solid #eee; font-weight: bold;">' + d.label + ':</td>' +
-            '<td style="padding: 8px; border-bottom: 1px solid #eee;">' + (d.value || '-') + '</td></tr>'
-        ).join('');
-        await emailTransporter.sendMail({
-            from: `"KASHTEC System" <${process.env.EMAIL_USER}>`,
-            to: toEmail,
-            subject: `New Assignment Notification`,
-            html: `
-                <div style="font-family: Arial, sans-serif; padding: 20px; color: #333;">
-                    <h2 style="color: #2196F3;">New Task/Project Assignment</h2>
-                    <p>You have been assigned to a new task or project.</p>
-                    <table style="width: 100%; max-width: 500px; border-collapse: collapse; margin-top: 10px;">
-                        ${detailsRows}
-                    </table>
-                    <p style="margin-top: 20px;">Please log into the KASHTEC Construction Management System to view the full details.</p>
-                </div>
-            `
-        });
-        console.log(`Email notification sent to ${toEmail}`);
-    } catch (error) {
-        console.error('Failed to send assignment notification:', error);
-    }
-}
+const { sendAssignmentNotification } = require('./backend/utils/emailService');
 
 const authRoutes = require('./backend/routes/auth');
 
