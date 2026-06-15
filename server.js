@@ -53,6 +53,10 @@ const emailTransporter = nodemailer.createTransport({
 async function sendAssignmentNotification(toEmail, details) {
     if (!toEmail) return;
     try {
+        const detailsRows = details.map(d =>
+            '<tr><td style="padding: 8px; border-bottom: 1px solid #eee; font-weight: bold;">' + d.label + ':</td>' +
+            '<td style="padding: 8px; border-bottom: 1px solid #eee;">' + (d.value || '-') + '</td></tr>'
+        ).join('');
         await emailTransporter.sendMail({
             from: `"KASHTEC System" <${process.env.EMAIL_USER}>`,
             to: toEmail,
@@ -62,7 +66,7 @@ async function sendAssignmentNotification(toEmail, details) {
                     <h2 style="color: #2196F3;">New Task/Project Assignment</h2>
                     <p>You have been assigned to a new task or project.</p>
                     <table style="width: 100%; max-width: 500px; border-collapse: collapse; margin-top: 10px;">
-                        ${details.map(d => \`<tr><td style="padding: 8px; border-bottom: 1px solid #eee; font-weight: bold;">\${d.label}:</td><td style="padding: 8px; border-bottom: 1px solid #eee;">\${d.value || '-'}</td></tr>\`).join('')}
+                        ${detailsRows}
                     </table>
                     <p style="margin-top: 20px;">Please log into the KASHTEC Construction Management System to view the full details.</p>
                 </div>
