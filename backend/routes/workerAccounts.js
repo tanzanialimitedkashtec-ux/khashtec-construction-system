@@ -6,23 +6,16 @@ const path = require('path');
 const fs = require('fs').promises;
 const fsSync = require('fs');
 
-// Ensure BLOB columns exist in worker_accounts (survives Railway redeploys)
-(async () => {
-    try {
-        const cols = ['id_document_data LONGBLOB', 'id_document_mime VARCHAR(100)', 'contract_document_data LONGBLOB', 'contract_document_mime VARCHAR(100)', 'profile_picture_data LONGBLOB', 'profile_picture_mime VARCHAR(100)'];
-        for (const col of cols) {
-            const colName = col.split(' ')[0];
-            try {
-                await db.execute(`ALTER TABLE worker_accounts ADD COLUMN ${col}`);
-                console.log(`✅ Added column ${colName} to worker_accounts`);
-            } catch (e) {
-                // Column already exists — ignore
-            }
-        }
-    } catch (e) {
-        console.warn('⚠️ Could not ensure BLOB columns on worker_accounts:', e.message);
-    }
-})();
+// Ensure BLOB columns exist (runs once, non-blocking)
+var _blobColsChecked = false;
+function ensureBlobCols() {
+    if (_blobColsChecked) return;
+    _blobColsChecked = true;
+    var cols = ['id_document_data LONGBLOB', 'id_document_mime VARCHAR(100)', 'contract_document_data LONGBLOB', 'contract_document_mime VARCHAR(100)', 'profile_picture_data LONGBLOB', 'profile_picture_mime VARCHAR(100)'];
+    cols.forEach(function(col) {
+        db.execute('ALTER TABLE worker_accounts ADD COLUMN ' + col).catch(function() {});
+    });
+}
 
 // Configure multer for file uploads
 const storage = multer.diskStorage({
@@ -413,489 +406,135 @@ router.post('/', upload.fields([
     { name: 'workerID', maxCount: 1 },
     { name: 'workerContract', maxCount: 1 }
 ]), async (req, res) => {
-    console.log('🔍 Worker account creation request received');
-    console.log('📋 Request body:', req.body);
-    
-    const { 
-        empID, 
-        employeeId, 
-        fullName, 
-        email, 
-        workEmail, 
-        phone, 
-        phoneNumber, 
-        department, 
-        jobTitle, 
-        accountType, 
-        accessLevel, 
-        password, 
-        temporaryPassword, 
-        accountNotes,
-        profilePicture,
-        idDocument,
-        contractDocument
+    var notify = require('../utils/notify');
+    const {
+        empID, employeeId, fullName, email, workEmail, phone, phoneNumber,
+        department, jobTitle, accountType, accessLevel, password,
+        temporaryPassword, accountNotes
     } = req.body;
-    
-    // Handle both frontend and backend field names
-    const finalEmployeeId = empID || employeeId;
-    const finalWorkEmail = email || workEmail;
-    const finalPhoneNumber = phone || phoneNumber;
-    const finalTemporaryPassword = password || temporaryPassword;
-    
-    // Handle uploaded files - read bytes into memory for BLOB storage (Railway-safe)
-    const readFile = (f) => {
-        if (!f) return { path: null, data: null, mime: null };
-        const urlPath = `/uploads/worker-documents/${f.filename}`;
-        let data = null;
-        try {
-            data = fsSync.readFileSync(f.path);
-        } catch (readErr) {
-            console.warn('⚠️ Could not read uploaded file for BLOB storage:', readErr.message);
-        }
-        return { path: urlPath, data, mime: f.mimetype || 'application/octet-stream' };
-    };
-    const profilePicFile = readFile(req.files?.workerProfile?.[0]);
-    const idDocFile = readFile(req.files?.workerID?.[0]);
-    const contractDocFile = readFile(req.files?.workerContract?.[0]);
-    const profilePicturePath = profilePicFile.path;
-    const idDocumentPath = idDocFile.path;
-    const contractDocumentPath = contractDocFile.path;
-    
-    console.log('📁 Uploaded files:', {
-        profilePicture: profilePicturePath,
-        idDocument: idDocumentPath,
-        contractDocument: contractDocumentPath
-    });
-    
-    console.log('📝 Extracted worker data:', { 
-        finalEmployeeId, 
-        fullName, 
-        finalWorkEmail, 
-        finalPhoneNumber, 
-        department, 
-        jobTitle, 
-        accountType, 
-        accessLevel 
-    });
-    
-    console.log('🔍 Complete request body fields:', Object.keys(req.body));
-    console.log('🔍 Complete request body values:', req.body);
-    
-    // Validate input
-    console.log('🔍 Field validation check:', {
-        'finalEmployeeId': { value: finalEmployeeId, valid: !!finalEmployeeId },
-        'fullName': { value: fullName, valid: !!fullName },
-        'finalWorkEmail': { value: finalWorkEmail, valid: !!finalWorkEmail },
-        'finalPhoneNumber': { value: finalPhoneNumber, valid: !!finalPhoneNumber },
-        'department': { value: department, valid: !!department },
-        'jobTitle': { value: jobTitle, valid: !!jobTitle },
-        'accountType': { value: accountType, valid: !!accountType },
-        'accessLevel': { value: accessLevel, valid: !!accessLevel },
-        'finalTemporaryPassword': { value: finalTemporaryPassword, valid: !!finalTemporaryPassword }
-    });
-    
+
+    var finalEmployeeId = empID || employeeId;
+    var finalWorkEmail = email || workEmail;
+    var finalPhoneNumber = phone || phoneNumber;
+    var finalTemporaryPassword = password || temporaryPassword;
+
     if (!finalEmployeeId || !fullName || !finalWorkEmail || !finalPhoneNumber || !department || !jobTitle || !accountType || !accessLevel || !finalTemporaryPassword) {
-        console.log('❌ Validation failed - missing required fields');
-        const missingFields = [
-            !finalEmployeeId ? 'employeeId (empID)' : null,
+        var missingFields = [
+            !finalEmployeeId ? 'employeeId' : null,
             !fullName ? 'fullName' : null,
-            !finalWorkEmail ? 'workEmail (email)' : null,
-            !finalPhoneNumber ? 'phoneNumber (phone)' : null,
+            !finalWorkEmail ? 'workEmail' : null,
+            !finalPhoneNumber ? 'phoneNumber' : null,
             !department ? 'department' : null,
             !jobTitle ? 'jobTitle' : null,
             !accountType ? 'accountType' : null,
             !accessLevel ? 'accessLevel' : null,
-            !finalTemporaryPassword ? 'temporaryPassword (password)' : null
+            !finalTemporaryPassword ? 'temporaryPassword' : null
         ].filter(Boolean);
-        
-        console.log('❌ Missing fields:', missingFields);
-        
-        return res.status(400).json({
-            error: 'All required fields must be provided',
-            received: { employeeId, fullName, workEmail, phoneNumber, department, jobTitle, accountType, accessLevel, temporaryPassword },
-            missing: missingFields
-        });
+        return res.status(400).json({ error: 'All required fields must be provided', missing: missingFields });
     }
-    
-    try {
-        console.log('?? Worker account creation request received');
-        console.log('?? Request data:', { finalEmployeeId, fullName, finalWorkEmail, finalPhoneNumber, department, jobTitle, accountType, accessLevel });
-        
-        // Map account type to match database ENUM
-        const accountTypeMapping = {
-            'staff': 'staff',
-            'worker': 'worker', 
-            'contractor': 'contractor',
-            'supervisor': 'worker',
-            'manager': 'staff'
-        };
-        const mappedAccountType = accountTypeMapping[accountType] || 'worker';
-        
-        // Map access level to match database ENUM
-        const accessLevelMapping = {
-            'basic': 'basic',
-            'standard': 'standard',
-            'supervisor': 'supervisor',
-            'manager': 'supervisor',
-            'admin': 'supervisor'
-        };
-        const mappedAccessLevel = accessLevelMapping[accessLevel] || 'basic';
-        
-        console.log('?? Mapped account_type:', accountType, '->', mappedAccountType);
-        console.log('?? Mapped access_level:', accessLevel, '->', mappedAccessLevel);
-        
-        // Prepare INSERT query with proper column names (includes BLOB columns)
-        const insertQuery = `
-            INSERT INTO worker_accounts (
-                employee_id, full_name, work_email, phone_number, department, 
-                job_title, account_type, access_level, temporary_password, 
-                account_notes, profile_picture, id_document, contract_document,
-                id_document_data, id_document_mime, contract_document_data, contract_document_mime,
-                profile_picture_data, profile_picture_mime
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-        `;
-        
-        // Try direct insertion first - if table schema is wrong, we'll handle the error
-        try {
-            console.log('?? Attempting to create worker account directly...');
-            
-            // Fast duplicate check (skipping slow INFORMATION_SCHEMA)
-            try {
-                console.log('?? Checking for duplicates directly...');
-                const existingWorkersResult = await db.execute(
-                    'SELECT id, employee_id, work_email FROM worker_accounts WHERE employee_id = ? OR work_email = ?',
-                    [finalEmployeeId, finalWorkEmail]
-                );
-                
-                let existingWorkers = [];
-                if (Array.isArray(existingWorkersResult)) {
-                    if (existingWorkersResult.length >= 1) existingWorkers = existingWorkersResult[0];
-                } else if (existingWorkersResult && existingWorkersResult[0]) {
-                    existingWorkers = existingWorkersResult[0];
-                } else if (existingWorkersResult && existingWorkersResult.rows) {
-                    existingWorkers = existingWorkersResult.rows;
-                }
-                
-                if (existingWorkers && existingWorkers.length > 0) {
-                    console.log('?? Worker account already exists');
-                    const empIdExists = existingWorkers.some(w => w.employee_id === finalEmployeeId);
-                    const emailExists = existingWorkers.some(w => w.work_email === finalWorkEmail);
-                    
-                    let conflictDetails = { employeeId: empIdExists, email: emailExists, message: [] };
-                    if (empIdExists) conflictDetails.message.push(`Employee ID '${finalEmployeeId}' is already registered`);
-                    if (emailExists) conflictDetails.message.push(`Email '${finalWorkEmail}' is already registered`);
-                    
-                    return res.status(409).json({
-                        error: 'Worker account already exists',
-                        details: conflictDetails,
-                        message: conflictDetails.message.join(' and '),
-                        field_conflicts: { employee_id: empIdExists, work_email: emailExists }
-                    });
-                }
-            } catch (tableCheckError) {
-                console.log('?? Duplicate check failed (table likely does not exist yet). Proceeding to create.');
-            }
-            
-            console.log('?? No existing workers found, proceeding with creation');
-            console.log('?? Validating account_type value:', { 
-                accountType, 
-                mappedAccountType,
-                validValues: ['staff', 'worker', 'contractor'],
-                isValid: ['staff', 'worker', 'contractor'].includes(mappedAccountType)
-            });
-            
-            // Validate account_type is one of the allowed ENUM values
-            if (!['staff', 'worker', 'contractor'].includes(mappedAccountType)) {
-                console.error('❌ Invalid account_type value:', mappedAccountType);
-                return res.status(400).json({
-                    error: 'Invalid account type. Must be: staff, worker, or contractor',
-                    received: mappedAccountType,
-                    valid_values: ['staff', 'worker', 'contractor']
-                });
-            }
-            
-            console.log('?? Insert Query:', insertQuery);
-            console.log('?? Insert Values:', [
-                finalEmployeeId,
-                fullName,
-                finalWorkEmail,
-                finalPhoneNumber,
-                department,
-                jobTitle,
-                mappedAccountType,
-                mappedAccessLevel,
-                finalTemporaryPassword,
-                accountNotes || null,
-                profilePicturePath,
-                idDocumentPath,
-                contractDocumentPath
-            ]);
-            
-            const result = await db.execute(insertQuery, [
-                finalEmployeeId,
-                fullName,
-                finalWorkEmail,
-                finalPhoneNumber,
-                department,
-                jobTitle,
-                mappedAccountType,
-                mappedAccessLevel,
-                finalTemporaryPassword,
-                accountNotes || null,
-                profilePicturePath,
-                idDocumentPath,
-                contractDocumentPath,
-                idDocFile.data,
-                idDocFile.mime,
-                contractDocFile.data,
-                contractDocFile.mime,
-                profilePicFile.data,
-                profilePicFile.mime
-            ]);
-            
-            console.log('?? Worker account inserted successfully:', result);
 
-            // Create notification for new worker account
-            try {
-                await db.execute(`
-                    INSERT INTO notifications (title, message, type, priority, recipient_id, created_at)
-                    VALUES (?, ?, 'info', 'Medium', NULL, NOW())
-                `, [
-                    'New Worker Account Created',
-                    `Worker account created for ${fullName} in ${department} department (${mappedAccountType}).`
-                ]);
-            } catch (notifErr) {
-                console.warn('⚠️ Could not create notification:', notifErr.message);
-            }
-            
-            // Return success response
-            res.status(201).json({
-                message: 'Worker account created successfully',
-                worker: {
-                    id: result[0]?.insertId,
-                    employee_id: employeeId,
-                    full_name: fullName,
-                    work_email: workEmail,
-                    phone_number: phoneNumber,
-                    department: department,
-                    job_title: jobTitle,
-                    account_type: mappedAccountType,
-                    access_level: mappedAccessLevel,
-                    temporary_password: temporaryPassword,
-                    account_notes: accountNotes,
-                    profile_picture: profilePicturePath,
-                    id_document: idDocumentPath,
-                    contract_document: contractDocumentPath,
-                    status: 'active',
-                    hire_date: new Date().toISOString().split('T')[0],
-                    created_at: new Date().toISOString()
-                },
-                fallback: false
-            });
-            
-        } catch (insertError) {
-            console.error('❌ Insert error details:', {
-                message: insertError.message,
-                code: insertError.code,
-                errno: insertError.errno,
-                sqlState: insertError.sqlState,
-                sql: insertError.sql
-            });
-            
-            // Handle data truncation or schema errors by safely adding missing columns (DATA SAFE)
-            if (insertError.message.includes('Data truncated') || 
-                insertError.message.includes('Unknown column') || 
-                insertError.message.includes("doesn't exist") ||
-                insertError.message.includes('out of range')) {
-                
-                console.log('🔧 Attempting to fix schema safely (preserving existing data)...');
-                
+    var typeMap = { 'staff': 'staff', 'worker': 'worker', 'contractor': 'contractor', 'supervisor': 'worker', 'manager': 'staff' };
+    var levelMap = { 'basic': 'basic', 'standard': 'standard', 'supervisor': 'supervisor', 'manager': 'supervisor', 'admin': 'supervisor' };
+    var mappedAccountType = typeMap[accountType] || 'worker';
+    var mappedAccessLevel = levelMap[accessLevel] || 'basic';
+
+    if (!['staff', 'worker', 'contractor'].includes(mappedAccountType)) {
+        return res.status(400).json({ error: 'Invalid account type. Must be: staff, worker, or contractor', received: mappedAccountType });
+    }
+
+    var profilePicturePath = req.files?.workerProfile?.[0] ? '/uploads/worker-documents/' + req.files.workerProfile[0].filename : null;
+    var idDocumentPath = req.files?.workerID?.[0] ? '/uploads/worker-documents/' + req.files.workerID[0].filename : null;
+    var contractDocumentPath = req.files?.workerContract?.[0] ? '/uploads/worker-documents/' + req.files.workerContract[0].filename : null;
+
+    try {
+        var result = await db.execute(
+            'INSERT INTO worker_accounts (employee_id, full_name, work_email, phone_number, department, job_title, account_type, access_level, temporary_password, account_notes, profile_picture, id_document, contract_document) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+            [finalEmployeeId, fullName, finalWorkEmail, finalPhoneNumber, department, jobTitle, mappedAccountType, mappedAccessLevel, finalTemporaryPassword, accountNotes || null, profilePicturePath, idDocumentPath, contractDocumentPath]
+        );
+
+        var insertId = Array.isArray(result) ? (result[0]?.insertId || result.insertId) : result.insertId;
+
+        notify('New Worker Account', fullName + ' (' + finalEmployeeId + ') - ' + department, 'success');
+
+        res.status(201).json({
+            message: 'Worker account created successfully',
+            worker: {
+                id: insertId,
+                employee_id: finalEmployeeId,
+                full_name: fullName,
+                work_email: finalWorkEmail,
+                phone_number: finalPhoneNumber,
+                department: department,
+                job_title: jobTitle,
+                account_type: mappedAccountType,
+                access_level: mappedAccessLevel,
+                account_notes: accountNotes,
+                profile_picture: profilePicturePath,
+                id_document: idDocumentPath,
+                contract_document: contractDocumentPath,
+                status: 'active',
+                created_at: new Date().toISOString()
+            },
+            fallback: false
+        });
+
+        // Store file BLOBs in background (non-blocking) so response is instant
+        if (insertId && (req.files?.workerProfile?.[0] || req.files?.workerID?.[0] || req.files?.workerContract?.[0])) {
+            ensureBlobCols();
+            setImmediate(async () => {
                 try {
-                    // Create the table only if it doesn't exist at all
-                    await db.execute(`
-                        CREATE TABLE IF NOT EXISTS worker_accounts (
-                            id INT AUTO_INCREMENT PRIMARY KEY,
-                            employee_id VARCHAR(50) NOT NULL UNIQUE,
-                            full_name VARCHAR(255) NOT NULL,
-                            work_email VARCHAR(255) NOT NULL,
-                            phone_number VARCHAR(50),
-                            department ENUM('projects', 'admin', 'finance', 'hr', 'hse', 'realestate'),
-                            job_title VARCHAR(255),
-                            account_type ENUM('staff', 'worker', 'contractor') NOT NULL,
-                            access_level ENUM('basic', 'standard', 'supervisor') NOT NULL,
-                            temporary_password VARCHAR(255) NOT NULL,
-                            account_notes TEXT,
-                            profile_picture TEXT,
-                            id_document TEXT,
-                            contract_document TEXT,
-                            status ENUM('active', 'inactive', 'suspended') DEFAULT 'active',
-                            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-                            INDEX idx_employee_id (employee_id),
-                            INDEX idx_work_email (work_email),
-                            INDEX idx_department (department),
-                            INDEX idx_account_type (account_type),
-                            INDEX idx_status (status)
-                        )
-                    `);
-                    
-                    // Add any missing columns safely (won't error if they already exist)
-                    const requiredCols = [
-                        { name: 'employee_id', def: "VARCHAR(50) NOT NULL DEFAULT ''" },
-                        { name: 'full_name', def: "VARCHAR(255) NOT NULL DEFAULT ''" },
-                        { name: 'work_email', def: "VARCHAR(255) NOT NULL DEFAULT ''" },
-                        { name: 'phone_number', def: "VARCHAR(50) NULL" },
-                        { name: 'department', def: "VARCHAR(100) NULL" },
-                        { name: 'job_title', def: "VARCHAR(255) NULL" },
-                        { name: 'account_type', def: "VARCHAR(50) NOT NULL DEFAULT 'worker'" },
-                        { name: 'access_level', def: "VARCHAR(50) NOT NULL DEFAULT 'basic'" },
-                        { name: 'temporary_password', def: "VARCHAR(255) NOT NULL DEFAULT ''" },
-                        { name: 'account_notes', def: "TEXT NULL" },
-                        { name: 'profile_picture', def: "TEXT NULL" },
-                        { name: 'id_document', def: "TEXT NULL" },
-                        { name: 'contract_document', def: "TEXT NULL" },
-                        { name: 'status', def: "VARCHAR(50) DEFAULT 'active'" }
-                    ];
-                    for (const col of requiredCols) {
-                        try {
-                            await db.execute(`ALTER TABLE worker_accounts ADD COLUMN ${col.name} ${col.def}`);
-                            console.log(`✅ Added missing column: ${col.name}`);
-                        } catch (alterErr) {
-                            // Column already exists — safe to ignore
-                        }
+                    var updates = [];
+                    var vals = [];
+                    if (req.files?.workerProfile?.[0]) {
+                        try { var d = fsSync.readFileSync(req.files.workerProfile[0].path); updates.push('profile_picture_data = ?, profile_picture_mime = ?'); vals.push(d, req.files.workerProfile[0].mimetype); } catch (e) {}
                     }
-                    
-                    console.log('✅ worker_accounts schema ensured safely (existing data preserved)');
-                    
-                    // Retry the insertion
-                    console.log('🔄 Retrying worker account insertion...');
-                    const [result] = await db.execute(insertQuery, [
-                        finalEmployeeId, fullName, finalWorkEmail, finalPhoneNumber, department, jobTitle,
-                        mappedAccountType, mappedAccessLevel, finalTemporaryPassword,
-                        accountNotes || null, profilePicturePath, idDocumentPath, contractDocumentPath
-                    ]);
-                    
-                    console.log('✅ Worker account inserted successfully after schema fix:', result);
-                    
-                    res.status(201).json({
-                        message: 'Worker account created successfully (schema was fixed)',
-                        worker: {
-                            id: result.insertId,
-                            employee_id: finalEmployeeId,
-                            full_name: fullName,
-                            work_email: finalWorkEmail,
-                            phone_number: finalPhoneNumber,
-                            department: department,
-                            job_title: jobTitle,
-                            account_type: mappedAccountType,
-                            access_level: mappedAccessLevel,
-                            account_notes: accountNotes,
-                            profile_picture: profilePicturePath,
-                            id_document: idDocumentPath,
-                            contract_document: contractDocumentPath,
-                            status: 'active',
-                            created_at: new Date().toISOString()
-                        },
-                        fallback: false,
-                        schemaFixed: true
-                    });
-                    return;
-                    
-                } catch (recreateError) {
-                    console.error('❌ Failed to recreate table:', recreateError.message);
-                    // Continue to fallback mode
-                }
-            }
-            
-            // Use fallback mode if all else fails
-            console.log('⚠️ Using fallback mode due to database error:', insertError.message);
-                
-                const mockWorker = {
-                    id: Math.floor(Math.random() * 1000) + 100,
-                    employee_id: finalEmployeeId,
-                    full_name: fullName,
-                    department: department,
-                    job_title: jobTitle,
-                    status: 'active',
-                    phone_number: finalPhoneNumber,
-                    work_email: finalWorkEmail,
-                    account_type: mappedAccountType,
-                    access_level: mappedAccessLevel,
-                    created_at: new Date().toISOString(),
-                    fallback: true,
-                    message: 'Worker account created with fallback data (database unavailable)',
-                    database_error: insertError.message
-                };
-                
-                res.status(201).json({
-                    message: 'Worker account created successfully (fallback mode)',
-                    worker: mockWorker,
-                    fallback: true,
-                    database_error: insertError.message,
-                    warning: 'This is fallback mode - the account was not saved to the database'
-                });
-            }
-    } catch (error) {
-        console.error('❌ Error creating worker account:', error);
-        console.error('❌ Error details:', error.message);
-        
-        if (error.code === 'ER_DUP_ENTRY') {
-            // Parse the error message to determine which field caused the duplicate
-            console.log('🔍 Duplicate entry error details:', {
-                code: error.code,
-                errno: error.errno,
-                sqlMessage: error.message,
-                sqlState: error.sqlState,
-                finalEmployeeId,
-                finalWorkEmail
-            });
-            
-            let conflictField = 'unknown';
-            let conflictMessage = 'Worker account with this Employee ID or Email already exists';
-            let conflictDetails = {
-                employee_id: false,
-                work_email: false
-            };
-            
-            if (error.message) {
-                const errorMsg = error.message.toLowerCase();
-                console.log('🔍 Analyzing error message:', errorMsg);
-                
-                if (errorMsg.includes('employee_id') || errorMsg.includes('employee id') || errorMsg.includes(finalEmployeeId.toLowerCase())) {
-                    conflictField = 'employee_id';
-                    conflictDetails.employee_id = true;
-                    conflictMessage = `Employee ID '${finalEmployeeId}' is already registered`;
-                } else if (errorMsg.includes('work_email') || errorMsg.includes('email') || errorMsg.includes(finalWorkEmail.toLowerCase())) {
-                    conflictField = 'work_email';
-                    conflictDetails.work_email = true;
-                    conflictMessage = `Email '${finalWorkEmail}' is already registered`;
-                }
-            }
-            
-            console.log('🔍 Conflict analysis result:', {
-                conflictField,
-                conflictMessage,
-                conflictDetails
-            });
-            
-            return res.status(409).json({
-                error: 'Worker account already exists',
-                message: conflictMessage,
-                field_conflicts: conflictDetails,
-                details: {
-                    conflict_field: conflictField,
-                    employee_id: finalEmployeeId,
-                    work_email: finalWorkEmail,
-                    sql_error: error.message,
-                    error_code: error.code
+                    if (req.files?.workerID?.[0]) {
+                        try { var d = fsSync.readFileSync(req.files.workerID[0].path); updates.push('id_document_data = ?, id_document_mime = ?'); vals.push(d, req.files.workerID[0].mimetype); } catch (e) {}
+                    }
+                    if (req.files?.workerContract?.[0]) {
+                        try { var d = fsSync.readFileSync(req.files.workerContract[0].path); updates.push('contract_document_data = ?, contract_document_mime = ?'); vals.push(d, req.files.workerContract[0].mimetype); } catch (e) {}
+                    }
+                    if (updates.length > 0) {
+                        vals.push(insertId);
+                        await db.execute('UPDATE worker_accounts SET ' + updates.join(', ') + ' WHERE id = ?', vals);
+                    }
+                } catch (e) {
+                    console.error('Background BLOB save error:', e.message);
                 }
             });
         }
-        
-        res.status(500).json({
-            error: 'Failed to create worker account',
-            details: error.message
-        });
+    } catch (error) {
+        if (error.code === 'ER_DUP_ENTRY') {
+            var msg = (error.message || '').toLowerCase();
+            var empConflict = msg.includes('employee_id') || msg.includes(finalEmployeeId.toLowerCase());
+            var emailConflict = msg.includes('work_email') || msg.includes('email');
+            return res.status(409).json({
+                error: 'Worker account already exists',
+                message: empConflict ? 'Employee ID \'' + finalEmployeeId + '\' is already registered' : 'Email \'' + finalWorkEmail + '\' is already registered',
+                field_conflicts: { employee_id: empConflict, work_email: emailConflict }
+            });
+        }
+
+        if (error.message && (error.message.includes("doesn't exist") || error.message.includes('Unknown column'))) {
+            try {
+                await db.execute('CREATE TABLE IF NOT EXISTS worker_accounts (id INT AUTO_INCREMENT PRIMARY KEY, employee_id VARCHAR(50) NOT NULL UNIQUE, full_name VARCHAR(255) NOT NULL, work_email VARCHAR(255) NOT NULL, phone_number VARCHAR(50), department VARCHAR(100), job_title VARCHAR(255), account_type VARCHAR(50) NOT NULL DEFAULT \'worker\', access_level VARCHAR(50) NOT NULL DEFAULT \'basic\', temporary_password VARCHAR(255) NOT NULL, account_notes TEXT, profile_picture TEXT, id_document TEXT, contract_document TEXT, status VARCHAR(50) DEFAULT \'active\', created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP)');
+                var retryResult = await db.execute(
+                    'INSERT INTO worker_accounts (employee_id, full_name, work_email, phone_number, department, job_title, account_type, access_level, temporary_password, account_notes, profile_picture, id_document, contract_document) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+                    [finalEmployeeId, fullName, finalWorkEmail, finalPhoneNumber, department, jobTitle, mappedAccountType, mappedAccessLevel, finalTemporaryPassword, accountNotes || null, profilePicturePath, idDocumentPath, contractDocumentPath]
+                );
+                var retryId = Array.isArray(retryResult) ? (retryResult[0]?.insertId || retryResult.insertId) : retryResult.insertId;
+                return res.status(201).json({
+                    message: 'Worker account created successfully',
+                    worker: { id: retryId, employee_id: finalEmployeeId, full_name: fullName, status: 'active' },
+                    fallback: false, schemaFixed: true
+                });
+            } catch (retryErr) {
+                console.error('Schema fix retry failed:', retryErr.message);
+            }
+        }
+
+        console.error('Error creating worker account:', error.message);
+        res.status(500).json({ error: 'Failed to create worker account', details: error.message });
     }
 });
 
