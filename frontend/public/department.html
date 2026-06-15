@@ -23836,6 +23836,178 @@ font-size: 12px;
     }
 }
 
+/* ========== MOBILE RESPONSIVE ========== */
+
+/* Tablets and small laptops */
+@media (max-width: 992px) {
+    .sidebar { width: 180px; }
+    .content { padding: 8px; }
+    header h2 { font-size: 15px; }
+    .summary-stats, .stats-grid, .dashboard-stats { grid-template-columns: repeat(2, 1fr) !important; }
+    .form-container { max-width: 100% !important; }
+}
+
+/* Mobile phones */
+@media (max-width: 768px) {
+    /* Header */
+    header {
+        padding: 8px 10px;
+        font-size: 13px;
+    }
+    header h2 {
+        font-size: 13px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 180px;
+    }
+
+    /* Top controls bar */
+    .top-controls {
+        padding: 6px 8px;
+        top: 40px;
+        flex-wrap: wrap;
+        gap: 4px;
+    }
+    .top-controls .profile-widget-container { order: 3; }
+
+    /* Sidebar: slide-over overlay on mobile */
+    .sidebar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        bottom: 0;
+        width: 240px;
+        z-index: 2000;
+        height: 100vh;
+        border-radius: 0;
+        box-shadow: 4px 0 20px rgba(0,0,0,0.3);
+    }
+    .sidebar.collapsed {
+        width: 0;
+        box-shadow: none;
+    }
+
+    /* Main content: full width on mobile */
+    .system-content {
+        flex-direction: column;
+    }
+    .content {
+        padding: 6px;
+        width: 100%;
+        min-width: 0;
+    }
+
+    /* Cards & stats */
+    .card { padding: 6px; margin-bottom: 6px; }
+    .summary-stats, .stats-grid, .dashboard-stats { grid-template-columns: 1fr !important; gap: 6px !important; }
+    .stat-card, .stat-item, .dashboard-stat { padding: 8px !important; }
+
+    /* Forms stack vertically */
+    .form-row { flex-direction: column; gap: 0; }
+    .form-group { flex: none; width: 100%; }
+    .form-container {
+        max-width: 100% !important;
+        width: 100% !important;
+        margin: 0 !important;
+        border-radius: 4px;
+    }
+    div[style*="grid-template-columns: 1fr 1fr"] {
+        grid-template-columns: 1fr !important;
+    }
+
+    /* Tables: horizontal scroll */
+    .projects-table, .simple-table, table {
+        display: block;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        white-space: nowrap;
+    }
+    .projects-table thead, .projects-table tbody, .projects-table tr,
+    .simple-table thead, .simple-table tbody, .simple-table tr {
+        display: table;
+        width: 100%;
+        table-layout: auto;
+    }
+    table th, table td { padding: 5px 6px !important; font-size: 10px; }
+
+    /* Tabs: scrollable row */
+    .tabs {
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        gap: 2px;
+        padding-bottom: 4px;
+    }
+    .tabs button, .tab-btn {
+        white-space: nowrap;
+        flex-shrink: 0;
+        font-size: 10px;
+        padding: 4px 8px;
+    }
+
+    /* Buttons */
+    .action, button[type="submit"], .btn {
+        font-size: 11px;
+        padding: 6px 12px;
+    }
+
+    /* Notification panel */
+    .notification-panel {
+        width: 280px !important;
+        right: 0 !important;
+        left: auto !important;
+    }
+
+    /* Modal / form overlays */
+    .form-overlay, .modal-overlay {
+        padding: 10px !important;
+    }
+    .form-overlay .form-container, .modal-content {
+        max-height: 85vh !important;
+        max-width: 100% !important;
+        width: 100% !important;
+    }
+
+    /* Charts */
+    canvas { max-width: 100% !important; height: auto !important; }
+
+    /* Login page */
+    .login-container { width: 90% !important; max-width: 400px !important; padding: 20px !important; }
+}
+
+/* Small phones */
+@media (max-width: 480px) {
+    header h2 { font-size: 11px; max-width: 140px; }
+    header { padding: 6px 8px; }
+    .top-controls { top: 36px; padding: 4px 6px; }
+    .menu-toggle { padding: 3px 6px; font-size: 11px; }
+    .notification-btn { font-size: 14px; }
+    .sidebar { width: 220px; }
+    .content { font-size: 11px; }
+    .card { padding: 5px; }
+    table th, table td { padding: 4px 5px !important; font-size: 9px; }
+    .tabs button, .tab-btn { font-size: 9px; padding: 3px 6px; }
+    .notification-panel { width: 260px !important; }
+    .form-group label { font-size: 10px; }
+    .form-group input, .form-group select, .form-group textarea { font-size: 11px; padding: 5px; }
+    .profile-widget-toggle { width: 26px; height: 26px; font-size: 13px; }
+}
+
+/* Mobile overlay backdrop when sidebar is open */
+@media (max-width: 768px) {
+    .sidebar:not(.collapsed)::after {
+        content: '';
+        position: fixed;
+        top: 0;
+        left: 240px;
+        right: 0;
+        bottom: 0;
+        background: rgba(0,0,0,0.4);
+        z-index: -1;
+    }
+}
+
 </style>
 
 </head>
@@ -24001,16 +24173,18 @@ function toggleSidebar(){
     
 
     // Toggle collapsed class
-
     sidebar.classList.toggle('collapsed');
-
-    
-
-    // Log the current state for debugging
-
-    console.log('Sidebar toggled. Current classes:', sidebar.className);
-
 }
+
+// Close sidebar when tapping outside on mobile
+document.addEventListener('click', function(e) {
+    if (window.innerWidth > 768) return;
+    var sidebar = document.querySelector('.sidebar');
+    if (!sidebar || sidebar.classList.contains('collapsed')) return;
+    var toggleBtn = document.querySelector('.menu-toggle');
+    if (sidebar.contains(e.target) || (toggleBtn && toggleBtn.contains(e.target))) return;
+    sidebar.classList.add('collapsed');
+});
 
 
 
