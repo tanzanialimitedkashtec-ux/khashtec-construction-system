@@ -100406,8 +100406,15 @@ function loadProcurementTable() {
                             <th style="padding: 6px 8px; text-align: left; white-space: nowrap;">#</th>
                             <th style="padding: 6px 8px; text-align: left; white-space: nowrap;">Type</th>
                             <th style="padding: 6px 8px; text-align: left; white-space: nowrap;">Request Title</th>
+                            <th style="padding: 6px 8px; text-align: left; white-space: nowrap;">Item Description</th>
                             <th style="padding: 6px 8px; text-align: right; white-space: nowrap;">Quantity</th>
                             <th style="padding: 6px 8px; text-align: right; white-space: nowrap;">Total Budget</th>
+                            <th style="padding: 6px 8px; text-align: left; white-space: nowrap;">Purpose</th>
+                            <th style="padding: 6px 8px; text-align: left; white-space: nowrap;">Supplier Requirements</th>
+                            <th style="padding: 6px 8px; text-align: left; white-space: nowrap;">Technical Specifications</th>
+                            <th style="padding: 6px 8px; text-align: left; white-space: nowrap;">Budget Allocation</th>
+                            <th style="padding: 6px 8px; text-align: left; white-space: nowrap;">Justification</th>
+                            <th style="padding: 6px 8px; text-align: left; white-space: nowrap;">Approval Requirements</th>
                             <th style="padding: 6px 8px; text-align: left; white-space: nowrap;">Department</th>
                             <th style="padding: 6px 8px; text-align: left; white-space: nowrap;">Urgency Level</th>
                             <th style="padding: 6px 8px; text-align: left; white-space: nowrap;">Status</th>
@@ -100424,6 +100431,13 @@ function loadProcurementTable() {
             const total = rec.total_budget || 0;
             const status = rec.status || '-';
             const dept = rec.department || '-';
+            const itemDesc = (rec.item_description || '-').replace(/"/g, '&quot;');
+            const purpose = (rec.purpose || '-').replace(/"/g, '&quot;');
+            const supplierReq = (rec.supplier_requirements || '-').replace(/"/g, '&quot;');
+            const techSpecs = (rec.technical_specifications || '-').replace(/"/g, '&quot;');
+            const budgetAlloc = (rec.budget_allocation || '-').replace(/"/g, '&quot;');
+            const justification = (rec.justification || '-').replace(/"/g, '&quot;');
+            const approvalReq = (rec.approval_requirements || '-').replace(/"/g, '&quot;');
             const urgency = rec.urgency_level || '-';
             const createdAt = rec.created_at ? new Date(rec.created_at).toLocaleDateString() : '-';
             const statusColor = status === 'Completed' ? '#4CAF50' : status === 'Approved' ? '#2196F3' : status === 'Pending' ? '#FF9800' : status === 'Rejected' ? '#f44336' : status === 'Under Review' ? '#FFB300' : '#607D8B';
@@ -100438,8 +100452,15 @@ function loadProcurementTable() {
             tableHTML += '<td style="padding:4px 8px; border-bottom:1px solid #eee;">' + (idx + 1) + '</td>';
             tableHTML += '<td style="padding:4px 8px; border-bottom:1px solid #eee; white-space:nowrap;">' + ptype + '</td>';
             tableHTML += '<td style="padding:4px 8px; border-bottom:1px solid #eee; max-width:200px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="' + name + '">' + name + '</td>';
+            tableHTML += '<td style="padding:4px 8px; border-bottom:1px solid #eee; max-width:150px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="' + itemDesc + '">' + itemDesc + '</td>';
             tableHTML += '<td style="padding:4px 8px; border-bottom:1px solid #eee; text-align:right;">' + qty + '</td>';
             tableHTML += '<td style="padding:4px 8px; border-bottom:1px solid #eee; text-align:right; font-weight:600; white-space:nowrap;">' + Number(total).toLocaleString() + '</td>';
+            tableHTML += '<td style="padding:4px 8px; border-bottom:1px solid #eee; max-width:150px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="' + purpose + '">' + purpose + '</td>';
+            tableHTML += '<td style="padding:4px 8px; border-bottom:1px solid #eee; max-width:150px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="' + supplierReq + '">' + supplierReq + '</td>';
+            tableHTML += '<td style="padding:4px 8px; border-bottom:1px solid #eee; max-width:150px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="' + techSpecs + '">' + techSpecs + '</td>';
+            tableHTML += '<td style="padding:4px 8px; border-bottom:1px solid #eee; white-space:nowrap;">' + budgetAlloc + '</td>';
+            tableHTML += '<td style="padding:4px 8px; border-bottom:1px solid #eee; max-width:150px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="' + justification + '">' + justification + '</td>';
+            tableHTML += '<td style="padding:4px 8px; border-bottom:1px solid #eee; white-space:nowrap;">' + approvalReq + '</td>';
             tableHTML += '<td style="padding:4px 8px; border-bottom:1px solid #eee; white-space:nowrap;">' + dept + '</td>';
             tableHTML += '<td style="padding:4px 8px; border-bottom:1px solid #eee;"><span style="background:' + urgencyColor + '; color:white; padding:2px 6px; border-radius:8px; font-size:10px; white-space:nowrap;">' + urgency + '</span></td>';
             tableHTML += '<td style="padding:4px 8px; border-bottom:1px solid #eee;"><span style="background:' + statusColor + '; color:white; padding:2px 8px; border-radius:8px; font-size:10px; white-space:nowrap;">' + status + '</span></td>';
