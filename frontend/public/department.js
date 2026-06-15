@@ -11266,15 +11266,21 @@ function loadEmployeePayments(baseUrl) {
         payments.forEach(function(p) {
             var tr = document.createElement('tr');
             var amt = parseFloat(p.amount) || 0;
-            var methodMap = { bank_transfer: 'Bank Transfer', mobile_money: 'Mobile Money', cash: 'Cash' };
+            var methodMap = { mpesa: 'M-Pesa', nmb_bank: 'NMB Bank', bank_transfer: 'Bank Transfer', mobile_money: 'Mobile Money', cash: 'Cash' };
             var methodLabel = methodMap[p.payment_method] || p.payment_method || 'N/A';
             var dateStr = p.payment_date ? String(p.payment_date).slice(0, 10) : '';
+            var txId = p.transaction_id || '-';
+            var isSim = p.simulated || (txId && txId.startsWith('SIM-'));
+            var sBg = isSim ? '#fff3cd' : '#d4edda';
+            var sColor = isSim ? '#856404' : '#155724';
+            var sText = isSim ? 'Simulated' : (p.status || 'Processed');
             tr.innerHTML =
                 '<td style="padding:8px; border:1px solid #ddd;">' + (p.employee_name || 'Employee #' + p.employee_id) + '</td>' +
                 '<td style="padding:8px; border:1px solid #ddd; text-align:right;">' + amt.toLocaleString() + '</td>' +
                 '<td style="padding:8px; border:1px solid #ddd;">' + methodLabel + '</td>' +
                 '<td style="padding:8px; border:1px solid #ddd;">' + dateStr + '</td>' +
-                '<td style="padding:8px; border:1px solid #ddd; text-align:center;"><span style="padding:2px 8px; border-radius:4px; background:#d4edda; color:#155724;">' + (p.status || 'Processed') + '</span></td>';
+                '<td style="padding:8px; border:1px solid #ddd;">' + txId + '</td>' +
+                '<td style="padding:8px; border:1px solid #ddd; text-align:center;"><span style="padding:2px 8px; border-radius:4px; background:' + sBg + '; color:' + sColor + ';">' + sText + '</span></td>';
             tbody.appendChild(tr);
         });
         console.log('Loaded ' + payments.length + ' employee payments from database');
