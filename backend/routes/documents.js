@@ -79,17 +79,17 @@ const storage = multer.diskStorage({
 const upload = multer({
     storage: storage,
     limits: {
-        fileSize: parseInt(process.env.MAX_FILE_SIZE) || 10 * 1024 * 1024 // 10MB default
+        fileSize: parseInt(process.env.MAX_FILE_SIZE) || 50 * 1024 * 1024
     },
     fileFilter: (req, file, cb) => {
-        const allowedTypes = /jpeg|jpg|png|gif|pdf|doc|docx|xls|xlsx|ppt|pptx/;
-        const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
-        const mimetype = allowedTypes.test(file.mimetype);
-        
-        if (mimetype && extname) {
+        var allowedExt = /jpeg|jpg|png|gif|bmp|webp|svg|pdf|doc|docx|xls|xlsx|ppt|pptx|mp4|avi|mov|wmv|webm|mkv|mp3|wav/;
+        var allowedMime = /image\/|video\/|audio\/|application\/pdf|application\/msword|application\/vnd\.|text\//;
+        var extOk = allowedExt.test(path.extname(file.originalname).toLowerCase());
+        var mimeOk = allowedMime.test(file.mimetype);
+        if (extOk || mimeOk) {
             return cb(null, true);
         } else {
-            cb(new Error('Invalid file type. Only images, PDFs, and Office documents are allowed.'));
+            cb(new Error('File type not supported: ' + file.mimetype));
         }
     }
 });
@@ -364,39 +364,41 @@ router.get('/', async (req, res) => {
                 }
                 
                 workerArray.forEach(item => {
-                    if (item.contract_document) {
+                    var contDoc = typeof item.contract_document === 'string' ? item.contract_document : '';
+                    var idDoc = typeof item.id_document === 'string' ? item.id_document : '';
+                    if (contDoc) {
                         workerDocuments.push({
                             id: `work_cont_${item.id}`,
                             title: `Contract - ${item.full_name}`,
                             name: `Contract - ${item.full_name}`,
                             description: `Worker contract for ${item.full_name}`,
                             category: 'Contract',
-                            type: item.contract_document.toLowerCase().endsWith('.pdf') ? 'PDF' : 'Other',
+                            type: contDoc.toLowerCase().endsWith('.pdf') ? 'PDF' : 'Other',
                             uploadedBy: 1,
                             uploadedByName: 'System',
                             uploadedDate: item.created_at,
                             status: 'active',
-                            fileName: item.contract_document.split('/').pop() || `contract_${item.id}`,
-                            filePath: item.contract_document,
+                            fileName: contDoc.split('/').pop() || `contract_${item.id}`,
+                            filePath: contDoc,
                             fileSize: 0,
                             expiry_date: null,
                             source: 'worker_accounts'
                         });
                     }
-                    if (item.id_document) {
+                    if (idDoc) {
                         workerDocuments.push({
                             id: `work_id_${item.id}`,
                             title: `ID - ${item.full_name}`,
                             name: `ID - ${item.full_name}`,
                             description: `ID document for ${item.full_name}`,
                             category: 'Identification',
-                            type: item.id_document.toLowerCase().endsWith('.pdf') ? 'PDF' : 'Image',
+                            type: idDoc.toLowerCase().endsWith('.pdf') ? 'PDF' : 'Image',
                             uploadedBy: 1,
                             uploadedByName: 'System',
                             uploadedDate: item.created_at,
                             status: 'active',
-                            fileName: item.id_document.split('/').pop() || `id_${item.id}`,
-                            filePath: item.id_document,
+                            fileName: idDoc.split('/').pop() || `id_${item.id}`,
+                            filePath: idDoc,
                             fileSize: 0,
                             expiry_date: null,
                             source: 'worker_accounts'
@@ -910,14 +912,18 @@ router.post('/upload', upload.single('document'), async (req, res) => {
 });
 
 // Upload new document (JSON version for frontend forms)
-router.post('/', upload.single('file'), async (req, res) => {
+router.post('/', function(req, res, next) {
+    upload.single('file')(req, res, function(err) {
+        if (err) {
+            console.error('Multer upload error:', err.message);
+            return res.status(400).json({ success: false, error: 'Upload failed: ' + err.message });
+        }
+        next();
+    });
+}, async (req, res) => {
     try {
-        console.log('📝 Document upload request received');
-        console.log('📋 Request body:', req.body);
-        console.log('📁 File info:', req.file);
-        console.log('🔍 Request method:', req.method);
-        console.log('🔍 Request URL:', req.url);
-        console.log('🔍 Content-Type:', req.get('Content-Type'));
+        console.log('Document upload request received');
+        console.log('File info:', req.file ? req.file.originalname : 'none');
         
         // Handle both file upload and JSON-only submissions
         if (req.body.work_type && req.body.work_title) {
