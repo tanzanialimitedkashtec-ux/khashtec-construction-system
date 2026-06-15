@@ -302,13 +302,17 @@ router.post('/assignments', async (req, res) => {
             }
 
             if (recipientEmail) {
+                console.log(`📧 Attempting to send worker assignment email to: ${recipientEmail}`);
                 const details = [
                     { label: 'Project Name', value: project_name },
                     { label: 'Role', value: role_in_project },
                     { label: 'Start Date', value: start_date },
                     { label: 'Assigned By', value: assigned_by || 'System' }
                 ];
-                sendAssignmentNotification(recipientEmail, details);
+                await sendAssignmentNotification(recipientEmail, details);
+                console.log(`📧 Await finished for sendAssignmentNotification to: ${recipientEmail}`);
+            } else {
+                console.log(`⚠️ No valid email found for worker assignee: ${employee_name}`);
             }
         } catch (emailErr) {
             console.error('Failed to lookup email or send notification:', emailErr);

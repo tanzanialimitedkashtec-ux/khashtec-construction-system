@@ -281,6 +281,7 @@ router.post('/', async (req, res) => {
                 }
 
                 if (recipientEmail) {
+                    console.log(`📧 Attempting to send task assignment email to: ${recipientEmail}`);
                     const details = [
                         { label: 'Task Name', value: task_name },
                         { label: 'Priority', value: normalizedPriority },
@@ -288,7 +289,10 @@ router.post('/', async (req, res) => {
                         { label: 'Project Name', value: (createdTask && createdTask[0] && createdTask[0].project_name) || 'Unknown' },
                         { label: 'Assigned By', value: created_by }
                     ];
-                    sendAssignmentNotification(recipientEmail, details);
+                    await sendAssignmentNotification(recipientEmail, details);
+                    console.log(`📧 Await finished for sendAssignmentNotification to: ${recipientEmail}`);
+                } else {
+                    console.log(`⚠️ No valid email found for assignee: ${assigned_to}`);
                 }
             } catch (emailErr) {
                 console.error('Failed to lookup email or send notification:', emailErr);
