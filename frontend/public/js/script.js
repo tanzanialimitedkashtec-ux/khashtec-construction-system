@@ -3020,14 +3020,15 @@ window.onload = function() {
 // Save Site Report function
 async function saveSiteReport(event) {
     try {
-        // Prevent default form submission
         event.preventDefault();
-        
         console.log('Saving site report...');
-        
-        // Get form values
-        const reportData = {
-            project_id: document.getElementById('reportProject').value,
+
+        var projectSel = document.getElementById('reportProject');
+        var projectText = projectSel.options[projectSel.selectedIndex].text;
+        var fileInput = document.getElementById('sitePhotos');
+
+        var reportData = {
+            project_id: projectSel.value,
             report_date: document.getElementById('reportDate').value,
             weather_conditions: document.getElementById('weatherConditions').value,
             site_supervisor: document.getElementById('siteSupervisor').value,
@@ -3039,45 +3040,65 @@ async function saveSiteReport(event) {
             equipment_used: document.getElementById('equipmentUsed').value,
             next_day_plan: document.getElementById('nextDayPlan').value
         };
-        
+
         console.log('Site report data:', reportData);
-        
-        // Validate required fields
-        if (!reportData.project_id || !reportData.report_date || !reportData.weather_conditions || 
+
+        if (!reportData.project_id || !reportData.report_date || !reportData.weather_conditions ||
             !reportData.workers_present || !reportData.work_completed || !reportData.next_day_plan) {
             alert('Please fill in all required fields marked with *');
             return false;
         }
-        
-        // Send data to backend
-        const response = await window.apiService.post('/work/site-reports', reportData);
-        
+
+        var response = await window.apiService.post('/work/site-reports', reportData);
         console.log('Site report saved successfully:', response);
-        
-        // Show success message
-        try {
-            alert('Site report submitted successfully!');
-        } catch (e) {
-            console.error('Alert error:', e);
+
+        var reportId = response.report_id || (response.data && response.data.id) || 'RPT-' + Date.now();
+        var baseUrl = window.location.origin;
+
+        // Upload photos/videos to Document Management
+        if (fileInput && fileInput.files.length > 0) {
+            for (var i = 0; i < fileInput.files.length; i++) {
+                var formData = new FormData();
+                formData.append('file', fileInput.files[i]);
+                formData.append('title', 'Site Report #' + reportId + ' - ' + projectText + ' - Media ' + (i + 1));
+                formData.append('description', 'Site report media for ' + projectText + ' on ' + reportData.report_date);
+                formData.append('category', 'Report');
+                formData.append('uploaded_by', 1);
+                try {
+                    var uploadResp = await fetch(baseUrl + '/api/documents', { method: 'POST', body: formData });
+                    var uploadData = await uploadResp.json();
+                    console.log('Site report media uploaded to docs:', uploadData);
+                } catch (e) {
+                    console.warn('Site media upload failed:', e);
+                }
+            }
+
+            // Show QR code popup
+            var viewUrl = baseUrl + '/frontend/public/department.html?view=documents&search=Site+Report+%23' + reportId;
+            var qrUrl = 'https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=' + encodeURIComponent(viewUrl);
+            var qrHtml = '<div style="position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:9999;display:flex;align-items:center;justify-content:center;" onclick="this.remove()">';
+            qrHtml += '<div style="background:#fff;padding:20px;border-radius:12px;text-align:center;max-width:300px;" onclick="event.stopPropagation()">';
+            qrHtml += '<h4 style="margin:0 0 10px;">Site Report #' + reportId + '</h4>';
+            qrHtml += '<p style="font-size:11px;color:#666;margin:0 0 10px;">Scan QR to view photos/videos in Document Management</p>';
+            qrHtml += '<img src="' + qrUrl + '" alt="QR Code" style="width:180px;height:180px;border:2px solid #ddd;border-radius:8px;">';
+            qrHtml += '<br><button onclick="this.parentElement.parentElement.remove()" style="margin-top:10px;padding:6px 16px;background:#0b3d91;color:#fff;border:none;border-radius:4px;cursor:pointer;">Close</button>';
+            qrHtml += '</div></div>';
+            document.body.insertAdjacentHTML('beforeend', qrHtml);
         }
-        
-        // Reset form
+
+        alert('Site report submitted successfully!\n\nReport ID: ' + reportId + (fileInput && fileInput.files.length > 0 ? '\n\nPhotos/videos uploaded to Document Management with QR code.' : ''));
+
         document.getElementById('siteReportForm').reset();
-        
-        // Reload recent reports (if function exists)
+
         if (typeof loadRecentSiteReports === 'function') {
             loadRecentSiteReports();
         }
-        
-        return false; // Prevent form submission
-        
+
+        return false;
+
     } catch (error) {
         console.error('Error saving site report:', error);
-        try {
-            alert('Failed to save site report. Please try again.');
-        } catch (e) {
-            console.error('Alert error:', e);
-        }
+        alert('Failed to save site report. Please try again.');
         return false;
     }
 }
