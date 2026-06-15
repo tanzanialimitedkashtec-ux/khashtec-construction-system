@@ -1,7 +1,8 @@
 const express = require('express');
 const router = express.Router();
 
-console.log('🔧 Materials route file is being loaded...');
+var notify = require('../utils/notify');
+console.log('Materials route file is being loaded...');
 
 let db;
 try {
@@ -100,6 +101,7 @@ router.post('/inventory', async (req, res) => {
             [code, material_name, material_category || 'Other', description || '', unit_of_measure || 'Piece', min_stock_level || 10, max_stock_level || 1000, reorder_point || 50, storage_location || '', supplier_name || '', supplier_contact || '', unit_cost || 0]
         );
 
+        notify('New Material Added', material_name + ' (' + code + ') added to inventory', 'info');
         res.status(201).json({ success: true, message: 'Material created successfully', data: { id: result.insertId, material_code: code, material_name } });
     } catch (error) {
         console.error('Error creating material:', error.message);
@@ -150,6 +152,7 @@ router.post('/in', async (req, res) => {
 
         updateMaterialStock(material_id, quantity_received, 'in');
 
+        notify('Materials Received', 'Track ' + track + ': ' + quantity_received + ' ' + (unit_of_measure || 'units') + ' received from ' + supplier_name, 'success');
         res.status(201).json({ success: true, message: 'Material received recorded successfully', data: { id: result.insertId, track_number: track } });
     } catch (error) {
         console.error('Error creating materials in:', error.message);
@@ -197,6 +200,7 @@ router.post('/out', async (req, res) => {
 
         updateMaterialStock(material_id, quantity_out, 'out');
 
+        notify('Materials Issued', 'Track ' + track + ': ' + quantity_out + ' ' + (unit_of_measure || 'units') + ' issued to ' + issued_to, 'info');
         res.status(201).json({ success: true, message: 'Material out recorded successfully', data: { id: result.insertId, track_number: track } });
     } catch (error) {
         console.error('Error creating materials out:', error.message);

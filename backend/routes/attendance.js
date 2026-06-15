@@ -1,7 +1,8 @@
 const express = require('express');
 const router = express.Router();
 
-console.log('🚀 Attendance route file is being loaded...');
+var notify = require('../utils/notify');
+console.log('Attendance route file is being loaded...');
 
 // Test endpoint to verify route is working
 router.get('/test', (req, res) => {
@@ -260,6 +261,7 @@ router.post('/', async (req, res) => {
 
         console.log('✅ Attendance record saved successfully:', result);
 
+        notify('Attendance Marked', employee_name + ' - ' + attendance_status + ' on ' + attendance_date, 'info');
         res.status(201).json({
             success: true,
             message: 'Attendance marked successfully',

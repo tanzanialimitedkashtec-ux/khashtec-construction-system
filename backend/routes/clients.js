@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const fs = require('fs');
 const upload = require('../middleware/upload');
+var notify = require('../utils/notify');
 
 console.log('🚀 Clients route file is being loaded...');
 
@@ -139,6 +140,7 @@ router.post('/', async (req, res) => {
         
         console.log('✅ Client created successfully:', result);
         
+        notify('New Client Registered', full_name + ' (' + safeClientType + ')' + (company_name ? ' - ' + company_name : ''), 'success');
         res.status(201).json({
             message: 'Client registered successfully',
             clientId: client_id || `CLT${Date.now().toString().slice(-6)}`,

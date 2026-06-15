@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const db = require('../../database/config/database');
+var notify = require('../utils/notify');
 
 // Ensure payroll_records table exists
 async function ensurePayrollTables() {
@@ -202,6 +203,7 @@ router.post('/salary-structure', async (req, res) => {
             UPDATE employees SET salary = ? WHERE employee_id = ? OR id = ?
         `, [gross, employeeId, employeeId]);
 
+        notify('Salary Structure Updated', 'Salary structure set for employee #' + employeeId + ' - Gross: TZS ' + gross.toLocaleString(), 'info');
         res.json({ success: true, message: 'Salary structure saved successfully', grossSalary: gross });
     } catch (error) {
         console.error('❌ Error saving salary structure:', error.message);
@@ -335,6 +337,7 @@ router.post('/process', async (req, res) => {
             ]);
         }
 
+        notify('Payroll Processed', payrollMonth + ' payroll processed: ' + totalEmployees + ' employees, Net TZS ' + netPayment.toLocaleString(), 'success');
         res.json({
             success: true,
             message: 'Payroll processed successfully',
@@ -462,6 +465,7 @@ router.post('/employee-payments', async (req, res) => {
             [employeeId, employeeName || '', parsedAmount, method, date]
         );
 
+        notify('Employee Payment', (employeeName || 'Employee #' + employeeId) + ' paid TZS ' + parsedAmount.toLocaleString() + ' via ' + method, 'success');
         res.status(201).json({
             success: true,
             message: 'Payment saved successfully',

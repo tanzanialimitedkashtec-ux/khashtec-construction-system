@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const db = require('../../database/config/database');
+var notify = require('../utils/notify');
 
 // Utility to always return an array
 function asArray(rows) {
@@ -113,6 +114,7 @@ router.post('/', async (req, res) => {
     ]);
 
     const insertId = Array.isArray(result) ? (result[0]?.insertId || result.insertId) : result.insertId;
+    notify('New Asset Registered', asset_name + ' (' + asset_code + ') - ' + (category || 'General'), 'info');
     return res.status(201).json({ success: true, id: insertId, message: 'Asset created successfully' });
   } catch (error) {
     console.error('Error creating asset:', error && (error.sqlMessage || error.message) || error);

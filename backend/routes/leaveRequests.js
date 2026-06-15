@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const db = require('../../database/config/database');
+var notify = require('../utils/notify');
 
 console.log('🚀 Leave requests routes module loaded successfully');
 
@@ -310,6 +311,7 @@ router.post('/', async (req, res) => {
             console.error('❌ Verification error:', verifyError);
         }
         
+        notify('Leave Request', (employee_name || 'Employee') + ' requested ' + daysRequested + ' days ' + leaveType + ' leave', 'info');
         res.status(201).json({
             message: 'Leave request created successfully',
             leave_request_id: insertId,
@@ -371,6 +373,7 @@ router.put('/:id', async (req, res) => {
         }
         
         console.log('✅ Leave request updated successfully');
+        notify('Leave Request ' + (approval_status === 'approved' ? 'Approved' : 'Updated'), 'Leave request #' + id + ' ' + approval_status, approval_status === 'approved' ? 'success' : 'warning');
         res.json({ 
             message: 'Leave request updated successfully',
             approval_status,

@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const db = require('../../database/config/database');
+var notify = require('../utils/notify');
 
 // Test endpoint to verify contracts API is working
 router.get('/test', (req, res) => {
@@ -267,6 +268,7 @@ router.post('/', async (req, res) => {
             console.error('❌ Verification error:', verifyError);
         }
         
+        notify('New Contract', (employee_name || 'Employee') + ' - ' + contract_type + ', Salary: TZS ' + Number(salary).toLocaleString(), 'success');
         res.status(201).json({
             message: 'Contract created successfully',
             contract_id: insertId,
