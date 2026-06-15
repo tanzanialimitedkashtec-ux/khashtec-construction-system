@@ -70866,13 +70866,13 @@ function loadProcurementTable() {
                         <tr style="background: #2196F3; color: white;">
                             <th style="padding: 6px 8px; text-align: left; white-space: nowrap;">#</th>
                             <th style="padding: 6px 8px; text-align: left; white-space: nowrap;">Type</th>
-                            <th style="padding: 6px 8px; text-align: left; white-space: nowrap;">Title</th>
-                            <th style="padding: 6px 8px; text-align: right; white-space: nowrap;">Qty</th>
-                            <th style="padding: 6px 8px; text-align: right; white-space: nowrap;">Budget</th>
-                            <th style="padding: 6px 8px; text-align: left; white-space: nowrap;">Dept</th>
-                            <th style="padding: 6px 8px; text-align: left; white-space: nowrap;">Urgency</th>
+                            <th style="padding: 6px 8px; text-align: left; white-space: nowrap;">Request Title</th>
+                            <th style="padding: 6px 8px; text-align: right; white-space: nowrap;">Quantity</th>
+                            <th style="padding: 6px 8px; text-align: right; white-space: nowrap;">Total Budget</th>
+                            <th style="padding: 6px 8px; text-align: left; white-space: nowrap;">Department</th>
+                            <th style="padding: 6px 8px; text-align: left; white-space: nowrap;">Urgency Level</th>
                             <th style="padding: 6px 8px; text-align: left; white-space: nowrap;">Status</th>
-                            <th style="padding: 6px 8px; text-align: left; white-space: nowrap;">Date</th>
+                            <th style="padding: 6px 8px; text-align: left; white-space: nowrap;">Expected Delivery</th>
                             <th style="padding: 6px 8px; text-align: center; white-space: nowrap;">Actions</th>
                         </tr>
                     </thead>
