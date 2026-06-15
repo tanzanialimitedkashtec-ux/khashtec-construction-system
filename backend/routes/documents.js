@@ -1123,52 +1123,62 @@ router.post('/', upload.single('file'), async (req, res) => {
                 error: 'No file uploaded'
             });
         } else {
-            // Traditional file upload with file
-            console.log('🔄 Processing traditional file upload...');
+            // Traditional file upload with file — save to database
+            console.log('Processing traditional file upload...');
             
-            const { title, category, description, uploadedBy = 'Admin Assistant' } = req.body;
-            const fileExt = path.extname(req.file.originalname).toLowerCase();
-            let fileType = 'Document';
-            
-            if (['.jpg', '.jpeg', '.png', '.gif'].includes(fileExt)) {
-                fileType = 'Image';
-            } else if (fileExt === '.pdf') {
-                fileType = 'PDF';
-            } else if (['.doc', '.docx'].includes(fileExt)) {
-                fileType = 'Word';
-            } else if (['.xls', '.xlsx'].includes(fileExt)) {
-                fileType = 'Excel';
-            } else if (['.ppt', '.pptx'].includes(fileExt)) {
-                fileType = 'PowerPoint';
+            var { title, category, description, uploaded_by } = req.body;
+            var fileMime = req.file.mimetype;
+            var fileName = req.file.originalname;
+            var fileSize = req.file.size;
+            var fileData = null;
+
+            // Read file data into memory for DB storage
+            try {
+                var fsSync = require('fs');
+                fileData = fsSync.readFileSync(req.file.path);
+                try { fsSync.unlinkSync(req.file.path); } catch (_) {}
+            } catch (e) {
+                console.warn('Could not read uploaded file:', e.message);
             }
-            
-            // Create document record
-            const newDocument = {
-                id: documents.length + 1,
-                title: title || req.file.originalname,
-                category: category || 'General',
-                description: description || '',
-                type: fileType,
-                uploadedBy: parseInt(uploadedBy),
-                uploadedDate: new Date().toISOString().split('T')[0],
-                fileName: req.file.filename,
-                filePath: `/uploads/documents/${req.file.filename}`,
-                size: req.file.size,
-                status: 'pending'
-            };
-            
-            // Safe array push with validation
-            if (Array.isArray(documents)) {
-                documents.push(newDocument);
-                console.log('✅ Document uploaded successfully:', newDocument);
-                
-                res.status(201).json({
-                    message: 'Document uploaded successfully',
-                    document: newDocument
-                });
-            } else {
-                throw new Error('Documents array not initialized');
-            }
+
+            var validCategories = ['Contract', 'Plan', 'Report', 'Invoice', 'Permit', 'Certificate', 'Other'];
+            var mappedCategory = validCategories.includes(category) ? category : 'Other';
+
+            var theDb = require('../../database/config/database');
+            await theDb.execute(`
+                CREATE TABLE IF NOT EXISTS documents (
+                    id INT AUTO_INCREMENT PRIMARY KEY,
+                    title VARCHAR(255) NOT NULL,
+                    description TEXT,
+                    file_name VARCHAR(255) NOT NULL,
+                    file_path VARCHAR(500),
+                    file_size BIGINT DEFAULT 0,
+                    file_type VARCHAR(100) DEFAULT 'PDF',
+                    file_data LONGBLOB,
+                    file_mime VARCHAR(100),
+                    category ENUM('Contract','Plan','Report','Invoice','Permit','Certificate','Other') DEFAULT 'Other',
+                    uploaded_by INT NOT NULL,
+                    status ENUM('Pending','Approved','Rejected') DEFAULT 'Pending',
+                    expiry_date DATE,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+                )
+            `);
+
+            var result = await theDb.execute(
+                'INSERT INTO documents (title, description, file_name, file_size, file_type, file_data, file_mime, category, uploaded_by, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+                [title || fileName, description || '', fileName, fileSize, fileMime, fileData, fileMime, mappedCategory, parseInt(uploaded_by) || 1, 'Pending']
+            );
+
+            var insertId = result ? (Array.isArray(result) ? result[0]?.insertId : result.insertId) : null;
+            console.log('Document saved to database, id:', insertId);
+
+            res.status(201).json({
+                success: true,
+                message: 'Document uploaded successfully',
+                id: insertId,
+                document: { id: insertId, title: title || fileName, category: mappedCategory, file_name: fileName, file_size: fileSize }
+            });
         }
         
     } catch (error) {
