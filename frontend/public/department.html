@@ -36921,6 +36921,26 @@ function clearWorkforceForm() {
 
 // Toggle site report form visibility
 
+function loadReportProjects() {
+    var sel = document.getElementById('reportProject');
+    if (!sel) return;
+    var baseUrl = window.KashTecAPI && window.KashTecAPI.baseUrl ? window.KashTecAPI.baseUrl : window.location.origin;
+    fetch(baseUrl + '/api/projects')
+    .then(function(r){ return r.json(); })
+    .then(function(data){
+        var projects = data.data || data.projects || data || [];
+        if (!Array.isArray(projects)) return;
+        sel.innerHTML = '<option value="">Select Project</option>';
+        projects.forEach(function(p){
+            var opt = document.createElement('option');
+            opt.value = p.id || p.project_id || '';
+            opt.textContent = p.name || p.project_name || p.title || 'Project #' + (p.id || '');
+            sel.appendChild(opt);
+        });
+    })
+    .catch(function(e){ console.warn('Could not load projects for site report:', e); });
+}
+
 function toggleSiteReportForm() {
 
     const formContainer = document.getElementById('siteReportFormContainer');
@@ -36941,7 +36961,7 @@ function toggleSiteReportForm() {
 
         toggleBtn.style.background = '#dc3545';
 
-        
+        loadReportProjects();
 
         // Smooth scroll to form
 
@@ -58701,7 +58721,22 @@ function saveSafetyPolicy() {
 
             console.log('Policy record created for approval:', policyData);
 
-            customAlert(`Safety policy uploaded successfully!\n\nTitle: ${policy.title}\nCategory: ${policy.category}\nCompliance: ${policy.complianceLevel}\nEffective: ${policy.effectiveDate}\nPolicy ID: ${data.id}\n\nThe policy has been sent for approval in Approve Recruitment Policies.`, "Policy Uploaded", "success");
+            // Upload file to Document Management so it appears with QR code
+            var fileInput = document.getElementById('policyDocument');
+            if (fileInput && fileInput.files.length > 0) {
+                var formData = new FormData();
+                formData.append('file', fileInput.files[0]);
+                formData.append('title', 'Safety Policy - ' + policy.title);
+                formData.append('description', 'Category: ' + policy.category + ' | Compliance: ' + policy.complianceLevel + ' | Effective: ' + policy.effectiveDate);
+                formData.append('category', 'Other');
+                formData.append('uploaded_by', 1);
+                fetch(baseUrl + '/api/documents', { method: 'POST', body: formData })
+                .then(function(r){ return r.json(); })
+                .then(function(docData){ console.log('Policy file saved to Document Management:', docData); })
+                .catch(function(e){ console.warn('Policy file upload to docs failed:', e); });
+            }
+
+            customAlert('Safety policy uploaded successfully!\n\nTitle: ' + policy.title + '\nCategory: ' + policy.category + '\nPolicy ID: ' + data.id + '\n\nThe policy is now available in Document Management with a QR code.', "Policy Uploaded", "success");
 
         })
 
@@ -58709,7 +58744,7 @@ function saveSafetyPolicy() {
 
             console.warn('Policy record creation failed, but HSE record was saved:', policyError);
 
-            customAlert(`Safety policy uploaded successfully!\n\nTitle: ${policy.title}\nCategory: ${policy.category}\nPolicy ID: ${data.id}\n\nNote: Policy was saved but could not be sent for approval.`, "Policy Uploaded", "success");
+            customAlert('Safety policy uploaded successfully!\n\nTitle: ' + policy.title + '\nCategory: ' + policy.category + '\nPolicy ID: ' + data.id + '\n\nNote: Policy was saved but could not be sent for approval.', "Policy Uploaded", "success");
 
         })
 
@@ -74798,15 +74833,7 @@ function recordSiteReports(){
                             <label>Project *</label>
 
                             <select id="reportProject" required>
-
                                 <option value="">Select Project</option>
-
-                                <option value="prj001">Port Modernization Phase 1</option>
-
-                                <option value="prj002">Warehouse Construction</option>
-
-                                <option value="prj003">Road Infrastructure</option>
-
                             </select>
 
                         </div>
@@ -77717,61 +77744,88 @@ async function submitWorkforceRequest(event) {
 
 
 function saveSiteReport() {
+    var project = document.getElementById('reportProject').value;
+    var projectText = document.getElementById('reportProject').options[document.getElementById('reportProject').selectedIndex].text;
+    var date = document.getElementById('reportDate').value;
+    var weather = document.getElementById('weatherConditions').value;
+    var supervisor = document.getElementById('siteSupervisor').value;
+    var workersPresent = document.getElementById('workersPresent').value;
+    var workCompleted = document.getElementById('workCompleted').value;
+    var issues = document.getElementById('siteIssues').value;
+    var safetyIncidents = document.getElementById('safetyIncidents').value;
+    var materialsUsed = document.getElementById('materialsUsed').value;
+    var equipmentUsed = document.getElementById('equipmentUsed').value;
+    var nextDayPlan = document.getElementById('nextDayPlan').value;
+    var fileInput = document.getElementById('sitePhotos');
 
-    const report = {
+    var baseUrl = window.KashTecAPI && window.KashTecAPI.baseUrl ? window.KashTecAPI.baseUrl : window.location.origin;
 
-        id: 'RPT-' + Date.now(),
+    fetch(baseUrl + '/api/work/site-reports', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            project_id: project,
+            report_date: date,
+            weather_conditions: weather,
+            site_supervisor: supervisor,
+            workers_present: workersPresent,
+            work_completed: workCompleted,
+            site_issues: issues,
+            safety_incidents: safetyIncidents,
+            materials_used: materialsUsed,
+            equipment_used: equipmentUsed,
+            next_day_plan: nextDayPlan
+        })
+    })
+    .then(function(r){ return r.json(); })
+    .then(function(data){
+        if (!data.success) { customAlert('Failed to save site report: ' + (data.message || data.error), 'Error', 'error'); return; }
 
-        project: document.getElementById('reportProject').value,
+        var reportId = data.report_id || data.data?.id || 'RPT-' + Date.now();
 
-        date: document.getElementById('reportDate').value,
+        // Upload photos/videos to documents with reference to this report
+        if (fileInput && fileInput.files.length > 0) {
+            for (var i = 0; i < fileInput.files.length; i++) {
+                var formData = new FormData();
+                formData.append('file', fileInput.files[i]);
+                formData.append('title', 'Site Report #' + reportId + ' - ' + projectText + ' - Media ' + (i+1));
+                formData.append('description', 'Site report media for ' + projectText + ' on ' + date + ' | Supervisor: ' + supervisor);
+                formData.append('category', 'Report');
+                formData.append('uploaded_by', 1);
+                fetch(baseUrl + '/api/documents', { method: 'POST', body: formData })
+                .then(function(r2){ return r2.json(); })
+                .then(function(docData){ console.log('Site report media uploaded to docs:', docData); })
+                .catch(function(e){ console.warn('Site media upload failed:', e); });
+            }
+        }
 
-        weather: document.getElementById('weatherConditions').value,
+        // Show QR code for viewing site report media in Document Management
+        var viewUrl = baseUrl + '/frontend/public/department.html?view=documents&search=Site+Report+%23' + reportId;
+        var qrUrl = 'https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=' + encodeURIComponent(viewUrl);
+        customAlert('Site report submitted successfully!\\n\\nProject: ' + projectText + '\\nDate: ' + date + '\\nReport ID: ' + reportId + '\\n\\nPhotos/videos are available in Document Management with QR code.', 'Report Submitted', 'success');
 
-        supervisor: document.getElementById('siteSupervisor').value,
+        // Show QR code popup for the report
+        if (fileInput && fileInput.files.length > 0) {
+            setTimeout(function(){
+                var qrHtml = '<div style="position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:9999;display:flex;align-items:center;justify-content:center;" onclick="this.remove()">';
+                qrHtml += '<div style="background:#fff;padding:20px;border-radius:12px;text-align:center;max-width:300px;" onclick="event.stopPropagation()">';
+                qrHtml += '<h4 style="margin:0 0 10px;">Site Report #' + reportId + '</h4>';
+                qrHtml += '<p style="font-size:11px;color:#666;margin:0 0 10px;">Scan QR to view photos/videos in Document Management</p>';
+                qrHtml += '<img src="' + qrUrl + '" alt="QR Code" style="width:180px;height:180px;border:2px solid #ddd;border-radius:8px;">';
+                qrHtml += '<br><button onclick="this.parentElement.parentElement.remove()" style="margin-top:10px;padding:6px 16px;background:#0b3d91;color:#fff;border:none;border-radius:4px;cursor:pointer;">Close</button>';
+                qrHtml += '</div></div>';
+                document.body.insertAdjacentHTML('beforeend', qrHtml);
+            }, 500);
+        }
 
-        workersPresent: document.getElementById('workersPresent').value,
-
-        workCompleted: document.getElementById('workCompleted').value,
-
-        issues: document.getElementById('siteIssues').value,
-
-        safetyIncidents: document.getElementById('safetyIncidents').value,
-
-        materialsUsed: document.getElementById('materialsUsed').value,
-
-        equipmentUsed: document.getElementById('equipmentUsed').value,
-
-        nextDayPlan: document.getElementById('nextDayPlan').value,
-
-        photos: document.getElementById('sitePhotos').files.length,
-
-        submittedBy: 'Project Manager',
-
-        submittedDate: new Date().toLocaleString()
-
-    };
-
-    
-
-    // Save to secure API storage
-
-    const reports = [];
-
-    reports.push(report);
-
-    // TODO: Save to API
-
-    
-
-    customAlert(`Site report submitted successfully!\n\nProject: ${report.project}\nDate: ${report.date}\nWorkers Present: ${report.workersPresent}\nWeather: ${report.weather}`, "Report Submitted", "success");
-
-    
-
-    document.getElementById('siteReportForm').reset();
+        document.getElementById('siteReportForm').reset();
+    })
+    .catch(function(err){
+        console.error('Error saving site report:', err);
+        customAlert('Network error saving site report. Please try again.', 'Error', 'error');
+    });
 
     return false;
-
 }
 
 
