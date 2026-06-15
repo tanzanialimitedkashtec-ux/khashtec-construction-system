@@ -5,7 +5,7 @@ const multer = require('multer');
 const path = require('path');
 const fs = require('fs').promises;
 const fsSync = require('fs');
-const { sendAssignmentNotification } = require('../utils/emailService');
+const { sendAssignmentNotification } = require('../services/emailService');
 
 // Ensure BLOB columns exist (runs once, non-blocking)
 var _blobColsChecked = false;

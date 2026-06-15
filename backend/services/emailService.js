@@ -361,4 +361,75 @@ async function sendExpenseEmail(expenseData, actionType) {
     }
 }
 
-module.exports = { sendInvoiceEmail, sendExpenseEmail };
+/**
+ * Build the branded HTML email template for assignments
+ */
+function buildAssignmentEmailHTML(details) {
+    const appUrl = process.env.APP_URL || 'https://khashtec-construction-system-production-e7b5.up.railway.app';
+    const logoUrl = `${appUrl}/images/khashtec%20logo.png`;
+
+    let rowsHtml = '';
+    if (Array.isArray(details)) {
+        details.forEach(d => {
+            rowsHtml += `<tr><td style="padding: 8px; border-bottom: 1px solid #eee; font-weight: bold;">${d.label}:</td><td style="padding: 8px; border-bottom: 1px solid #eee;">${d.value || '-'}</td></tr>`;
+        });
+    }
+
+    return `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KASHTEC Assignment Notification</title>
+</head>
+<body style="margin:0;padding:20px;background-color:#f0f2f5;font-family:Georgia,'Times New Roman',serif;">
+    <div style="max-width:350px;border:1px solid #1a5276;border-radius:8px;padding:15px;background:#fdfdfd;font-family:Georgia,serif;box-shadow:0 2px 5px rgba(0,0,0,0.05);margin:20px auto;">
+        <div style="text-align:center;border-bottom:1px solid #1a5276;padding-bottom:10px;margin-bottom:10px;">
+            <img src="${logoUrl}" alt="Khashtec logo" style="display:block;margin:0 auto 5px;max-height:40px;width:auto;">
+            <h3 style="margin:0;color:#1a5276;font-size:16px;">KASHTEC TANZANIA LIMITED</h3>
+            <p style="margin:2px 0;color:#666;font-size:11px;">Construction Management System</p>
+            <h4 style="margin:5px 0 0;color:#2c3e50;font-size:14px;">NEW ASSIGNMENT</h4>
+        </div>
+        
+        <p style="font-size:13px; color:#333;">You have been assigned to a new task or project.</p>
+        
+        <table style="width:100%;border-collapse:collapse;margin:10px 0;font-size:12px;">
+            ${rowsHtml}
+        </table>
+
+        <div style="text-align:center;margin-top:12px;padding-top:10px;border-top:1px dashed #ccc;color:#888;font-size:11px;">
+            <p style="margin:2px 0;">Please log into the KASHTEC System to view the full details.</p>
+        </div>
+    </div>
+</body>
+</html>`;
+}
+
+/**
+ * Send an assignment notification email to an employee
+ * @param {string} toEmail - Recipient email address
+ * @param {Array<{label: string, value: string}>} details - Assignment details
+ */
+async function sendAssignmentNotification(toEmail, details) {
+    if (!RESEND_API_KEY) {
+        console.warn('⚠️ Skipping assignment email — RESEND_API_KEY not configured');
+        return false;
+    }
+
+    if (!toEmail) return false;
+
+    const subject = `New Assignment Notification | KASHTEC`;
+    const html = buildAssignmentEmailHTML(details);
+
+    try {
+        const result = await sendViaResend(toEmail, subject, html);
+        console.log(`✅ Assignment email sent to ${toEmail} (ID: ${result.id})`);
+        return true;
+    } catch (error) {
+        console.error(`⚠️ Failed to send assignment email:`, error.message);
+        return false;
+    }
+}
+
+module.exports = { sendInvoiceEmail, sendExpenseEmail, sendAssignmentNotification };

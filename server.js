@@ -40,7 +40,7 @@ const config = require('./config/environment');
 
 // Import routes
 
-const { sendAssignmentNotification } = require('./backend/utils/emailService');
+const { sendAssignmentNotification } = require('./backend/services/emailService');
 
 const authRoutes = require('./backend/routes/auth');
 
