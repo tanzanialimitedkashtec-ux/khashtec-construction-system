@@ -291,15 +291,24 @@ router.post('/assignments', async (req, res) => {
         ]);
 
         try {
-            const [empRows] = await db.execute('SELECT gmail FROM employee_details WHERE full_name = ?', [employee_name]);
-            if (empRows && empRows.length > 0 && empRows[0].gmail) {
+            let recipientEmail = null;
+            if (employee_name && employee_name.includes('@')) {
+                recipientEmail = employee_name;
+            } else {
+                const [empRows] = await db.execute('SELECT gmail FROM employee_details WHERE full_name = ? OR gmail = ?', [employee_name, employee_name]);
+                if (empRows && empRows.length > 0 && empRows[0].gmail) {
+                    recipientEmail = empRows[0].gmail;
+                }
+            }
+
+            if (recipientEmail) {
                 const details = [
                     { label: 'Project Name', value: project_name },
                     { label: 'Role', value: role_in_project },
                     { label: 'Start Date', value: start_date },
                     { label: 'Assigned By', value: assigned_by || 'System' }
                 ];
-                sendAssignmentNotification(empRows[0].gmail, details);
+                sendAssignmentNotification(recipientEmail, details);
             }
         } catch (emailErr) {
             console.error('Failed to lookup email or send notification:', emailErr);

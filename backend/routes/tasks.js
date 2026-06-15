@@ -270,8 +270,17 @@ router.post('/', async (req, res) => {
             const createdTask = Array.isArray(createdTaskResult) ? createdTaskResult[0] : createdTaskResult;
             
             try {
-                const [empRows] = await db.execute('SELECT gmail FROM employee_details WHERE full_name = ?', [assigned_to]);
-                if (empRows && empRows.length > 0 && empRows[0].gmail) {
+                let recipientEmail = null;
+                if (assigned_to && assigned_to.includes('@')) {
+                    recipientEmail = assigned_to;
+                } else {
+                    const [empRows] = await db.execute('SELECT gmail FROM employee_details WHERE full_name = ? OR gmail = ?', [assigned_to, assigned_to]);
+                    if (empRows && empRows.length > 0 && empRows[0].gmail) {
+                        recipientEmail = empRows[0].gmail;
+                    }
+                }
+
+                if (recipientEmail) {
                     const details = [
                         { label: 'Task Name', value: task_name },
                         { label: 'Priority', value: normalizedPriority },
@@ -279,7 +288,7 @@ router.post('/', async (req, res) => {
                         { label: 'Project Name', value: (createdTask && createdTask[0] && createdTask[0].project_name) || 'Unknown' },
                         { label: 'Assigned By', value: created_by }
                     ];
-                    sendAssignmentNotification(empRows[0].gmail, details);
+                    sendAssignmentNotification(recipientEmail, details);
                 }
             } catch (emailErr) {
                 console.error('Failed to lookup email or send notification:', emailErr);
