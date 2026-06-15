@@ -2,6 +2,8 @@ const express = require('express');
 const router = express.Router();
 const db = require('../../database/config/database');
 var notify = require('../utils/notify');
+var mpesa = require('../services/mpesa');
+var nmb = require('../services/nmb');
 
 // Ensure payroll_records table exists
 async function ensurePayrollTables() {
@@ -433,7 +435,7 @@ router.post('/payslips/email', async (req, res) => {
 
 // ===== EMPLOYEE PAYMENTS (persisted to database) =====
 
-// POST /api/payroll/employee-payments - Save an employee payment
+// POST /api/payroll/employee-payments - Save an employee payment (M-Pesa / NMB / Cash)
 router.post('/employee-payments', async (req, res) => {
     try {
         await db.execute(`
@@ -445,35 +447,64 @@ router.post('/employee-payments', async (req, res) => {
                 payment_method VARCHAR(50) DEFAULT 'bank_transfer',
                 payment_date DATE NOT NULL,
                 status VARCHAR(50) DEFAULT 'Processed',
+                transaction_id VARCHAR(100) DEFAULT NULL,
+                mpesa_phone VARCHAR(50) DEFAULT NULL,
+                bank_account VARCHAR(100) DEFAULT NULL,
+                bank_name VARCHAR(100) DEFAULT NULL,
+                simulated TINYINT(1) DEFAULT 0,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 INDEX idx_emp_payment_date (employee_id, payment_date)
             )
         `);
-        const { employeeId, employeeName, amount, paymentMethod, paymentDate } = req.body;
+
+        // Add new columns if table already existed without them
+        var newCols = ['transaction_id VARCHAR(100)', 'mpesa_phone VARCHAR(50)', 'bank_account VARCHAR(100)', 'bank_name VARCHAR(100)', 'simulated TINYINT(1) DEFAULT 0'];
+        for (var c of newCols) { try { await db.execute('ALTER TABLE employee_payments ADD COLUMN ' + c); } catch(e) {} }
+
+        var { employeeId, employeeName, amount, paymentMethod, paymentDate, mpesaPhone, bankAccount, bankName } = req.body;
 
         if (!employeeId || !amount) {
             return res.status(400).json({ success: false, error: 'Employee ID and amount are required' });
         }
 
-        const parsedAmount = parseFloat(String(amount).replace(/,/g, '')) || 0;
-        const date = paymentDate || new Date().toISOString().slice(0, 10);
-        const method = paymentMethod || 'bank_transfer';
+        var parsedAmount = parseFloat(String(amount).replace(/,/g, '')) || 0;
+        var date = paymentDate || new Date().toISOString().slice(0, 10);
+        var method = paymentMethod || 'cash';
+        var txResult = null;
 
-        const result = await db.execute(
-            `INSERT INTO employee_payments (employee_id, employee_name, amount, payment_method, payment_date, status)
-             VALUES (?, ?, ?, ?, ?, 'Processed')`,
-            [employeeId, employeeName || '', parsedAmount, method, date]
+        // Process payment through appropriate channel
+        if (method === 'mpesa' && mpesaPhone) {
+            txResult = await mpesa.sendPayment(mpesaPhone, parsedAmount, 'SAL-' + employeeId + '-' + Date.now());
+        } else if (method === 'nmb_bank' && bankAccount) {
+            txResult = await nmb.sendPayment(bankAccount, bankName || 'NMB', parsedAmount, employeeName, 'SAL-' + employeeId + '-' + Date.now());
+        }
+
+        var transactionId = txResult ? txResult.transactionId : null;
+        var simulated = txResult ? (txResult.simulated ? 1 : 0) : 0;
+        var paymentStatus = (!txResult || txResult.success) ? 'Processed' : 'Failed';
+
+        if (txResult && !txResult.success) {
+            return res.status(400).json({ success: false, error: txResult.error || 'Payment failed', transactionId: transactionId });
+        }
+
+        var result = await db.execute(
+            'INSERT INTO employee_payments (employee_id, employee_name, amount, payment_method, payment_date, status, transaction_id, mpesa_phone, bank_account, bank_name, simulated) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+            [employeeId, employeeName || '', parsedAmount, method, date, paymentStatus, transactionId, mpesaPhone || null, bankAccount || null, bankName || null, simulated]
         );
 
-        notify('Employee Payment', (employeeName || 'Employee #' + employeeId) + ' paid TZS ' + parsedAmount.toLocaleString() + ' via ' + method, 'success');
+        var channelInfo = method === 'mpesa' ? ' via M-Pesa (' + mpesaPhone + ')' : method === 'nmb_bank' ? ' via NMB Bank' : ' via ' + method;
+        notify('Employee Payment', (employeeName || 'Employee #' + employeeId) + ' paid TZS ' + parsedAmount.toLocaleString() + channelInfo, 'success');
+
         res.status(201).json({
             success: true,
-            message: 'Payment saved successfully',
-            id: result ? result.insertId : null,
-            data: { employeeId, employeeName, amount: parsedAmount, paymentMethod: method, paymentDate: date, status: 'Processed' }
+            message: 'Payment processed successfully',
+            transactionId: transactionId,
+            simulated: !!simulated,
+            id: result ? (Array.isArray(result) ? result[0]?.insertId : result.insertId) : null,
+            data: { employeeId, employeeName, amount: parsedAmount, paymentMethod: method, paymentDate: date, status: paymentStatus, transactionId: transactionId }
         });
     } catch (error) {
-        console.error('❌ Error saving employee payment:', error.message);
+        console.error('Error saving employee payment:', error.message);
         res.status(500).json({ success: false, error: 'Failed to save payment', details: error.message });
     }
 });

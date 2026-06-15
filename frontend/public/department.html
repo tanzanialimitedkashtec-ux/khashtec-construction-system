@@ -62080,9 +62080,10 @@ function payrollProcessing(){
                 <div class="form-row">
                     <div class="form-group">
                         <label>Payment Method *</label>
-                        <select id="payEmployeeMethod" required>
-                            <option value="bank_transfer">Bank Transfer</option>
-                            <option value="mobile_money">Mobile Money</option>
+                        <select id="payEmployeeMethod" required onchange="togglePaymentFields()">
+                            <option value="mpesa">M-Pesa</option>
+                            <option value="nmb_bank">NMB Bank Transfer</option>
+                            <option value="bank_transfer">Other Bank Transfer</option>
                             <option value="cash">Cash</option>
                         </select>
                     </div>
@@ -62091,7 +62092,32 @@ function payrollProcessing(){
                         <input type="date" id="payEmployeeDate" required>
                     </div>
                 </div>
-                <button type="submit" class="action" style="background: #28a745;">Confirm Payment</button>
+                <div id="mpesaFields" class="form-row">
+                    <div class="form-group">
+                        <label>M-Pesa Phone Number *</label>
+                        <input type="tel" id="payMpesaPhone" placeholder="+255 7XX XXX XXX">
+                        <small style="color:#666;">Vodacom M-Pesa number to receive payment</small>
+                    </div>
+                </div>
+                <div id="nmbFields" class="form-row" style="display:none;">
+                    <div class="form-group">
+                        <label>Bank Account Number *</label>
+                        <input type="text" id="payBankAccount" placeholder="e.g. 40110003001">
+                    </div>
+                    <div class="form-group">
+                        <label>Bank Name</label>
+                        <select id="payBankName">
+                            <option value="NMB">NMB Bank</option>
+                            <option value="CRDB">CRDB Bank</option>
+                            <option value="NBC">NBC Bank</option>
+                            <option value="Stanbic">Stanbic Bank</option>
+                            <option value="DTB">DTB Bank</option>
+                            <option value="Exim">Exim Bank</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+                </div>
+                <button type="submit" class="action" style="background: #28a745;" id="payEmployeeBtn">Confirm Payment</button>
             </form>
             <div id="payEmployeeRecords" style="margin-top: 20px;">
                 <h5>Recent Payments</h5>
@@ -62103,12 +62129,13 @@ function payrollProcessing(){
                                 <th style="padding:8px; border:1px solid #ddd; text-align:right;">Amount</th>
                                 <th style="padding:8px; border:1px solid #ddd; text-align:left;">Method</th>
                                 <th style="padding:8px; border:1px solid #ddd; text-align:left;">Date</th>
+                                <th style="padding:8px; border:1px solid #ddd; text-align:left;">Transaction ID</th>
                                 <th style="padding:8px; border:1px solid #ddd; text-align:center;">Status</th>
                             </tr>
                         </thead>
                         <tbody id="payEmployeeTableBody">
                             <tr id="no-payments-row">
-                                <td colspan="5" style="padding:8px; border:1px solid #ddd; text-align:center; color:#6c757d;">No recent payments in this session.</td>
+                                <td colspan="6" style="padding:8px; border:1px solid #ddd; text-align:center; color:#6c757d;">No recent payments in this session.</td>
                             </tr>
                         </tbody>
                     </table>
@@ -70711,15 +70738,21 @@ function loadEmployeePayments(baseUrl) {
         payments.forEach(function(p) {
             var tr = document.createElement('tr');
             var amt = parseFloat(p.amount) || 0;
-            var methodMap = { bank_transfer: 'Bank Transfer', mobile_money: 'Mobile Money', cash: 'Cash' };
+            var methodMap = { mpesa: 'M-Pesa', nmb_bank: 'NMB Bank', bank_transfer: 'Bank Transfer', mobile_money: 'Mobile Money', cash: 'Cash' };
             var methodLabel = methodMap[p.payment_method] || p.payment_method || 'N/A';
             var dateStr = p.payment_date ? String(p.payment_date).slice(0, 10) : '';
+            var txId = p.transaction_id || '-';
+            var isSim = p.simulated || (txId && txId.startsWith('SIM-'));
+            var sBg = isSim ? '#fff3cd' : '#d4edda';
+            var sColor = isSim ? '#856404' : '#155724';
+            var sText = isSim ? 'Simulated' : (p.status || 'Processed');
             tr.innerHTML =
                 '<td style="padding:8px; border:1px solid #ddd;">' + (p.employee_name || 'Employee #' + p.employee_id) + '</td>' +
                 '<td style="padding:8px; border:1px solid #ddd; text-align:right;">' + amt.toLocaleString() + '</td>' +
                 '<td style="padding:8px; border:1px solid #ddd;">' + methodLabel + '</td>' +
                 '<td style="padding:8px; border:1px solid #ddd;">' + dateStr + '</td>' +
-                '<td style="padding:8px; border:1px solid #ddd; text-align:center;"><span style="padding:2px 8px; border-radius:4px; background:#d4edda; color:#155724;">' + (p.status || 'Processed') + '</span></td>';
+                '<td style="padding:8px; border:1px solid #ddd;">' + txId + '</td>' +
+                '<td style="padding:8px; border:1px solid #ddd; text-align:center;"><span style="padding:2px 8px; border-radius:4px; background:' + sBg + '; color:' + sColor + ';">' + sText + '</span></td>';
             tbody.appendChild(tr);
         });
         console.log('✅ Loaded ' + payments.length + ' employee payments from database');
@@ -110390,6 +110423,18 @@ function autoFillEmployeeSalary() {
     }
 }
 
+function togglePaymentFields() {
+    var method = document.getElementById('payEmployeeMethod').value;
+    var mpesaDiv = document.getElementById('mpesaFields');
+    var nmbDiv = document.getElementById('nmbFields');
+    var phoneInput = document.getElementById('payMpesaPhone');
+    var accountInput = document.getElementById('payBankAccount');
+    if (mpesaDiv) mpesaDiv.style.display = method === 'mpesa' ? '' : 'none';
+    if (nmbDiv) nmbDiv.style.display = (method === 'nmb_bank' || method === 'bank_transfer') ? '' : 'none';
+    if (phoneInput) phoneInput.required = method === 'mpesa';
+    if (accountInput) accountInput.required = (method === 'nmb_bank' || method === 'bank_transfer');
+}
+
 function confirmPayEmployee(e) {
     e.preventDefault();
     var employeeSelect = document.getElementById('payEmployeeSelect');
@@ -110407,7 +110452,27 @@ function confirmPayEmployee(e) {
         else alert('Please select a valid employee with a salary structure.');
         return false;
     }
-    if (confirm('Are you sure you want to process payment of ' + amount + ' for ' + employeeName + '?')) {
+
+    var mpesaPhone = document.getElementById('payMpesaPhone') ? document.getElementById('payMpesaPhone').value : '';
+    var bankAccount = document.getElementById('payBankAccount') ? document.getElementById('payBankAccount').value : '';
+    var bankName = document.getElementById('payBankName') ? document.getElementById('payBankName').value : '';
+
+    if (methodValue === 'mpesa' && !mpesaPhone) {
+        if(typeof customAlert === 'function') customAlert('Please enter the M-Pesa phone number.', 'Error', 'error');
+        else alert('Please enter the M-Pesa phone number.');
+        return false;
+    }
+    if ((methodValue === 'nmb_bank' || methodValue === 'bank_transfer') && !bankAccount) {
+        if(typeof customAlert === 'function') customAlert('Please enter the bank account number.', 'Error', 'error');
+        else alert('Please enter the bank account number.');
+        return false;
+    }
+
+    var channelLabel = methodValue === 'mpesa' ? 'M-Pesa (' + mpesaPhone + ')' : methodValue === 'nmb_bank' ? 'NMB Bank (' + bankAccount + ')' : methodText;
+    if (confirm('Process payment of ' + amount + ' for ' + employeeName + ' via ' + channelLabel + '?')) {
+        var btn = document.getElementById('payEmployeeBtn');
+        if (btn) { btn.disabled = true; btn.textContent = 'Processing...'; }
+
         var baseUrl = window.KashTecAPI && window.KashTecAPI.baseUrl ? window.KashTecAPI.baseUrl : window.location.origin;
         fetch(baseUrl + '/api/payroll/employee-payments', {
             method: 'POST',
@@ -110417,19 +110482,28 @@ function confirmPayEmployee(e) {
                 employeeName: employeeName,
                 amount: rawAmount,
                 paymentMethod: methodValue,
-                paymentDate: paymentDate
+                paymentDate: paymentDate,
+                mpesaPhone: mpesaPhone,
+                bankAccount: bankAccount,
+                bankName: bankName
             })
         })
         .then(function(res) { return res.json(); })
         .then(function(data) {
+            if (btn) { btn.disabled = false; btn.textContent = 'Confirm Payment'; }
             if (data.success) {
-                if(typeof customAlert === 'function') customAlert('Payment of ' + amount + ' saved and processed for ' + employeeName + '.', 'Success', 'success');
-                else alert('Payment of ' + amount + ' saved and processed for ' + employeeName + '.');
+                var txId = data.transactionId || data.data?.transactionId || '-';
+                var simNote = data.simulated ? ' (Simulated - API keys not configured yet)' : '';
+                if(typeof customAlert === 'function') customAlert('Payment of ' + amount + ' processed for ' + employeeName + ' via ' + channelLabel + '.\n\nTransaction ID: ' + txId + simNote, 'Payment Sent', 'success');
+                else alert('Payment processed. Transaction ID: ' + txId + simNote);
 
                 var tbody = document.getElementById('payEmployeeTableBody');
                 var noPaymentsRow = document.getElementById('no-payments-row');
                 if (noPaymentsRow) noPaymentsRow.style.display = 'none';
 
+                var statusBg = data.simulated ? '#fff3cd' : '#d4edda';
+                var statusColor = data.simulated ? '#856404' : '#155724';
+                var statusText = data.simulated ? 'Simulated' : 'Processed';
                 if (tbody) {
                     var tr = document.createElement('tr');
                     tr.innerHTML =
@@ -110437,19 +110511,22 @@ function confirmPayEmployee(e) {
                         '<td style="padding:8px; border:1px solid #ddd; text-align:right;">' + amount + '</td>' +
                         '<td style="padding:8px; border:1px solid #ddd;">' + methodText + '</td>' +
                         '<td style="padding:8px; border:1px solid #ddd;">' + paymentDate + '</td>' +
-                        '<td style="padding:8px; border:1px solid #ddd; text-align:center;"><span style="padding:2px 8px; border-radius:4px; background:#d4edda; color:#155724;">Processed</span></td>';
+                        '<td style="padding:8px; border:1px solid #ddd;">' + txId + '</td>' +
+                        '<td style="padding:8px; border:1px solid #ddd; text-align:center;"><span style="padding:2px 8px; border-radius:4px; background:' + statusBg + '; color:' + statusColor + ';">' + statusText + '</span></td>';
                     tbody.insertBefore(tr, tbody.firstChild);
                 }
                 document.getElementById('payEmployeeForm').reset();
+                togglePaymentFields();
             } else {
-                if(typeof customAlert === 'function') customAlert('Failed to save payment: ' + (data.error || 'Unknown error'), 'Error', 'error');
-                else alert('Failed to save payment: ' + (data.error || 'Unknown error'));
+                if(typeof customAlert === 'function') customAlert('Payment failed: ' + (data.error || 'Unknown error'), 'Error', 'error');
+                else alert('Failed: ' + (data.error || 'Unknown error'));
             }
         })
         .catch(function(err) {
+            if (btn) { btn.disabled = false; btn.textContent = 'Confirm Payment'; }
             console.error('Error saving employee payment:', err);
-            if(typeof customAlert === 'function') customAlert('Network error saving payment. Please try again.', 'Error', 'error');
-            else alert('Network error saving payment. Please try again.');
+            if(typeof customAlert === 'function') customAlert('Network error. Please try again.', 'Error', 'error');
+            else alert('Network error. Please try again.');
         });
     }
     return false;
