@@ -11065,12 +11065,33 @@ font-weight: bold;
 
     border-radius: 2px;
 
-    overflow: hidden;
+    overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+    /* Firefox-only scrollbar properties */
+    @supports (scrollbar-width: thin) {
+        scrollbar-width: thin;
+        scrollbar-color: rgba(0,0,0,0.35) transparent;
+    }
 
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 
     margin-top: 15px;
 
+}
+
+.properties-table-container::-webkit-scrollbar {
+    height: 8px;
+}
+.properties-table-container::-webkit-scrollbar-track {
+    background: transparent;
+}
+.properties-table-container::-webkit-scrollbar-thumb {
+    background: rgba(0,0,0,0.18);
+    border-radius: 4px;
+}
+.properties-table-container::-webkit-scrollbar-thumb:hover {
+    background: rgba(0,0,0,0.28);
 }
 
 
@@ -11084,6 +11105,7 @@ font-weight: bold;
     font-size: 12px;
 
     background: white;
+    min-width: 1100px;
 
 }
 
