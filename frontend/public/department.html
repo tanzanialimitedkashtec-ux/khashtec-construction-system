@@ -103848,59 +103848,32 @@ function displayTransportCostSummary(summary) {
     
 
     summaryDiv.innerHTML = `
-
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 20px;">
-
-            <div class="summary-card" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; border-radius: 10px;">
-
-                <div style="font-size: 14px; opacity: 0.9;">Total Costs</div>
-
-                <div style="font-size: 24px; font-weight: bold; margin-top: 5px;">${formatCurrency(summary.total_costs)}</div>
-
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 8px; margin-bottom: 12px;">
+            <div class="summary-card" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 8px; border-radius: 2px;">
+                <div style="font-size: 12px; opacity: 0.9;">Total Costs</div>
+                <div style="font-size: 14px; font-weight: 700; margin-top: 4px;">${formatCurrency(summary.total_costs)}</div>
             </div>
-
-            <div class="summary-card" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white; padding: 20px; border-radius: 10px;">
-
-                <div style="font-size: 14px; opacity: 0.9;">Maintenance</div>
-
-                <div style="font-size: 24px; font-weight: bold; margin-top: 5px;">${formatCurrency(summary.maintenance_costs)}</div>
-
+            <div class="summary-card" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white; padding: 8px; border-radius: 2px;">
+                <div style="font-size: 12px; opacity: 0.9;">Maintenance</div>
+                <div style="font-size: 14px; font-weight: 700; margin-top: 4px;">${formatCurrency(summary.maintenance_costs)}</div>
             </div>
-
-            <div class="summary-card" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); color: white; padding: 20px; border-radius: 10px;">
-
-                <div style="font-size: 14px; opacity: 0.9;">Extra Costs</div>
-
-                <div style="font-size: 24px; font-weight: bold; margin-top: 5px;">${formatCurrency(summary.extra_costs)}</div>
-
+            <div class="summary-card" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); color: white; padding: 8px; border-radius: 2px;">
+                <div style="font-size: 12px; opacity: 0.9;">Extra Costs</div>
+                <div style="font-size: 14px; font-weight: 700; margin-top: 4px;">${formatCurrency(summary.extra_costs)}</div>
             </div>
-
-            <div class="summary-card" style="background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%); color: white; padding: 20px; border-radius: 10px;">
-
-                <div style="font-size: 14px; opacity: 0.9;">Total Records</div>
-
-                <div style="font-size: 24px; font-weight: bold; margin-top: 5px;">${summary.total_records}</div>
-
+            <div class="summary-card" style="background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%); color: white; padding: 8px; border-radius: 2px;">
+                <div style="font-size: 12px; opacity: 0.9;">Total Records</div>
+                <div style="font-size: 14px; font-weight: 700; margin-top: 4px;">${summary.total_records}</div>
             </div>
-
-            <div class="summary-card" style="background: linear-gradient(135deg, #fa709a 0%, #fee140 100%); color: white; padding: 20px; border-radius: 10px;">
-
-                <div style="font-size: 14px; opacity: 0.9;">Paid Amount</div>
-
-                <div style="font-size: 24px; font-weight: bold; margin-top: 5px;">${formatCurrency(summary.paid_amount)}</div>
-
+            <div class="summary-card" style="background: linear-gradient(135deg, #fa709a 0%, #fee140 100%); color: white; padding: 8px; border-radius: 2px;">
+                <div style="font-size: 12px; opacity: 0.9;">Paid Amount</div>
+                <div style="font-size: 14px; font-weight: 700; margin-top: 4px;">${formatCurrency(summary.paid_amount)}</div>
             </div>
-
-            <div class="summary-card" style="background: linear-gradient(135deg, #30cfd0 0%, #330867 100%); color: white; padding: 20px; border-radius: 10px;">
-
-                <div style="font-size: 14px; opacity: 0.9;">Pending Amount</div>
-
-                <div style="font-size: 24px; font-weight: bold; margin-top: 5px;">${formatCurrency(summary.pending_amount)}</div>
-
+            <div class="summary-card" style="background: linear-gradient(135deg, #30cfd0 0%, #330867 100%); color: white; padding: 8px; border-radius: 2px;">
+                <div style="font-size: 12px; opacity: 0.9;">Pending Amount</div>
+                <div style="font-size: 14px; font-weight: 700; margin-top: 4px;">${formatCurrency(summary.pending_amount)}</div>
             </div>
-
         </div>
-
     `;
 
 }
