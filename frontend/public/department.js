@@ -5448,32 +5448,9 @@ function viewAllWorkers(){
 
             
 
-            <div class="search-section">
-
-                <label for="mdWorkerSearch" class="sr-only">Search Workers</label>
-
-                <input type="text" id="mdWorkerSearch" name="worker_search" placeholder="Search workers by name, department, or job..." onkeyup="filterAllWorkers()" />
-
-                <label for="mdDepartmentFilter" class="sr-only">Filter by Department</label>
-
-                <select id="mdDepartmentFilter" name="department_filter" onchange="filterAllWorkers()">
-
-                    <option value="">All Departments</option>
-
-                    <option value="projects">Projects</option>
-
-                    <option value="admin">Administration</option>
-
-                    <option value="finance">Finance</option>
-
-                    <option value="hr">Human Resources</option>
-
-                    <option value="hse">Health & Safety</option>
-
-                    <option value="realestate">Real Estate</option>
-
-                </select>
-
+            <div style="margin-bottom: 20px; display: flex; gap: 10px; align-items: center;">
+                <input type="text" id="taxRecordsSearchInput" placeholder="🔍 Search tax records..." style="padding: 10px 15px; border: 1px solid #ddd; border-radius: 6px; flex: 1; font-size: 14px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);" onkeyup="filterTaxRecordsTable()">
+                <button onclick="clearTaxRecordsSearch()" style="padding: 10px 20px; background: #6c757d; color: #fff; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: 500;">Clear</button>
             </div>
 
         </div>
@@ -5860,10 +5837,10 @@ function displayAllWorkers(employees, workerAccounts) {
 // Filter all workers
 
 function filterAllWorkers() {
-
-    const searchTerm = document.getElementById('mdWorkerSearch').value.toLowerCase();
-
-    const departmentFilter = document.getElementById('mdDepartmentFilter').value.toLowerCase();
+    const searchInputElem = document.getElementById('taxRecordsSearchInput') || document.getElementById('mdWorkerSearch');
+    const searchTerm = (searchInputElem && searchInputElem.value) ? searchInputElem.value.toLowerCase() : '';
+    const departmentFilterElem = document.getElementById('mdDepartmentFilter');
+    const departmentFilter = departmentFilterElem ? (departmentFilterElem.value || '').toLowerCase() : '';
 
     const workerItems = document.querySelectorAll('.worker-item');
 
@@ -10473,10 +10450,10 @@ function generateWorkerList(employees, workerAccounts) {
 
 function filterAllWorkers() {
 
-    const searchTerm = document.getElementById('mdWorkerSearch').value.toLowerCase();
-
-    const departmentFilter = document.getElementById('mdDepartmentFilter').value;
-
+    const searchInputElem = document.getElementById('taxRecordsSearchInput') || document.getElementById('mdWorkerSearch');
+    const searchTerm = (searchInputElem && searchInputElem.value) ? searchInputElem.value.toLowerCase() : '';
+    const departmentFilterElem = document.getElementById('mdDepartmentFilter');
+    const departmentFilter = departmentFilterElem ? (departmentFilterElem.value || '') : '';
     const employees = []; // TODO: Load from API
 
     
@@ -20455,34 +20432,59 @@ function showTab(tabName) {
     // Hide all tabs
 
     document.getElementById('leaveTab').classList.add('hidden');
+        const searchInputElem = document.getElementById('taxRecordsSearchInput') || document.getElementById('mdWorkerSearch');
+        const searchTerm = (searchInputElem && searchInputElem.value) ? searchInputElem.value.toLowerCase() : '';
+        const departmentFilterElem = document.getElementById('mdDepartmentFilter');
+        const departmentFilter = departmentFilterElem ? (departmentFilterElem.value || '').toLowerCase() : '';
+        const workerItems = document.querySelectorAll('.worker-item');
 
-    document.getElementById('contractsTab').classList.add('hidden');
+        workerItems.forEach(item => {
+            const department = item.dataset.department;
+            const type = item.dataset.type;
+            const status = item.dataset.status;
+            const text = item.textContent.toLowerCase();
 
-    
+            const matchesSearch = text.includes(searchTerm);
+            const matchesDepartment = !departmentFilter || department === departmentFilter;
 
-    // Remove active class from all buttons
-
-    document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
-
-    
-
-    // Show selected tab
-
-    document.getElementById(tabName + 'Tab').classList.remove('hidden');
-
-    event.target.classList.add('active');
-
-}
-
-
-
-// Auto-calculate leave days
-
-document.addEventListener('change', function(e) {
-
+            item.style.display = matchesSearch && matchesDepartment ? 'block' : 'none';
     if (e.target.id === 'leaveStartDate' || e.target.id === 'leaveEndDate') {
 
         const startDate = new Date(document.getElementById('leaveStartDate').value);
+
+    // Search specifically for tax records input (reused on this page)
+    function filterTaxRecordsTable() {
+        const searchTerm = (document.getElementById('taxRecordsSearchInput')?.value || '').toLowerCase();
+
+        // Try card-based worker items first
+        const workerItems = document.querySelectorAll('.worker-item');
+        if (workerItems.length > 0) {
+            workerItems.forEach(item => {
+                const text = item.textContent.toLowerCase();
+                item.style.display = text.includes(searchTerm) ? '' : 'none';
+            });
+            return;
+        }
+
+        // Fallback: filter table rows if present
+        const tableRows = document.querySelectorAll('table tbody tr');
+        tableRows.forEach(row => {
+            // Keep loading/no-data rows visible when search empty
+            if (row.querySelector('td[colspan]')) {
+                row.style.display = searchTerm ? 'none' : '';
+                return;
+            }
+            const text = row.textContent.toLowerCase();
+            row.style.display = text.includes(searchTerm) ? '' : 'none';
+        });
+    }
+
+    function clearTaxRecordsSearch() {
+        const input = document.getElementById('taxRecordsSearchInput');
+        if (!input) return;
+        input.value = '';
+        filterTaxRecordsTable();
+    }
 
         const endDate = new Date(document.getElementById('leaveEndDate').value);
 
