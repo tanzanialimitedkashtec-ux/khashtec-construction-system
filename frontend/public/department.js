@@ -26861,6 +26861,31 @@ function deleteCar(trackNumber) {
 
 }
 
+function filterCarTable() {
+    const searchInput = document.getElementById('carSearchInput');
+    const filter = searchInput.value.toUpperCase();
+    const table = document.querySelector('table.car-table');
+    const tr = table.getElementsByTagName('tr');
+
+    for (let i = 1; i < tr.length; i++) {
+        const td = tr[i].getElementsByTagName('td');
+        let found = false;
+        for (let j = 0; j < td.length; j++) {
+            const txtValue = td[j].textContent || td[j].innerText;
+            if (txtValue.toUpperCase().indexOf(filter) > -1) {
+                found = true;
+                break;
+            }
+        }
+        tr[i].style.display = found ? '' : 'none';
+    }
+}
+
+function clearCarSearch() {
+    document.getElementById('carSearchInput').value = '';
+    filterCarTable();
+}
+
 
 
 function manageTransportCosts(){
@@ -28843,14 +28868,6 @@ function trackPpeIssuance(){
                     <select id="ppeProjectFilter" onchange="filterPpeRecords()">
 
                         <option value="">All Projects</option>
-
-                        <option value="proj001">Masaki Residential Complex</option>
-
-                        <option value="proj002">Kigamboni Commercial Plaza</option>
-
-                        <option value="proj003">Mikochi Industrial Park</option>
-
-                        <option value="proj004">Port Modernization Phase 1</option>
 
                     </select>
 
@@ -56958,49 +56975,6 @@ function uploadDocs(){
                 </button>
 
             </div>
-
-            
-
-            <div class="document-overview">
-
-                <div class="document-stats">
-
-                    <div class="stat-item">
-
-                        <span class="stat-label">Total Documents:</span>
-
-                        <span class="stat-value">1,247</span>
-
-                    </div>
-
-                    <div class="stat-item">
-
-                        <span class="stat-label">This Week:</span>
-
-                        <span class="stat-value">42</span>
-
-                    </div>
-
-                    <div class="stat-item">
-
-                        <span class="stat-label">Pending:</span>
-
-                        <span class="stat-value">8</span>
-
-                    </div>
-
-                    <div class="stat-item">
-
-                        <span class="stat-label">Storage Used:</span>
-
-                        <span class="stat-value">3.2 GB</span>
-
-                    </div>
-
-                </div>
-
-            </div>
-
             
 
             <div id="uploadFormContainer" style="display: none;">

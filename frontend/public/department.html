@@ -45520,6 +45520,32 @@ function recordPpeReturn(ppeId) {
 
 // Filter PPE records
 
+// Load projects dynamically into the PPE project filter
+async function loadPpeProjects() {
+    try {
+        const response = await fetch('/api/projects');
+        const data = await response.json();
+        
+        if (data.success && data.projects && Array.isArray(data.projects)) {
+            const projectFilter = document.getElementById('ppeProjectFilter');
+            
+            // Keep "All Projects" option, add project options
+            data.projects.forEach(project => {
+                const option = document.createElement('option');
+                option.value = project.name; // Use project name as value for filtering
+                option.textContent = project.name;
+                projectFilter.appendChild(option);
+            });
+            
+            console.log(`✅ Loaded ${data.projects.length} projects into PPE filter`);
+        } else {
+            console.warn('❌ No projects found or API response format unexpected');
+        }
+    } catch (error) {
+        console.error('❌ Error loading projects for PPE filter:', error);
+    }
+}
+
 function filterPpeRecords() {
 
     const searchInput = document.getElementById('ppeSearchInput');
@@ -49733,6 +49759,11 @@ function manageCompanyCars() {
 
             <div class="car-records">
 
+                <div style="margin-bottom: 20px; display: flex; gap: 10px; align-items: center;">
+                    <input type="text" id="carSearchInput" placeholder="🔍 Search vehicles..." style="padding: 10px 15px; border: 1px solid #ddd; border-radius: 6px; flex: 1; font-size: 14px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);" onkeyup="filterCarTable()">
+                    <button onclick="clearCarSearch()" style="padding: 10px 20px; background: #6c757d; color: #fff; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: 500;">Clear</button>
+                </div>
+
                 <div class="car-table-container">
 
                     <table class="car-table">
@@ -51717,8 +51748,6 @@ function renderDriverTable(drivers, recordsList) {
                     '<span class="status-badge ' + statusClass + '">' + statusText + '</span>' +
                 '</div></td>' +
                 '<td><div class="driver-actions">' +
-                    '<button class="action-btn view" onclick="viewDriverDetails(\'' + driverId + '\')" title="View Details">👁️</button>' +
-                    '<button class="action-btn edit" onclick="editDriver(\'' + driverId + '\')" title="Edit Driver">✏️</button>' +
                     '<button class="action-btn delete" onclick="deleteDriver(\'' + driverId + '\')" title="Delete Driver">🗑️</button>' +
                 '</div></td>' +
             '</tr>';
@@ -52471,14 +52500,6 @@ function trackPpeIssuance(){
                     <select id="ppeProjectFilter" onchange="filterPpeRecords()">
 
                         <option value="">All Projects</option>
-
-                        <option value="proj001">Masaki Residential Complex</option>
-
-                        <option value="proj002">Kigamboni Commercial Plaza</option>
-
-                        <option value="proj003">Mikochi Industrial Park</option>
-
-                        <option value="proj004">Port Modernization Phase 1</option>
 
                     </select>
 
@@ -75780,7 +75801,11 @@ function displaySiteReports(reports, _retry) {
 
                     <div class="report-actions">
 
-                        <button class="action-btn delete" onclick="deleteSiteReport('${report.id}')" title="Delete Report">🗑️</button>
+                        <button class="action-btn view" onclick="viewSiteReport('${report.id}')" title="View Details">👁️</button>
+
+                        <button class="action-btn edit" onclick="editSiteReport('${report.id}')" title="Edit Report">✏️</button>
+
+                        <button class="action-btn download" onclick="downloadSiteReport('${report.id}')" title="Download PDF">📥</button>
 
                     </div>
 
@@ -84416,48 +84441,6 @@ function uploadDocs(){
 
             
 
-            <div class="document-overview">
-
-                <div class="document-stats">
-
-                    <div class="stat-item">
-
-                        <span class="stat-label">Total Documents:</span>
-
-                        <span class="stat-value">1,247</span>
-
-                    </div>
-
-                    <div class="stat-item">
-
-                        <span class="stat-label">This Week:</span>
-
-                        <span class="stat-value">42</span>
-
-                    </div>
-
-                    <div class="stat-item">
-
-                        <span class="stat-label">Pending:</span>
-
-                        <span class="stat-value">8</span>
-
-                    </div>
-
-                    <div class="stat-item">
-
-                        <span class="stat-label">Storage Used:</span>
-
-                        <span class="stat-value">3.2 GB</span>
-
-                    </div>
-
-                </div>
-
-            </div>
-
-            
-
             <div id="uploadFormContainer" style="display: none;">
 
                 <div class="form-header">
@@ -84581,62 +84564,6 @@ function uploadDocs(){
                         <button type="button" class="action" onclick="toggleUploadForm()" style="background: #dc3545;">Close Form</button>
 
                     </div>
-
-                </div>
-
-            </div>
-
-            
-
-            <div class="documents-registry">
-
-                <h4>Documents Registry</h4>
-
-                <div class="search-section">
-
-                    <input type="text" id="documentSearchInput" placeholder="Search by title or department..." onkeyup="filterDocuments()">
-
-                    <select id="documentTypeFilter" onchange="filterDocuments()">
-
-                        <option value="">All Types</option>
-
-                        <option value="policy">Company Policy</option>
-
-                        <option value="procedure">Standard Procedure</option>
-
-                        <option value="report">Report</option>
-
-                        <option value="contract">Contract</option>
-
-                        <option value="memo">Memo</option>
-
-                        <option value="other">Other</option>
-
-                    </select>
-
-                    <select id="documentDepartmentFilter" onchange="filterDocuments()">
-
-                        <option value="">All Departments</option>
-
-                        <option value="management">Management</option>
-
-                        <option value="hr">Human Resources</option>
-
-                        <option value="finance">Finance</option>
-
-                        <option value="projects">Projects</option>
-
-                        <option value="operations">Operations</option>
-
-                        <option value="realestate">Real Estate</option>
-
-                    </select>
-
-                </div>
-
-                
-
-                <div class="documents-table-container">
 
                 </div>
 
