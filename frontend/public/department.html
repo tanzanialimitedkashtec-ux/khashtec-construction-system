@@ -66733,8 +66733,6 @@ async function loadPaymentTracking() {
 
                             <button class="action-btn view" onclick="viewTrackingDetails('${tracking.id}')" title="View Details">👁️</button>
 
-                            <button class="action-btn edit" onclick="editTracking('${tracking.id}')" title="Edit Tracking">✏️</button>
-
                             <button class="action-btn delete" onclick="deleteTracking('${tracking.id}')" title="Delete Tracking">🗑️</button>
 
                         </div>
@@ -67007,8 +67005,6 @@ function loadSampleTracking() {
                 <div class="tracking-actions">
 
                     <button class="action-btn view" onclick="viewTrackingDetails('${tracking.id}')" title="View Details">👁️</button>
-
-                    <button class="action-btn edit" onclick="editTracking('${tracking.id}')" title="Edit Tracking">✏️</button>
 
                     <button class="action-btn delete" onclick="deleteTracking('${tracking.id}')" title="Delete Tracking">🗑️</button>
 
@@ -75784,11 +75780,7 @@ function displaySiteReports(reports, _retry) {
 
                     <div class="report-actions">
 
-                        <button class="action-btn view" onclick="viewSiteReport('${report.id}')" title="View Details">👁️</button>
-
-                        <button class="action-btn edit" onclick="editSiteReport('${report.id}')" title="Edit Report">✏️</button>
-
-                        <button class="action-btn download" onclick="downloadSiteReport('${report.id}')" title="Download PDF">📥</button>
+                        <button class="action-btn delete" onclick="deleteSiteReport('${report.id}')" title="Delete Report">🗑️</button>
 
                     </div>
 
@@ -79452,9 +79444,7 @@ function displayPropertiesRecords(records) {
 
                         <button class="action-btn view" onclick="viewPropertyDetails('${record.id}')" title="View Details">👁️</button>
 
-                        <button class="action-btn edit" onclick="editProperty('${record.id}')" title="Edit Property">✏️</button>
-
-                        <button class="action-btn download" onclick="downloadPropertyDocs('${record.id}')" title="Download Documents">📄</button>
+                        <button class="action-btn delete" onclick="deleteProperty('${record.id}')" title="Delete Property">🗑️</button>
 
                     </div>
 
