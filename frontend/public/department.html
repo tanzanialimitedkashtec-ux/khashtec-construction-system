@@ -1,160 +1,11 @@
 <!DOCTYPE html>
 
 <html lang="en">
-
 <head>
-
     <meta charset="UTF-8">
-
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-
-    <meta http-equiv="Pragma" content="no-cache">
-
-    <meta http-equiv="Expires" content="0">
-
     <title>KASHTEC tanzania limited</title>
-
-    
-
-        <script>
-
-        // Disabled: Allow localhost development
-
-        // const PRODUCTION_FRONTEND_URL = 'https://khashtec-construction-system-production-e7b5.up.railway.app/frontend/public/department.html';
-
-        // if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.hostname === '::1') {
-
-        //     window.location.replace(PRODUCTION_FRONTEND_URL);
-
-        // }
-
-function handleGeneratePayslips(event) {
-
-    if (event && event.preventDefault) event.preventDefault();
-
-    const monthSel = document.getElementById('payslipMonth');
-
-    if (!monthSel || !monthSel.value) {
-
-        customAlert('Select a month.', "Missing Month", "error");
-
-        return false;
-
-    }
-
-    // Reuse existing logic which reads #payslipEmployee and #payslipMonth
-    generateIndividualPayslip();
-
-    return false;
-
-}
-
-function toggleEmailPayslipsForm() {
-
-    const container = document.getElementById('emailPayslipsFormContainer');
-
-    if (!container) return;
-
-    const isHidden = container.classList.contains('hidden');
-
-    // Sync dropdown options with main selectors when showing the form
-    if (isHidden) {
-
-        const srcEmp = document.getElementById('payslipEmployee');
-
-        const srcMonth = document.getElementById('payslipMonth');
-
-        const dstEmp = document.getElementById('emailPayslipsEmployee');
-
-        const dstMonth = document.getElementById('emailPayslipsMonth');
-
-        if (srcEmp && dstEmp) {
-
-            dstEmp.innerHTML = srcEmp.innerHTML;
-
-            dstEmp.value = srcEmp.value;
-
-        }
-
-        if (srcMonth && dstMonth) {
-
-            dstMonth.innerHTML = srcMonth.innerHTML;
-
-            dstMonth.value = srcMonth.value;
-
-        }
-
-    }
-
-    container.classList.toggle('hidden');
-
-}
-
-function submitEmailPayslipsForm(event) {
-
-    if (event && event.preventDefault) event.preventDefault();
-
-    const empSel = document.getElementById('emailPayslipsEmployee');
-
-    const monthSel = document.getElementById('emailPayslipsMonth');
-
-    if (!monthSel || !monthSel.value) {
-
-        customAlert('Select a month.', "Missing Month", "error");
-
-        return false;
-
-    }
-
-    // Temporarily apply selected values to the main selectors and reuse emailPayslips()
-    const mainEmp = document.getElementById('payslipEmployee');
-
-    const mainMonth = document.getElementById('payslipMonth');
-
-    const prevEmp = mainEmp ? mainEmp.value : null;
-
-    const prevMonth = mainMonth ? mainMonth.value : null;
-
-    if (mainEmp && empSel) mainEmp.value = empSel.value;
-
-    if (mainMonth && monthSel) mainMonth.value = monthSel.value;
-
-    try {
-
-        emailPayslips();
-
-    } finally {
-
-        if (mainEmp && prevEmp !== null) mainEmp.value = prevEmp;
-
-        if (mainMonth && prevMonth !== null) mainMonth.value = prevMonth;
-
-    }
-
-    const container = document.getElementById('emailPayslipsFormContainer');
-
-    if (container) container.classList.add('hidden');
-
-    return false;
-
-}
-
-    </script>
-    <script>
-    // Ensure toggleSidebar is defined globally early to avoid runtime ReferenceError
-    window.toggleSidebar = window.toggleSidebar || function() {
-        try {
-            const sidebar = document.querySelector('.sidebar');
-            if (!sidebar) return console.warn('toggleSidebar: sidebar not found');
-            sidebar.classList.toggle('collapsed');
-            console.log('toggleSidebar invoked');
-        } catch (e) {
-            console.warn('toggleSidebar error', e);
-        }
-    };
-    </script>
+    <!-- Inline script removed; full implementation lives in department.js -->
 
     
 
@@ -15105,37 +14956,6 @@ font-weight: bold;
 }
 
 
-
-.return-date {
-
-    font-size: 10px;
-
-    color: #333;
-
-    font-weight: 600;
-
-}
-
-
-
-.status-badge {
-
-    display: inline-block;
-
-    padding: 4px 8px;
-
-    border-radius: 12px;
-
-    font-size: 9px;
-
-    font-weight: 600;
-
-    white-space: nowrap;
-
-}
-
-
-
 .status-badge.status-issued {
 
     background: #e3f2fd;
@@ -29584,11 +29404,11 @@ function viewAllWorkers(){
 
                 <label for="mdWorkerSearch" class="sr-only">Search Workers</label>
 
-                <input type="text" id="mdWorkerSearch" name="worker_search" placeholder="Search workers by name, department, or job..." onkeyup="filterAllWorkers()">
+                <input type="text" id="mdWorkerSearch" name="worker_search" placeholder="Search workers by name, department, or job..." onkeyup="filterAllWorkersMaster()">
 
                 <label for="mdDepartmentFilter" class="sr-only">Filter by Department</label>
 
-                <select id="mdDepartmentFilter" name="department_filter" onchange="filterAllWorkers()">
+                <select id="mdDepartmentFilter" name="department_filter" onchange="filterAllWorkersMaster()">
 
                     <option value="">All Departments</option>
 
@@ -29959,7 +29779,7 @@ function displayAllWorkers(employees, workerAccounts) {
 
 // Filter all workers
 
-function filterAllWorkers() {
+function filterAllWorkersMaster() {
 
     const searchTerm = document.getElementById('mdWorkerSearch').value.toLowerCase();
 
@@ -69963,7 +69783,11 @@ function loadInvoicesList() {
             '</tr>';
         }
         html += '</tbody></table>';
-        container.innerHTML = html;
+        var searchHtml = '<div style="margin-bottom: 20px; display: flex; gap: 10px; align-items: center;">' +
+            '<input type="text" id="invoicesSearchInput" placeholder="🔍 Search invoices..." style="padding: 10px 15px; border: 1px solid #ddd; border-radius: 6px; flex: 1; font-size: 14px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);" onkeyup="filterInvoicesTable()">' +
+            '<button onclick="clearInvoicesSearch()" style="padding: 10px 20px; background: #6c757d; color: #fff; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: 500;">Clear</button>' +
+        '</div>';
+        container.innerHTML = searchHtml + html;
         console.log('✅ Invoices list loaded successfully — ' + invoices.length + ' invoice(s) found');
     })
     .catch(function(err) {
@@ -70541,7 +70365,11 @@ function loadTaxRecords() {
             '</tr>';
         }
         html += '</tbody></table>';
-        container.innerHTML = html;
+        var searchHtml = '<div style="margin-bottom: 20px; display: flex; gap: 10px; align-items: center;">' +
+            '<input type="text" id="taxRecordsSearchInput" placeholder="🔍 Search tax records..." style="padding: 10px 15px; border: 1px solid #ddd; border-radius: 6px; flex: 1; font-size: 14px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);" onkeyup="filterTaxRecordsTable()">' +
+            '<button onclick="clearTaxRecordsSearch()" style="padding: 10px 20px; background: #6c757d; color: #fff; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: 500;">Clear</button>' +
+        '</div>';
+        container.innerHTML = searchHtml + html;
         console.log('✅ Tax records loaded — ' + records.length + ' record(s)');
     })
     .catch(function(err) {
@@ -70549,6 +70377,48 @@ function loadTaxRecords() {
         var container = document.getElementById('taxRecordsList');
         if (container) container.innerHTML = '<p style="color:red;">Failed to load tax records. Please try again.</p>';
     });
+}
+
+function filterTaxRecordsTable() {
+    var input = document.getElementById('taxRecordsSearchInput');
+    if (!input) return;
+    var filter = input.value.trim().toLowerCase();
+    var container = document.getElementById('taxRecordsList');
+    if (!container) return;
+    var tbody = container.querySelector('table tbody');
+    if (!tbody) return;
+    var rows = tbody.getElementsByTagName('tr');
+    var visibleCount = 0;
+    for (var i = 0; i < rows.length; i++) {
+        var row = rows[i];
+        var text = row.textContent || row.innerText || '';
+        if (filter === '' || text.toLowerCase().indexOf(filter) > -1) {
+            row.style.display = '';
+            visibleCount++;
+        } else {
+            row.style.display = 'none';
+        }
+    }
+    var noResults = container.querySelector('.no-results-message');
+    if (visibleCount === 0) {
+        if (!noResults) {
+            var msg = document.createElement('p');
+            msg.className = 'no-results-message';
+            msg.style.color = '#888';
+            msg.style.marginTop = '8px';
+            msg.textContent = 'No matching records found.';
+            container.appendChild(msg);
+        }
+    } else {
+        if (noResults) noResults.parentNode.removeChild(noResults);
+    }
+}
+
+function clearTaxRecordsSearch() {
+    var input = document.getElementById('taxRecordsSearchInput');
+    if (!input) return;
+    input.value = '';
+    filterTaxRecordsTable();
 }
 
 function submitTaxPayment(e) {
