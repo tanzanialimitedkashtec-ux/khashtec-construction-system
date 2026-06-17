@@ -29534,45 +29534,61 @@ async function loadViolations() {
 
                 violations = dataArray.map(item => {
 
-                    // Map work_type to violation type
+                    // Determine violation type: prefer explicit "Type:" in description, fall back to work_type
 
                     let violationType = 'procedure-violation'; // default
 
-                    if (item.work_type.toLowerCase().includes('policy')) {
+                    const desc = (item.work_description || '').toString();
 
-                        violationType = 'procedure-violation';
+                    const tMatch = desc.match(/Type:\s*(.*)/i);
 
-                    } else if (item.work_type.toLowerCase().includes('incident')) {
+                    if (tMatch && tMatch[1]) {
 
-                        violationType = 'unsafe-act';
+                        const raw = tMatch[1].trim().toLowerCase();
 
-                    } else if (item.work_type.toLowerCase().includes('violation')) {
+                        const normalized = raw.replace(/\s+/g, '-').replace(/[^a-z0-9\-]/g, '');
 
-                        violationType = 'procedure-violation';
+                        if (normalized.includes('no-ppe') || normalized.includes('noppe')) violationType = 'no-ppe';
+
+                        else if (normalized.includes('improper') || normalized.includes('improper-ppe')) violationType = 'improper-ppe';
+
+                        else if (normalized.includes('unsafe-act') || normalized.includes('unsafeact')) violationType = 'unsafe-act';
+
+                        else if (normalized.includes('unsafe-condition') || normalized.includes('unsafecondition')) violationType = 'unsafe-condition';
+
+                        else if (normalized.includes('procedure') || normalized.includes('procedure-violation')) violationType = 'procedure-violation';
+
+                        else if (normalized.includes('equipment') || normalized.includes('equipment-misuse')) violationType = 'equipment-misuse';
+
+                        else if (normalized.includes('unauthorized') || normalized.includes('unauthorized-work')) violationType = 'unauthorized-work';
+
+                        else violationType = normalized || violationType;
+
+                    } else if (item.work_type) {
+
+                        const wt = item.work_type.toLowerCase();
+
+                        if (wt.includes('policy') || wt.includes('violation')) violationType = 'procedure-violation';
+
+                        else if (wt.includes('incident')) violationType = 'unsafe-act';
 
                     }
 
-                    
 
-                    // Map severity
+                    // Map severity (support both textual 'High/Medium/Low' and select values like 'critical/major/moderate/minor')
 
                     let severity = 'moderate'; // default
 
-                    if (item.severity === 'High') {
+                    const sev = (item.severity || '').toString().toLowerCase();
 
-                        severity = 'major';
+                    if (sev.includes('critical')) severity = 'critical';
 
-                    } else if (item.severity === 'Medium') {
+                    else if (sev.includes('high') || sev === 'major') severity = 'major';
 
-                        severity = 'moderate';
+                    else if (sev.includes('medium') || sev === 'moderate') severity = 'moderate';
 
-                    } else if (item.severity === 'Low') {
+                    else if (sev.includes('low') || sev === 'minor') severity = 'minor';
 
-                        severity = 'minor';
-
-                    }
-
-                    
 
                     let descriptionText = item.work_description || '';
                     let actionTakenParsed = descriptionText.substring(0, 100) + (descriptionText.length > 100 ? '...' : '');
