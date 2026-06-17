@@ -2827,6 +2827,27 @@ router.post('/site-reports', async (req, res) => {
     }
 });
 
+// Delete Site Report
+router.delete('/site-reports/:id', async (req, res) => {
+    try {
+        const { id } = req.params;
+        console.log(`🗑️ Deleting site report #${id}...`);
+
+        const result = await db.execute('DELETE FROM site_reports WHERE id = ?', [id]);
+        const affectedRows = Array.isArray(result) ? (result[0]?.affectedRows || result.affectedRows) : (result?.affectedRows || 0);
+
+        if (affectedRows === 0) {
+            return res.status(404).json({ error: 'Site report not found' });
+        }
+
+        console.log(`✅ Site report #${id} deleted successfully`);
+        res.json({ success: true, message: `Site report #${id} deleted successfully` });
+    } catch (error) {
+        console.error('❌ Error deleting site report:', error);
+        res.status(500).json({ error: 'Failed to delete site report', details: error.message });
+    }
+});
+
 // Note: Duplicate GET /site-reports route removed - handled by the route above at line ~1124
 
 // Save Work Approval

@@ -31365,8 +31365,6 @@ async function viewProjectSafetyStatus(){
 
                 <button class="btn-primary" onclick="refreshSafetyData()">Refresh Data</button>
 
-                <button class="btn-secondary" onclick="exportSafetyReport()">Export Report</button>
-
             </div>
 
             
@@ -32152,12 +32150,6 @@ function updateSafetyTable(projects) {
                 <button class="action-btn" onclick="viewProjectSafetyDetails(${project.id})" title="View Details">
 
                     ðŸ‘ï¸
-
-                </button>
-
-                <button class="action-btn" onclick="generateSafetyReport(${project.id})" title="Generate Report">
-
-                    ðŸ“Š
 
                 </button>
 
@@ -48478,26 +48470,50 @@ function displaySiteReports(reports, _retry) {
 
 // Site report action functions
 
-function viewSiteReport(reportId) {
+async function deleteSiteReport(reportId) {
+    // Show confirmation dialog
+    const confirmed = confirm(`Are you sure you want to delete site report #${reportId}?\n\nThis action cannot be undone.`);
+    if (!confirmed) return;
 
-    customAlert(`Viewing site report details for ID: ${reportId}nnFull site report information including project details, weather conditions, work completed, safety incidents, materials used, equipment deployed, issues encountered, and next day's plan will be displayed.`, "Site Report Details", "info");
+    const baseUrl = window.location.origin;
+    const token = sessionStorage.getItem('kashtec_token') || (typeof sessionManager !== 'undefined' && sessionManager.getAuthToken ? sessionManager.getAuthToken() : '');
 
-}
+    try {
+        const response = await fetch(`${baseUrl}/api/work/site-reports/${reportId}`, {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json',
+                ...(token && { 'Authorization': `Bearer ${token}` })
+            }
+        });
 
+        const data = await response.json();
 
-
-function editSiteReport(reportId) {
-
-    customAlert(`Editing site report ${reportId}...nnSite report editor will open for modifications to work completed, safety incidents, materials used, equipment deployed, and next day's plan.`, "Edit Site Report", "info");
-
-}
-
-
-
-function downloadSiteReport(reportId) {
-
-    customAlert(`Downloading site report ${reportId} as PDF...nnSite report will be generated and downloaded as a PDF document with all project details, work progress, safety information, and daily activities.`, "Download Site Report", "info");
-
+        if (response.ok && data.success) {
+            if (typeof customAlert === 'function') {
+                customAlert(`Site report #${reportId} has been deleted successfully.`, "Deleted", "success");
+            } else {
+                alert(`Site report #${reportId} has been deleted successfully.`);
+            }
+            // Refresh the site reports table
+            if (typeof loadSiteReports === 'function') {
+                loadSiteReports();
+            }
+        } else {
+            if (typeof customAlert === 'function') {
+                customAlert(data.error || `Failed to delete site report #${reportId}.`, "Error", "error");
+            } else {
+                alert(data.error || `Failed to delete site report #${reportId}.`);
+            }
+        }
+    } catch (error) {
+        console.error('Error deleting site report:', error);
+        if (typeof customAlert === 'function') {
+            customAlert(`Error deleting site report: ${error.message}`, "Error", "error");
+        } else {
+            alert(`Error deleting site report: ${error.message}`);
+        }
+    }
 }
 
 
@@ -64296,10 +64312,10 @@ async function uploadCertificate() {
 
 
 
-async function viewDocument(docId) {
-    console.log('Viewing document:', docId);
+async function viewDocument(docId, titleParam = '') {
+    console.log('Viewing document:', docId, titleParam);
     const baseUrl = window.location.origin;
-    const token = sessionStorage.getItem('kashtec_token') || sessionManager.getAuthToken();
+    const token = sessionStorage.getItem('kashtec_token') || (typeof sessionManager !== 'undefined' ? sessionManager.getAuthToken() : '');
 
     try {
         const response = await fetch(`${baseUrl}/api/documents/${docId}`, {
@@ -64315,7 +64331,7 @@ async function viewDocument(docId) {
             const doc = docData.data || docData;
             console.log('Document details retrieved:', doc);
 
-            const docTitle = doc.title || doc.work_title || 'Untitled Document';
+            const docTitle = doc.title || doc.work_title || titleParam || 'Untitled Document';
             const docType = doc.type || doc.work_type || 'PDF';
             const docDept = doc.department || doc.department_code || doc.category || 'Unknown';
             const docStatus = doc.status || 'Pending';
@@ -64375,7 +64391,7 @@ async function viewDocument(docId) {
                         </div>` : ''}
                     </div>
                     <div style="padding:16px 24px;background:#f8f9fa;border-top:1px solid #e9ecef;display:flex;gap:10px;justify-content:flex-end">
-                        <button onclick="downloadDocument(${docId}); this.closest('.modal-overlay').remove();" style="background:linear-gradient(135deg,#28a745,#20c997);color:#fff;border:none;padding:10px 20px;border-radius:8px;font-size:14px;font-weight:500;cursor:pointer;display:flex;align-items:center;gap:6px">📥 Download PDF</button>
+                        <button onclick="downloadDocument('${docId}'); this.closest('.modal-overlay').remove();" style="background:linear-gradient(135deg,#28a745,#20c997);color:#fff;border:none;padding:10px 20px;border-radius:8px;font-size:14px;font-weight:500;cursor:pointer;display:flex;align-items:center;gap:6px">📥 Download PDF</button>
                         <button onclick="this.closest('.modal-overlay').remove()" style="background:#6c757d;color:#fff;border:none;padding:10px 20px;border-radius:8px;font-size:14px;font-weight:500;cursor:pointer">Close</button>
                     </div>
                 </div>
@@ -64386,13 +64402,11 @@ async function viewDocument(docId) {
             });
             
             window.document.body.appendChild(modal);
-            
         } else {
             const errorData = await response.json().catch(() => ({}));
             console.error('Failed to load document:', errorData);
             showNotification(errorData.error || 'Failed to load document details', 'error');
         }
-        
     } catch (error) {
         console.error('Error viewing document:', error);
         showNotification('Error loading document. Please try again.', 'error');
@@ -68719,10 +68733,105 @@ function deleteMeeting(meetingId) {
 
 
 
-function viewPolicy(policyId) {
+async function viewPolicy(policyId, titleParam = '') {
+    console.log('Viewing policy:', policyId, titleParam);
+    const baseUrl = window.location.origin;
+    const token = sessionStorage.getItem('kashtec_token') || (typeof sessionManager !== 'undefined' ? sessionManager.getAuthToken() : '');
 
-    customAlert(`Viewing policy ${policyId}...nnFull policy document will be displayed with all sections and compliance information.`, "View Policy", "info");
+    try {
+        const response = await fetch(`${baseUrl}/api/policies/${policyId}`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                ...(token && { 'Authorization': `Bearer ${token}` })
+            }
+        });
 
+        if (response.ok) {
+            const policyData = await response.json();
+            const policy = policyData.data || policyData;
+            console.log('Policy details retrieved:', policy);
+
+            const docTitle = policy.title || policy.work_title || titleParam || 'Untitled Policy';
+            const docType = policy.type || policy.work_type || 'Policy';
+            const docDept = policy.department || policy.department_code || policy.category || 'Unknown';
+            const docStatus = policy.status || 'Active';
+            const docDate = policy.uploadedDate || policy.updatedAt || policy.submitted_date || policy.expiry_date || policy.created_at;
+            const docDescription = policy.description || policy.work_description || policy.content || 'No detailed content available.';
+            const docFileName = policy.fileName || policy.filename || policy.name || '';
+            const statusColor = docStatus.toLowerCase() === 'active' ? '#28a745' :
+                               docStatus.toLowerCase() === 'pending' ? '#ffc107' :
+                               docStatus.toLowerCase() === 'approved' ? '#28a745' :
+                               docStatus.toLowerCase() === 'rejected' ? '#dc3545' : '#6c757d';
+            
+            const modal = window.document.createElement('div');
+            modal.className = 'modal-overlay';
+            modal.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.6);display:flex;justify-content:center;align-items:center;z-index:10000;animation:fadeIn 0.3s ease';
+            modal.innerHTML = `
+                <div style="background:#fff;border-radius:12px;box-shadow:0 20px 60px rgba(0,0,0,0.3);width:520px;max-width:92%;max-height:85vh;overflow:hidden;animation:slideIn 0.3s ease">
+                    <div style="background:linear-gradient(135deg,#0b3d91 0%,#1e5bb8 100%);color:#fff;padding:20px 24px;display:flex;justify-content:space-between;align-items:center">
+                        <div style="display:flex;align-items:center;gap:12px">
+                            <div style="width:40px;height:40px;background:rgba(255,255,255,0.2);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px">📖</div>
+                            <div>
+                                <h3 style="margin:0;font-size:18px;font-weight:600">Policy Details</h3>
+                                <span style="font-size:12px;opacity:0.8">ID: ${policyId}</span>
+                            </div>
+                        </div>
+                        <button onclick="this.closest('.modal-overlay').remove()" style="background:rgba(255,255,255,0.2);border:none;color:#fff;width:32px;height:32px;border-radius:8px;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center">&times;</button>
+                    </div>
+                    <div style="padding:24px;overflow-y:auto;max-height:calc(85vh - 160px)">
+                        <h4 style="margin:0 0 16px;font-size:20px;color:#1a1a2e;font-weight:700">${docTitle}</h4>
+                        
+                        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px">
+                            <div style="background:#f8f9fa;border-radius:8px;padding:12px">
+                                <span style="font-size:11px;color:#6c757d;text-transform:uppercase;letter-spacing:0.5px;display:block;margin-bottom:4px">Category</span>
+                                <span style="font-size:14px;color:#1a1a2e;font-weight:500">${docType}</span>
+                            </div>
+                            <div style="background:#f8f9fa;border-radius:8px;padding:12px">
+                                <span style="font-size:11px;color:#6c757d;text-transform:uppercase;letter-spacing:0.5px;display:block;margin-bottom:4px">Department</span>
+                                <span style="font-size:14px;color:#1a1a2e;font-weight:500">${docDept}</span>
+                            </div>
+                            <div style="background:#f8f9fa;border-radius:8px;padding:12px">
+                                <span style="font-size:11px;color:#6c757d;text-transform:uppercase;letter-spacing:0.5px;display:block;margin-bottom:4px">Status</span>
+                                <span style="display:inline-block;padding:2px 10px;border-radius:12px;font-size:12px;font-weight:600;background:${statusColor}22;color:${statusColor}">${docStatus}</span>
+                            </div>
+                            <div style="background:#f8f9fa;border-radius:8px;padding:12px">
+                                <span style="font-size:11px;color:#6c757d;text-transform:uppercase;letter-spacing:0.5px;display:block;margin-bottom:4px">Last Updated</span>
+                                <span style="font-size:14px;color:#1a1a2e;font-weight:500">${docDate ? new Date(docDate).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }) : 'N/A'}</span>
+                            </div>
+                        </div>
+
+                        ${docFileName ? `<div style="background:#f8f9fa;border-radius:8px;padding:12px;margin-bottom:12px">
+                            <span style="font-size:11px;color:#6c757d;text-transform:uppercase;letter-spacing:0.5px;display:block;margin-bottom:4px">File Name</span>
+                            <span style="font-size:14px;color:#1a1a2e;font-weight:500">${docFileName}</span>
+                        </div>` : ''}
+
+                        ${docDescription ? `<div style="background:#f0f4ff;border-left:4px solid #0b3d91;border-radius:0 8px 8px 0;padding:14px 16px;margin-bottom:16px">
+                            <span style="font-size:11px;color:#6c757d;text-transform:uppercase;letter-spacing:0.5px;display:block;margin-bottom:6px">Policy Content / Description</span>
+                            <p style="margin:0;font-size:14px;color:#333;line-height:1.5;white-space:pre-wrap;">${docDescription}</p>
+                        </div>` : ''}
+                    </div>
+                    <div style="padding:16px 24px;background:#f8f9fa;border-top:1px solid #e9ecef;display:flex;gap:10px;justify-content:flex-end">
+                        <button onclick="downloadPolicy('${policyId}'); this.closest('.modal-overlay').remove();" style="background:linear-gradient(135deg,#28a745,#20c997);color:#fff;border:none;padding:10px 20px;border-radius:8px;font-size:14px;font-weight:500;cursor:pointer;display:flex;align-items:center;gap:6px">📥 Download</button>
+                        <button onclick="this.closest('.modal-overlay').remove()" style="background:#6c757d;color:#fff;border:none;padding:10px 20px;border-radius:8px;font-size:14px;font-weight:500;cursor:pointer">Close</button>
+                    </div>
+                </div>
+            `;
+            
+            modal.addEventListener('click', function(e) {
+                if (e.target === modal) modal.remove();
+            });
+            
+            window.document.body.appendChild(modal);
+        } else {
+            const errorData = await response.json().catch(() => ({}));
+            console.error('Failed to load policy:', errorData);
+            showNotification(errorData.error || 'Failed to load policy details', 'error');
+        }
+    } catch (error) {
+        console.error('Error viewing policy:', error);
+        showNotification('Error loading policy. Please try again.', 'error');
+    }
 }
 
 

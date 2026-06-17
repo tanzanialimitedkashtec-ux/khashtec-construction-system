@@ -55564,8 +55564,6 @@ async function viewProjectSafetyStatus(){
 
                 <button class="btn-primary" onclick="refreshSafetyData()">Refresh Data</button>
 
-                <button class="btn-secondary" onclick="exportSafetyReport()">Export Report</button>
-
             </div>
 
             
@@ -56466,12 +56464,6 @@ function updateSafetyTable(projects) {
                 <button class="action-btn" onclick="viewProjectSafetyDetails(${project.id})" title="View Details">
 
                     👁️
-
-                </button>
-
-                <button class="action-btn" onclick="generateSafetyReport(${project.id})" title="Generate Report">
-
-                    📊
 
                 </button>
 
@@ -75801,12 +75793,7 @@ function displaySiteReports(reports, _retry) {
 
                     <div class="report-actions">
 
-                        <button class="action-btn view" onclick="viewSiteReport('${report.id}')" title="View Details">👁️</button>
-
-                        <button class="action-btn edit" onclick="editSiteReport('${report.id}')" title="Edit Report">✏️</button>
-
-                        <button class="action-btn download" onclick="downloadSiteReport('${report.id}')" title="Download PDF">📥</button>
-
+                        <button class="action-btn delete" onclick="deleteSiteReport('${report.id}')" title="Delete Report" style="background:#dc3545;color:white;border:none;border-radius:4px;padding:6px 10px;cursor:pointer;">🗑️ Delete</button>
                     </div>
 
                 </td>
@@ -75827,26 +75814,38 @@ function displaySiteReports(reports, _retry) {
 
 // Site report action functions
 
-function viewSiteReport(reportId) {
+async function deleteSiteReport(reportId) {
+    // Show confirmation dialog
+    const confirmed = confirm(`Are you sure you want to delete site report #${reportId}?\n\nThis action cannot be undone.`);
+    if (!confirmed) return;
 
-    customAlert(`Viewing site report details for ID: ${reportId}\n\nFull site report information including project details, weather conditions, work completed, safety incidents, materials used, equipment deployed, issues encountered, and next day's plan will be displayed.`, "Site Report Details", "info");
+    const baseUrl = window.location.origin;
+    const token = sessionStorage.getItem('kashtec_token') || (typeof sessionManager !== 'undefined' && sessionManager.getAuthToken ? sessionManager.getAuthToken() : '');
 
-}
+    try {
+        const response = await fetch(`${baseUrl}/api/work/site-reports/${reportId}`, {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json',
+                ...(token && { 'Authorization': `Bearer ${token}` })
+            }
+        });
 
+        const data = await response.json();
 
-
-function editSiteReport(reportId) {
-
-    customAlert(`Editing site report ${reportId}...\n\nSite report editor will open for modifications to work completed, safety incidents, materials used, equipment deployed, and next day's plan.`, "Edit Site Report", "info");
-
-}
-
-
-
-function downloadSiteReport(reportId) {
-
-    customAlert(`Downloading site report ${reportId} as PDF...\n\nSite report will be generated and downloaded as a PDF document with all project details, work progress, safety information, and daily activities.`, "Download Site Report", "info");
-
+        if (response.ok && data.success) {
+            customAlert(`Site report #${reportId} has been deleted successfully.`, "Deleted", "success");
+            // Refresh the site reports table
+            if (typeof loadSiteReports === 'function') {
+                loadSiteReports();
+            }
+        } else {
+            customAlert(data.error || `Failed to delete site report #${reportId}.`, "Error", "error");
+        }
+    } catch (error) {
+        console.error('Error deleting site report:', error);
+        customAlert(`Error deleting site report: ${error.message}`, "Error", "error");
+    }
 }
 
 
