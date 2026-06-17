@@ -72586,13 +72586,7 @@ function displayProjects(projects) {
 
 // Project action functions
 
-function viewProject(projectId) {
-
-    customAlert(`Viewing project details for ID: ${projectId}\n\nFull project information including scope, timeline, budget, team members, milestones, deliverables, risks, and current progress status will be displayed.`, "Project Details", "info");
-
-}
-
-
+// View project details is implemented in the external department.js file.
 
 function editProject(projectId) {
 
@@ -104850,6 +104844,7 @@ if (!document.getElementById('transport-cost-styles')) {
 
 <script src="js/script.js"></script>
 
+<script src="department.js"></script>
 <script src="js/department.js"></script>
 <script src="js/financial-strategies.js"></script>
 <!-- Removed missing work-approval-functions.js include (caused 404 + syntax errors) -->
