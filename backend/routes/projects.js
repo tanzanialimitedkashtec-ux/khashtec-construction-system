@@ -34,6 +34,7 @@ router.get('/', async (req, res) => {
                     end_date DATE NULL,
                     status ENUM('Planning', 'In Progress', 'Completed', 'On Hold', 'Cancelled') DEFAULT 'Planning',
                     contract_value DECIMAL(15,2) NULL,
+                    key_deliverables TEXT NULL,
                     priority_level ENUM('Low', 'Medium', 'High', 'Critical') DEFAULT 'Medium',
                     project_manager VARCHAR(255) NULL,
                     client_name VARCHAR(255) NULL,
@@ -54,7 +55,7 @@ router.get('/', async (req, res) => {
         
         const { status, manager, search } = req.query;
         
-        let query = `SELECT id, name, description, location, start_date, end_date, status, contract_value as budget, priority_level, project_manager as manager_id, client_name as client_id, project_code, project_type, created_at, updated_at FROM projects WHERE 1=1`;
+        let query = `SELECT id, name, description, location, start_date, end_date, status, contract_value as budget, key_deliverables, priority_level, project_manager as manager_id, client_name as client_id, project_code, project_type, created_at, updated_at FROM projects WHERE 1=1`;
         const params = [];
         
         if (status) {
@@ -275,9 +276,9 @@ router.post('/', async (req, res) => {
             INSERT INTO projects (
                 name, description, location, 
                 start_date, end_date, status, contract_value, 
-                project_manager, client_name, project_code, project_type, 
+                key_deliverables, project_manager, client_name, project_code, project_type, 
                 priority_level, created_at, updated_at
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())
         `, [
             name, 
             description || '', 
@@ -286,6 +287,7 @@ router.post('/', async (req, res) => {
             endDate, 
             'Planning', 
             parseFloat(budget), 
+            keyDeliverables || '',
             manager,
             client,
             code || null,
