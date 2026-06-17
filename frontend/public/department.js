@@ -29625,7 +29625,7 @@ async function loadViolations() {
 
                         violators: violatorsParsed,
 
-                        location: item.location || 'HSE Office',
+                        location: item.location || '',
 
                         actionTaken: actionTakenParsed,
 
