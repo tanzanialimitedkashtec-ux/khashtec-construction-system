@@ -27988,8 +27988,11 @@ async function loadDriverRecords() {
         console.log('📡 [DEBUG] Fetching drivers from API...');
         var controller = new AbortController();
         var timeoutId = setTimeout(function() { controller.abort(); }, 15000);
-        var apiUrl = (window.KashTecAPI ? window.KashTecAPI.baseUrl : window.location.origin) + '/api/drivers';
-        console.log('📡 [DEBUG] Fetching URL:', apiUrl);
+        var base = (window.KashTecAPI && window.KashTecAPI.baseUrl) ? window.KashTecAPI.baseUrl : window.location.origin;
+        // Normalize base: remove trailing /api if present to avoid duplicate /api segments
+        base = String(base).replace(/\/api\/?$/i, '');
+        var apiUrl = base + '/api/drivers';
+        console.log('📡 [DEBUG] Fetching URL:', apiUrl, '(normalized base:', base + ')');
 
         var fetchResponse = await fetch(apiUrl, {
             method: 'GET',
