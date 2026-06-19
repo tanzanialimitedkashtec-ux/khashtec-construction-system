@@ -79572,15 +79572,15 @@ async function editPropertyDetails(){
 
     const tableRows = mapped.length ? mapped.map(p => `
         <tr>
-            <td>${p.id}</td>
             <td>${p.plotNumber}</td>
             <td style="text-transform:capitalize;">${p.type}</td>
             <td>${p.location}</td>
             <td>${Number(p.area).toLocaleString()} sqm</td>
             <td>TZS ${Number(p.price).toLocaleString()}</td>
             <td><span class="status-badge status-${p.status}">${p.status}</span></td>
+            <td>Docs Available</td>
             <td>${p.tpNumber || '-'}</td>
-            <td>${p.createdAt ? new Date(p.createdAt).toLocaleDateString() : '-'}</td>
+            <td>${p.description ? p.description.substring(0, 30) + '...' : '-'}</td>
             <td><button type="button" class="action" onclick="document.getElementById('editPropertySelect').value='${p.id}';loadPropertyDetails();window.scrollTo({top:document.getElementById('propertyEditForm').offsetTop-20,behavior:'smooth'});">✏️ Edit</button></td>
         </tr>
     `).join('') : `<tr><td colspan="10" style="text-align:center;color:#666;padding:15px;">No properties found in database</td></tr>`;
@@ -79594,7 +79594,29 @@ async function editPropertyDetails(){
 
         
 
-        <div class="property-selection">
+        <div class="task-table-container" style="margin-bottom: 20px;">
+            <table class="task-table">
+                <thead>
+                    <tr>
+                        <th>Plot Number</th>
+                        <th>Property Type</th>
+                        <th>Location</th>
+                        <th>Area (sqm)</th>
+                        <th>Price (TZS)</th>
+                        <th>Status</th>
+                        <th>Survey Plans</th>
+                        <th>Title Deed/TP Number</th>
+                        <th>Property Description</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${tableRows}
+                </tbody>
+            </table>
+        </div>
+
+        <div class="property-selection" style="display: none;">
 
             <div class="form-group">
 
@@ -79615,8 +79637,6 @@ async function editPropertyDetails(){
             </div>
 
         </div>
-
-        
 
         <div id="propertyEditForm" class="hidden">
 
