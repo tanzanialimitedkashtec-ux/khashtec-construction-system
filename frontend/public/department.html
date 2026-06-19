@@ -104467,7 +104467,7 @@ function deleteTransportCost(costId) {
 
     if (confirm(`Are you sure you want to delete this transport cost?\n\n${cost.description}\nAmount: ${formatCurrency(cost.amount)}`)) {
 
-        fetch(`/api/transportCosts/${costId}`, {
+        fetch(`/api/transport-costs/${costId}`, {
 
             method: 'DELETE',
 
