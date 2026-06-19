@@ -55473,61 +55473,61 @@ async function viewHseInspectionReport(reportId) {
         ).join('');
 
         loadingModal.innerHTML = `
-        <div style="background:#1e2535;border-radius:16px;max-width:760px;width:95%;max-height:88vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,0.5);color:#e0e6f0;font-family:'Segoe UI',sans-serif;">
+        <div style="background:#1e2535;border-radius:2px;max-width:520px;width:95%;max-height:88vh;overflow-y:auto;box-shadow:0 12px 30px rgba(0,0,0,0.4);color:#e0e6f0;font-family:'Segoe UI',sans-serif;font-size:12px;">
             <!-- Header -->
-            <div style="background:linear-gradient(135deg,#1a3a5c,#0d6efd);padding:24px 28px;border-radius:16px 16px 0 0;display:flex;justify-content:space-between;align-items:center;">
+            <div style="background:linear-gradient(135deg,#1f3b82,#2a99e3);padding:14px 16px;border-radius:2px 2px 0 0;display:flex;justify-content:space-between;align-items:center;">
                 <div>
-                    <div style="font-size:11px;text-transform:uppercase;letter-spacing:1px;color:rgba(255,255,255,0.7);">Inspection Report</div>
-                    <div style="font-size:22px;font-weight:700;color:#fff;">Report #${reportId}</div>
-                    <div style="font-size:13px;color:rgba(255,255,255,0.8);margin-top:2px;">${p.date || record.submitted_date || ''}</div>
+                    <div style="font-size:10px;text-transform:uppercase;letter-spacing:1px;color:rgba(255,255,255,0.85);">Inspection Report</div>
+                    <div style="font-size:14px;font-weight:700;color:#fff;">Report #${reportId}</div>
+                    <div style="font-size:11px;color:rgba(255,255,255,0.8);margin-top:2px;">${p.date || record.submitted_date || ''}</div>
                 </div>
-                <button onclick="document.getElementById('inspectionViewModal').remove()" style="background:rgba(255,255,255,0.2);border:none;color:#fff;font-size:20px;width:36px;height:36px;border-radius:50%;cursor:pointer;line-height:36px;text-align:center;">✕</button>
+                <button onclick="document.getElementById('inspectionViewModal').remove()" style="background:rgba(255,255,255,0.15);border:none;color:#fff;font-size:14px;width:28px;height:28px;border-radius:50%;cursor:pointer;line-height:28px;text-align:center;">✕</button>
             </div>
 
             <!-- Badges Row -->
-            <div style="display:flex;gap:12px;padding:16px 28px;border-bottom:1px solid rgba(255,255,255,0.08);flex-wrap:wrap;">
-                <span style="background:${compBadge.color};color:#fff;border-radius:20px;padding:5px 14px;font-size:13px;font-weight:600;">${compBadge.label}</span>
-                <span style="background:${riskBadge.color};color:#fff;border-radius:20px;padding:5px 14px;font-size:13px;font-weight:600;">${riskBadge.label}</span>
-                <span style="background:#17a2b8;color:#fff;border-radius:20px;padding:5px 14px;font-size:13px;">${(p.type || record.work_title || 'Inspection').replace('Inspection Report - ','')}</span>
+            <div style="display:flex;gap:10px;padding:12px 16px;border-bottom:1px solid rgba(255,255,255,0.08);flex-wrap:wrap;">
+                <span style="background:${compBadge.color};color:#fff;border-radius:12px;padding:4px 10px;font-size:11px;font-weight:600;">${compBadge.label}</span>
+                <span style="background:${riskBadge.color};color:#fff;border-radius:12px;padding:4px 10px;font-size:11px;font-weight:600;">${riskBadge.label}</span>
+                <span style="background:#17a2b8;color:#fff;border-radius:12px;padding:4px 10px;font-size:11px;">${(p.type || record.work_title || 'Inspection').replace('Inspection Report - ','')}</span>
             </div>
 
             <!-- Body -->
-            <div style="padding:24px 28px;display:grid;grid-template-columns:1fr 1fr;gap:18px;">
-                <div style="background:rgba(255,255,255,0.05);border-radius:10px;padding:16px;">
-                    <div style="font-size:11px;color:#8a9dc0;text-transform:uppercase;margin-bottom:6px;">Project</div>
-                    <div style="font-size:15px;font-weight:600;">${p.project || 'N/A'}</div>
+            <div style="padding:16px 16px 12px;display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+                <div style="background:rgba(255,255,255,0.05);border-radius:2px;padding:10px;">
+                    <div style="font-size:10px;color:#8a9dc0;text-transform:uppercase;margin-bottom:4px;">Project</div>
+                    <div style="font-size:13px;font-weight:600;">${p.project || 'N/A'}</div>
                 </div>
-                <div style="background:rgba(255,255,255,0.05);border-radius:10px;padding:16px;">
-                    <div style="font-size:11px;color:#8a9dc0;text-transform:uppercase;margin-bottom:6px;">Inspector</div>
-                    <div style="font-size:15px;font-weight:600;">${p.inspector || record.submitted_by || 'N/A'}</div>
+                <div style="background:rgba(255,255,255,0.05);border-radius:2px;padding:10px;">
+                    <div style="font-size:10px;color:#8a9dc0;text-transform:uppercase;margin-bottom:4px;">Inspector</div>
+                    <div style="font-size:13px;font-weight:600;">${p.inspector || record.submitted_by || 'N/A'}</div>
                 </div>
-                <div style="background:rgba(255,255,255,0.05);border-radius:10px;padding:16px;">
-                    <div style="font-size:11px;color:#8a9dc0;text-transform:uppercase;margin-bottom:6px;">Follow-up Date</div>
-                    <div style="font-size:15px;font-weight:600;">${p.followUp || '—'}</div>
+                <div style="background:rgba(255,255,255,0.05);border-radius:2px;padding:10px;">
+                    <div style="font-size:10px;color:#8a9dc0;text-transform:uppercase;margin-bottom:4px;">Follow-up Date</div>
+                    <div style="font-size:13px;font-weight:600;">${p.followUp || '—'}</div>
                 </div>
-                <div style="background:rgba(255,255,255,0.05);border-radius:10px;padding:16px;">
-                    <div style="font-size:11px;color:#8a9dc0;text-transform:uppercase;margin-bottom:6px;">Next Inspection</div>
-                    <div style="font-size:15px;font-weight:600;">${p.nextInspection || '—'}</div>
+                <div style="background:rgba(255,255,255,0.05);border-radius:2px;padding:10px;">
+                    <div style="font-size:10px;color:#8a9dc0;text-transform:uppercase;margin-bottom:4px;">Next Inspection</div>
+                    <div style="font-size:13px;font-weight:600;">${p.nextInspection || '—'}</div>
                 </div>
             </div>
 
-            ${areas ? `<div style="padding:0 28px 18px;">
-                <div style="font-size:11px;color:#8a9dc0;text-transform:uppercase;margin-bottom:8px;">Areas Inspected</div>
+            ${areas ? `<div style="padding:0 16px 12px;">
+                <div style="font-size:10px;color:#8a9dc0;text-transform:uppercase;margin-bottom:6px;">Areas Inspected</div>
                 <div>${areas}</div>
             </div>` : ''}
 
-            <div style="padding:0 28px 18px;">
-                <div style="font-size:11px;color:#8a9dc0;text-transform:uppercase;margin-bottom:8px;">Findings</div>
-                <div style="background:rgba(255,255,255,0.05);border-radius:10px;padding:14px;font-size:14px;line-height:1.6;white-space:pre-wrap;">${p.findings || 'No findings recorded'}</div>
+            <div style="padding:0 16px 12px;">
+                <div style="font-size:10px;color:#8a9dc0;text-transform:uppercase;margin-bottom:6px;">Findings</div>
+                <div style="background:rgba(255,255,255,0.05);border-radius:2px;padding:10px;font-size:12px;line-height:1.5;white-space:pre-wrap;">${p.findings || 'No findings recorded'}</div>
             </div>
 
-            <div style="padding:0 28px 24px;">
-                <div style="font-size:11px;color:#8a9dc0;text-transform:uppercase;margin-bottom:8px;">Recommendations</div>
-                <div style="background:rgba(255,255,255,0.05);border-radius:10px;padding:14px;font-size:14px;line-height:1.6;white-space:pre-wrap;">${p.recommendations || 'No recommendations recorded'}</div>
+            <div style="padding:0 16px 16px;">
+                <div style="font-size:10px;color:#8a9dc0;text-transform:uppercase;margin-bottom:6px;">Recommendations</div>
+                <div style="background:rgba(255,255,255,0.05);border-radius:2px;padding:10px;font-size:12px;line-height:1.5;white-space:pre-wrap;">${p.recommendations || 'No recommendations recorded'}</div>
             </div>
 
-            <div style="padding:12px 28px 20px;border-top:1px solid rgba(255,255,255,0.08);display:flex;justify-content:flex-end;">
-                <button onclick="document.getElementById('inspectionViewModal').remove()" style="background:#0d6efd;color:#fff;border:none;border-radius:8px;padding:10px 24px;font-size:14px;font-weight:600;cursor:pointer;">Close</button>
+            <div style="padding:10px 16px 16px;border-top:1px solid rgba(255,255,255,0.08);display:flex;justify-content:flex-end;">
+                <button onclick="document.getElementById('inspectionViewModal').remove()" style="background:#0d6efd;color:#fff;border:none;border-radius:4px;padding:8px 16px;font-size:12px;font-weight:600;cursor:pointer;">Close</button>
             </div>
         </div>`;
 
