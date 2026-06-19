@@ -45285,6 +45285,9 @@ function downloadIncidentReport(incidentId) {
 
 
 
+// Global state for PPE records
+let allPpeRecords = [];
+
 // Load PPE records for table display
 
 async function loadPpeRecords() {
@@ -45341,6 +45344,7 @@ async function loadPpeRecords() {
             ppeRecords = ppeData.ppe;
         }
 
+        allPpeRecords = Array.isArray(ppeRecords) ? ppeRecords : [];
         displayPpeRecords(ppeRecords);
         loadPpeStats();
 
@@ -45527,6 +45531,17 @@ function displayPpeRecords(ppeRecords) {
 
     ppeList.innerHTML = ppeHTML;
 
+    // Populate project filter with unique projects
+    const projectFilter = document.getElementById('ppeProjectFilter');
+    if (projectFilter) {
+        const currentValue = projectFilter.value;
+        const uniqueProjects = [...new Set(ppeRecords.map(ppe => ppe.project || ppe.project_name || '-').filter(p => p !== '-'))];
+        const options = [{ value: '', label: 'All Projects' }, ...uniqueProjects.map(p => ({ value: p, label: p }))];
+        
+        projectFilter.innerHTML = options.map(opt => `<option value="${opt.value}">${opt.label}</option>`).join('');
+        projectFilter.value = currentValue || '';
+    }
+
 }
 
 
@@ -45580,45 +45595,45 @@ async function loadPpeProjects() {
 
 function filterPpeRecords() {
 
-    const searchInput = document.getElementById('ppeSearchInput');
+    const searchTerm = (document.getElementById('ppeSearchInput')?.value || '').toLowerCase().trim();
 
-    const projectFilter = document.getElementById('ppeProjectFilter');
-
-    
-
-    if (!searchInput || !projectFilter) return;
+    const selectedProject = document.getElementById('ppeProjectFilter')?.value || '';
 
     
 
-    const searchTerm = searchInput.value.toLowerCase();
+    if (!searchTerm && !selectedProject) {
 
-    const selectedProject = projectFilter.value;
+        displayPpeRecords(allPpeRecords);
+
+        return;
+
+    }
 
     
 
-    const rows = document.querySelectorAll('.ppe-row');
+    const filteredRecords = allPpeRecords.filter(ppe => {
 
-    
+        const workerName = (ppe.worker_name || '').toLowerCase();
 
-    rows.forEach(row => {
+        const workerId = (ppe.worker_id || '').toLowerCase();
 
-        const workerName = row.querySelector('.worker-name')?.textContent.toLowerCase() || '';
-
-        const workerId = row.querySelector('.worker-id')?.textContent.toLowerCase() || '';
-
-        const project = row.querySelector('.project-name')?.textContent || '';
+        const project = ppe.project || ppe.project_name || '';
 
         
 
-        const matchesSearch = workerName.includes(searchTerm) || workerId.includes(searchTerm);
+        const matchesSearch = !searchTerm || workerName.includes(searchTerm) || workerId.includes(searchTerm);
 
         const matchesProject = !selectedProject || project === selectedProject;
 
         
 
-        row.style.display = matchesSearch && matchesProject ? '' : 'none';
+        return matchesSearch && matchesProject;
 
     });
+
+    
+
+    displayPpeRecords(filteredRecords);
 
 }
 
