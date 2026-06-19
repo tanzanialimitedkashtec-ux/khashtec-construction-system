@@ -93108,8 +93108,6 @@ function renderOfficePortal(officePortalUsers, clients, portalDrivers, documents
 
                 <button class="action-btn primary" onclick="viewDocument('${doc.id}', '${doc.title}')">📖 View Document</button>
 
-                <button class="action-btn secondary" onclick="downloadDocument('${doc.id}', '${doc.title}')">💾 Download</button>
-
             </div>
 
         </div>
@@ -93145,8 +93143,6 @@ function renderOfficePortal(officePortalUsers, clients, portalDrivers, documents
             <div class="policy-actions">
 
                 <button class="action-btn primary" onclick="viewPolicy('${policy.id}', '${policy.title}')">📖 View Policy</button>
-
-                <button class="action-btn secondary" onclick="downloadPolicy('${policy.id}', '${policy.title}')">💾 Download PDF</button>
 
                 ${policy.status === 'Draft' ? `<button class="action-btn success" onclick="approvePolicy('${policy.id}', '${policy.title}')">✅ Approve</button>` : ''}
 
