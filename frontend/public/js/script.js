@@ -2295,7 +2295,7 @@ function displayPolicies(policies) {
                 html += `
                         <div class="policy-item" data-policy-id="${policy.id}">
                                 <h5>${policy.title}</h5>
-                                <p>${policy.description}</p>
+                                <p>${(policy.description || '').replace(/^([^:\n]+):/gm, '<strong>$1:</strong>').replace(/\n/g, '<br>')}</p>
                                 <div class="policy-details">
                                         <span><strong>Submitted by:</strong> ${policy.submitted_by}</span>
                                         <span><strong>Date:</strong> ${policy.submission_date}</span>

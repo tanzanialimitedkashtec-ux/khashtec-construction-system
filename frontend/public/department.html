@@ -26808,7 +26808,7 @@ function displayFilteredPolicies(policies) {
 
             <h5>${policy.title}</h5>
 
-            <p>${policy.description}</p>
+            <p>${(policy.description || '').replace(/^([^:\n]+):/gm, '<strong>$1:</strong>').replace(/\n/g, '<br>')}</p>
 
             <div class="policy-details">
 

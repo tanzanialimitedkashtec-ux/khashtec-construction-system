@@ -1,4 +1,4 @@
-﻿// Disabled: Allow localhost development
+// Disabled: Allow localhost development
 
         // const PRODUCTION_FRONTEND_URL = 'https://khashtec-construction-system-production-e7b5.up.railway.app/frontend/public/department.html';
 
@@ -2776,7 +2776,7 @@ function displayFilteredPolicies(policies) {
 
             <h5>${policy.title}</h5>
 
-            <p>${policy.description}</p>
+            <p>${(policy.description || '').replace(/^([^:\n]+):/gm, '<strong>$1:</strong>').replace(/\n/g, '<br>')}</p>
 
             <div class="policy-details">
 
