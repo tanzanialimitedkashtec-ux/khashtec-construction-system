@@ -21731,6 +21731,27 @@ function displayPpeRecords(ppeRecords) {
 
     ppeList.innerHTML = ppeHTML;
 
+    // Dynamically populate the project filter dropdown
+    const projectFilter = document.getElementById('ppeProjectFilter');
+    if (projectFilter) {
+        const currentSelected = projectFilter.value;
+        projectFilter.innerHTML = '<option value="">All Projects</option>';
+        const uniqueProjects = new Set();
+        ppeRecords.forEach(record => {
+            const p = (record.project || '-').trim();
+            if (p && p !== '-') uniqueProjects.add(p);
+        });
+        Array.from(uniqueProjects).sort().forEach(project => {
+            const option = document.createElement('option');
+            option.value = project;
+            option.textContent = project;
+            projectFilter.appendChild(option);
+        });
+        projectFilter.value = currentSelected;
+        
+        // Re-apply filter if needed
+        if (typeof filterPpeRecords === 'function') filterPpeRecords();
+    }
 }
 
 
@@ -21862,38 +21883,8 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 async function loadPpeProjects() {
-    try {
-        const baseUrl = window.location.origin;
-        const response = await fetch(`${baseUrl}/api/work/hse/ppe/projects`, {
-            headers: { 'Authorization': `Bearer ${sessionManager.getAuthToken()}` }
-        });
-        const data = await response.json();
-        
-        if (data.data && Array.isArray(data.data)) {
-            const projectFilter = document.getElementById('ppeProjectFilter');
-            if (!projectFilter) {
-                console.warn('❌ ppeProjectFilter element not found');
-                return;
-            }
-            
-            console.log('📦 Projects from API:', data.data.map(p => p.name));
-            
-            // Keep "All Projects" option, add project options
-            data.data.forEach(project => {
-                const option = document.createElement('option');
-                option.value = project.name;
-                option.textContent = project.name;
-                projectFilter.appendChild(option);
-            });
-            
-            console.log(`✅ Loaded ${data.data.length} projects into PPE filter`);
-            console.log('Dropdown options:', Array.from(projectFilter.options).map(o => o.value));
-        } else {
-            console.warn('❌ No projects found or API response format unexpected', data);
-        }
-    } catch (error) {
-        console.error('❌ Error loading projects for PPE filter:', error);
-    }
+    // Intentionally left empty.
+    // Projects are now dynamically loaded from the PPE records in displayPpeRecords()
 }
 
 
