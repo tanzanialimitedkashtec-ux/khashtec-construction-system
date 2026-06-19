@@ -21791,7 +21791,7 @@ function filterPpeRecords() {
 
         const workerId = (row.querySelector('.worker-id')?.textContent || '').toLowerCase().trim();
 
-        const project = (row.querySelector('.project-name')?.textContent || '').trim();
+        const project = (row.dataset.project || row.querySelector('.project-name')?.textContent || '').trim();
         const projectLower = project.toLowerCase();
 
         
