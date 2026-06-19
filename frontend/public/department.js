@@ -35116,9 +35116,7 @@ function displayPolicyRecords(records, policyStatuses) {
 
 // Policy action functions
 
-function viewPolicy(recordId) {
-
-    const baseUrl = window.location.origin;
+function viewPolicyHSE_v1(recordId) {
 
     fetch(`${baseUrl}/api/hse/hse/${recordId}`, {
 
@@ -35165,8 +35163,7 @@ function viewPolicy(recordId) {
 }
 
 
-
-function downloadPolicy(recordId) {
+function downloadPolicyHSE_v1(recordId) {
 
     const baseUrl = window.location.origin;
 
@@ -35996,7 +35993,7 @@ function getPpeItems() {
 
 // Additional HSE helper functions
 
-function viewPolicy(policyId) {
+function viewPolicyHSE_v2(policyId) {
 
     console.log('ðŸ” Viewing policy:', policyId);
 
@@ -36252,7 +36249,7 @@ function showPolicyModal(policy) {
 
 
 
-function downloadPolicy(policyId) {
+function downloadPolicyStub_v2(policyId) {
 
     customAlert(`Downloading safety policy ${policyId}...nnPolicy document will be downloaded as PDF file.`, "Download Policy", "info");
 
@@ -65773,7 +65770,7 @@ function renderOfficePortal(officePortalUsers, clients, documents, policies, con
 
             <div class="policy-actions">
 
-                <button class="action-btn primary" onclick="viewPolicy('${policy.id}', '${policy.title}')">ðŸ“– View Policy</button>
+                <button class="action-btn primary" onclick='viewPolicy(${JSON.stringify(policy.id)}, ${JSON.stringify(policy.title)})'>ðŸ“– View Policy</button>
 
                 <button class="action-btn secondary" onclick="downloadPolicy('${policy.id}', '${policy.title}')">ðŸ’¾ Download PDF</button>
 
@@ -66743,7 +66740,7 @@ function viewPersonnelPolicies(personId, name) {
 
                         <div class="policy-actions">
 
-                            <button class="action-btn primary" onclick="viewPolicy('${policy.id}', '${policy.title}')">ðŸ“– View Policy</button>
+                            <button class="action-btn primary" onclick='viewPolicy(${JSON.stringify(policy.id)}, ${JSON.stringify(policy.title)})'>ðŸ“– View Policy</button>
 
                             <button class="action-btn secondary" onclick="downloadPolicy('${policy.id}', '${policy.title}')">ðŸ’¾ Download PDF</button>
 
@@ -66849,23 +66846,7 @@ function viewPersonnelContracts(personId, name) {
 
 
 
-function viewPolicy(policyId, title) {
-
-    showNotification('Policy Viewed', `Viewing policy: ${title}`, 'info');
-
-    customAlert(`Policy Viewer`, `Viewing policy: ${title}nnPolicy ID: ${policyId}nnThis would display the full policy document with all sections and compliance information.`, 'info', 6000);
-
-}
-
-
-
-function downloadPolicy(policyId, title) {
-
-    showNotification('Policy Downloaded', `Downloading policy: ${title}`, 'success');
-
-    customAlert(`Download Complete`, `Policy downloaded: ${title}nnPolicy ID: ${policyId}nnPDF file has been downloaded to your device.`, 'success', 3000);
-
-}
+// Old stub functions removed - see full implementations below
 
 
 
@@ -69025,8 +69006,77 @@ async function viewPolicy(policyId, titleParam = '') {
 
 
 function downloadPolicy(policyId) {
+    const baseUrl = window.location.origin;
+    const token = sessionStorage.getItem('kashtec_token') || (typeof sessionManager !== 'undefined' ? sessionManager.getAuthToken() : '');
 
-    customAlert(`Downloading policy ${policyId}...nnPolicy document will be downloaded as PDF file.`, "Download Policy", "info");
+    try {
+        fetch(`${baseUrl}/api/policies/${policyId}`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                ...(token && { 'Authorization': `Bearer ${token}` })
+            }
+        })
+        .then(response => {
+            if (!response.ok) throw new Error('Failed to fetch policy');
+            return response.json();
+        })
+        .then(policyData => {
+            const policy = policyData.data || policyData;
+            
+            // Create document content
+            const docTitle = policy.title || policy.work_title || 'Untitled Policy';
+            const docType = policy.type || policy.work_type || 'Policy';
+            const docDept = policy.department || policy.department_code || policy.category || 'Unknown';
+            const docStatus = policy.status || 'Active';
+            const docDate = policy.uploadedDate || policy.updatedAt || policy.submitted_date || policy.created_at;
+            const docDescription = policy.description || policy.work_description || policy.content || 'No content available';
+            const docSubmittedBy = policy.submitted_by || 'Unknown';
+            const docApprovedBy = policy.approved_by || 'Not yet approved';
+            
+            const content = `
+POLICY DOCUMENT
+===============================
+
+Policy ID: ${policyId}
+Title: ${docTitle}
+Category: ${docType}
+Department: ${docDept}
+Status: ${docStatus}
+
+Submission Date: ${docDate ? new Date(docDate).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) : 'N/A'}
+Submitted By: ${docSubmittedBy}
+Approved By: ${docApprovedBy}
+
+CONTENT:
+-------------------------------
+${docDescription}
+-------------------------------
+
+Generated on: ${new Date().toLocaleString('en-US')}
+            `.trim();
+
+            // Create blob and download
+            const blob = new Blob([content], { type: 'text/plain' });
+            const url = window.URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `Policy_${policyId}_${new Date().getTime()}.txt`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            window.URL.revokeObjectURL(url);
+            
+            console.log('✅ Policy downloaded successfully');
+        })
+        .catch(error => {
+            console.error('Error downloading policy:', error);
+            showNotification('Failed to download policy', 'error');
+        });
+    } catch (error) {
+        console.error('Download error:', error);
+        showNotification('Error initiating download', 'error');
+    }
 
 }
 

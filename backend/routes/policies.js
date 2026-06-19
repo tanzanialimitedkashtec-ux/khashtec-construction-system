@@ -424,11 +424,10 @@ router.get('/:id', async (req, res) => {
         
         try {
             const db = require('../../database/config/database');
-            const policyResult = await db.execute('SELECT * FROM policies WHERE id = ?', [policyId]);
-            const policies = Array.isArray(policyResult) ? policyResult[0] : policyResult;
+            const rows = await db.execute('SELECT * FROM policies WHERE id = ?', [policyId]);
             
-            if (policies.length > 0) {
-                policy = policies[0];
+            if (Array.isArray(rows) && rows.length > 0) {
+                policy = rows[0];
                 console.log('✅ Policy found:', policy);
             }
         } catch (dbError) {
@@ -461,7 +460,7 @@ router.get('/:id', async (req, res) => {
         
         res.json({
             success: true,
-            policy: policy
+            data: policy
         });
         
     } catch (error) {
