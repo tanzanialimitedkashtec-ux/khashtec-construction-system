@@ -79640,7 +79640,7 @@ async function editPropertyDetails(){
 
         <div id="propertyEditForm" class="hidden">
 
-            <form id="editPropertyForm" onsubmit="return savePropertyEdits()">
+            <form id="editPropertyForm" onsubmit="event.preventDefault(); savePropertyEdits(event);">
 
                 <div class="form-row">
 
