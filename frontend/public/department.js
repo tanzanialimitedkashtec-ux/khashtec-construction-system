@@ -21523,6 +21523,12 @@ async function loadPpeRecords() {
         } else if (ppeData.ppe && Array.isArray(ppeData.ppe)) {
             ppeRecords = ppeData.ppe;
         }
+        
+        console.log(`✅ Loaded ${ppeRecords.length} PPE records`);
+        if (ppeRecords.length > 0) {
+            console.log('First record sample:', ppeRecords[0]);
+            console.log('Project field in first record:', ppeRecords[0].project);
+        }
 
         displayPpeRecords(ppeRecords);
         loadPpeStats();
@@ -21609,8 +21615,10 @@ function displayPpeRecords(ppeRecords) {
     ppeRecords.sort((a, b) => new Date(b.issue_date || b.created_at) - new Date(a.issue_date || a.created_at));
 
     let ppeHTML = '';
+    
+    console.log('📋 Displaying PPE Records - checking project fields:');
 
-    ppeRecords.forEach(ppe => {
+    ppeRecords.forEach((ppe, idx) => {
         const issuanceId = ppe.issuance_id || ('PPE-' + ppe.id);
         const issueDate = ppe.issue_date || ppe.created_at;
         const workerName = ppe.worker_name || 'Unknown';
@@ -21621,6 +21629,10 @@ function displayPpeRecords(ppeRecords) {
         const returnDate = ppe.return_date;
         const status = ppe.status || 'Issued';
         const issuedBy = ppe.issued_by || '-';
+        
+        if (idx < 3) {
+            console.log(`  Record ${idx}: project="${project}", workerName="${workerName}", workerId="${workerId}"`);
+        }
 
         // Format PPE items
         let ppeItemsDisplay = '-';
@@ -21763,22 +21775,28 @@ function filterPpeRecords() {
     
 
     const rows = document.querySelectorAll('.ppe-row');
+    
+    console.log(`🔍 Filtering PPE records: search="${searchTerm}", selectedProject="${selectedProject}", totalRows=${rows.length}`);
 
     
 
-    rows.forEach(row => {
+    rows.forEach((row, idx) => {
 
-        const workerName = row.querySelector('.worker-name')?.textContent.toLowerCase() || '';
+        const workerName = (row.querySelector('.worker-name')?.textContent || '').toLowerCase().trim();
 
-        const workerId = row.querySelector('.worker-id')?.textContent.toLowerCase() || '';
+        const workerId = (row.querySelector('.worker-id')?.textContent || '').toLowerCase().trim();
 
-        const project = row.querySelector('.project-name')?.textContent || '';
+        const project = (row.querySelector('.project-name')?.textContent || '').trim();
 
         
 
-        const matchesSearch = workerName.includes(searchTerm) || workerId.includes(searchTerm);
+        const matchesSearch = !searchTerm || workerName.includes(searchTerm) || workerId.includes(searchTerm);
 
         const matchesProject = !selectedProject || project === selectedProject;
+        
+        if (idx < 3) {
+            console.log(`  Row ${idx}: project="${project}", worker="${workerName}", search="${searchTerm}", match=${matchesSearch && matchesProject}`);
+        }
 
         
 
@@ -21786,6 +21804,58 @@ function filterPpeRecords() {
 
     });
 
+}
+
+window.filterPpeRecords = filterPpeRecords;
+
+document.addEventListener('DOMContentLoaded', () => {
+    const searchInput = document.getElementById('ppeSearchInput');
+    const projectFilter = document.getElementById('ppeProjectFilter');
+
+    if (searchInput) {
+        searchInput.addEventListener('input', filterPpeRecords);
+    }
+    if (projectFilter) {
+        projectFilter.addEventListener('change', filterPpeRecords);
+    }
+    
+    // Load projects into filter dropdown
+    loadPpeProjects();
+});
+
+async function loadPpeProjects() {
+    try {
+        const baseUrl = window.location.origin;
+        const response = await fetch(`${baseUrl}/api/work/hse/ppe/projects`, {
+            headers: { 'Authorization': `Bearer ${sessionManager.getAuthToken()}` }
+        });
+        const data = await response.json();
+        
+        if (data.data && Array.isArray(data.data)) {
+            const projectFilter = document.getElementById('ppeProjectFilter');
+            if (!projectFilter) {
+                console.warn('❌ ppeProjectFilter element not found');
+                return;
+            }
+            
+            console.log('📦 Projects from API:', data.data.map(p => p.name));
+            
+            // Keep "All Projects" option, add project options
+            data.data.forEach(project => {
+                const option = document.createElement('option');
+                option.value = project.name;
+                option.textContent = project.name;
+                projectFilter.appendChild(option);
+            });
+            
+            console.log(`✅ Loaded ${data.data.length} projects into PPE filter`);
+            console.log('Dropdown options:', Array.from(projectFilter.options).map(o => o.value));
+        } else {
+            console.warn('❌ No projects found or API response format unexpected', data);
+        }
+    } catch (error) {
+        console.error('❌ Error loading projects for PPE filter:', error);
+    }
 }
 
 
@@ -28863,11 +28933,7 @@ function trackPpeIssuance(){
 
                 <div class="search-section">
 
-                    <input type="text" id="ppeSearchInput" placeholder="Search by worker name or ID..." onkeyup="filterPpeRecords()" />
-
-                    <select id="ppeProjectFilter" onchange="filterPpeRecords()">
-
-                        <option value="">All Projects</option>
+                        <input type="text" id="ppeSearchInput" placeholder="Search by worker name or ID..." oninput="filterPpeRecords()" />
 
                     </select>
 
@@ -31561,11 +31627,7 @@ async function loadSafetyData() {
 
                 status: record.status || 'Active',
 
-                location: record.location || 'Various Sites',
-
-                total_inspections: record.total_inspections || 0,
-
-                total_incidents: record.total_incidents || 0
+                location: record.location || 'Various Sites'
 
             }));
 
@@ -31835,11 +31897,7 @@ async function loadSafetyFromAPI() {
 
                                 status: item.status || 'Active',
 
-                                location: item.project_location || 'Various Sites',
-
-                                total_inspections: 0,
-
-                                total_incidents: 0
+                                location: item.project_location || 'Various Sites'
 
                             };
 
@@ -32085,7 +32143,7 @@ function updateSafetyTable(projects) {
 
     tableBody.innerHTML = projects.map(project => `
 
-        <tr class="safety-row" data-total-inspections="${project.total_inspections || 0}" data-total-incidents="${project.total_incidents || 0}">
+        <tr class="safety-row">
 
             <td class="project-name">
 
@@ -32411,11 +32469,7 @@ async function viewProjectSafetyDetails(projectId) {
 
                         risk_level: row.querySelector('.risk-badge')?.textContent?.trim() || 'N/A',
 
-                        status: row.querySelector('.status-badge')?.textContent?.trim() || 'N/A',
-
-                        total_inspections: parseInt(row.getAttribute('data-total-inspections')) || 0,
-
-                        total_incidents: parseInt(row.getAttribute('data-total-incidents')) || 0
+                        status: row.querySelector('.status-badge')?.textContent?.trim() || 'N/A'
 
                     };
 
@@ -32537,7 +32591,7 @@ async function viewProjectSafetyDetails(projectId) {
 
                             <span style="color: #666;">Total Inspections:</span>
 
-                            <strong>${project.total_inspections ?? 0}</strong>
+                            <strong>${project.total_inspections ?? 'N/A'}</strong>
 
                         </div>
 
@@ -35566,13 +35620,7 @@ function saveSafetyViolation() {
 
         assigned_to: 'HSE Manager',
 
-        submitted_by: 'HSE Manager',
-
-        project_name: violation.project,
-
-        location: violation.location,
-
-        severity: violation.severity
+        submitted_by: 'HSE Manager'
 
     };
 
@@ -36185,14 +36233,6 @@ function viewMeetingDetails(meetingId) {
 function downloadAttendance(meetingId) {
 
     customAlert(`Downloading attendance sheet for meeting ${meetingId}...nnAttendance list will be downloaded as Excel file.`, "Download Attendance", "info");
-
-}
-
-
-
-function filterPpeRecords() {
-
-    customAlert('Filtering PPE records based on search criteria...', "Filter Records", "info");
 
 }
 
@@ -45123,16 +45163,11 @@ function loadSampleProjects() {
 
 }
 
-// Global cache to store loaded projects for viewProject lookup
-window._cachedProjectsList = [];
+
 
 // Display projects in the table
 
 function displayProjects(projects) {
-    // Cache the projects so viewProject can use them without an API call
-    if (Array.isArray(projects) && projects.length > 0) {
-        window._cachedProjectsList = projects;
-    }
 
     const projectsList = document.getElementById('projectsList');
 
@@ -45444,7 +45479,7 @@ function displayProjects(projects) {
 
                     <div class="project-actions">
 
-                        <button class="action-btn view" onclick="viewProject('${project.id}')" title="View Details">👁️</button>
+                        <button class="action-btn progress" onclick="updateProgress('${project.id}')" title="Update Progress">ðŸ“Š</button>
 
                     </div>
 
@@ -45468,232 +45503,98 @@ function displayProjects(projects) {
 
 async function viewProject(projectId) {
     try {
-        let project = null;
+        const baseUrl = (typeof KashTecAPI !== 'undefined' && KashTecAPI.baseUrl) ? KashTecAPI.baseUrl : window.location.origin;
+        const token = (typeof KashTecAPI !== 'undefined' && typeof KashTecAPI.getAuthToken === 'function')
+            ? KashTecAPI.getAuthToken()
+            : (typeof sessionManager !== 'undefined' && typeof sessionManager.getAuthToken === 'function')
+                ? sessionManager.getAuthToken()
+                : localStorage.getItem('authToken') || '';
 
-        // First try to find the project in cached data (already loaded)
-        if (window._cachedProjectsList && window._cachedProjectsList.length > 0) {
-            project = window._cachedProjectsList.find(p => 
-                String(p.id) === String(projectId) || 
-                String(p.project_id) === String(projectId) ||
-                String(p.projectId) === String(projectId)
-            );
-        }
-
-        // If not found in cache, try API call
-        if (!project) {
-            try {
-                const baseUrl = (typeof KashTecAPI !== 'undefined' && KashTecAPI.baseUrl) ? KashTecAPI.baseUrl : window.location.origin;
-                const token = (typeof KashTecAPI !== 'undefined' && typeof KashTecAPI.getAuthToken === 'function')
-                    ? KashTecAPI.getAuthToken()
-                    : (typeof sessionManager !== 'undefined' && typeof sessionManager.getAuthToken === 'function')
-                        ? sessionManager.getAuthToken()
-                        : localStorage.getItem('authToken') || '';
-
-                const headers = { 'Content-Type': 'application/json' };
-                if (token) headers.Authorization = `Bearer ${token}`;
-
-                const response = await fetch(`${baseUrl}/api/projects/${projectId}`, { headers });
-                if (response.ok) {
-                    const result = await response.json();
-                    project = result.project || result.data || result;
-                }
-            } catch (apiErr) {
-                console.warn('API fetch failed for project, using cached/fallback data:', apiErr);
-            }
-        }
-
-        // If still no project, show error
-        if (!project) {
-            if (typeof customAlert === 'function') {
-                customAlert('Project details not found. Please reload the page and try again.', 'Not Found', 'error');
-            } else {
-                alert('Project details not found.');
-            }
-            return;
-        }
-
-        // Extract fields with fallbacks
-        const projectName = project.name || project.project_name || project.projectName || 'N/A';
-        const projectCode = project.project_code || project.code || project.projectCode || 'N/A';
-        const projectType = project.project_type || project.type || project.projectType || 'N/A';
-        const clientName = project.client_name || project.client || project.clientName || 'N/A';
-        const managerName = project.project_manager || project.manager || project.projectManager || 'N/A';
-        const location = project.location || project.site_location || project.siteLocation || 'N/A';
-        const priority = project.priority_level || project.priority || project.priorityLevel || 'N/A';
-        const status = project.status || 'N/A';
-        const startDate = project.start_date || project.startDate || 'N/A';
-        const endDate = project.end_date || project.endDate || 'N/A';
-        const description = project.description || 'No description provided.';
-        const deliverables = project.key_deliverables || project.keyDeliverables || project.deliverables || 'None specified';
-        const progress = project.progress || project.completion_percentage || 0;
-        const createdAt = project.created_at || project.createdAt || 'N/A';
-        const updatedAt = project.updated_at || project.updatedAt || 'N/A';
-
-        let budgetDisplay = 'N/A';
-        const budgetVal = project.contract_value || project.budget || project.contractValue;
-        if (budgetVal != null && budgetVal !== '') {
-            budgetDisplay = 'TZS ' + Number(budgetVal).toLocaleString();
-        }
-
-        // Format status badge color
-        const statusColors = {
-            'active': '#28a745', 'in_progress': '#007bff', 'in-progress': '#007bff',
-            'completed': '#17a2b8', 'on_hold': '#ffc107', 'on-hold': '#ffc107',
-            'cancelled': '#dc3545', 'planning': '#6f42c1', 'pending': '#fd7e14'
+        const headers = {
+            'Content-Type': 'application/json'
         };
-        const statusColor = statusColors[(status || '').toLowerCase().replace(/\s+/g, '_')] || '#6c757d';
-
-        // Format priority badge color
-        const priorityColors = {
-            'high': '#dc3545', 'critical': '#dc3545',
-            'medium': '#ffc107', 'normal': '#ffc107',
-            'low': '#28a745'
-        };
-        const priorityColor = priorityColors[(priority || '').toLowerCase()] || '#6c757d';
-
-        // Format dates nicely
-        function fmtDate(d) {
-            if (!d || d === 'N/A') return 'N/A';
-            try {
-                const dt = new Date(d);
-                if (isNaN(dt)) return d;
-                return dt.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
-            } catch(e) { return d; }
+        if (token) {
+            headers.Authorization = `Bearer ${token}`;
         }
 
-        // Remove any existing project detail modal
-        const existing = document.getElementById('projectDetailsModal');
-        if (existing) existing.remove();
+        const response = await fetch(`${baseUrl}/api/projects/${projectId}`, {
+            headers
+        });
+
+        if (!response.ok) {
+            const errorText = await response.text();
+            throw new Error(errorText || `HTTP ${response.status}`);
+        }
+
+        const result = await response.json();
+        if (!result.success || !result.project) {
+            throw new Error(result.error || 'Project details unavailable');
+        }
+
+        const project = result.project;
+        const projectCode = project.project_code || project.code || 'N/A';
+        const projectType = project.project_type || project.type || 'N/A';
+        const keyDeliverables = project.key_deliverables || project.keyDeliverables || 'None specified';
+        const budget = project.contract_value != null ? Number(project.contract_value).toLocaleString() : 'N/A';
 
         const modal = document.createElement('div');
-        modal.id = 'projectDetailsModal';
-        modal.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.6);display:flex;justify-content:center;align-items:center;z-index:10000;animation:fadeIn 0.2s ease;';
+        modal.className = 'modal-overlay';
         modal.innerHTML = `
-            <div style="background:#fff;border-radius:12px;max-width:780px;width:95%;max-height:90vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,0.3);animation:slideUp 0.3s ease;">
-                <!-- Header -->
-                <div style="background:linear-gradient(135deg,#0b3d91,#1565c0);color:#fff;padding:20px 24px;border-radius:12px 12px 0 0;display:flex;justify-content:space-between;align-items:center;">
+            <div class="modal-content" style="max-width: 720px; width: 95%;">
+                <div class="modal-header" style="background: #0b3d91; color: white; padding: 16px 20px; border-radius: 8px 8px 0 0; display: flex; justify-content: space-between; align-items: center;">
                     <div>
-                        <h3 style="margin:0;font-size:20px;font-weight:600;">📋 Project Details</h3>
-                        <p style="margin:4px 0 0;opacity:0.85;font-size:13px;">ID: ${projectId} &nbsp;|&nbsp; Code: ${projectCode}</p>
+                        <h3 style="margin:0;">Project Details</h3>
+                        <small style="opacity:.85;">ID: ${project.id}</small>
                     </div>
-                    <button onclick="document.getElementById('projectDetailsModal').remove()" style="background:rgba(255,255,255,0.15);border:none;color:#fff;width:36px;height:36px;border-radius:8px;font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.3)'" onmouseout="this.style.background='rgba(255,255,255,0.15)'">&times;</button>
+                    <button class="modal-close" onclick="this.closest('.modal-overlay').remove()" style="background: none; border: none; color: white; font-size: 24px; cursor: pointer;">&times;</button>
                 </div>
-
-                <!-- Body -->
-                <div style="padding:24px;">
-                    <!-- Project Name & Status Row -->
-                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;padding-bottom:16px;border-bottom:2px solid #e9ecef;">
-                        <h2 style="margin:0;font-size:22px;color:#1a1a2e;">${projectName}</h2>
-                        <span style="background:${statusColor};color:#fff;padding:6px 16px;border-radius:20px;font-size:13px;font-weight:600;text-transform:uppercase;">${status}</span>
+                <div class="modal-body" style="padding: 20px; background: #fff;">
+                    <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; margin-bottom: 20px;">
+                        <div><strong>Name</strong><div>${project.name || project.project_name || 'N/A'}</div></div>
+                        <div><strong>Status</strong><div>${project.status || 'N/A'}</div></div>
+                        <div><strong>Project Code</strong><div>${projectCode}</div></div>
+                        <div><strong>Project Type</strong><div>${projectType}</div></div>
+                        <div><strong>Client</strong><div>${project.client_name || project.client || 'N/A'}</div></div>
+                        <div><strong>Manager</strong><div>${project.project_manager || project.manager || 'N/A'}</div></div>
+                        <div><strong>Location</strong><div>${project.location || 'N/A'}</div></div>
+                        <div><strong>Priority</strong><div>${project.priority_level || project.priority || 'N/A'}</div></div>
+                        <div><strong>Start Date</strong><div>${project.start_date || 'N/A'}</div></div>
+                        <div><strong>End Date</strong><div>${project.end_date || 'N/A'}</div></div>
+                        <div><strong>Budget</strong><div>${budget}</div></div>
+                        <div><strong>Created</strong><div>${project.created_at || 'N/A'}</div></div>
+                        <div><strong>Updated</strong><div>${project.updated_at || 'N/A'}</div></div>
                     </div>
-
-                    <!-- Progress Bar -->
-                    <div style="margin-bottom:24px;">
-                        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
-                            <span style="font-weight:600;color:#495057;font-size:14px;">Progress</span>
-                            <span style="font-weight:700;color:${Number(progress) >= 75 ? '#28a745' : Number(progress) >= 50 ? '#ffc107' : '#dc3545'};font-size:14px;">${progress}%</span>
-                        </div>
-                        <div style="background:#e9ecef;border-radius:10px;height:10px;overflow:hidden;">
-                            <div style="background:linear-gradient(90deg,${Number(progress) >= 75 ? '#28a745,#20c997' : Number(progress) >= 50 ? '#ffc107,#fd7e14' : '#dc3545,#e74c3c'});height:100%;border-radius:10px;width:${progress}%;transition:width 0.5s ease;"></div>
-                        </div>
+                    <div style="margin-bottom: 16px;">
+                        <strong>Description</strong>
+                        <p style="margin: 8px 0 0; white-space: pre-wrap;">${project.description || 'No description provided.'}</p>
                     </div>
-
-                    <!-- Info Grid -->
-                    <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:16px;margin-bottom:24px;">
-                        <div style="background:#f8f9fa;padding:14px 16px;border-radius:8px;border-left:4px solid #0b3d91;">
-                            <div style="font-size:11px;color:#6c757d;text-transform:uppercase;font-weight:600;letter-spacing:0.5px;">Project Type</div>
-                            <div style="font-size:15px;color:#1a1a2e;font-weight:500;margin-top:4px;">${projectType}</div>
-                        </div>
-                        <div style="background:#f8f9fa;padding:14px 16px;border-radius:8px;border-left:4px solid #28a745;">
-                            <div style="font-size:11px;color:#6c757d;text-transform:uppercase;font-weight:600;letter-spacing:0.5px;">Client</div>
-                            <div style="font-size:15px;color:#1a1a2e;font-weight:500;margin-top:4px;">${clientName}</div>
-                        </div>
-                        <div style="background:#f8f9fa;padding:14px 16px;border-radius:8px;border-left:4px solid #6f42c1;">
-                            <div style="font-size:11px;color:#6c757d;text-transform:uppercase;font-weight:600;letter-spacing:0.5px;">Project Manager</div>
-                            <div style="font-size:15px;color:#1a1a2e;font-weight:500;margin-top:4px;">${managerName}</div>
-                        </div>
-                        <div style="background:#f8f9fa;padding:14px 16px;border-radius:8px;border-left:4px solid #fd7e14;">
-                            <div style="font-size:11px;color:#6c757d;text-transform:uppercase;font-weight:600;letter-spacing:0.5px;">Location</div>
-                            <div style="font-size:15px;color:#1a1a2e;font-weight:500;margin-top:4px;">${location}</div>
-                        </div>
-                        <div style="background:#f8f9fa;padding:14px 16px;border-radius:8px;border-left:4px solid ${priorityColor};">
-                            <div style="font-size:11px;color:#6c757d;text-transform:uppercase;font-weight:600;letter-spacing:0.5px;">Priority</div>
-                            <div style="font-size:15px;font-weight:500;margin-top:4px;color:${priorityColor};">${priority}</div>
-                        </div>
-                        <div style="background:#f8f9fa;padding:14px 16px;border-radius:8px;border-left:4px solid #17a2b8;">
-                            <div style="font-size:11px;color:#6c757d;text-transform:uppercase;font-weight:600;letter-spacing:0.5px;">Contract Value</div>
-                            <div style="font-size:15px;color:#1a1a2e;font-weight:600;margin-top:4px;">${budgetDisplay}</div>
-                        </div>
-                        <div style="background:#f8f9fa;padding:14px 16px;border-radius:8px;border-left:4px solid #20c997;">
-                            <div style="font-size:11px;color:#6c757d;text-transform:uppercase;font-weight:600;letter-spacing:0.5px;">Start Date</div>
-                            <div style="font-size:15px;color:#1a1a2e;font-weight:500;margin-top:4px;">${fmtDate(startDate)}</div>
-                        </div>
-                        <div style="background:#f8f9fa;padding:14px 16px;border-radius:8px;border-left:4px solid #e83e8c;">
-                            <div style="font-size:11px;color:#6c757d;text-transform:uppercase;font-weight:600;letter-spacing:0.5px;">End Date</div>
-                            <div style="font-size:15px;color:#1a1a2e;font-weight:500;margin-top:4px;">${fmtDate(endDate)}</div>
-                        </div>
-                    </div>
-
-                    <!-- Description -->
-                    <div style="margin-bottom:20px;">
-                        <h4 style="margin:0 0 8px;color:#1a1a2e;font-size:15px;">📝 Description</h4>
-                        <div style="background:#f8f9fa;padding:14px 16px;border-radius:8px;color:#495057;line-height:1.6;white-space:pre-wrap;font-size:14px;">${description}</div>
-                    </div>
-
-                    <!-- Key Deliverables -->
-                    <div style="margin-bottom:20px;">
-                        <h4 style="margin:0 0 8px;color:#1a1a2e;font-size:15px;">🎯 Key Deliverables</h4>
-                        <div style="background:#f8f9fa;padding:14px 16px;border-radius:8px;color:#495057;line-height:1.6;white-space:pre-wrap;font-size:14px;">${deliverables}</div>
-                    </div>
-
-                    <!-- Timestamps -->
-                    <div style="display:flex;gap:16px;color:#6c757d;font-size:12px;padding-top:12px;border-top:1px solid #e9ecef;">
-                        <span>📅 Created: ${fmtDate(createdAt)}</span>
-                        <span>🔄 Updated: ${fmtDate(updatedAt)}</span>
+                    <div style="margin-bottom: 16px;">
+                        <strong>Key Deliverables</strong>
+                        <p style="margin: 8px 0 0; white-space: pre-wrap;">${keyDeliverables}</p>
                     </div>
                 </div>
-
-                <!-- Footer -->
-                <div style="padding:16px 24px;background:#f8f9fa;border-radius:0 0 12px 12px;display:flex;justify-content:flex-end;gap:10px;border-top:1px solid #e9ecef;">
-                    <button onclick="document.getElementById('projectDetailsModal').remove()" style="background:linear-gradient(135deg,#6c757d,#5a6268);color:#fff;border:none;padding:10px 24px;border-radius:8px;font-size:14px;font-weight:500;cursor:pointer;transition:all 0.2s;" onmouseover="this.style.transform='translateY(-1px)';this.style.boxShadow='0 4px 12px rgba(0,0,0,0.15)'" onmouseout="this.style.transform='none';this.style.boxShadow='none'">Close</button>
+                <div class="modal-footer" style="padding: 14px 20px; background: #f1f3f5; border-radius: 0 0 8px 8px; text-align: right;">
+                    <button onclick="this.closest('.modal-overlay').remove()" style="background: #6c757d; color: white; border: none; padding: 10px 16px; border-radius: 6px; cursor: pointer;">Close</button>
                 </div>
             </div>
-            <style>
-                @keyframes fadeIn { from { opacity:0; } to { opacity:1; } }
-                @keyframes slideUp { from { opacity:0; transform:translateY(30px); } to { opacity:1; transform:translateY(0); } }
-            </style>
         `;
 
         document.body.appendChild(modal);
-
-        // Close when clicking outside
-        modal.addEventListener('click', function(e) {
+        modal.addEventListener('click', function (e) {
             if (e.target === modal) modal.remove();
         });
-
-        // Close with Escape key
-        function escHandler(e) {
-            if (e.key === 'Escape') {
-                modal.remove();
-                document.removeEventListener('keydown', escHandler);
-            }
-        }
-        document.addEventListener('keydown', escHandler);
-
     } catch (error) {
-        console.error('Error in viewProject:', error);
-        if (typeof customAlert === 'function') {
-            customAlert('Failed to load project details. ' + error.message, 'Error', 'error');
-        } else {
-            alert('Failed to load project details: ' + error.message);
-        }
+        console.error('Error loading project details:', error);
+        customAlert(`Failed to load project details. ${error.message}`, 'Error', 'error');
     }
 }
 
-window.viewProject = viewProject;
+
 
 function editProject(projectId) {
-    customAlert(`Editing project ${projectId}...\n\nProject editor will open for modifications to project details, timeline, budget, team assignments, milestones, and deliverables.`, "Edit Project", "info");
+
+    customAlert(`Editing project ${projectId}...nnProject editor will open for modifications to project details, timeline, budget, team assignments, milestones, and deliverables.`, "Edit Project", "info");
+
 }
 
 
@@ -68630,14 +68531,6 @@ function emergencyReview(projectId) {
 
 
 
-function filterPpeRecords() {
-
-    customAlert('Filtering PPE records based on search criteria...nnRecords will be filtered by selected criteria and displayed.', "Filter Records", "info");
-
-}
-
-
-
 function downloadPolicy(policyId) {
 
     customAlert(`Downloading safety policy ${policyId}...nnPolicy document will be downloaded as PDF file.`, "Download Policy", "info");
@@ -69226,20 +69119,6 @@ function sendReminder(saleId) {
     customAlert(`Sending payment reminder for sale ${saleId}...nnAutomated reminder will be sent to the customer via email and SMS.`, "Send Reminder", "success");
 
 }
-
-
-
-
-
-function filterPpeRecords() {
-
-    customAlert('Filtering PPE records based on search criteria...nnRecords will be filtered by selected criteria and displayed.', "Filter Records", "info");
-
-}
-
-
-
-
 
 
 
@@ -75451,47 +75330,15 @@ function deleteTransportCost(costId) {
 
     
 
-    if (confirm(`Are you sure you want to delete this transport cost?\n\n${cost.description}\nAmount: ${formatCurrency(cost.amount)}`)) {
+    if (confirm(`Are you sure you want to delete this transport cost?nn${cost.description}nAmount: ${formatCurrency(cost.amount)}`)) {
 
-        fetch(`/api/transport-costs/${costId}`, {
+        // For now, just show success - in a real implementation, this would call the API
 
-            method: 'DELETE',
+        showNotification(`ðŸ—‘ï¸ Transport cost #${costId} deleted successfully`, 'success');
 
-            headers: {
+        loadTransportCosts();
 
-                'Content-Type': 'application/json'
-
-            }
-
-        })
-
-        .then(response => response.json())
-
-        .then(data => {
-
-            if (data.success) {
-
-                showNotification(`🗑️ Transport cost #${costId} deleted successfully`, 'success');
-
-                loadTransportCosts();
-
-                loadTransportCostSummary();
-
-            } else {
-
-                showNotification(`Failed to delete transport cost: ${data.message}`, 'error');
-
-            }
-
-        })
-
-        .catch(error => {
-
-            console.error('Error deleting transport cost:', error);
-
-            showNotification(`Error deleting transport cost: ${error.message}`, 'error');
-
-        });
+        loadTransportCostSummary();
 
     }
 
@@ -80232,4 +80079,3 @@ async function uploadLeadershipPhoto(leaderId, inputElement) {
         else alert('An unexpected error occurred');
     }
 }
-

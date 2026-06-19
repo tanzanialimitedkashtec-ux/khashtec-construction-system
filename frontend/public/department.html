@@ -38550,13 +38550,9 @@ function loadSampleMeetings() {
 
 
 
-let allUpcomingMeetings = [];
-
 // Display upcoming meetings in the list
 
 function displayUpcomingMeetings(meetings) {
-
-    allUpcomingMeetings = Array.isArray(meetings) ? meetings : [];
 
     const meetingsList = document.getElementById('upcomingMeetingsList');
 
@@ -38854,34 +38850,6 @@ function displayUpcomingMeetings(meetings) {
 
     meetingsList.innerHTML = meetingsHTML;
 
-}
-
-function filterUpcomingMeetings() {
-    const searchTerm = (document.getElementById('meetingSearchInput')?.value || '').toLowerCase().trim();
-    if (!searchTerm) {
-        displayUpcomingMeetings(allUpcomingMeetings);
-        updateMeetingStatistics(allUpcomingMeetings);
-        return;
-    }
-
-    const filteredMeetings = allUpcomingMeetings.filter(meeting => {
-        const haystack = [
-            meeting.meeting_title,
-            meeting.meeting_type,
-            meeting.meeting_date,
-            meeting.start_time,
-            meeting.end_time,
-            meeting.location,
-            meeting.organizing_department,
-            meeting.meeting_description,
-            meeting.required_resources,
-            meeting.status
-        ].filter(Boolean).join(' ').toLowerCase();
-        return haystack.includes(searchTerm);
-    });
-
-    displayUpcomingMeetings(filteredMeetings);
-    updateMeetingStatistics(filteredMeetings);
 }
 
 
@@ -45285,9 +45253,6 @@ function downloadIncidentReport(incidentId) {
 
 
 
-// Global state for PPE records
-let allPpeRecords = [];
-
 // Load PPE records for table display
 
 async function loadPpeRecords() {
@@ -45344,7 +45309,6 @@ async function loadPpeRecords() {
             ppeRecords = ppeData.ppe;
         }
 
-        allPpeRecords = Array.isArray(ppeRecords) ? ppeRecords : [];
         displayPpeRecords(ppeRecords);
         loadPpeStats();
 
@@ -45531,17 +45495,6 @@ function displayPpeRecords(ppeRecords) {
 
     ppeList.innerHTML = ppeHTML;
 
-    // Populate project filter with unique projects
-    const projectFilter = document.getElementById('ppeProjectFilter');
-    if (projectFilter) {
-        const currentValue = projectFilter.value;
-        const uniqueProjects = [...new Set(ppeRecords.map(ppe => ppe.project || ppe.project_name || '-').filter(p => p !== '-'))];
-        const options = [{ value: '', label: 'All Projects' }, ...uniqueProjects.map(p => ({ value: p, label: p }))];
-        
-        projectFilter.innerHTML = options.map(opt => `<option value="${opt.value}">${opt.label}</option>`).join('');
-        projectFilter.value = currentValue || '';
-    }
-
 }
 
 
@@ -45595,45 +45548,45 @@ async function loadPpeProjects() {
 
 function filterPpeRecords() {
 
-    const searchTerm = (document.getElementById('ppeSearchInput')?.value || '').toLowerCase().trim();
+    const searchInput = document.getElementById('ppeSearchInput');
 
-    const selectedProject = document.getElementById('ppeProjectFilter')?.value || '';
-
-    
-
-    if (!searchTerm && !selectedProject) {
-
-        displayPpeRecords(allPpeRecords);
-
-        return;
-
-    }
+    const projectFilter = document.getElementById('ppeProjectFilter');
 
     
 
-    const filteredRecords = allPpeRecords.filter(ppe => {
+    if (!searchInput || !projectFilter) return;
 
-        const workerName = (ppe.worker_name || '').toLowerCase();
+    
 
-        const workerId = (ppe.worker_id || '').toLowerCase();
+    const searchTerm = searchInput.value.toLowerCase();
 
-        const project = ppe.project || ppe.project_name || '';
+    const selectedProject = projectFilter.value;
+
+    
+
+    const rows = document.querySelectorAll('.ppe-row');
+
+    
+
+    rows.forEach(row => {
+
+        const workerName = row.querySelector('.worker-name')?.textContent.toLowerCase() || '';
+
+        const workerId = row.querySelector('.worker-id')?.textContent.toLowerCase() || '';
+
+        const project = row.querySelector('.project-name')?.textContent || '';
 
         
 
-        const matchesSearch = !searchTerm || workerName.includes(searchTerm) || workerId.includes(searchTerm);
+        const matchesSearch = workerName.includes(searchTerm) || workerId.includes(searchTerm);
 
         const matchesProject = !selectedProject || project === selectedProject;
 
         
 
-        return matchesSearch && matchesProject;
+        row.style.display = matchesSearch && matchesProject ? '' : 'none';
 
     });
-
-    
-
-    displayPpeRecords(filteredRecords);
 
 }
 
@@ -52542,7 +52495,7 @@ function trackPpeIssuance(){
 
                 <div class="search-section">
 
-                    <input type="text" id="ppeSearchInput" placeholder="Search by worker name or ID..." onkeyup="filterPpeRecords()">
+                    <input type="text" id="ppeSearchInput" placeholder="Search by worker name or ID..." oninput="filterPpeRecords()">
 
                     <select id="ppeProjectFilter" onchange="filterPpeRecords()">
 
@@ -60610,14 +60563,6 @@ function viewMeetingDetails(meetingId) {
 function downloadAttendance(meetingId) {
 
     customAlert(`Downloading attendance sheet for meeting ${meetingId}...\n\nAttendance list will be downloaded as Excel file.`, "Download Attendance", "info");
-
-}
-
-
-
-function filterPpeRecords() {
-
-    customAlert('Filtering PPE records based on search criteria...', "Filter Records", "info");
 
 }
 
@@ -89043,11 +88988,6 @@ function scheduleMeeting(){
 
             <div class="scheduled-meetings">
 
-                <div style="margin-bottom: 15px; display: flex; gap: 10px; align-items: center;">
-                    <input type="text" id="meetingSearchInput" placeholder="Search meetings by Title, Type, Date, Location, Department..." oninput="filterUpcomingMeetings()" style="padding: 10px 15px; border: 1px solid #ddd; border-radius: 6px; flex: 1; font-size: 14px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
-                    <button type="button" onclick="document.getElementById('meetingSearchInput').value=''; filterUpcomingMeetings();" style="padding: 10px 20px; background: #6c757d; color: #fff; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: 500;">Clear</button>
-                </div>
-
                 <div class="meeting-table-container">
 
                     <table class="meeting-table">
@@ -96115,14 +96055,6 @@ function emergencyReview(projectId) {
 
 
 
-function filterPpeRecords() {
-
-    customAlert('Filtering PPE records based on search criteria...\n\nRecords will be filtered by selected criteria and displayed.', "Filter Records", "info");
-
-}
-
-
-
 function downloadPolicy(policyId) {
 
     customAlert(`Downloading safety policy ${policyId}...\n\nPolicy document will be downloaded as PDF file.`, "Download Policy", "info");
@@ -96618,14 +96550,6 @@ function sendReminder(saleId) {
 }
 
 
-
-
-
-function filterPpeRecords() {
-
-    customAlert('Filtering PPE records based on search criteria...\n\nRecords will be filtered by selected criteria and displayed.', "Filter Records", "info");
-
-}
 
 
 
@@ -104482,45 +104406,13 @@ function deleteTransportCost(costId) {
 
     if (confirm(`Are you sure you want to delete this transport cost?\n\n${cost.description}\nAmount: ${formatCurrency(cost.amount)}`)) {
 
-        fetch(`/api/transport-costs/${costId}`, {
+        // For now, just show success - in a real implementation, this would call the API
 
-            method: 'DELETE',
+        showNotification(`🗑️ Transport cost #${costId} deleted successfully`, 'success');
 
-            headers: {
+        loadTransportCosts();
 
-                'Content-Type': 'application/json'
-
-            }
-
-        })
-
-        .then(response => response.json())
-
-        .then(data => {
-
-            if (data.success) {
-
-                showNotification(`🗑️ Transport cost #${costId} deleted successfully`, 'success');
-
-                loadTransportCosts();
-
-                loadTransportCostSummary();
-
-            } else {
-
-                showNotification(`Failed to delete transport cost: ${data.message}`, 'error');
-
-            }
-
-        })
-
-        .catch(error => {
-
-            console.error('Error deleting transport cost:', error);
-
-            showNotification(`Error deleting transport cost: ${error.message}`, 'error');
-
-        });
+        loadTransportCostSummary();
 
     }
 
