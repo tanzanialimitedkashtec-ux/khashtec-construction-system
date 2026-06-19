@@ -38550,9 +38550,13 @@ function loadSampleMeetings() {
 
 
 
+let allUpcomingMeetings = [];
+
 // Display upcoming meetings in the list
 
 function displayUpcomingMeetings(meetings) {
+
+    allUpcomingMeetings = Array.isArray(meetings) ? meetings : [];
 
     const meetingsList = document.getElementById('upcomingMeetingsList');
 
@@ -38850,6 +38854,34 @@ function displayUpcomingMeetings(meetings) {
 
     meetingsList.innerHTML = meetingsHTML;
 
+}
+
+function filterUpcomingMeetings() {
+    const searchTerm = (document.getElementById('meetingSearchInput')?.value || '').toLowerCase().trim();
+    if (!searchTerm) {
+        displayUpcomingMeetings(allUpcomingMeetings);
+        updateMeetingStatistics(allUpcomingMeetings);
+        return;
+    }
+
+    const filteredMeetings = allUpcomingMeetings.filter(meeting => {
+        const haystack = [
+            meeting.meeting_title,
+            meeting.meeting_type,
+            meeting.meeting_date,
+            meeting.start_time,
+            meeting.end_time,
+            meeting.location,
+            meeting.organizing_department,
+            meeting.meeting_description,
+            meeting.required_resources,
+            meeting.status
+        ].filter(Boolean).join(' ').toLowerCase();
+        return haystack.includes(searchTerm);
+    });
+
+    displayUpcomingMeetings(filteredMeetings);
+    updateMeetingStatistics(filteredMeetings);
 }
 
 
@@ -56867,7 +56899,7 @@ async function viewProjectSafetyDetails(projectId) {
 
                             <span style="color: #666;">Total Inspections:</span>
 
-                            <strong>${project.total_inspections || 'N/A'}</strong>
+                            <strong>${project.total_inspections ?? 'N/A'}</strong>
 
                         </div>
 
@@ -88995,6 +89027,11 @@ function scheduleMeeting(){
             
 
             <div class="scheduled-meetings">
+
+                <div style="margin-bottom: 15px; display: flex; gap: 10px; align-items: center;">
+                    <input type="text" id="meetingSearchInput" placeholder="Search meetings by Title, Type, Date, Location, Department..." oninput="filterUpcomingMeetings()" style="padding: 10px 15px; border: 1px solid #ddd; border-radius: 6px; flex: 1; font-size: 14px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+                    <button type="button" onclick="document.getElementById('meetingSearchInput').value=''; filterUpcomingMeetings();" style="padding: 10px 20px; background: #6c757d; color: #fff; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: 500;">Clear</button>
+                </div>
 
                 <div class="meeting-table-container">
 

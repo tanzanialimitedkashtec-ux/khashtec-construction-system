@@ -31561,7 +31561,11 @@ async function loadSafetyData() {
 
                 status: record.status || 'Active',
 
-                location: record.location || 'Various Sites'
+                location: record.location || 'Various Sites',
+
+                total_inspections: record.total_inspections || 0,
+
+                total_incidents: record.total_incidents || 0
 
             }));
 
@@ -31831,7 +31835,11 @@ async function loadSafetyFromAPI() {
 
                                 status: item.status || 'Active',
 
-                                location: item.project_location || 'Various Sites'
+                                location: item.project_location || 'Various Sites',
+
+                                total_inspections: 0,
+
+                                total_incidents: 0
 
                             };
 
@@ -32077,7 +32085,7 @@ function updateSafetyTable(projects) {
 
     tableBody.innerHTML = projects.map(project => `
 
-        <tr class="safety-row">
+        <tr class="safety-row" data-total-inspections="${project.total_inspections || 0}" data-total-incidents="${project.total_incidents || 0}">
 
             <td class="project-name">
 
@@ -32403,7 +32411,11 @@ async function viewProjectSafetyDetails(projectId) {
 
                         risk_level: row.querySelector('.risk-badge')?.textContent?.trim() || 'N/A',
 
-                        status: row.querySelector('.status-badge')?.textContent?.trim() || 'N/A'
+                        status: row.querySelector('.status-badge')?.textContent?.trim() || 'N/A',
+
+                        total_inspections: parseInt(row.getAttribute('data-total-inspections')) || 0,
+
+                        total_incidents: parseInt(row.getAttribute('data-total-incidents')) || 0
 
                     };
 
@@ -32525,7 +32537,7 @@ async function viewProjectSafetyDetails(projectId) {
 
                             <span style="color: #666;">Total Inspections:</span>
 
-                            <strong>${project.total_inspections || 'N/A'}</strong>
+                            <strong>${project.total_inspections ?? 0}</strong>
 
                         </div>
 
@@ -35554,7 +35566,13 @@ function saveSafetyViolation() {
 
         assigned_to: 'HSE Manager',
 
-        submitted_by: 'HSE Manager'
+        submitted_by: 'HSE Manager',
+
+        project_name: violation.project,
+
+        location: violation.location,
+
+        severity: violation.severity
 
     };
 
@@ -35704,7 +35722,9 @@ function saveInspectionReport() {
 
         assigned_to: 'HSE Manager',
 
-        submitted_by: 'HSE Manager'
+        submitted_by: 'HSE Manager',
+
+        project_name: inspection.project
 
     };
 
@@ -45103,11 +45123,16 @@ function loadSampleProjects() {
 
 }
 
-
+// Global cache to store loaded projects for viewProject lookup
+window._cachedProjectsList = [];
 
 // Display projects in the table
 
 function displayProjects(projects) {
+    // Cache the projects so viewProject can use them without an API call
+    if (Array.isArray(projects) && projects.length > 0) {
+        window._cachedProjectsList = projects;
+    }
 
     const projectsList = document.getElementById('projectsList');
 
@@ -45419,7 +45444,7 @@ function displayProjects(projects) {
 
                     <div class="project-actions">
 
-                        <button class="action-btn progress" onclick="updateProgress('${project.id}')" title="Update Progress">ðŸ“Š</button>
+                        <button class="action-btn view" onclick="viewProject('${project.id}')" title="View Details">👁️</button>
 
                     </div>
 
@@ -45441,18 +45466,234 @@ function displayProjects(projects) {
 
 // Project action functions
 
-function viewProject(projectId) {
+async function viewProject(projectId) {
+    try {
+        let project = null;
 
-    customAlert(`Viewing project details for ID: ${projectId}nnFull project information including scope, timeline, budget, team members, milestones, deliverables, risks, and current progress status will be displayed.`, "Project Details", "info");
+        // First try to find the project in cached data (already loaded)
+        if (window._cachedProjectsList && window._cachedProjectsList.length > 0) {
+            project = window._cachedProjectsList.find(p => 
+                String(p.id) === String(projectId) || 
+                String(p.project_id) === String(projectId) ||
+                String(p.projectId) === String(projectId)
+            );
+        }
 
+        // If not found in cache, try API call
+        if (!project) {
+            try {
+                const baseUrl = (typeof KashTecAPI !== 'undefined' && KashTecAPI.baseUrl) ? KashTecAPI.baseUrl : window.location.origin;
+                const token = (typeof KashTecAPI !== 'undefined' && typeof KashTecAPI.getAuthToken === 'function')
+                    ? KashTecAPI.getAuthToken()
+                    : (typeof sessionManager !== 'undefined' && typeof sessionManager.getAuthToken === 'function')
+                        ? sessionManager.getAuthToken()
+                        : localStorage.getItem('authToken') || '';
+
+                const headers = { 'Content-Type': 'application/json' };
+                if (token) headers.Authorization = `Bearer ${token}`;
+
+                const response = await fetch(`${baseUrl}/api/projects/${projectId}`, { headers });
+                if (response.ok) {
+                    const result = await response.json();
+                    project = result.project || result.data || result;
+                }
+            } catch (apiErr) {
+                console.warn('API fetch failed for project, using cached/fallback data:', apiErr);
+            }
+        }
+
+        // If still no project, show error
+        if (!project) {
+            if (typeof customAlert === 'function') {
+                customAlert('Project details not found. Please reload the page and try again.', 'Not Found', 'error');
+            } else {
+                alert('Project details not found.');
+            }
+            return;
+        }
+
+        // Extract fields with fallbacks
+        const projectName = project.name || project.project_name || project.projectName || 'N/A';
+        const projectCode = project.project_code || project.code || project.projectCode || 'N/A';
+        const projectType = project.project_type || project.type || project.projectType || 'N/A';
+        const clientName = project.client_name || project.client || project.clientName || 'N/A';
+        const managerName = project.project_manager || project.manager || project.projectManager || 'N/A';
+        const location = project.location || project.site_location || project.siteLocation || 'N/A';
+        const priority = project.priority_level || project.priority || project.priorityLevel || 'N/A';
+        const status = project.status || 'N/A';
+        const startDate = project.start_date || project.startDate || 'N/A';
+        const endDate = project.end_date || project.endDate || 'N/A';
+        const description = project.description || 'No description provided.';
+        const deliverables = project.key_deliverables || project.keyDeliverables || project.deliverables || 'None specified';
+        const progress = project.progress || project.completion_percentage || 0;
+        const createdAt = project.created_at || project.createdAt || 'N/A';
+        const updatedAt = project.updated_at || project.updatedAt || 'N/A';
+
+        let budgetDisplay = 'N/A';
+        const budgetVal = project.contract_value || project.budget || project.contractValue;
+        if (budgetVal != null && budgetVal !== '') {
+            budgetDisplay = 'TZS ' + Number(budgetVal).toLocaleString();
+        }
+
+        // Format status badge color
+        const statusColors = {
+            'active': '#28a745', 'in_progress': '#007bff', 'in-progress': '#007bff',
+            'completed': '#17a2b8', 'on_hold': '#ffc107', 'on-hold': '#ffc107',
+            'cancelled': '#dc3545', 'planning': '#6f42c1', 'pending': '#fd7e14'
+        };
+        const statusColor = statusColors[(status || '').toLowerCase().replace(/\s+/g, '_')] || '#6c757d';
+
+        // Format priority badge color
+        const priorityColors = {
+            'high': '#dc3545', 'critical': '#dc3545',
+            'medium': '#ffc107', 'normal': '#ffc107',
+            'low': '#28a745'
+        };
+        const priorityColor = priorityColors[(priority || '').toLowerCase()] || '#6c757d';
+
+        // Format dates nicely
+        function fmtDate(d) {
+            if (!d || d === 'N/A') return 'N/A';
+            try {
+                const dt = new Date(d);
+                if (isNaN(dt)) return d;
+                return dt.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+            } catch(e) { return d; }
+        }
+
+        // Remove any existing project detail modal
+        const existing = document.getElementById('projectDetailsModal');
+        if (existing) existing.remove();
+
+        const modal = document.createElement('div');
+        modal.id = 'projectDetailsModal';
+        modal.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.6);display:flex;justify-content:center;align-items:center;z-index:10000;animation:fadeIn 0.2s ease;';
+        modal.innerHTML = `
+            <div style="background:#fff;border-radius:12px;max-width:780px;width:95%;max-height:90vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,0.3);animation:slideUp 0.3s ease;">
+                <!-- Header -->
+                <div style="background:linear-gradient(135deg,#0b3d91,#1565c0);color:#fff;padding:20px 24px;border-radius:12px 12px 0 0;display:flex;justify-content:space-between;align-items:center;">
+                    <div>
+                        <h3 style="margin:0;font-size:20px;font-weight:600;">📋 Project Details</h3>
+                        <p style="margin:4px 0 0;opacity:0.85;font-size:13px;">ID: ${projectId} &nbsp;|&nbsp; Code: ${projectCode}</p>
+                    </div>
+                    <button onclick="document.getElementById('projectDetailsModal').remove()" style="background:rgba(255,255,255,0.15);border:none;color:#fff;width:36px;height:36px;border-radius:8px;font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.3)'" onmouseout="this.style.background='rgba(255,255,255,0.15)'">&times;</button>
+                </div>
+
+                <!-- Body -->
+                <div style="padding:24px;">
+                    <!-- Project Name & Status Row -->
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;padding-bottom:16px;border-bottom:2px solid #e9ecef;">
+                        <h2 style="margin:0;font-size:22px;color:#1a1a2e;">${projectName}</h2>
+                        <span style="background:${statusColor};color:#fff;padding:6px 16px;border-radius:20px;font-size:13px;font-weight:600;text-transform:uppercase;">${status}</span>
+                    </div>
+
+                    <!-- Progress Bar -->
+                    <div style="margin-bottom:24px;">
+                        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+                            <span style="font-weight:600;color:#495057;font-size:14px;">Progress</span>
+                            <span style="font-weight:700;color:${Number(progress) >= 75 ? '#28a745' : Number(progress) >= 50 ? '#ffc107' : '#dc3545'};font-size:14px;">${progress}%</span>
+                        </div>
+                        <div style="background:#e9ecef;border-radius:10px;height:10px;overflow:hidden;">
+                            <div style="background:linear-gradient(90deg,${Number(progress) >= 75 ? '#28a745,#20c997' : Number(progress) >= 50 ? '#ffc107,#fd7e14' : '#dc3545,#e74c3c'});height:100%;border-radius:10px;width:${progress}%;transition:width 0.5s ease;"></div>
+                        </div>
+                    </div>
+
+                    <!-- Info Grid -->
+                    <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:16px;margin-bottom:24px;">
+                        <div style="background:#f8f9fa;padding:14px 16px;border-radius:8px;border-left:4px solid #0b3d91;">
+                            <div style="font-size:11px;color:#6c757d;text-transform:uppercase;font-weight:600;letter-spacing:0.5px;">Project Type</div>
+                            <div style="font-size:15px;color:#1a1a2e;font-weight:500;margin-top:4px;">${projectType}</div>
+                        </div>
+                        <div style="background:#f8f9fa;padding:14px 16px;border-radius:8px;border-left:4px solid #28a745;">
+                            <div style="font-size:11px;color:#6c757d;text-transform:uppercase;font-weight:600;letter-spacing:0.5px;">Client</div>
+                            <div style="font-size:15px;color:#1a1a2e;font-weight:500;margin-top:4px;">${clientName}</div>
+                        </div>
+                        <div style="background:#f8f9fa;padding:14px 16px;border-radius:8px;border-left:4px solid #6f42c1;">
+                            <div style="font-size:11px;color:#6c757d;text-transform:uppercase;font-weight:600;letter-spacing:0.5px;">Project Manager</div>
+                            <div style="font-size:15px;color:#1a1a2e;font-weight:500;margin-top:4px;">${managerName}</div>
+                        </div>
+                        <div style="background:#f8f9fa;padding:14px 16px;border-radius:8px;border-left:4px solid #fd7e14;">
+                            <div style="font-size:11px;color:#6c757d;text-transform:uppercase;font-weight:600;letter-spacing:0.5px;">Location</div>
+                            <div style="font-size:15px;color:#1a1a2e;font-weight:500;margin-top:4px;">${location}</div>
+                        </div>
+                        <div style="background:#f8f9fa;padding:14px 16px;border-radius:8px;border-left:4px solid ${priorityColor};">
+                            <div style="font-size:11px;color:#6c757d;text-transform:uppercase;font-weight:600;letter-spacing:0.5px;">Priority</div>
+                            <div style="font-size:15px;font-weight:500;margin-top:4px;color:${priorityColor};">${priority}</div>
+                        </div>
+                        <div style="background:#f8f9fa;padding:14px 16px;border-radius:8px;border-left:4px solid #17a2b8;">
+                            <div style="font-size:11px;color:#6c757d;text-transform:uppercase;font-weight:600;letter-spacing:0.5px;">Contract Value</div>
+                            <div style="font-size:15px;color:#1a1a2e;font-weight:600;margin-top:4px;">${budgetDisplay}</div>
+                        </div>
+                        <div style="background:#f8f9fa;padding:14px 16px;border-radius:8px;border-left:4px solid #20c997;">
+                            <div style="font-size:11px;color:#6c757d;text-transform:uppercase;font-weight:600;letter-spacing:0.5px;">Start Date</div>
+                            <div style="font-size:15px;color:#1a1a2e;font-weight:500;margin-top:4px;">${fmtDate(startDate)}</div>
+                        </div>
+                        <div style="background:#f8f9fa;padding:14px 16px;border-radius:8px;border-left:4px solid #e83e8c;">
+                            <div style="font-size:11px;color:#6c757d;text-transform:uppercase;font-weight:600;letter-spacing:0.5px;">End Date</div>
+                            <div style="font-size:15px;color:#1a1a2e;font-weight:500;margin-top:4px;">${fmtDate(endDate)}</div>
+                        </div>
+                    </div>
+
+                    <!-- Description -->
+                    <div style="margin-bottom:20px;">
+                        <h4 style="margin:0 0 8px;color:#1a1a2e;font-size:15px;">📝 Description</h4>
+                        <div style="background:#f8f9fa;padding:14px 16px;border-radius:8px;color:#495057;line-height:1.6;white-space:pre-wrap;font-size:14px;">${description}</div>
+                    </div>
+
+                    <!-- Key Deliverables -->
+                    <div style="margin-bottom:20px;">
+                        <h4 style="margin:0 0 8px;color:#1a1a2e;font-size:15px;">🎯 Key Deliverables</h4>
+                        <div style="background:#f8f9fa;padding:14px 16px;border-radius:8px;color:#495057;line-height:1.6;white-space:pre-wrap;font-size:14px;">${deliverables}</div>
+                    </div>
+
+                    <!-- Timestamps -->
+                    <div style="display:flex;gap:16px;color:#6c757d;font-size:12px;padding-top:12px;border-top:1px solid #e9ecef;">
+                        <span>📅 Created: ${fmtDate(createdAt)}</span>
+                        <span>🔄 Updated: ${fmtDate(updatedAt)}</span>
+                    </div>
+                </div>
+
+                <!-- Footer -->
+                <div style="padding:16px 24px;background:#f8f9fa;border-radius:0 0 12px 12px;display:flex;justify-content:flex-end;gap:10px;border-top:1px solid #e9ecef;">
+                    <button onclick="document.getElementById('projectDetailsModal').remove()" style="background:linear-gradient(135deg,#6c757d,#5a6268);color:#fff;border:none;padding:10px 24px;border-radius:8px;font-size:14px;font-weight:500;cursor:pointer;transition:all 0.2s;" onmouseover="this.style.transform='translateY(-1px)';this.style.boxShadow='0 4px 12px rgba(0,0,0,0.15)'" onmouseout="this.style.transform='none';this.style.boxShadow='none'">Close</button>
+                </div>
+            </div>
+            <style>
+                @keyframes fadeIn { from { opacity:0; } to { opacity:1; } }
+                @keyframes slideUp { from { opacity:0; transform:translateY(30px); } to { opacity:1; transform:translateY(0); } }
+            </style>
+        `;
+
+        document.body.appendChild(modal);
+
+        // Close when clicking outside
+        modal.addEventListener('click', function(e) {
+            if (e.target === modal) modal.remove();
+        });
+
+        // Close with Escape key
+        function escHandler(e) {
+            if (e.key === 'Escape') {
+                modal.remove();
+                document.removeEventListener('keydown', escHandler);
+            }
+        }
+        document.addEventListener('keydown', escHandler);
+
+    } catch (error) {
+        console.error('Error in viewProject:', error);
+        if (typeof customAlert === 'function') {
+            customAlert('Failed to load project details. ' + error.message, 'Error', 'error');
+        } else {
+            alert('Failed to load project details: ' + error.message);
+        }
+    }
 }
 
-
+window.viewProject = viewProject;
 
 function editProject(projectId) {
-
-    customAlert(`Editing project ${projectId}...nnProject editor will open for modifications to project details, timeline, budget, team assignments, milestones, and deliverables.`, "Edit Project", "info");
-
+    customAlert(`Editing project ${projectId}...\n\nProject editor will open for modifications to project details, timeline, budget, team assignments, milestones, and deliverables.`, "Edit Project", "info");
 }
 
 
