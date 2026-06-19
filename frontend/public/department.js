@@ -21764,22 +21764,27 @@ function filterPpeRecords() {
 
     
 
-    if (!searchInput || !projectFilter) return;
+    if (!searchInput || !projectFilter) {
+        console.warn('❌ Filter inputs not found');
+        return;
+    }
 
     
 
-    const searchTerm = searchInput.value.toLowerCase();
+    const searchTerm = searchInput.value.toLowerCase().trim();
 
-    const selectedProject = projectFilter.value;
+    const selectedProject = projectFilter.value.trim();
+    const selectedProjectLower = selectedProject.toLowerCase();
 
     
 
     const rows = document.querySelectorAll('.ppe-row');
     
-    console.log(`🔍 Filtering PPE records: search="${searchTerm}", selectedProject="${selectedProject}", totalRows=${rows.length}`);
+    console.log(`🔍 Filtering: search="${searchTerm}", selectedProject="${selectedProject}", totalRows=${rows.length}`);
 
     
 
+    let visibleCount = 0;
     rows.forEach((row, idx) => {
 
         const workerName = (row.querySelector('.worker-name')?.textContent || '').toLowerCase().trim();
@@ -21787,26 +21792,53 @@ function filterPpeRecords() {
         const workerId = (row.querySelector('.worker-id')?.textContent || '').toLowerCase().trim();
 
         const project = (row.querySelector('.project-name')?.textContent || '').trim();
+        const projectLower = project.toLowerCase();
 
         
 
         const matchesSearch = !searchTerm || workerName.includes(searchTerm) || workerId.includes(searchTerm);
 
-        const matchesProject = !selectedProject || project === selectedProject;
+        // Case-insensitive project comparison
+        const matchesProject = !selectedProject || projectLower === selectedProjectLower;
         
-        if (idx < 3) {
-            console.log(`  Row ${idx}: project="${project}", worker="${workerName}", search="${searchTerm}", match=${matchesSearch && matchesProject}`);
+        const shouldShow = matchesSearch && matchesProject;
+        
+        if (idx < 5) {
+            console.log(`  [${shouldShow ? '✓' : '✗'}] Row ${idx}: project="${project}" vs selected="${selectedProject}", worker="${workerName}"`);
         }
-
         
-
-        row.style.display = matchesSearch && matchesProject ? '' : 'none';
+        row.style.display = shouldShow ? '' : 'none';
+        if (shouldShow) visibleCount++;
 
     });
+    
+    console.log(`📊 Result: ${visibleCount}/${rows.length} rows visible`);
 
 }
 
 window.filterPpeRecords = filterPpeRecords;
+
+// Diagnostic function to check filter state
+window.diagnosticPpeFilter = function() {
+    const rows = document.querySelectorAll('.ppe-row');
+    const projectFilter = document.getElementById('ppeProjectFilter');
+    const projectsInTable = new Set();
+    
+    rows.forEach(row => {
+        const project = (row.querySelector('.project-name')?.textContent || '').trim();
+        projectsInTable.add(project);
+    });
+    
+    const dropdownOptions = Array.from(projectFilter?.options || []).map(o => ({ value: o.value, text: o.text }));
+    
+    console.log('🔧 PPE Filter Diagnostic:');
+    console.log('  Total PPE rows:', rows.length);
+    console.log('  Projects in table:', Array.from(projectsInTable));
+    console.log('  Dropdown options:', dropdownOptions);
+    console.log('  Selected dropdown value:', projectFilter?.value);
+    
+    return { rowCount: rows.length, projectsInTable: Array.from(projectsInTable), dropdownOptions };
+};
 
 document.addEventListener('DOMContentLoaded', () => {
     const searchInput = document.getElementById('ppeSearchInput');
@@ -21821,6 +21853,12 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Load projects into filter dropdown
     loadPpeProjects();
+    
+    // Auto-run diagnostic after projects load
+    setTimeout(() => {
+        console.log('🔍 Auto-running PPE filter diagnostic...');
+        window.diagnosticPpeFilter();
+    }, 2000);
 });
 
 async function loadPpeProjects() {
