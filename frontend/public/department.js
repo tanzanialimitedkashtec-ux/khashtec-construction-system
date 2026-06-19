@@ -1,4 +1,4 @@
-// Disabled: Allow localhost development
+﻿// Disabled: Allow localhost development
 
         // const PRODUCTION_FRONTEND_URL = 'https://khashtec-construction-system-production-e7b5.up.railway.app/frontend/public/department.html';
 
@@ -75451,15 +75451,47 @@ function deleteTransportCost(costId) {
 
     
 
-    if (confirm(`Are you sure you want to delete this transport cost?nn${cost.description}nAmount: ${formatCurrency(cost.amount)}`)) {
+    if (confirm(`Are you sure you want to delete this transport cost?\n\n${cost.description}\nAmount: ${formatCurrency(cost.amount)}`)) {
 
-        // For now, just show success - in a real implementation, this would call the API
+        fetch(`/api/transportCosts/${costId}`, {
 
-        showNotification(`ðŸ—‘ï¸ Transport cost #${costId} deleted successfully`, 'success');
+            method: 'DELETE',
 
-        loadTransportCosts();
+            headers: {
 
-        loadTransportCostSummary();
+                'Content-Type': 'application/json'
+
+            }
+
+        })
+
+        .then(response => response.json())
+
+        .then(data => {
+
+            if (data.success) {
+
+                showNotification(`🗑️ Transport cost #${costId} deleted successfully`, 'success');
+
+                loadTransportCosts();
+
+                loadTransportCostSummary();
+
+            } else {
+
+                showNotification(`Failed to delete transport cost: ${data.message}`, 'error');
+
+            }
+
+        })
+
+        .catch(error => {
+
+            console.error('Error deleting transport cost:', error);
+
+            showNotification(`Error deleting transport cost: ${error.message}`, 'error');
+
+        });
 
     }
 
@@ -80200,3 +80232,4 @@ async function uploadLeadershipPhoto(leaderId, inputElement) {
         else alert('An unexpected error occurred');
     }
 }
+

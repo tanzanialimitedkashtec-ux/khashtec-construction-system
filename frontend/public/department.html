@@ -104467,13 +104467,45 @@ function deleteTransportCost(costId) {
 
     if (confirm(`Are you sure you want to delete this transport cost?\n\n${cost.description}\nAmount: ${formatCurrency(cost.amount)}`)) {
 
-        // For now, just show success - in a real implementation, this would call the API
+        fetch(`/api/transportCosts/${costId}`, {
 
-        showNotification(`🗑️ Transport cost #${costId} deleted successfully`, 'success');
+            method: 'DELETE',
 
-        loadTransportCosts();
+            headers: {
 
-        loadTransportCostSummary();
+                'Content-Type': 'application/json'
+
+            }
+
+        })
+
+        .then(response => response.json())
+
+        .then(data => {
+
+            if (data.success) {
+
+                showNotification(`🗑️ Transport cost #${costId} deleted successfully`, 'success');
+
+                loadTransportCosts();
+
+                loadTransportCostSummary();
+
+            } else {
+
+                showNotification(`Failed to delete transport cost: ${data.message}`, 'error');
+
+            }
+
+        })
+
+        .catch(error => {
+
+            console.error('Error deleting transport cost:', error);
+
+            showNotification(`Error deleting transport cost: ${error.message}`, 'error');
+
+        });
 
     }
 
