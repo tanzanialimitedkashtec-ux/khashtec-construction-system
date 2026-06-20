@@ -946,7 +946,7 @@ router.get('/payment-tracking/history/:saleId', async (req, res) => {
         
         let history = [];
         try {
-            const [ph] = await db.execute(`
+            const phResult = await db.execute(`
                 SELECT 
                     ph.*,
                     u.name as recorded_by_name
@@ -955,16 +955,17 @@ router.get('/payment-tracking/history/:saleId', async (req, res) => {
                 WHERE ph.sale_id = ?
                 ORDER BY ph.payment_date DESC
             `, [saleId]);
-            history = ph;
+            history = Array.isArray(phResult) && Array.isArray(phResult[0]) ? phResult[0] : (Array.isArray(phResult) ? phResult : []);
         } catch (e) {
             console.log('payment_history table might not exist, falling back to financial_transactions');
         }
 
         if (history.length === 0) {
             // Check if it's a real estate sale in financial_transactions
-            const [ft] = await db.execute(`
+            let ftResult = await db.execute(`
                 SELECT * FROM financial_transactions WHERE id = ? AND type = 'Income'
             `, [saleId]);
+            const ft = Array.isArray(ftResult) && Array.isArray(ftResult[0]) ? ftResult[0] : (Array.isArray(ftResult) ? ftResult : []);
 
             if (ft.length > 0) {
                 const sale = ft[0];
@@ -1022,22 +1023,23 @@ router.post('/payment-tracking/send-reminder/:saleId', async (req, res) => {
         // Get sale and client details
         let sale = [];
         try {
-            const [s] = await db.execute(`
+            const sResult = await db.execute(`
                 SELECT s.*, c.full_name, c.phone, c.email
                 FROM sales s
                 LEFT JOIN clients c ON s.client_id = c.id
                 WHERE s.id = ?
             `, [saleId]);
-            sale = s;
+            sale = Array.isArray(sResult) && Array.isArray(sResult[0]) ? sResult[0] : (Array.isArray(sResult) ? sResult : []);
         } catch (e) {
             console.log('sales table might not exist, falling back to financial_transactions');
         }
 
         if (sale.length === 0) {
             // Check if it's a real estate sale
-            const [ft] = await db.execute(`
+            const ftResult = await db.execute(`
                 SELECT * FROM financial_transactions WHERE id = ? AND type = 'Income'
             `, [saleId]);
+            const ft = Array.isArray(ftResult) && Array.isArray(ftResult[0]) ? ftResult[0] : (Array.isArray(ftResult) ? ftResult : []);
             
             if (ft.length === 0) {
                 return res.status(404).json({ success: false, error: 'Sale not found' });
