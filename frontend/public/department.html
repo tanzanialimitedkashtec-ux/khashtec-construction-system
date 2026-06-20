@@ -79581,6 +79581,7 @@ async function editPropertyDetails(){
             <td>Docs Available</td>
             <td>${p.tpNumber || '-'}</td>
             <td>${p.description ? p.description.substring(0, 30) + '...' : '-'}</td>
+            <td>${p.updateReason || '-'}</td>
             <td><button type="button" class="action" onclick="document.getElementById('editPropertySelect').value='${p.id}';loadPropertyDetails();window.scrollTo({top:document.getElementById('propertyEditForm').offsetTop-20,behavior:'smooth'});">✏️ Edit</button></td>
         </tr>
     `).join('') : `<tr><td colspan="10" style="text-align:center;color:#666;padding:15px;">No properties found in database</td></tr>`;
@@ -79607,6 +79608,7 @@ async function editPropertyDetails(){
                         <th>Survey Plans</th>
                         <th>Title Deed/TP Number</th>
                         <th>Property Description</th>
+                        <th>Update Reason</th>
                         <th>Actions</th>
                     </tr>
                 </thead>
