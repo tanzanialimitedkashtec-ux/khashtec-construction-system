@@ -52410,6 +52410,7 @@ async function editPropertyDetails(){
             status: statusMap[p.status] || (p.status ? String(p.status).toLowerCase() : 'available'),
             tpNumber: p.tpNumber || p.tp_number || '',
             description: p.description || '',
+            updateReason: p.updateReason || p.update_reason || '',
             createdAt: p.created_at || p.dateAdded || ''
         };
     });
@@ -52490,139 +52491,57 @@ async function editPropertyDetails(){
         <div id="propertyEditForm" class="hidden">
 
             <form id="editPropertyForm" onsubmit="event.preventDefault(); savePropertyEdits(event);">
-
-                <div class="form-row">
-
-                    <div class="form-group">
-
-                        <label>Plot Number *</label>
-
-                        <input type="text" id="editPlotNumber" required />
-
-                    </div>
-
-                    <div class="form-group">
-
-                        <label>Property Type *</label>
-
-                        <select id="editPropertyType" required>
-
-                            <option value="">Select Property Type</option>
-
-                            <option value="residential">Residential Plot</option>
-
-                            <option value="commercial">Commercial Plot</option>
-
-                            <option value="industrial">Industrial Plot</option>
-
-                            <option value="agricultural">Agricultural Land</option>
-
-                        </select>
-
-                    </div>
-
+                <div class="task-table-container" style="overflow-x: auto; margin-bottom: 20px;">
+                    <table class="task-table" style="width: 100%; white-space: nowrap;">
+                        <thead>
+                            <tr>
+                                <th>Plot Number *</th>
+                                <th>Property Type *</th>
+                                <th>Location *</th>
+                                <th>Area (sqm) *</th>
+                                <th>Price (TZS) *</th>
+                                <th>Status *</th>
+                                <th>Update Survey Plans</th>
+                                <th>Title Deed/TP Number</th>
+                                <th>Property Description</th>
+                                <th>Update Reason</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><input type="text" id="editPlotNumber" required style="width: 150px; padding: 8px;" /></td>
+                                <td>
+                                    <select id="editPropertyType" required style="width: 150px; padding: 8px;">
+                                        <option value="">Select Property Type</option>
+                                        <option value="residential">Residential Plot</option>
+                                        <option value="commercial">Commercial Plot</option>
+                                        <option value="industrial">Industrial Plot</option>
+                                        <option value="agricultural">Agricultural Land</option>
+                                    </select>
+                                </td>
+                                <td><input type="text" id="editPropertyLocation" required style="width: 150px; padding: 8px;" /></td>
+                                <td><input type="number" id="editPropertyArea" required style="width: 120px; padding: 8px;" /></td>
+                                <td><input type="number" id="editPropertyPrice" required style="width: 150px; padding: 8px;" /></td>
+                                <td>
+                                    <select id="editPropertyStatus" required style="width: 150px; padding: 8px;">
+                                        <option value="">Select Status</option>
+                                        <option value="available">Available</option>
+                                        <option value="reserved">Reserved</option>
+                                        <option value="sold">Sold</option>
+                                        <option value="under-development">Under Development</option>
+                                    </select>
+                                </td>
+                                <td><input type="file" id="editSurveyPlans" accept=".pdf,.jpg,.png" multiple style="width: 200px; padding: 8px;" /></td>
+                                <td><input type="text" id="editTpNumber" style="width: 150px; padding: 8px;" /></td>
+                                <td><textarea id="editPropertyDescription" rows="2" style="width: 200px; padding: 8px;"></textarea></td>
+                                <td><textarea id="updateReason" rows="2" placeholder="Reason for property update..." style="width: 200px; padding: 8px;"></textarea></td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>
-
-                
-
-                <div class="form-row">
-
-                    <div class="form-group">
-
-                        <label>Location *</label>
-
-                        <input type="text" id="editPropertyLocation" required />
-
-                    </div>
-
-                    <div class="form-group">
-
-                        <label>Area (sqm) *</label>
-
-                        <input type="number" id="editPropertyArea" required />
-
-                    </div>
-
+                <div style="text-align: right;">
+                    <button type="submit" class="action">Update Property</button>
                 </div>
-
-                
-
-                <div class="form-row">
-
-                    <div class="form-group">
-
-                        <label>Price (TZS) *</label>
-
-                        <input type="number" id="editPropertyPrice" required />
-
-                    </div>
-
-                    <div class="form-group">
-
-                        <label>Status *</label>
-
-                        <select id="editPropertyStatus" required>
-
-                            <option value="">Select Status</option>
-
-                            <option value="available">Available</option>
-
-                            <option value="reserved">Reserved</option>
-
-                            <option value="sold">Sold</option>
-
-                            <option value="under-development">Under Development</option>
-
-                        </select>
-
-                    </div>
-
-                </div>
-
-                
-
-                <div class="form-group">
-
-                    <label>Update Survey Plans</label>
-
-                    <input type="file" id="editSurveyPlans" accept=".pdf,.jpg,.png" multiple />
-
-                </div>
-
-                
-
-                <div class="form-group">
-
-                    <label>Title Deed/TP Number</label>
-
-                    <input type="text" id="editTpNumber" />
-
-                </div>
-
-                
-
-                <div class="form-group">
-
-                    <label>Property Description</label>
-
-                    <textarea id="editPropertyDescription" rows="3"></textarea>
-
-                </div>
-
-                
-
-                <div class="form-group">
-
-                    <label>Update Reason</label>
-
-                    <textarea id="updateReason" rows="2" placeholder="Reason for property update..."></textarea>
-
-                </div>
-
-                
-
-                <button type="submit" class="action">Update Property</button>
-
             </form>
 
         </div>

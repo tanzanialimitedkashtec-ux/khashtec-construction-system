@@ -4315,6 +4315,10 @@ app.put('/api/properties/:id', async (req, res) => {
             fields.push('description = ?');
             values.push(data.description);
         }
+        if (data.updateReason !== undefined || data.update_reason !== undefined) {
+            fields.push('update_reason = ?');
+            values.push(data.updateReason !== undefined ? data.updateReason : data.update_reason);
+        }
 
         if (fields.length === 0) {
             return res.status(400).json({ success: false, error: 'No valid fields to update' });
