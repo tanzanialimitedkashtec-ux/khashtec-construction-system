@@ -79258,7 +79258,7 @@ async function showPaymentStatistics() {
                             data: {
                                 labels: ['Pending', 'Approved', 'Paid'],
                                 datasets: [{
-                                    data: [${stats.pending || 0}, ${stats.approved || 0}, ${stats.paid || 0}],
+                                    data: [stats.pending || 0, stats.approved || 0, stats.paid || 0],
                                     backgroundColor: ['#ffc107', '#17a2b8', '#28a745'],
                                     borderWidth: 0,
                                     hoverOffset: 4
