@@ -45525,9 +45525,8 @@ function displayProjects(projects) {
                 <td>
 
                     <div class="project-actions">
-
-                        <button class="action-btn progress" onclick="updateProgress('${project.id}')" title="Update Progress">ðŸ“Š</button>
-
+                        <button class="action-btn view" onclick="viewProject('${project.id}')" title="View Details">👁️</button>
+                        <button class="action-btn delete" onclick="deleteProject('${project.id}')" title="Delete Project">🗑️</button>
                     </div>
 
                 </td>
@@ -45638,18 +45637,59 @@ async function viewProject(projectId) {
 
 
 
-function editProject(projectId) {
+async function deleteProject(projectId) {
+    if (!confirm(`Are you sure you want to delete project ${projectId}? This action cannot be undone.`)) {
+        return;
+    }
 
-    customAlert(`Editing project ${projectId}...nnProject editor will open for modifications to project details, timeline, budget, team assignments, milestones, and deliverables.`, "Edit Project", "info");
+    try {
+        const baseUrl = (typeof KashTecAPI !== 'undefined' && KashTecAPI.baseUrl) ? KashTecAPI.baseUrl : window.location.origin;
+        const token = (typeof KashTecAPI !== 'undefined' && typeof KashTecAPI.getAuthToken === 'function')
+            ? KashTecAPI.getAuthToken()
+            : (typeof sessionManager !== 'undefined' && typeof sessionManager.getAuthToken === 'function')
+                ? sessionManager.getAuthToken()
+                : localStorage.getItem('authToken') || '';
 
-}
+        const headers = {
+            'Content-Type': 'application/json'
+        };
+        if (token) {
+            headers.Authorization = `Bearer ${token}`;
+        }
 
+        const response = await fetch(`${baseUrl}/api/projects/${projectId}`, {
+            method: 'DELETE',
+            headers
+        });
 
+        if (!response.ok) {
+            const errorText = await response.text();
+            throw new Error(errorText || `HTTP ${response.status}`);
+        }
 
-function updateProgress(projectId) {
+        const result = await response.json();
+        if (!result.success) {
+            throw new Error(result.error || 'Failed to delete project');
+        }
 
-    customAlert(`Updating progress for project ${projectId}...nnProgress update form will open for recording completed milestones, updating percentage complete, and documenting current project status.`, "Update Progress", "info");
-
+        if (typeof customAlert === 'function') {
+            customAlert('Project deleted successfully.', 'Success', 'success');
+        } else {
+            alert('Project deleted successfully.');
+        }
+        
+        // Refresh the list
+        if (typeof loadProjects === 'function') {
+            loadProjects();
+        }
+    } catch (error) {
+        console.error('Error deleting project:', error);
+        if (typeof customAlert === 'function') {
+            customAlert(`Failed to delete project. ${error.message}`, 'Error', 'error');
+        } else {
+            alert(`Failed to delete project. ${error.message}`);
+        }
+    }
 }
 
 
