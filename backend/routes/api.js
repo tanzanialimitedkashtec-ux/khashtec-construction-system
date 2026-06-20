@@ -811,27 +811,39 @@ router.get('/payment-tracking', async (req, res) => {
 // Get payment statistics and summary
 router.get('/payment-tracking/statistics', async (req, res) => {
     try {
-        const [stats] = await db.execute(`
-            SELECT 
-                COUNT(*) as active_installments,
-                SUM(CASE WHEN outstanding_balance > 0 THEN outstanding_balance ELSE 0 END) as total_outstanding,
-                SUM(CASE WHEN payment_status = 'completed' THEN paid_amount ELSE 0 END) as total_collected,
-                SUM(CASE WHEN DATE(next_payment_date) = DATE(CURDATE()) THEN installment_amount ELSE 0 END) as due_today,
-                SUM(CASE WHEN DATE(next_payment_date) < DATE(CURDATE()) AND payment_status != 'completed' THEN 1 ELSE 0 END) as overdue_count,
-                SUM(CASE WHEN DATE(next_payment_date) BETWEEN DATE_SUB(CURDATE(), INTERVAL 30 DAY) AND DATE(CURDATE()) THEN paid_amount ELSE 0 END) as this_month_collections
-            FROM sales 
-            WHERE payment_status IN ('pending', 'partial', 'completed', 'overdue')
-        `);
+        let stats = [{}];
+        try {
+            const statsResult = await db.execute(`
+                SELECT 
+                    COUNT(*) as active_installments,
+                    SUM(CASE WHEN outstanding_balance > 0 THEN outstanding_balance ELSE 0 END) as total_outstanding,
+                    SUM(CASE WHEN payment_status = 'completed' THEN paid_amount ELSE 0 END) as total_collected,
+                    SUM(CASE WHEN DATE(next_payment_date) = DATE(CURDATE()) THEN installment_amount ELSE 0 END) as due_today,
+                    SUM(CASE WHEN DATE(next_payment_date) < DATE(CURDATE()) AND payment_status != 'completed' THEN 1 ELSE 0 END) as overdue_count,
+                    SUM(CASE WHEN DATE(next_payment_date) BETWEEN DATE_SUB(CURDATE(), INTERVAL 30 DAY) AND DATE(CURDATE()) THEN paid_amount ELSE 0 END) as this_month_collections
+                FROM sales 
+                WHERE payment_status IN ('pending', 'partial', 'completed', 'overdue')
+            `);
+            stats = Array.isArray(statsResult) && Array.isArray(statsResult[0]) ? statsResult[0] : (Array.isArray(statsResult) ? statsResult : [{}]);
+        } catch (e) {
+            console.log('sales table might not exist for statistics');
+        }
         
-        const [monthlyData] = await db.execute(`
-            SELECT 
-                DATE_FORMAT(payment_date, '%Y-%m') as month,
-                SUM(amount) as total_collected
-            FROM payment_history 
-            WHERE payment_date >= DATE_SUB(CURDATE(), INTERVAL 6 MONTH)
-            GROUP BY DATE_FORMAT(payment_date, '%Y-%m')
-            ORDER BY month DESC
-        `);
+        let monthlyData = [];
+        try {
+            const monthlyResult = await db.execute(`
+                SELECT 
+                    DATE_FORMAT(payment_date, '%Y-%m') as month,
+                    SUM(amount) as total_collected
+                FROM payment_history 
+                WHERE payment_date >= DATE_SUB(CURDATE(), INTERVAL 6 MONTH)
+                GROUP BY DATE_FORMAT(payment_date, '%Y-%m')
+                ORDER BY month DESC
+            `);
+            monthlyData = Array.isArray(monthlyResult) && Array.isArray(monthlyResult[0]) ? monthlyResult[0] : (Array.isArray(monthlyResult) ? monthlyResult : []);
+        } catch (e) {
+            console.log('payment_history table might not exist for monthly stats');
+        }
         
         res.json({ 
             success: true, 

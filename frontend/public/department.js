@@ -54427,8 +54427,6 @@ async function trackPaymentProgress(){
 
                 <button class="btn-primary" onclick="refreshPaymentData()">Refresh Data</button>
 
-                <button class="btn-secondary" onclick="exportPaymentReport()">Export Report</button>
-
             </div>
 
             
@@ -54664,6 +54662,22 @@ async function loadPaymentTrackingData() {
             };
         });
         
+        // --- LOCAL METRICS CALCULATION (Fallback for missing legacy tables) ---
+        let activeCount = 0;
+        let outstandingTotal = 0;
+        let overdueCountLocal = 0;
+
+        transformedPayments.forEach(p => {
+            if (p.outstanding_balance > 0) activeCount++;
+            outstandingTotal += p.outstanding_balance || 0;
+            if (p.payment_status === 'overdue' || (p.next_payment_date && new Date(p.next_payment_date) < new Date() && p.payment_status !== 'completed')) {
+                overdueCountLocal++;
+            }
+        });
+
+        // Store globally or temporarily attach to window so loadPaymentStatistics can use them as fallbacks
+        window._localPaymentMetrics = { activeCount, outstandingTotal, overdueCountLocal };
+        
         updatePaymentTable(transformedPayments);
 
     } else {
@@ -54689,26 +54703,20 @@ async function loadPaymentStatistics() {
         const byStatus = stats.by_payment_status || {};
 
         const pendingAmt = (byStatus.pending && byStatus.pending.total_amount) || 0;
-
         const processingAmt = (byStatus.processing && byStatus.processing.total_amount) || 0;
-
-        const outstanding = stats.total_outstanding != null ? stats.total_outstanding : (pendingAmt + processingAmt);
-
+        
+        // Use local fallback if stats are empty
+        const local = window._localPaymentMetrics || { activeCount: 0, outstandingTotal: 0, overdueCountLocal: 0 };
+        
+        const outstanding = stats.total_outstanding != null ? stats.total_outstanding : (pendingAmt + processingAmt || local.outstandingTotal);
         const pendingCount = (byStatus.pending && byStatus.pending.count) || 0;
-
         const processingCount = (byStatus.processing && byStatus.processing.count) || 0;
-
-        const activeInstallments = stats.active_installments != null ? stats.active_installments : (pendingCount + processingCount);
-
+        const activeInstallments = stats.active_installments != null ? stats.active_installments : (pendingCount + processingCount || local.activeCount);
         const monthlySummary = stats.monthly_summary || [];
-
         const currentMonth = new Date().toISOString().slice(0, 7);
-
         const thisMonth = monthlySummary.find(m => m.month === currentMonth);
-
         const monthlyCollections = stats.this_month_collections != null ? stats.this_month_collections : (thisMonth ? thisMonth.amount : 0);
-
-        const overdueCount = stats.overdue_count != null ? stats.overdue_count : ((byStatus.failed && byStatus.failed.count) || 0);
+        const overdueCount = stats.overdue_count != null ? stats.overdue_count : (((byStatus.failed && byStatus.failed.count) || 0) || local.overdueCountLocal);
 
         const elActive = document.getElementById('activeInstallments');
 
@@ -55079,23 +55087,15 @@ function filterPaymentTable() {
     
 
     rows.forEach(row => {
-
         const text = row.textContent.toLowerCase();
-
         const statusCell = row.querySelector('.status-badge');
-
-        const status = statusCell ? statusCell.textContent.toLowerCase() : '';
-
+        // Added trim() to fix whitespace mismatch
+        const status = statusCell ? statusCell.textContent.trim().toLowerCase() : '';
         
-
         const matchesSearch = text.includes(searchTerm);
-
         const matchesStatus = !statusFilter || status === statusFilter.toLowerCase();
-
         
-
         row.style.display = matchesSearch && matchesStatus ? '' : 'none';
-
     });
 
 }
