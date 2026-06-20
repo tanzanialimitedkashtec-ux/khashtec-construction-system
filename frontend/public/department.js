@@ -41635,7 +41635,6 @@ async function loadPaymentTracking() {
 
                         <div class="tracking-actions">
 
-                            <button class="action-btn view" onclick="viewTrackingDetails('${tracking.id}')" title="View Details">👁️</button>
                             <button class="action-btn delete" onclick="deleteTracking('${tracking.id}')" title="Delete Tracking">🗑️</button>
 
                         </div>
@@ -41907,8 +41906,7 @@ function loadSampleTracking() {
 
                 <div class="tracking-actions">
 
-                    <button class="action-btn view" onclick="viewTrackingDetails('${tracking.id}')" title="View Details">👁️</button>
-                            <button class="action-btn delete" onclick="deleteTracking('${tracking.id}')" title="Delete Tracking">🗑️</button>
+                    <button class="action-btn delete" onclick="deleteTracking('${tracking.id}')" title="Delete Tracking">🗑️</button>
 
                 </div>
 
@@ -41951,7 +41949,6 @@ async function deleteTracking(trackingId) {
                             if (row) row.remove();
                         }
                     });
-                    loadPaymentTracking();
                 } else {
                     customAlert(response.message || 'Error deleting tracking', 'Error', 'error');
                 }
@@ -41973,7 +41970,6 @@ async function deleteTracking(trackingId) {
                             if (row) row.remove();
                         }
                     });
-                    loadPaymentTracking();
                 } else {
                     customAlert('Error deleting tracking', 'Error', 'error');
                 }
