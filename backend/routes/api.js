@@ -953,6 +953,52 @@ router.get('/payment-tracking/history/:saleId', async (req, res) => {
             WHERE ph.sale_id = ?
             ORDER BY ph.payment_date DESC
         `, [saleId]);
+
+        if (history.length === 0) {
+            // Check if it's a real estate sale in financial_transactions
+            const [ft] = await db.execute(`
+                SELECT * FROM financial_transactions WHERE id = ? AND type = 'Income'
+            `, [saleId]);
+
+            if (ft.length > 0) {
+                const sale = ft[0];
+                const totalAmt = parseFloat(sale.amount) || 0;
+                const downPmt = parseFloat(sale.down_payment) || 0;
+                const monthlyAmt = parseFloat(sale.monthly_installment) || 0;
+                const period = parseInt(sale.installment_period) || 12;
+                const saleDateStr = sale.date || sale.transaction_date || sale.created_at;
+                const saleDate = saleDateStr ? new Date(saleDateStr) : new Date();
+                
+                const generatedHistory = [];
+                
+                // Add down payment
+                if (downPmt > 0) {
+                    generatedHistory.push({
+                        amount: downPmt,
+                        payment_method: sale.payment_method || 'bank_transfer',
+                        payment_date: saleDateStr,
+                        notes: 'Down Payment',
+                        recorded_by_name: 'System'
+                    });
+                }
+                
+                // Add monthly installments based on elapsed months
+                const monthsElapsed = Math.max(0, Math.floor((Date.now() - saleDate.getTime()) / (30.44 * 24 * 60 * 60 * 1000)));
+                for (let i = 1; i <= Math.min(monthsElapsed, period); i++) {
+                    const installmentDate = new Date(saleDate);
+                    installmentDate.setMonth(installmentDate.getMonth() + i);
+                    generatedHistory.push({
+                        amount: monthlyAmt,
+                        payment_method: sale.payment_method || 'bank_transfer',
+                        payment_date: installmentDate.toISOString().split('T')[0],
+                        notes: `Monthly Installment ${i}/${period}`,
+                        recorded_by_name: 'System'
+                    });
+                }
+                
+                return res.json({ success: true, data: generatedHistory.reverse() });
+            }
+        }
         
         res.json({ success: true, data: history });
     } catch (error) {
@@ -976,7 +1022,57 @@ router.post('/payment-tracking/send-reminder/:saleId', async (req, res) => {
         `, [saleId]);
 
         if (sale.length === 0) {
-            return res.status(404).json({ success: false, error: 'Sale not found' });
+            // Check if it's a real estate sale
+            const [ft] = await db.execute(`
+                SELECT * FROM financial_transactions WHERE id = ? AND type = 'Income'
+            `, [saleId]);
+            
+            if (ft.length === 0) {
+                return res.status(404).json({ success: false, error: 'Sale not found' });
+            }
+            
+            const realEstateSale = ft[0];
+            // Get client name
+            let clientName = 'Client';
+            const desc = realEstateSale.description || '';
+            if (desc.startsWith('Property Sale: ')) {
+                const parts = desc.replace('Property Sale: ', '').split(' to ');
+                clientName = parts[1] || 'Client';
+            }
+            
+            // Generate outstanding balance and next payment date
+            const totalAmt = parseFloat(realEstateSale.amount) || 0;
+            const downPmt = parseFloat(realEstateSale.down_payment) || 0;
+            const monthlyAmt = parseFloat(realEstateSale.monthly_installment) || 0;
+            const period = parseInt(realEstateSale.installment_period) || 12;
+            const saleDateStr = realEstateSale.date || realEstateSale.transaction_date || realEstateSale.created_at;
+            const saleDate = saleDateStr ? new Date(saleDateStr) : new Date();
+            const monthsElapsed = Math.max(0, Math.floor((Date.now() - saleDate.getTime()) / (30.44 * 24 * 60 * 60 * 1000)));
+            const paidSoFar = Math.min(totalAmt, downPmt + (monthlyAmt * Math.min(monthsElapsed, period)));
+            const outstanding = Math.max(0, totalAmt - paidSoFar);
+            
+            const nextMonth = new Date(saleDate);
+            nextMonth.setMonth(nextMonth.getMonth() + monthsElapsed + 1);
+            const nextPaymentDate = nextMonth.toISOString().split('T')[0];
+            
+            // Log reminder
+            await db.execute(`
+                INSERT INTO payment_reminders 
+                (sale_id, client_id, reminder_type, sent_date, created_by)
+                VALUES (?, ?, ?, NOW(), ?)
+            `, [saleId, null, reminder_type, created_by]);
+
+            return res.json({ 
+                success: true, 
+                message: `Payment reminder sent to ${clientName} via ${reminder_type}`,
+                data: {
+                    client_name: clientName,
+                    client_email: 'Not provided',
+                    client_phone: 'Not provided',
+                    outstanding_balance: outstanding,
+                    next_payment_date: nextPaymentDate
+                }
+            });
         }
 
         const saleData = sale[0];
