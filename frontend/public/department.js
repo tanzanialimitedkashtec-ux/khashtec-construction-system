@@ -54708,15 +54708,15 @@ async function loadPaymentStatistics() {
         // Use local fallback if stats are empty
         const local = window._localPaymentMetrics || { activeCount: 0, outstandingTotal: 0, overdueCountLocal: 0 };
         
-        const outstanding = stats.total_outstanding != null ? stats.total_outstanding : (pendingAmt + processingAmt || local.outstandingTotal);
+        const outstanding = stats.total_outstanding || local.outstandingTotal || pendingAmt + processingAmt || 0;
         const pendingCount = (byStatus.pending && byStatus.pending.count) || 0;
         const processingCount = (byStatus.processing && byStatus.processing.count) || 0;
-        const activeInstallments = stats.active_installments != null ? stats.active_installments : (pendingCount + processingCount || local.activeCount);
+        const activeInstallments = stats.active_installments || local.activeCount || pendingCount + processingCount || 0;
         const monthlySummary = stats.monthly_summary || [];
         const currentMonth = new Date().toISOString().slice(0, 7);
         const thisMonth = monthlySummary.find(m => m.month === currentMonth);
-        const monthlyCollections = stats.this_month_collections != null ? stats.this_month_collections : (thisMonth ? thisMonth.amount : 0);
-        const overdueCount = stats.overdue_count != null ? stats.overdue_count : (((byStatus.failed && byStatus.failed.count) || 0) || local.overdueCountLocal);
+        const monthlyCollections = stats.this_month_collections || (thisMonth ? thisMonth.amount : 0) || 0;
+        const overdueCount = stats.overdue_count || local.overdueCountLocal || ((byStatus.failed && byStatus.failed.count) || 0);
 
         const elActive = document.getElementById('activeInstallments');
 
