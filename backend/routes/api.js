@@ -944,15 +944,21 @@ router.get('/payment-tracking/history/:saleId', async (req, res) => {
     try {
         const { saleId } = req.params;
         
-        const [history] = await db.execute(`
-            SELECT 
-                ph.*,
-                u.name as recorded_by_name
-            FROM payment_history ph
-            LEFT JOIN users u ON ph.created_by = u.id
-            WHERE ph.sale_id = ?
-            ORDER BY ph.payment_date DESC
-        `, [saleId]);
+        let history = [];
+        try {
+            const [ph] = await db.execute(`
+                SELECT 
+                    ph.*,
+                    u.name as recorded_by_name
+                FROM payment_history ph
+                LEFT JOIN users u ON ph.created_by = u.id
+                WHERE ph.sale_id = ?
+                ORDER BY ph.payment_date DESC
+            `, [saleId]);
+            history = ph;
+        } catch (e) {
+            console.log('payment_history table might not exist, falling back to financial_transactions');
+        }
 
         if (history.length === 0) {
             // Check if it's a real estate sale in financial_transactions
@@ -1014,12 +1020,18 @@ router.post('/payment-tracking/send-reminder/:saleId', async (req, res) => {
         const { reminder_type, created_by } = req.body;
 
         // Get sale and client details
-        const [sale] = await db.execute(`
-            SELECT s.*, c.full_name, c.phone, c.email
-            FROM sales s
-            LEFT JOIN clients c ON s.client_id = c.id
-            WHERE s.id = ?
-        `, [saleId]);
+        let sale = [];
+        try {
+            const [s] = await db.execute(`
+                SELECT s.*, c.full_name, c.phone, c.email
+                FROM sales s
+                LEFT JOIN clients c ON s.client_id = c.id
+                WHERE s.id = ?
+            `, [saleId]);
+            sale = s;
+        } catch (e) {
+            console.log('sales table might not exist, falling back to financial_transactions');
+        }
 
         if (sale.length === 0) {
             // Check if it's a real estate sale
@@ -1056,11 +1068,15 @@ router.post('/payment-tracking/send-reminder/:saleId', async (req, res) => {
             const nextPaymentDate = nextMonth.toISOString().split('T')[0];
             
             // Log reminder
-            await db.execute(`
-                INSERT INTO payment_reminders 
-                (sale_id, client_id, reminder_type, sent_date, created_by)
-                VALUES (?, ?, ?, NOW(), ?)
-            `, [saleId, null, reminder_type, created_by]);
+            try {
+                await db.execute(`
+                    INSERT INTO payment_reminders 
+                    (sale_id, client_id, reminder_type, sent_date, created_by)
+                    VALUES (?, ?, ?, NOW(), ?)
+                `, [saleId, null, reminder_type, created_by]);
+            } catch (e) {
+                console.log('payment_reminders table might not exist, skipping log');
+            }
 
             return res.json({ 
                 success: true, 
@@ -1078,11 +1094,15 @@ router.post('/payment-tracking/send-reminder/:saleId', async (req, res) => {
         const saleData = sale[0];
 
         // Log reminder for now (in production, integrate with email/SMS service)
-        await db.execute(`
-            INSERT INTO payment_reminders 
-            (sale_id, client_id, reminder_type, sent_date, created_by)
-            VALUES (?, ?, ?, NOW(), ?)
-        `, [saleId, saleData.client_id, reminder_type, created_by]);
+        try {
+            await db.execute(`
+                INSERT INTO payment_reminders 
+                (sale_id, client_id, reminder_type, sent_date, created_by)
+                VALUES (?, ?, ?, NOW(), ?)
+            `, [saleId, saleData.client_id, reminder_type, created_by]);
+        } catch (e) {
+            console.log('payment_reminders table might not exist, skipping log');
+        }
 
         // TODO: Integrate with actual email/SMS service
         // sendEmail(saleData.email, reminderContent);
