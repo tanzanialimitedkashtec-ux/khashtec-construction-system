@@ -972,35 +972,64 @@ router.get('/payment-tracking/history/:saleId', async (req, res) => {
                 const totalAmt = parseFloat(sale.amount) || 0;
                 const downPmt = parseFloat(sale.down_payment) || 0;
                 const monthlyAmt = parseFloat(sale.monthly_installment) || 0;
-                const period = parseInt(sale.installment_period) || 12;
+                const period = parseInt(sale.installment_period) || 0;
                 const saleDateStr = sale.date || sale.transaction_date || sale.created_at;
                 const saleDate = saleDateStr ? new Date(saleDateStr) : new Date();
                 
                 const generatedHistory = [];
                 
-                // Add down payment
-                if (downPmt > 0) {
+                // If it's a full payment (no installments)
+                if (period <= 1 && downPmt === 0 && monthlyAmt === 0) {
                     generatedHistory.push({
-                        amount: downPmt,
+                        amount: totalAmt,
                         payment_method: sale.payment_method || 'bank_transfer',
                         payment_date: saleDateStr,
-                        notes: 'Down Payment',
+                        notes: 'Full Payment',
                         recorded_by_name: 'System'
                     });
-                }
-                
-                // Add monthly installments based on elapsed months
-                const monthsElapsed = Math.max(0, Math.floor((Date.now() - saleDate.getTime()) / (30.44 * 24 * 60 * 60 * 1000)));
-                for (let i = 1; i <= Math.min(monthsElapsed, period); i++) {
-                    const installmentDate = new Date(saleDate);
-                    installmentDate.setMonth(installmentDate.getMonth() + i);
-                    generatedHistory.push({
-                        amount: monthlyAmt,
-                        payment_method: sale.payment_method || 'bank_transfer',
-                        payment_date: installmentDate.toISOString().split('T')[0],
-                        notes: `Monthly Installment ${i}/${period}`,
-                        recorded_by_name: 'System'
-                    });
+                } else {
+                    // It's an installment plan
+                    let nextInstallmentIndex = 1;
+                    
+                    if (downPmt > 0) {
+                        generatedHistory.push({
+                            amount: downPmt,
+                            payment_method: sale.payment_method || 'bank_transfer',
+                            payment_date: saleDateStr,
+                            notes: 'Down Payment',
+                            recorded_by_name: 'System'
+                        });
+                    } else if (monthlyAmt > 0) {
+                        // If no down payment, first installment was paid on day 1
+                        generatedHistory.push({
+                            amount: monthlyAmt,
+                            payment_method: sale.payment_method || 'bank_transfer',
+                            payment_date: saleDateStr,
+                            notes: `Monthly Installment 1/${period || 12}`,
+                            recorded_by_name: 'System'
+                        });
+                        nextInstallmentIndex = 2;
+                    }
+                    
+                    // Add monthly installments based on elapsed months
+                    const monthsElapsed = Math.max(0, Math.floor((Date.now() - saleDate.getTime()) / (30.44 * 24 * 60 * 60 * 1000)));
+                    
+                    const p = period || 12;
+                    for (let i = 1; i <= monthsElapsed; i++) {
+                        if (nextInstallmentIndex > p) break;
+                        
+                        const installmentDate = new Date(saleDate);
+                        installmentDate.setMonth(installmentDate.getMonth() + i);
+                        
+                        generatedHistory.push({
+                            amount: monthlyAmt,
+                            payment_method: sale.payment_method || 'bank_transfer',
+                            payment_date: installmentDate.toISOString().split('T')[0],
+                            notes: `Monthly Installment ${nextInstallmentIndex}/${p}`,
+                            recorded_by_name: 'System'
+                        });
+                        nextInstallmentIndex++;
+                    }
                 }
                 
                 return res.json({ success: true, data: generatedHistory.reverse() });
