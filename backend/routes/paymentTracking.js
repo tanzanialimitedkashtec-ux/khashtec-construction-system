@@ -110,7 +110,7 @@ router.get('/', async (req, res) => {
                             const monthsElapsed = saleDate ? Math.max(0, Math.floor((Date.now() - new Date(saleDate).getTime()) / (30.44 * 24 * 60 * 60 * 1000))) : 0;
                             paidSoFar = Math.min(totalAmt, downPmt + (monthlyAmt * Math.min(monthsElapsed, period)));
                             outstanding = Math.max(0, totalAmt - paidSoFar);
-                            isCompleted = outstanding <= 0 || sale.status === 'completed';
+                            isCompleted = outstanding <= 0 || sale.status === 'completed' || sale.status === 'Processed' || sale.status === 'Approved';
                             
                             if (!isCompleted && saleDate) {
                                 const nextMonth = new Date(saleDate);
@@ -584,21 +584,35 @@ router.get('/statistics', async (req, res) => {
             try {
                 // Active installments: sales with installment payment that are not completed
                 const activeResult = await db.execute(`
-                    SELECT COUNT(*) as active_count,
-                           SUM(amount) as total_sale_amount,
-                           SUM(COALESCE(down_payment, 0)) as total_down_payments,
-                           SUM(COALESCE(monthly_installment, 0)) as total_monthly
-                    FROM financial_transactions
+                    SELECT * FROM financial_transactions
                     WHERE type = 'Income'
                       AND (payment_method = 'installments' OR payment_method = 'installment')
-                      AND (status != 'completed' OR status IS NULL)
+                      AND (status NOT IN ('completed', 'Processed', 'Approved') OR status IS NULL)
                 `);
                 const activeRows = normalizeRows(activeResult);
+                let active_count = 0;
+                let total_outstanding = 0;
+
                 if (activeRows && activeRows.length > 0) {
-                    statistics.active_installments = parseInt(activeRows[0].active_count) || 0;
-                    const totalSales = parseFloat(activeRows[0].total_sale_amount) || 0;
-                    const totalDown = parseFloat(activeRows[0].total_down_payments) || 0;
-                    statistics.total_outstanding = Math.max(0, totalSales - totalDown);
+                    activeRows.forEach(sale => {
+                        const totalAmt = parseFloat(sale.amount) || 0;
+                        const downPmt = parseFloat(sale.down_payment) || 0;
+                        const monthlyAmt = parseFloat(sale.monthly_installment) || 0;
+                        const period = parseInt(sale.installment_period) || 12;
+                        const saleDate = sale.date || sale.transaction_date || sale.created_at;
+                        
+                        const monthsElapsed = saleDate ? Math.max(0, Math.floor((Date.now() - new Date(saleDate).getTime()) / (30.44 * 24 * 60 * 60 * 1000))) : 0;
+                        const paidSoFar = Math.min(totalAmt, downPmt + (monthlyAmt * Math.min(monthsElapsed, period)));
+                        const outstanding = Math.max(0, totalAmt - paidSoFar);
+                        
+                        if (outstanding > 0) {
+                            active_count++;
+                            total_outstanding += outstanding;
+                        }
+                    });
+                    
+                    statistics.active_installments = active_count;
+                    statistics.total_outstanding = total_outstanding;
                 }
                 
                 // This month's collections from payment_tracking
