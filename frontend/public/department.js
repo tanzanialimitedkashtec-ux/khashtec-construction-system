@@ -54868,7 +54868,7 @@ function updatePaymentTable(payments) {
 
                     </button>
 
-                    <button class="action-btn" onclick="viewPaymentHistory(${payment.sale_id})" title="View History">
+                    <button class="action-btn" onclick="viewPaymentHistoryReal(${payment.sale_id})" title="View History">
 
                         ðŸ“Š
 
@@ -55304,7 +55304,7 @@ async function savePaymentRecord(saleId) {
 
 
 
-async function viewPaymentHistory(saleId) {
+async function viewPaymentHistoryReal(saleId) {
 
     try {
 
