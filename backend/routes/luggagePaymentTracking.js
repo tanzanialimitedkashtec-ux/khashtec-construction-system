@@ -408,27 +408,35 @@ router.delete('/:id', async (req, res) => {
             
             // Check if tracking exists
             const trackingResult = await db.execute('SELECT tracking_reference FROM luggage_payment_tracking WHERE id = ?', [trackingId]);
-            const trackingData = Array.isArray(trackingResult) ? trackingResult[0] : trackingResult;
-            
-            if (trackingData.length === 0) {
+            let rows = [];
+            if (Array.isArray(trackingResult)) {
+                if (Array.isArray(trackingResult[0])) {
+                    rows = trackingResult[0];
+                } else {
+                    rows = trackingResult;
+                }
+            } else if (trackingResult && trackingResult.rows) {
+                rows = trackingResult.rows;
+            }
+
+            if (rows.length === 0) {
                 return res.status(404).json({
                     success: false,
                     error: 'Luggage payment tracking not found'
                 });
             }
-            
+
             // Delete tracking
-            const resultResult = await db.execute('DELETE FROM luggage_payment_tracking WHERE id = ?', [trackingId]);
-            const result = Array.isArray(resultResult) ? resultResult[0] : resultResult;
-            
+            await db.execute('DELETE FROM luggage_payment_tracking WHERE id = ?', [trackingId]);
+
             console.log('✅ Luggage payment tracking deleted successfully');
-            
+
             res.json({
                 success: true,
                 message: 'Luggage payment tracking deleted successfully',
                 deleted_tracking: {
                     id: trackingId,
-                    tracking_reference: trackingData[0].tracking_reference
+                    tracking_reference: rows[0].tracking_reference
                 }
             });
             
