@@ -41508,7 +41508,7 @@ async function loadPaymentTracking() {
 
         if (!window.KashTecAPI || typeof window.KashTecAPI.get !== 'function') {
 
-            console.error('âŒ KashTecAPI.get is not available');
+            console.error('â Œ KashTecAPI.get is not available');
 
             throw new Error('API service not loaded properly');
 
@@ -41635,7 +41635,8 @@ async function loadPaymentTracking() {
 
                         <div class="tracking-actions">
 
-                            <button class="action-btn delete" onclick="deleteTracking('${tracking.id}')" title="Delete Tracking">ðŸ—‘ï¸</button>
+                            <button class="action-btn view" onclick="viewTrackingDetails('${tracking.id}')" title="View Details">👁️</button>
+                            <button class="action-btn delete" onclick="deleteTracking('${tracking.id}')" title="Delete Tracking">🗑️</button>
 
                         </div>
 
@@ -41906,7 +41907,8 @@ function loadSampleTracking() {
 
                 <div class="tracking-actions">
 
-                    <button class="action-btn delete" onclick="deleteTracking('${tracking.id}')" title="Delete Tracking">ðŸ—‘ï¸</button>
+                    <button class="action-btn view" onclick="viewTrackingDetails('${tracking.id}')" title="View Details">👁️</button>
+                            <button class="action-btn delete" onclick="deleteTracking('${tracking.id}')" title="Delete Tracking">🗑️</button>
 
                 </div>
 
@@ -41934,16 +41936,38 @@ function editTracking(trackingId) {
 
 
 
-function deleteTracking(trackingId) {
-
+async function deleteTracking(trackingId) {
     if (confirm(`Are you sure you want to delete tracking: ${trackingId}?`)) {
-
-        customAlert(`Tracking ${trackingId} deleted successfully!`, 'Success', 'success');
-
-        loadPaymentTracking();
-
+        try {
+            if (typeof KashTecAPI !== 'undefined' && typeof KashTecAPI.delete === 'function') {
+                const response = await KashTecAPI.delete(`/luggage-payment-tracking/${trackingId}`);
+                if (response.success) {
+                    customAlert(`Tracking ${trackingId} deleted successfully!`, 'Success', 'success');
+                    loadPaymentTracking();
+                } else {
+                    customAlert(response.message || 'Error deleting tracking', 'Error', 'error');
+                }
+            } else {
+                const token = typeof sessionManager !== 'undefined' ? sessionManager.getAuthToken() : '';
+                const response = await fetch(`/api/luggage-payment-tracking/${trackingId}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                if (response.ok) {
+                    customAlert(`Tracking ${trackingId} deleted successfully!`, 'Success', 'success');
+                    loadPaymentTracking();
+                } else {
+                    customAlert('Error deleting tracking', 'Error', 'error');
+                }
+            }
+        } catch (error) {
+            console.error('Error deleting tracking:', error);
+            customAlert('Error deleting tracking', 'Error', 'error');
+        }
     }
-
 }
 
 
