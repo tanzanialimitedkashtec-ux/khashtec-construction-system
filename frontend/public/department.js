@@ -54638,22 +54638,26 @@ async function loadPaymentTrackingData() {
             }
             
             const isPaid = transaction.payment_status === 'completed';
-            const amount = parseFloat(transaction.amount) || 0;
+            const amount = parseFloat(transaction.total_amount) || parseFloat(transaction.amount) || 0;
+            const paidAmount = parseFloat(transaction.paid_amount) || (isPaid ? amount : 0);
+            const outstandingBalance = transaction.outstanding_balance !== undefined && transaction.outstanding_balance !== null 
+                ? parseFloat(transaction.outstanding_balance) 
+                : (isPaid ? 0 : amount);
             
             return {
-                sale_id: transaction.id || (index + 1),
-                sale_reference: transaction.tracking_reference || `SAL${String(index + 1).padStart(5, '0')}`,
-                client_name: transaction.transaction_type === 'sale' ? 
+                sale_id: transaction.id || transaction.sale_id || (index + 1),
+                sale_reference: transaction.sale_reference || transaction.tracking_reference || `SAL${String(index + 1).padStart(5, '0')}`,
+                client_name: transaction.client_name || transaction.transaction_type === 'sale' ? 
                     (transaction.paid_by || 'Client') : 
                     (transaction.paid_to || transaction.paid_by || 'Unknown'),
-                client_email: transaction.invoice_number || '',
-                property_title: transaction.description || `Transaction - ${transaction.transaction_type}`,
-                property_location: transaction.department || transaction.category || 'N/A',
+                client_email: transaction.client_email || transaction.invoice_number || '',
+                property_title: transaction.property_title || transaction.description || `Transaction - ${transaction.transaction_type}`,
+                property_location: transaction.property_location || transaction.department || transaction.category || 'N/A',
                 total_amount: amount,
-                paid_amount: isPaid ? amount : 0,
-                outstanding_balance: isPaid ? 0 : amount,
-                installment_amount: Math.ceil(amount / 3),
-                next_payment_date: transaction.payment_date || transaction.due_date,
+                paid_amount: paidAmount,
+                outstanding_balance: outstandingBalance,
+                installment_amount: parseFloat(transaction.installment_amount) || Math.ceil(amount / 3),
+                next_payment_date: transaction.next_payment_date || transaction.payment_date || transaction.due_date,
                 payment_status: transaction.payment_status,
                 payment_method: transaction.payment_method,
                 paid_by: transaction.paid_by,
