@@ -53735,9 +53735,9 @@ function manageSales() {
 
                 <div>
 
-                    <button type="button" onclick="recordSale()" class="action" style="background: #28a745;">ðŸ’° Record New Sale</button>
+                    <button type="button" onclick="recordSale()" class="action" style="background: #28a745;">💰 Record New Sale</button>
 
-                    <button type="button" onclick="exportSales()" class="action" style="background: #007bff;">ðŸ“Š Export Sales</button>
+                    <button type="button" onclick="exportSales()" class="action" style="background: #007bff;">📊 Export Sales</button>
 
                 </div>
 
@@ -53931,9 +53931,9 @@ async function loadSales() {
 
                             <div class="client-name">${clientName}</div>
 
-                            <div class="client-contact">ðŸ“± ${clientPhone}</div>
+                            <div class="client-contact">📲 ${clientPhone}</div>
 
-                            <div class="client-email">ðŸ“§ ${clientEmail}</div>
+                            <div class="client-email">📧 ${clientEmail}</div>
 
                         </div>
 
@@ -53989,7 +53989,7 @@ async function loadSales() {
 
                             ${salesAgreement ? 
 
-                                `<div class="agreement-file">ðŸ“„ ${salesAgreement}</div>` : 
+                                `<div class="agreement-file">📄 ${salesAgreement}</div>` : 
 
                                 '<div class="no-agreement">No Agreement</div>'
 
@@ -54001,7 +54001,7 @@ async function loadSales() {
 
                     <td>
 
-                        <div class="payment-status-info">
+                        <div class="payment-status-info" onclick="toggleSaleStatus('${saleId}', '${paymentStatus}')" style="cursor: pointer;" title="Click to toggle status">
 
                             <span class="status-badge status-${paymentStatus}">${paymentStatus}</span>
 
@@ -54424,6 +54424,52 @@ function viewSaleDetails(saleId) {
 function editSale(saleId) {
 
     customAlert(`Editing sale: ${saleId}`, 'Edit Sale', 'info');
+
+}
+
+
+
+async function toggleSaleStatus(saleId, currentStatus) {
+
+    if (!saleId) return;
+
+    
+
+    let newStatus = 'completed';
+
+    if (currentStatus === 'completed') {
+
+        newStatus = 'pending';
+
+    }
+
+    
+
+    if (confirm(`Change status from ${currentStatus} to ${newStatus}?`)) {
+
+        try {
+
+            // Call API if updateSale is available
+
+            if (typeof updateSale === 'function') {
+
+                await updateSale(saleId, { paymentStatus: newStatus });
+
+            }
+
+            customAlert(`Sale ${saleId} status updated to ${newStatus}`, 'Status Updated', 'success');
+
+            loadSales();
+
+        } catch (error) {
+
+            console.error('Error updating sale status:', error);
+
+            customAlert('Failed to update sale status', 'Error', 'error');
+
+        }
+
+    }
 
 }
 
@@ -65181,16 +65227,7 @@ async function loadOfficePortalData() {
             }
 
         } catch (error) {
-
-            console.error('âŒ Error loading policies:', error);
-                console.log(`✅ Loaded ${policies.length} policies`);
-
-            }
-
-        } catch (error) {
-
             console.error('❌ Error loading policies:', error);
-
         }
 
         
@@ -65453,6 +65490,7 @@ async function loadOfficePortalData() {
 
     };
 
+}
 
 
 // Render office portal with loaded data
