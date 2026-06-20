@@ -41516,7 +41516,7 @@ async function loadPaymentTracking() {
 
         
 
-        const response = await window.KashTecAPI.get('/luggage-payment-tracking');
+        const response = await window.KashTecAPI.get('/luggage-payment-tracking?_t=' + new Date().getTime());
 
         
 
@@ -41943,6 +41943,14 @@ async function deleteTracking(trackingId) {
                 const response = await KashTecAPI.delete(`/luggage-payment-tracking/${trackingId}`);
                 if (response.success) {
                     customAlert(`Tracking ${trackingId} deleted successfully!`, 'Success', 'success');
+                    // Remove from DOM immediately to reflect deletion even if API has issues
+                    const btns = document.querySelectorAll('.action-btn.delete');
+                    btns.forEach(btn => {
+                        if (btn.getAttribute('onclick').includes(trackingId)) {
+                            const row = btn.closest('tr');
+                            if (row) row.remove();
+                        }
+                    });
                     loadPaymentTracking();
                 } else {
                     customAlert(response.message || 'Error deleting tracking', 'Error', 'error');
@@ -41958,6 +41966,13 @@ async function deleteTracking(trackingId) {
                 });
                 if (response.ok) {
                     customAlert(`Tracking ${trackingId} deleted successfully!`, 'Success', 'success');
+                    const btns = document.querySelectorAll('.action-btn.delete');
+                    btns.forEach(btn => {
+                        if (btn.getAttribute('onclick').includes(trackingId)) {
+                            const row = btn.closest('tr');
+                            if (row) row.remove();
+                        }
+                    });
                     loadPaymentTracking();
                 } else {
                     customAlert('Error deleting tracking', 'Error', 'error');
@@ -42318,13 +42333,11 @@ async function viewTrackingDetails(trackingId) {
 
         
 
-        const response = await KashTecAPI.get('/luggage-payment-tracking');
-
-        
+        const response = await KashTecAPI.get('/luggage-payment-tracking?_t=' + new Date().getTime());
 
         if (response.success) {
-
-            const tracking = response.data.find(t => t.id == trackingId);
+            const trackingList = response.tracking || response.data || [];
+            const tracking = trackingList.find(t => t.id == trackingId || String(t.id) === String(trackingId));
 
             
 
