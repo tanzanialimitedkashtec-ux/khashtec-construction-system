@@ -79209,50 +79209,14 @@ async function showPaymentStatistics() {
             const monthlyTrend = result.data.monthlyTrend || [];
             const departmentBreakdown = result.data.departmentBreakdown || [];
             
-            let trendHtml = '';
-            if (monthlyTrend.length > 0) {
-                trendHtml = '<h5>ðŸ“ˆ Monthly Trend</h5><div class="chart-container">';
-                monthlyTrend.forEach(month => {
-                    trendHtml += `<div class="chart-item">
-                        <strong>${month.month}:</strong> ${month.requests} requests, TZS ${parseFloat(month.total_amount).toLocaleString()}
-                    </div>`;
-                });
-                trendHtml += '</div>';
-            }
-            
-            let deptHtml = '';
-            if (departmentBreakdown.length > 0) {
-                deptHtml = '<h5>ðŸ¢ Department Breakdown</h5><div class="dept-grid">';
-                departmentBreakdown.forEach(dept => {
-                    deptHtml += `<div class="dept-item">
-                        <strong>${dept.department}:</strong><br>
-                        ${dept.requests} requests<br>
-                        TZS ${parseFloat(dept.total_amount).toLocaleString()}
-                    </div>`;
-                });
-                deptHtml += '</div>';
-            }
-            
             showContent(`
                 <div class="card">
-                    <h3>ðŸ“Š Payment Statistics</h3>
+                    <h3>📊 Payment Statistics</h3>
                     
-                    <div class="stats-grid">
+                    <div class="stats-grid" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));">
                         <div class="stat-card">
                             <h4>Total Requests</h4>
                             <div class="stat-number">${stats.total_requests}</div>
-                        </div>
-                        <div class="stat-card">
-                            <h4>Pending Approval</h4>
-                            <div class="stat-number">${stats.pending}</div>
-                        </div>
-                        <div class="stat-card">
-                            <h4>Approved</h4>
-                            <div class="stat-number">${stats.approved}</div>
-                        </div>
-                        <div class="stat-card">
-                            <h4>Paid</h4>
-                            <div class="stat-number">${stats.paid}</div>
                         </div>
                         <div class="stat-card">
                             <h4>Total TZS</h4>
@@ -79264,19 +79228,102 @@ async function showPaymentStatistics() {
                         </div>
                     </div>
                     
-                    ${trendHtml}
-                    ${deptHtml}
+                    <div style="display: flex; flex-wrap: wrap; gap: 20px; margin-top: 30px;">
+                        <div style="flex: 1; min-width: 300px; background: rgba(255,255,255,0.03); padding: 20px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1);">
+                            <h4 style="text-align: center; margin-bottom: 20px; color: #fff;">Requests Status</h4>
+                            <div style="position: relative; height: 250px;">
+                                <canvas id="paymentStatusChart"></canvas>
+                            </div>
+                        </div>
+                        <div style="flex: 1; min-width: 300px; background: rgba(255,255,255,0.03); padding: 20px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1);">
+                            <h4 style="text-align: center; margin-bottom: 20px; color: #fff;">Department Breakdown (TZS)</h4>
+                            <div style="position: relative; height: 250px;">
+                                <canvas id="paymentDeptChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
                     
-                    <div class="form-actions">
-                        <button onclick="showPaymentManagement()" class="action" style="background: #6c757d;">â† Back to Payments</button>
+                    <div class="form-actions" style="margin-top: 30px;">
+                        <button onclick="showPaymentManagement()" class="action" style="background: #6c757d;">← Back to Payments</button>
                     </div>
                 </div>
             `);
+
+            setTimeout(() => {
+                const renderCharts = () => {
+                    const ctxStatus = document.getElementById('paymentStatusChart');
+                    if (ctxStatus) {
+                        new Chart(ctxStatus, {
+                            type: 'doughnut',
+                            data: {
+                                labels: ['Pending', 'Approved', 'Paid'],
+                                datasets: [{
+                                    data: [${stats.pending || 0}, ${stats.approved || 0}, ${stats.paid || 0}],
+                                    backgroundColor: ['#ffc107', '#17a2b8', '#28a745'],
+                                    borderWidth: 0,
+                                    hoverOffset: 4
+                                }]
+                            },
+                            options: { 
+                                responsive: true, 
+                                maintainAspectRatio: false, 
+                                plugins: { 
+                                    legend: { position: 'bottom', labels: { color: '#e0e0e0', padding: 20, font: { size: 14 } } }
+                                },
+                                cutout: '70%'
+                            }
+                        });
+                    }
+
+                    const ctxDept = document.getElementById('paymentDeptChart');
+                    if (ctxDept && departmentBreakdown.length > 0) {
+                        const deptLabels = departmentBreakdown.map(d => d.department || 'Unknown');
+                        const deptData = departmentBreakdown.map(d => parseFloat(d.total_amount || 0));
+                        const colors = ['#0d6efd', '#6610f2', '#e83e8c', '#fd7e14', '#20c997', '#dc3545', '#0dcaf0'];
+                        const bgColors = deptData.map((_, i) => colors[i % colors.length]);
+
+                        new Chart(ctxDept, {
+                            type: 'doughnut',
+                            data: {
+                                labels: deptLabels,
+                                datasets: [{
+                                    data: deptData,
+                                    backgroundColor: bgColors,
+                                    borderWidth: 0,
+                                    hoverOffset: 4
+                                }]
+                            },
+                            options: { 
+                                responsive: true, 
+                                maintainAspectRatio: false, 
+                                plugins: { 
+                                    legend: { position: 'bottom', labels: { color: '#e0e0e0', padding: 20, font: { size: 14 } } }
+                                },
+                                cutout: '70%'
+                            }
+                        });
+                    } else if (ctxDept) {
+                        // Empty state
+                        const parent = ctxDept.parentElement;
+                        parent.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:#888;">No department data available</div>';
+                    }
+                };
+
+                if (typeof Chart === 'undefined') {
+                    const script = document.createElement('script');
+                    script.src = 'https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js';
+                    script.onload = renderCharts;
+                    document.head.appendChild(script);
+                } else {
+                    renderCharts();
+                }
+            }, 150);
+            
         } else {
             throw new Error(result.error || 'Failed to load statistics');
         }
     } catch (error) {
-        console.error('âŒ Error loading statistics:', error);
+        console.error('❌ Error loading statistics:', error);
         customAlert(`Failed to load statistics: ${error.message}`, 'Error', 'error');
     }
 }
