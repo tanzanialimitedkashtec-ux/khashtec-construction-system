@@ -114,11 +114,11 @@ router.post('/login', async (req, res) => {
         console.log('🔐 Login request received:', req.body);
         const { email, password, role } = req.body;
 
-        // Validate input
-        if (!email || !password || !role) {
-            console.log('❌ Missing required fields:', { email: !!email, password: !!password, role: !!role });
+        // Validate input (role is now optional - auto-detected from database)
+        if (!email || !password) {
+            console.log('Missing required fields:', { email: !!email, password: !!password });
             return res.status(400).json({
-                error: 'Email, password, and role are required'
+                error: 'Email and password are required'
             });
         }
 
