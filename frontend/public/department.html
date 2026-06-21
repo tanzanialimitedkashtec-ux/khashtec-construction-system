@@ -108872,7 +108872,7 @@ function displayPaymentRequests(payments) {
                 <td>${new Date(payment.submitted_date).toLocaleDateString()}</td>
                 <td>
                     <button onclick="viewPaymentDetails(${payment.id})" class="action-btn" title="View Details">👁️</button>
-                    ${payment.status === 'pending_finance_approval' ? `<button onclick="approvePaymentRequest(${payment.id})" class="action-btn" title="Approve">✅</button>
+                    ${payment.status === 'pending_finance_approval' && currentRole !== 'HR' && currentRole !== 'HR manager' && currentRole !== 'hr@manager' ? `<button onclick="approvePaymentRequest(${payment.id})" class="action-btn" title="Approve">✅</button>
                     <button onclick="rejectPaymentRequest(${payment.id})" class="action-btn" title="Reject">🚫</button>
                     <button onclick="cancelPayment(${payment.id})" class="action-btn" title="Cancel">❌</button>` : ''}
                 </td>
