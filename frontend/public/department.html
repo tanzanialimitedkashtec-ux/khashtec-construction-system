@@ -52318,25 +52318,68 @@ function trackPpeIssuance(){
                             <div class="ppe-item-row">
 
                                 <select class="ppe-type" required>
-
                                     <option value="">Select PPE</option>
-
-                                    <option value="helmet">Safety Helmet</option>
-
-                                    <option value="gloves">Safety Gloves</option>
-
-                                    <option value="boots">Safety Boots</option>
-
-                                    <option value="vest">Reflective Vest</option>
-
-                                    <option value="goggles">Safety Goggles</option>
-
-                                    <option value="mask">Dust Mask</option>
-
-                                    <option value="harness">Safety Harness</option>
-
-                                    <option value="earplugs">Ear Plugs</option>
-
+                                    <optgroup label="Head Protection">
+                                        <option value="helmet">Safety Helmet</option>
+                                        <option value="hard_hat">Hard Hat</option>
+                                        <option value="bump_cap">Bump Cap</option>
+                                        <option value="welding_helmet">Welding Helmet</option>
+                                        <option value="face_shield">Face Shield</option>
+                                    </optgroup>
+                                    <optgroup label="Eye Protection">
+                                        <option value="goggles">Safety Goggles</option>
+                                        <option value="safety_glasses">Safety Glasses</option>
+                                        <option value="welding_goggles">Welding Goggles</option>
+                                    </optgroup>
+                                    <optgroup label="Hearing Protection">
+                                        <option value="earplugs">Ear Plugs</option>
+                                        <option value="earmuffs">Ear Muffs</option>
+                                    </optgroup>
+                                    <optgroup label="Respiratory Protection">
+                                        <option value="mask">Dust Mask</option>
+                                        <option value="n95_respirator">N95 Respirator</option>
+                                        <option value="half_face_respirator">Half-Face Respirator</option>
+                                        <option value="full_face_respirator">Full-Face Respirator</option>
+                                    </optgroup>
+                                    <optgroup label="Hand Protection">
+                                        <option value="gloves">Safety Gloves</option>
+                                        <option value="rubber_gloves">Rubber Gloves</option>
+                                        <option value="welding_gloves">Welding Gloves</option>
+                                        <option value="cut_resistant_gloves">Cut-Resistant Gloves</option>
+                                        <option value="chemical_gloves">Chemical Gloves</option>
+                                    </optgroup>
+                                    <optgroup label="Foot Protection">
+                                        <option value="boots">Safety Boots</option>
+                                        <option value="steel_toe_boots">Steel Toe Boots</option>
+                                        <option value="rubber_boots">Rubber Boots</option>
+                                        <option value="metatarsal_boots">Metatarsal Boots</option>
+                                    </optgroup>
+                                    <optgroup label="Body Protection">
+                                        <option value="vest">Reflective Vest</option>
+                                        <option value="harness">Safety Harness</option>
+                                        <option value="coverall">Coverall / Overall</option>
+                                        <option value="rain_suit">Rain Suit</option>
+                                        <option value="apron">Protective Apron</option>
+                                        <option value="knee_pads">Knee Pads</option>
+                                    </optgroup>
+                                    <optgroup label="Fall Protection">
+                                        <option value="lanyard">Safety Lanyard</option>
+                                        <option value="lifeline">Lifeline</option>
+                                        <option value="fall_arrester">Fall Arrester</option>
+                                        <option value="anchor_point">Anchor Point Device</option>
+                                    </optgroup>
+                                    <optgroup label="Traffic & Visibility">
+                                        <option value="traffic_cone">Traffic Cone</option>
+                                        <option value="barricade_tape">Barricade Tape</option>
+                                        <option value="warning_sign">Warning Sign</option>
+                                        <option value="reflective_tape">Reflective Tape</option>
+                                    </optgroup>
+                                    <optgroup label="First Aid & Emergency">
+                                        <option value="first_aid_kit">First Aid Kit</option>
+                                        <option value="fire_extinguisher">Fire Extinguisher</option>
+                                        <option value="eye_wash">Eye Wash Station</option>
+                                        <option value="emergency_blanket">Emergency Blanket</option>
+                                    </optgroup>
                                 </select>
 
                                 <input type="number" class="ppe-quantity" placeholder="Qty" min="1" required>
@@ -59838,14 +59881,67 @@ function showPpeInventory() {
                         '<label>PPE Item Type *</label>' +
                         '<select id="stockItemType" required>' +
                             '<option value="">Select Item</option>' +
-                            '<option value="helmet">Safety Helmet</option>' +
-                            '<option value="gloves">Safety Gloves</option>' +
-                            '<option value="boots">Safety Boots</option>' +
-                            '<option value="vest">Reflective Vest</option>' +
-                            '<option value="goggles">Safety Goggles</option>' +
-                            '<option value="mask">Dust Mask</option>' +
-                            '<option value="harness">Safety Harness</option>' +
-                            '<option value="earplugs">Ear Plugs</option>' +
+                            '<optgroup label="Head Protection">' +
+                                '<option value="helmet">Safety Helmet</option>' +
+                                '<option value="hard_hat">Hard Hat</option>' +
+                                '<option value="bump_cap">Bump Cap</option>' +
+                                '<option value="welding_helmet">Welding Helmet</option>' +
+                                '<option value="face_shield">Face Shield</option>' +
+                            '</optgroup>' +
+                            '<optgroup label="Eye Protection">' +
+                                '<option value="goggles">Safety Goggles</option>' +
+                                '<option value="safety_glasses">Safety Glasses</option>' +
+                                '<option value="welding_goggles">Welding Goggles</option>' +
+                            '</optgroup>' +
+                            '<optgroup label="Hearing Protection">' +
+                                '<option value="earplugs">Ear Plugs</option>' +
+                                '<option value="earmuffs">Ear Muffs</option>' +
+                            '</optgroup>' +
+                            '<optgroup label="Respiratory Protection">' +
+                                '<option value="mask">Dust Mask</option>' +
+                                '<option value="n95_respirator">N95 Respirator</option>' +
+                                '<option value="half_face_respirator">Half-Face Respirator</option>' +
+                                '<option value="full_face_respirator">Full-Face Respirator</option>' +
+                            '</optgroup>' +
+                            '<optgroup label="Hand Protection">' +
+                                '<option value="gloves">Safety Gloves</option>' +
+                                '<option value="rubber_gloves">Rubber Gloves</option>' +
+                                '<option value="welding_gloves">Welding Gloves</option>' +
+                                '<option value="cut_resistant_gloves">Cut-Resistant Gloves</option>' +
+                                '<option value="chemical_gloves">Chemical Gloves</option>' +
+                            '</optgroup>' +
+                            '<optgroup label="Foot Protection">' +
+                                '<option value="boots">Safety Boots</option>' +
+                                '<option value="steel_toe_boots">Steel Toe Boots</option>' +
+                                '<option value="rubber_boots">Rubber Boots</option>' +
+                                '<option value="metatarsal_boots">Metatarsal Boots</option>' +
+                            '</optgroup>' +
+                            '<optgroup label="Body Protection">' +
+                                '<option value="vest">Reflective Vest</option>' +
+                                '<option value="harness">Safety Harness</option>' +
+                                '<option value="coverall">Coverall / Overall</option>' +
+                                '<option value="rain_suit">Rain Suit</option>' +
+                                '<option value="apron">Protective Apron</option>' +
+                                '<option value="knee_pads">Knee Pads</option>' +
+                            '</optgroup>' +
+                            '<optgroup label="Fall Protection">' +
+                                '<option value="lanyard">Safety Lanyard</option>' +
+                                '<option value="lifeline">Lifeline</option>' +
+                                '<option value="fall_arrester">Fall Arrester</option>' +
+                                '<option value="anchor_point">Anchor Point Device</option>' +
+                            '</optgroup>' +
+                            '<optgroup label="Traffic & Visibility">' +
+                                '<option value="traffic_cone">Traffic Cone</option>' +
+                                '<option value="barricade_tape">Barricade Tape</option>' +
+                                '<option value="warning_sign">Warning Sign</option>' +
+                                '<option value="reflective_tape">Reflective Tape</option>' +
+                            '</optgroup>' +
+                            '<optgroup label="First Aid & Emergency">' +
+                                '<option value="first_aid_kit">First Aid Kit</option>' +
+                                '<option value="fire_extinguisher">Fire Extinguisher</option>' +
+                                '<option value="eye_wash">Eye Wash Station</option>' +
+                                '<option value="emergency_blanket">Emergency Blanket</option>' +
+                            '</optgroup>' +
                         '</select>' +
                     '</div>' +
                     '<div class="form-group">' +
@@ -60367,25 +60463,68 @@ function addPpeItem() {
     newItem.innerHTML = `
 
         <select class="ppe-type" required>
-
             <option value="">Select PPE</option>
-
-            <option value="helmet">Safety Helmet</option>
-
-            <option value="gloves">Safety Gloves</option>
-
-            <option value="boots">Safety Boots</option>
-
-            <option value="vest">Reflective Vest</option>
-
-            <option value="goggles">Safety Goggles</option>
-
-            <option value="mask">Dust Mask</option>
-
-            <option value="harness">Safety Harness</option>
-
-            <option value="earplugs">Ear Plugs</option>
-
+            <optgroup label="Head Protection">
+                <option value="helmet">Safety Helmet</option>
+                <option value="hard_hat">Hard Hat</option>
+                <option value="bump_cap">Bump Cap</option>
+                <option value="welding_helmet">Welding Helmet</option>
+                <option value="face_shield">Face Shield</option>
+            </optgroup>
+            <optgroup label="Eye Protection">
+                <option value="goggles">Safety Goggles</option>
+                <option value="safety_glasses">Safety Glasses</option>
+                <option value="welding_goggles">Welding Goggles</option>
+            </optgroup>
+            <optgroup label="Hearing Protection">
+                <option value="earplugs">Ear Plugs</option>
+                <option value="earmuffs">Ear Muffs</option>
+            </optgroup>
+            <optgroup label="Respiratory Protection">
+                <option value="mask">Dust Mask</option>
+                <option value="n95_respirator">N95 Respirator</option>
+                <option value="half_face_respirator">Half-Face Respirator</option>
+                <option value="full_face_respirator">Full-Face Respirator</option>
+            </optgroup>
+            <optgroup label="Hand Protection">
+                <option value="gloves">Safety Gloves</option>
+                <option value="rubber_gloves">Rubber Gloves</option>
+                <option value="welding_gloves">Welding Gloves</option>
+                <option value="cut_resistant_gloves">Cut-Resistant Gloves</option>
+                <option value="chemical_gloves">Chemical Gloves</option>
+            </optgroup>
+            <optgroup label="Foot Protection">
+                <option value="boots">Safety Boots</option>
+                <option value="steel_toe_boots">Steel Toe Boots</option>
+                <option value="rubber_boots">Rubber Boots</option>
+                <option value="metatarsal_boots">Metatarsal Boots</option>
+            </optgroup>
+            <optgroup label="Body Protection">
+                <option value="vest">Reflective Vest</option>
+                <option value="harness">Safety Harness</option>
+                <option value="coverall">Coverall / Overall</option>
+                <option value="rain_suit">Rain Suit</option>
+                <option value="apron">Protective Apron</option>
+                <option value="knee_pads">Knee Pads</option>
+            </optgroup>
+            <optgroup label="Fall Protection">
+                <option value="lanyard">Safety Lanyard</option>
+                <option value="lifeline">Lifeline</option>
+                <option value="fall_arrester">Fall Arrester</option>
+                <option value="anchor_point">Anchor Point Device</option>
+            </optgroup>
+            <optgroup label="Traffic & Visibility">
+                <option value="traffic_cone">Traffic Cone</option>
+                <option value="barricade_tape">Barricade Tape</option>
+                <option value="warning_sign">Warning Sign</option>
+                <option value="reflective_tape">Reflective Tape</option>
+            </optgroup>
+            <optgroup label="First Aid & Emergency">
+                <option value="first_aid_kit">First Aid Kit</option>
+                <option value="fire_extinguisher">Fire Extinguisher</option>
+                <option value="eye_wash">Eye Wash Station</option>
+                <option value="emergency_blanket">Emergency Blanket</option>
+            </optgroup>
         </select>
 
         <input type="number" class="ppe-quantity" placeholder="Qty" min="1" required>

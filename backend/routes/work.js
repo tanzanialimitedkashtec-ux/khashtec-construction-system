@@ -1213,14 +1213,57 @@ async function ensurePpeInventoryTable() {
         var cnt = (countRow && countRow.cnt) ? countRow.cnt : 0;
         if (cnt === 0) {
             var seedItems = [
+                // Head Protection
                 ['helmet', 'Safety Helmet', 50, 10],
-                ['gloves', 'Safety Gloves', 100, 20],
-                ['boots', 'Safety Boots', 40, 10],
-                ['vest', 'Reflective Vest', 60, 15],
+                ['hard_hat', 'Hard Hat', 40, 10],
+                ['bump_cap', 'Bump Cap', 20, 5],
+                ['welding_helmet', 'Welding Helmet', 10, 3],
+                ['face_shield', 'Face Shield', 25, 5],
+                // Eye Protection
                 ['goggles', 'Safety Goggles', 30, 10],
+                ['safety_glasses', 'Safety Glasses', 50, 15],
+                ['welding_goggles', 'Welding Goggles', 10, 3],
+                // Hearing Protection
+                ['earplugs', 'Ear Plugs', 150, 30],
+                ['earmuffs', 'Ear Muffs', 25, 5],
+                // Respiratory Protection
                 ['mask', 'Dust Mask', 200, 50],
+                ['n95_respirator', 'N95 Respirator', 100, 25],
+                ['half_face_respirator', 'Half-Face Respirator', 15, 5],
+                ['full_face_respirator', 'Full-Face Respirator', 10, 3],
+                // Hand Protection
+                ['gloves', 'Safety Gloves', 100, 20],
+                ['rubber_gloves', 'Rubber Gloves', 50, 10],
+                ['welding_gloves', 'Welding Gloves', 15, 5],
+                ['cut_resistant_gloves', 'Cut-Resistant Gloves', 30, 10],
+                ['chemical_gloves', 'Chemical Gloves', 20, 5],
+                // Foot Protection
+                ['boots', 'Safety Boots', 40, 10],
+                ['steel_toe_boots', 'Steel Toe Boots', 30, 10],
+                ['rubber_boots', 'Rubber Boots', 20, 5],
+                ['metatarsal_boots', 'Metatarsal Boots', 10, 3],
+                // Body Protection
+                ['vest', 'Reflective Vest', 60, 15],
                 ['harness', 'Safety Harness', 20, 5],
-                ['earplugs', 'Ear Plugs', 150, 30]
+                ['coverall', 'Coverall / Overall', 30, 10],
+                ['rain_suit', 'Rain Suit', 15, 5],
+                ['apron', 'Protective Apron', 10, 3],
+                ['knee_pads', 'Knee Pads', 20, 5],
+                // Fall Protection
+                ['lanyard', 'Safety Lanyard', 15, 5],
+                ['lifeline', 'Lifeline', 10, 3],
+                ['fall_arrester', 'Fall Arrester', 8, 3],
+                ['anchor_point', 'Anchor Point Device', 10, 3],
+                // Traffic & Visibility
+                ['traffic_cone', 'Traffic Cone', 50, 10],
+                ['barricade_tape', 'Barricade Tape', 30, 10],
+                ['warning_sign', 'Warning Sign', 20, 5],
+                ['reflective_tape', 'Reflective Tape', 25, 5],
+                // First Aid & Emergency
+                ['first_aid_kit', 'First Aid Kit', 10, 3],
+                ['fire_extinguisher', 'Fire Extinguisher', 15, 5],
+                ['eye_wash', 'Eye Wash Station', 5, 2],
+                ['emergency_blanket', 'Emergency Blanket', 10, 3]
             ];
             for (var s = 0; s < seedItems.length; s++) {
                 try {
