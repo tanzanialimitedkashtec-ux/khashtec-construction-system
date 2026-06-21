@@ -948,32 +948,7 @@ function updateNavigation(state) {
     }
 }
 
-function updatePasswordPlaceholder() {
-    console.log('🔄 updatePasswordPlaceholder() called');
-    var roleSelect = document.getElementById("loginRole");
-    var passwordInput = document.getElementById("loginPassword");
-    
-    if (roleSelect && passwordInput) {
-        var selectedRole = roleSelect.value;
-        console.log('📝 Selected role:', selectedRole);
-        
-        var placeholders = {
-            'Managing Director': 'admin',
-            'Director of Administration': 'admin',
-            'HR Manager': 'hr0501',
-            'HSE Manager': 'hse0501',
-            'Finance Manager': 'finance0501',
-            'Project Manager': 'pm0501',
-            'Real Estate Manager': 'realestate0501',
-            'Admin Assistant': 'admin'
-        };
-        
-        passwordInput.placeholder = placeholders[selectedRole] || 'Enter password';
-        console.log('🔤 Password placeholder updated to:', passwordInput.placeholder);
-    } else {
-        console.error('❌ Could not find role select or password input');
-    }
-}
+function updatePasswordPlaceholder() {}
 
 function handleLogin() {
     console.log('handleLogin function called');
@@ -1112,7 +1087,8 @@ function handleLogout() {
         // Clear form fields
         document.getElementById("loginEmail").value = "";
         document.getElementById("loginPassword").value = "";
-        document.getElementById("loginRole").value = "";
+        var loginRoleEl = document.getElementById("loginRole");
+        if (loginRoleEl) loginRoleEl.value = "";
         
         // Reset login button
         const loginBtn = document.getElementById("loginBtn");
