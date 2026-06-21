@@ -132,17 +132,44 @@ router.get('/in', async (req, res) => {
 // Create materials in record
 router.post('/in', async (req, res) => {
     try {
-        const { material_id, track_number, receipt_date, quantity_received, unit_of_measure, unit_price, transport_cost, transport_issue, supplier_name, supplier_contact, invoice_number, purchase_order_number, delivery_note_number, delivery_condition, quality_check_status, quality_remarks, received_by, received_by_role, project_id, project_name, warehouse_location, notes } = req.body;
+        var { material_id, material_name, material_category, description, track_number, receipt_date, quantity_received, unit_of_measure, unit_price, transport_cost, transport_issue, supplier_name, supplier_contact, invoice_number, purchase_order_number, delivery_note_number, delivery_condition, quality_check_status, quality_remarks, received_by, received_by_role, project_id, project_name, warehouse_location, notes } = req.body;
 
-        if (!material_id || !quantity_received || !supplier_name || !received_by) {
-            return res.status(400).json({ success: false, message: 'Material ID, quantity, supplier name, and received by are required' });
+        if (!quantity_received || !supplier_name || !received_by) {
+            return res.status(400).json({ success: false, message: 'Quantity, supplier name, and received by are required' });
+        }
+        if (!material_id && !material_name) {
+            return res.status(400).json({ success: false, message: 'Material name is required' });
+        }
+
+        if (!db) throw new Error('Database not available');
+
+        // If material_name is provided (manual input), find or create in materials_inventory
+        if (!material_id && material_name) {
+            // Check if material already exists by name (case-insensitive)
+            var existingRows = await db.execute(
+                'SELECT id FROM materials_inventory WHERE LOWER(material_name) = LOWER(?)',
+                [material_name.trim()]
+            );
+            var existing = Array.isArray(existingRows) && Array.isArray(existingRows[0]) ? existingRows[0] : (Array.isArray(existingRows) ? existingRows : []);
+
+            if (existing.length > 0) {
+                material_id = existing[0].id;
+            } else {
+                // Auto-create new material in inventory
+                var code = 'MAT-' + Date.now();
+                var createResult = await db.execute(
+                    `INSERT INTO materials_inventory (material_code, material_name, material_category, description, unit_of_measure, current_stock, min_stock_level, max_stock_level, reorder_point, supplier_name, supplier_contact, unit_cost)
+                     VALUES (?, ?, ?, ?, ?, 0, 10, 10000, 50, ?, ?, ?)`,
+                    [code, material_name.trim(), material_category || 'Other', description || '', unit_of_measure || 'Piece', supplier_name || '', supplier_contact || '', unit_price || 0]
+                );
+                material_id = createResult.insertId || (createResult[0] && createResult[0].insertId) || null;
+                console.log('✅ Auto-created material in inventory: ' + material_name + ' (id: ' + material_id + ')');
+            }
         }
 
         const track = track_number || generateTrackNumber('in');
         const totalCost = (quantity_received * (unit_price || 0));
         const date = receipt_date || new Date().toISOString().split('T')[0];
-
-        if (!db) throw new Error('Database not available');
 
         const result = await db.execute(
             `INSERT INTO materials_in (material_id, track_number, receipt_date, quantity_received, unit_of_measure, unit_price, total_cost, transport_cost, transport_issue, supplier_name, supplier_contact, invoice_number, purchase_order_number, delivery_note_number, delivery_condition, quality_check_status, quality_remarks, received_by, received_by_role, project_id, project_name, warehouse_location, notes)
@@ -152,8 +179,8 @@ router.post('/in', async (req, res) => {
 
         updateMaterialStock(material_id, quantity_received, 'in');
 
-        notify('Materials Received', 'Track ' + track + ': ' + quantity_received + ' ' + (unit_of_measure || 'units') + ' received from ' + supplier_name, 'success');
-        res.status(201).json({ success: true, message: 'Material received recorded successfully', data: { id: result.insertId, track_number: track } });
+        notify('Materials Received', 'Track ' + track + ': ' + quantity_received + ' ' + (unit_of_measure || 'units') + ' of ' + (material_name || 'material') + ' received from ' + supplier_name, 'success');
+        res.status(201).json({ success: true, message: 'Material received recorded successfully', data: { id: result.insertId || (result[0] && result[0].insertId), track_number: track } });
     } catch (error) {
         console.error('Error creating materials in:', error.message);
         res.status(500).json({ success: false, message: error.message || 'Failed to save record to database' });
