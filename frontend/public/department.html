@@ -24853,7 +24853,7 @@ function loadMenu(){
         ],
         "HSE": [
             "Compliance Management", "Manage Policies", "Record Incident Reports",
-            "Track PPE Issuance", "Mark Safety Violations", "Upload Inspection Reports",
+            "Track PPE Issuance", "PPE Inventory", "Mark Safety Violations", "Upload Inspection Reports",
             "Risk Management", "View Project Safety Status", "Compliance"
         ],
         "FINANCE": [
@@ -24961,6 +24961,7 @@ function loadMenu(){
         { name: "Record Incident Reports", func: recordIncidentReports },
         { name: "Record Toolbox Meetings", func: recordToolboxMeetings },
         { name: "Track PPE Issuance", func: trackPpeIssuance },
+        { name: "PPE Inventory", func: showPpeInventory },
         { name: "Mark Safety Violations", func: markSafetyViolations },
         { name: "Approve Violation", func: markSafetyViolations },
         { name: "Upload Inspection Reports", func: uploadInspectionReports },
@@ -59788,7 +59789,11 @@ function savePpeIssuance() {
             throw new Error(data.error);
         }
 
-        customAlert('PPE issuance recorded successfully!\n\nID: ' + issuance.issuance_id + '\nWorker: ' + issuance.worker_name + '\nItems: ' + ppeItemsArr.length + ' items\nProject: ' + issuance.project, "PPE Issued", "success");
+        var alertMsg = 'PPE issuance recorded successfully!\n\nID: ' + issuance.issuance_id + '\nWorker: ' + issuance.worker_name + '\nItems: ' + ppeItemsArr.length + ' items\nProject: ' + issuance.project;
+        if (data.stock_alerts && data.stock_alerts.length > 0) {
+            alertMsg += '\n\n⚠️ LOW STOCK ALERTS:\n' + data.stock_alerts.join('\n');
+        }
+        customAlert(alertMsg, "PPE Issued", "success");
 
         document.getElementById('ppeForm').reset();
         document.getElementById('issuanceId').value = 'PPE-' + Date.now();
@@ -59810,6 +59815,218 @@ function savePpeIssuance() {
 
 }
 
+
+// ===== PPE INVENTORY =====
+
+function showPpeInventory() {
+    showContent('<div class="card">' +
+        '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">' +
+            '<h3>PPE Inventory Management</h3>' +
+            '<button type="button" class="action" style="background:#007bff;" onclick="togglePpeStockForm()">+ Add Stock</button>' +
+        '</div>' +
+
+        '<div id="ppeAlertBanner" style="display:none;background:#fff3cd;border:1px solid #ffc107;border-radius:8px;padding:12px 16px;margin-bottom:16px;">' +
+            '<strong>⚠️ Low Stock Alerts</strong>' +
+            '<div id="ppeAlertList" style="margin-top:6px;"></div>' +
+        '</div>' +
+
+        '<div id="ppeStockFormContainer" style="display:none;background:#f8f9fa;border-radius:8px;padding:20px;margin-bottom:20px;">' +
+            '<h4 style="margin-top:0;">Add PPE Stock</h4>' +
+            '<form id="ppeStockForm" onsubmit="return savePpeStock()">' +
+                '<div class="form-row">' +
+                    '<div class="form-group">' +
+                        '<label>PPE Item Type *</label>' +
+                        '<select id="stockItemType" required>' +
+                            '<option value="">Select Item</option>' +
+                            '<option value="helmet">Safety Helmet</option>' +
+                            '<option value="gloves">Safety Gloves</option>' +
+                            '<option value="boots">Safety Boots</option>' +
+                            '<option value="vest">Reflective Vest</option>' +
+                            '<option value="goggles">Safety Goggles</option>' +
+                            '<option value="mask">Dust Mask</option>' +
+                            '<option value="harness">Safety Harness</option>' +
+                            '<option value="earplugs">Ear Plugs</option>' +
+                        '</select>' +
+                    '</div>' +
+                    '<div class="form-group">' +
+                        '<label>Quantity to Add *</label>' +
+                        '<input type="number" id="stockQuantity" min="1" placeholder="e.g. 50" required>' +
+                    '</div>' +
+                '</div>' +
+                '<div class="form-row">' +
+                    '<div class="form-group">' +
+                        '<label>Unit Price (TZS)</label>' +
+                        '<input type="number" id="stockUnitPrice" min="0" step="0.01" placeholder="e.g. 15000">' +
+                    '</div>' +
+                    '<div class="form-group">' +
+                        '<label>Min Stock Level</label>' +
+                        '<input type="number" id="stockMinLevel" min="1" value="10" placeholder="Alert threshold">' +
+                    '</div>' +
+                '</div>' +
+                '<div class="form-row">' +
+                    '<div class="form-group">' +
+                        '<label>Supplier</label>' +
+                        '<input type="text" id="stockSupplier" placeholder="e.g. SafetyPro Ltd">' +
+                    '</div>' +
+                    '<div class="form-group">' +
+                        '<label>Notes</label>' +
+                        '<input type="text" id="stockNotes" placeholder="Optional notes">' +
+                    '</div>' +
+                '</div>' +
+                '<div class="form-actions">' +
+                    '<button type="submit" class="action" style="background:#28a745;">Save Stock</button>' +
+                    '<button type="button" class="action" style="background:#6c757d;" onclick="togglePpeStockForm()">Cancel</button>' +
+                '</div>' +
+            '</form>' +
+        '</div>' +
+
+        '<div id="ppeInventoryStats" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:20px;">' +
+            '<div class="stat-item"><span class="stat-label">Total Items</span><span class="stat-value" id="invTotalItems">-</span></div>' +
+            '<div class="stat-item"><span class="stat-label">Total Stock</span><span class="stat-value" id="invTotalStock">-</span></div>' +
+            '<div class="stat-item"><span class="stat-label">Low Stock</span><span class="stat-value" id="invLowStock" style="color:#dc3545;">-</span></div>' +
+            '<div class="stat-item"><span class="stat-label">Out of Stock</span><span class="stat-value" id="invOutStock" style="color:#dc3545;">-</span></div>' +
+        '</div>' +
+
+        '<div style="overflow-x:auto;">' +
+            '<table class="data-table" style="width:100%;border-collapse:collapse;">' +
+                '<thead><tr>' +
+                    '<th>Item</th><th>Type</th><th>In Stock</th><th>Min Level</th>' +
+                    '<th>Status</th><th>Unit Price</th><th>Supplier</th><th>Last Restocked</th>' +
+                '</tr></thead>' +
+                '<tbody id="ppeInventoryBody"><tr><td colspan="8" style="text-align:center;">Loading inventory...</td></tr></tbody>' +
+            '</table>' +
+        '</div>' +
+    '</div>');
+
+    loadPpeInventory();
+}
+
+function togglePpeStockForm() {
+    var container = document.getElementById('ppeStockFormContainer');
+    if (container) container.style.display = container.style.display === 'none' ? 'block' : 'none';
+}
+
+function loadPpeInventory() {
+    var baseUrl = window.location.origin;
+    fetch(baseUrl + '/api/work/hse/ppe-inventory', {
+        headers: { 'Accept': 'application/json', 'Authorization': 'Bearer ' + sessionManager.getAuthToken() }
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+        var items = data.data || [];
+        var tbody = document.getElementById('ppeInventoryBody');
+        if (!tbody) return;
+
+        var totalStock = 0;
+        var lowCount = 0;
+        var outCount = 0;
+
+        if (items.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;">No inventory items found</td></tr>';
+        } else {
+            var html = '';
+            for (var i = 0; i < items.length; i++) {
+                var item = items[i];
+                totalStock += item.quantity || 0;
+                if (item.stock_status === 'low') lowCount++;
+                if (item.stock_status === 'out_of_stock') outCount++;
+
+                var statusBadge = '';
+                if (item.stock_status === 'out_of_stock') statusBadge = '<span style="background:#dc3545;color:#fff;padding:2px 8px;border-radius:4px;font-size:12px;">OUT OF STOCK</span>';
+                else if (item.stock_status === 'low') statusBadge = '<span style="background:#ffc107;color:#000;padding:2px 8px;border-radius:4px;font-size:12px;">LOW STOCK</span>';
+                else statusBadge = '<span style="background:#28a745;color:#fff;padding:2px 8px;border-radius:4px;font-size:12px;">OK</span>';
+
+                var price = item.unit_price ? 'TZS ' + Number(item.unit_price).toLocaleString() : '-';
+                var restocked = item.last_restocked ? new Date(item.last_restocked).toLocaleDateString() : 'Never';
+
+                html += '<tr>' +
+                    '<td><strong>' + (item.item_name || '') + '</strong></td>' +
+                    '<td>' + (item.item_type || '') + '</td>' +
+                    '<td style="font-weight:bold;' + (item.quantity <= item.min_stock_level ? 'color:#dc3545;' : '') + '">' + item.quantity + '</td>' +
+                    '<td>' + item.min_stock_level + '</td>' +
+                    '<td>' + statusBadge + '</td>' +
+                    '<td>' + price + '</td>' +
+                    '<td>' + (item.supplier || '-') + '</td>' +
+                    '<td>' + restocked + '</td>' +
+                '</tr>';
+            }
+            tbody.innerHTML = html;
+        }
+
+        // Update stats
+        var el;
+        el = document.getElementById('invTotalItems'); if (el) el.textContent = items.length;
+        el = document.getElementById('invTotalStock'); if (el) el.textContent = totalStock;
+        el = document.getElementById('invLowStock'); if (el) el.textContent = lowCount;
+        el = document.getElementById('invOutStock'); if (el) el.textContent = outCount;
+
+        // Show alert banner if low stock
+        var alertBanner = document.getElementById('ppeAlertBanner');
+        var alertList = document.getElementById('ppeAlertList');
+        if (alertBanner && alertList) {
+            var lowItems = items.filter(function(x) { return x.stock_status === 'low' || x.stock_status === 'out_of_stock'; });
+            if (lowItems.length > 0) {
+                alertBanner.style.display = 'block';
+                alertList.innerHTML = lowItems.map(function(x) {
+                    return '<div style="margin:2px 0;">' + (x.stock_status === 'out_of_stock' ? '🔴' : '🟡') + ' ' + x.item_name + ': ' + x.quantity + ' remaining (min: ' + x.min_stock_level + ')</div>';
+                }).join('');
+            } else {
+                alertBanner.style.display = 'none';
+            }
+        }
+    })
+    .catch(function(err) {
+        console.error('Error loading PPE inventory:', err);
+        var tbody = document.getElementById('ppeInventoryBody');
+        if (tbody) tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;color:#dc3545;">Failed to load inventory</td></tr>';
+    });
+}
+
+function savePpeStock() {
+    var typeSelect = document.getElementById('stockItemType');
+    var itemType = typeSelect.value;
+    var itemName = typeSelect.options[typeSelect.selectedIndex].text;
+    var quantity = parseInt(document.getElementById('stockQuantity').value) || 0;
+    var unitPrice = parseFloat(document.getElementById('stockUnitPrice').value) || 0;
+    var minLevel = parseInt(document.getElementById('stockMinLevel').value) || 10;
+    var supplier = document.getElementById('stockSupplier').value;
+    var notes = document.getElementById('stockNotes').value;
+
+    if (!itemType || quantity <= 0) {
+        customAlert('Please select an item type and enter a quantity greater than 0.', 'Validation Error', 'error');
+        return false;
+    }
+
+    var baseUrl = window.location.origin;
+    fetch(baseUrl + '/api/work/hse/ppe-inventory', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'Authorization': 'Bearer ' + sessionManager.getAuthToken() },
+        body: JSON.stringify({
+            item_type: itemType,
+            item_name: itemName,
+            quantity: quantity,
+            min_stock_level: minLevel,
+            unit_price: unitPrice,
+            supplier: supplier,
+            notes: notes
+        })
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+        if (data.error) throw new Error(data.error);
+        customAlert('Stock updated successfully!\n\n' + itemName + ': +' + quantity + ' units added', 'Stock Updated', 'success');
+        document.getElementById('ppeStockForm').reset();
+        document.getElementById('stockMinLevel').value = '10';
+        togglePpeStockForm();
+        loadPpeInventory();
+    })
+    .catch(function(err) {
+        console.error('Error saving PPE stock:', err);
+        customAlert('Failed to save stock: ' + err.message, 'Error', 'error');
+    });
+
+    return false;
+}
 
 function saveSafetyViolation() {
 
