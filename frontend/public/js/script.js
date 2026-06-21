@@ -1067,38 +1067,42 @@ function handleLogin() {
 }
 
 function handleLogout() {
-    // Show custom confirmation notification instead of alert
     showNotification('Logging out...', 'info', 2000);
-    
-    // Clear session data
+
     sessionManager.removeCurrentSession();
-    
-    // Reset current role
+
     currentRole = "";
-    
-    // Show logout success message
-    setTimeout(() => {
-        // Hide system page and show login page
+
+    // Clear content area so stale pages don't persist across role switches
+    var contentArea = document.getElementById('contentArea');
+    if (contentArea) contentArea.innerHTML = '';
+
+    // Clear sidebar menu
+    var menu = document.getElementById('menu');
+    if (menu) menu.innerHTML = '';
+
+    // Collapse sidebar
+    var sidebar = document.querySelector('.sidebar');
+    if (sidebar) sidebar.classList.add('collapsed');
+
+    setTimeout(function() {
         document.getElementById("systemPage").classList.add("hidden");
         document.getElementById("loginPage").classList.remove("hidden");
         document.body.classList.remove('logged-in');
         document.body.classList.add('login-active');
-        
-        // Clear form fields
+
         document.getElementById("loginEmail").value = "";
         document.getElementById("loginPassword").value = "";
         var loginRoleEl = document.getElementById("loginRole");
         if (loginRoleEl) loginRoleEl.value = "";
-        
-        // Reset login button
-        const loginBtn = document.getElementById("loginBtn");
+
+        var loginBtn = document.getElementById("loginBtn");
         if (loginBtn) {
             loginBtn.disabled = false;
             loginBtn.textContent = "Login";
             loginBtn.style.opacity = '1';
         }
-        
-        // Show logout success notification
+
         showNotification('You have been logged out successfully. Please login again.', 'success', 4000);
     }, 1000);
 }
