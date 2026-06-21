@@ -24915,17 +24915,55 @@ function loadMenu(){
         console.log('Loading menu for role:', currentRole);
 
     const rolePermissions = {
-        "HR": ["Register Employee", "Create Worker Account", "Assign Project Workers", "Update Employee Records", "Register Driver", "Register Company Car", "Manage Company Cars", "Track Attendance", "Manage Leave & Contracts", "Manage Policies", "Approve Workforce Budget", "Manage Drivers", "View Suggestions"],
-        "FINANCE": ["Budgeting", "Financial Management", "Payroll Processing", "Expense Control", "Financial Reporting", "Audits", "Compliance", "Luggage Companies", "Luggage Purchases", "Payment Tracking", "View Suggestions", "Record Sale", "Manage Sales", "Generate Sales Report", "Procurement Sale", "Accountant Management", "Payment Management", "Track Payment Progress"],
-        "PROJECT": ["Create New Project", "Update Project Progress", "Assign Tasks", "Assign Project Workers", "Request Workforce", "Record Site Reports", "Approve Completed Work", "Materials Inventory", "Record Materials Out", "View Suggestions", "View Project Safety Status"],
-        "REALESTATE": ["Add Property", "Edit Property Details", "Register Client", "Record Sale", "Manage Sales", "Track Payment Progress", "Generate Sales Report", "View Suggestions", "Materials Inventory", "Record Materials In", "Record Materials Out", "Materials Dashboard", "Office Resources", "Procurement Sale", "Property"],
-        "HSE": ["Record Incident Reports", "Record Toolbox Meetings", "Track PPE Issuance", "Mark Safety Violations", "Upload Inspection Reports", "View Project Safety Status", "View Suggestions", "Upload Safety Policies", "Compliance Management", "Compliance", "Risk Management"],
-        "ADMIN": ["Administrative Operations", "Compliance Management", "Staff Oversight", "Document Management", "User Account Management", "View Suggestions", "Office Portal", "View Employee List", "Track Attendance", "Schedule Meetings", "Upload Documents", "Edit Documents", "Send Notifications", "Record Meeting Minutes", "Suggestions", "Office Resources", "View Invoices", "Payment Tracking"]
+        "ADMIN": [
+            "Mission & Vision", "Long-Term Growth Strategy", "Staff Oversight",
+            "Financial Strategies", "View Workforce Reports", "Compliance Management",
+            "Risk Management", "Department Management", "Office Resources", "Audits"
+        ],
+        "HR": [
+            "Register Employee", "Create Worker Account", "Update Employee Records",
+            "View Employee List", "View All Workers", "View Assigned Workers",
+            "Review Employee Count", "Approve Workforce Requests", "Create Senior Hiring Request",
+            "Talent Acquisition", "Team Management", "Track Attendance", "Promotions",
+            "Discipline Monitoring", "Suspend/Terminate Employment",
+            "Approve Senior Staff Hiring", "Manage Policies"
+        ],
+        "PROJECT": [
+            "Create New Project", "Update Project Progress", "Assign Tasks",
+            "Record Site Reports", "Approve Completed Work", "View Project Safety Status",
+            "View Assigned Workers", "Office Portal", "Request Workforce"
+        ],
+        "REALESTATE": [
+            "Add Property", "Edit Property Details", "Register Client", "Record Sale",
+            "Register Company Car", "Manage Sales", "Manage Company Cars",
+            "Generate Sales Report", "Register Driver", "Manage Drivers",
+            "Luggage Companies", "Transport Costs", "Luggage Purchases",
+            "Materials Inventory", "Materials Dashboard", "Record Materials In",
+            "Record Materials Out"
+        ],
+        "ASSISTANT": [
+            "Schedule Meetings", "Upload Documents", "Edit Documents",
+            "Document Management", "Send Notifications"
+        ],
+        "MD": [
+            "Manage Policies", "Approve Senior Staff Hiring", "User Account Management",
+            "Manage Leave & Contracts", "Approve Invoices", "Audits",
+            "Document Management", "Office Portal", "Tax"
+        ],
+        "HSE": [
+            "Compliance Management", "Manage Policies", "Record Incident Reports",
+            "Track PPE Issuance", "Mark Safety Violations", "Upload Inspection Reports",
+            "Risk Management", "View Project Safety Status", "Compliance"
+        ],
+        "FINANCE": [
+            "Financial Management", "Financial Reporting", "Budgeting", "Expense Control",
+            "View Invoices", "Payroll Processing", "Accountant Management",
+            "NHIF Contribute", "Payment Management", "NSSF Registration",
+            "Payment Tracking", "Track Payment Progress"
+        ]
     };
 
     const isAuthorized = (menuName) => {
-        if (currentRole === "MD") return true;
-        
         let roleKey = currentRole;
         if (currentRole === "REAL ESTATE") roleKey = "REALESTATE";
         if (currentRole === "HR manager" || currentRole === "hr@manager") roleKey = "HR";
@@ -24935,9 +24973,9 @@ function loadMenu(){
         if (currentRole === "hse maneger" || currentRole === "HSE Manager") roleKey = "HSE";
         if (currentRole === "admin") roleKey = "ADMIN";
         if (currentRole === "ASSISTANT") roleKey = "ASSISTANT";
-        
+
         roleKey = roleKey.toUpperCase().replace(/\s+/g, '');
-        
+
         if (rolePermissions[roleKey]) {
             return rolePermissions[roleKey].includes(menuName);
         }
