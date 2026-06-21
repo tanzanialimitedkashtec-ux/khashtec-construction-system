@@ -136,14 +136,12 @@ class DatabaseAPI {
     // Login method
     async login(email, password, role) {
         if (!this.isProduction) {
-            console.log('🔐 Database API Login attempt:', { email, role });
+            console.log('Database API Login attempt:', { email, role });
         }
         try {
-            const response = await this.post('/auth/login', {
-                email,
-                password,
-                role
-            });
+            var body = { email: email, password: password };
+            if (role) body.role = role;
+            const response = await this.post('/auth/login', body);
             
             if (!this.isProduction) {
                 // Create a safe version of response for logging (mask sensitive data)

@@ -23898,33 +23898,9 @@ font-size: 12px;
     </div>
 
    
-    <form id="loginForm" class="login-form" onsubmit="return handleLogin(); setTimeout(() => updateNavigationForRole(document.getElementById('loginRole').value), 100);">
+    <form id="loginForm" class="login-form" onsubmit="return handleLogin();">
 
         <input type="email" id="loginEmail" placeholder="Enter your email (e.g. md@kashtec.com)" required>
-
-        <label for="loginRole" class="sr-only">Login role</label>
-
-        <select id="loginRole" onchange="updatePasswordPlaceholder()" required>
-
-            <option value="">Select Role</option>
-
-            <option value="MD">Managing Director</option>
-
-            <option value="ADMIN">Director of Administration</option>
-
-            <option value="HR">HR Manager</option>
-
-            <option value="HSE">HSE Manager</option>
-
-            <option value="FINANCE">Finance Manager</option>
-
-            <option value="PROJECT">Project Manager</option>
-
-            <option value="REALESTATE">Real Estate Manager</option>
-
-            <option value="ASSISTANT">Admin Assistant</option>
-
-        </select>
 
         <input type="password" id="loginPassword" placeholder="Enter password" required>
 
@@ -24252,80 +24228,16 @@ document.addEventListener('DOMContentLoaded', function() {
 
 
 
-function updatePasswordPlaceholder(){
-
-    const role = document.getElementById("roleSelect").value;
-
-    const passwordInput = document.getElementById("passwordInput");
-
-    
-
-    if(role === ""){
-
-        passwordInput.placeholder = "Select a role first";
-
-    } else {
-
-        passwordInput.placeholder = `Enter password for ${roleDescriptions[role]}`;
-
-    }
-
-}
-
-
+function updatePasswordPlaceholder(){}
 
 function login(){
-
-    const role = document.getElementById("roleSelect").value;
-
-    const password = document.getElementById("passwordInput").value;
-
-    
-
-    if(role === ""){
-
-        customAlert("Please select a role from the dropdown menu.", "Role Required", "error");
-
+    var email = document.getElementById("loginEmail").value;
+    var password = document.getElementById("loginPassword").value;
+    if(!email || !password){
+        customAlert("Please enter email and password.", "Login Required", "error");
         return;
-
     }
-
-    
-
-    if(password === ""){
-
-        customAlert("Please enter your password.", "Password Required", "error");
-
-        return;
-
-    }
-
-    
-
-    // Validate password
-
-    if(password !== rolePasswords[role]){
-
-        customAlert("Invalid password. Please check your credentials.", "Authentication Failed", "error");
-
-        return;
-
-    }
-
-    
-
-    currentRole = role;
-
-    document.getElementById("loginPage").classList.add("hidden");
-
-    document.getElementById("systemPage").classList.remove("hidden");
-
-    document.getElementById("userRole").innerText = roleDescriptions[role] + " Dashboard";
-
-    loadMenu();
-
-    startNotificationPolling();
-
+    handleLogin();
 }
 
 
@@ -25085,18 +24997,22 @@ function loadMenu(){
     allMenusConfig.forEach(item => {
         if (isAuthorized(item.name)) {
             authorizedItems.push(item);
-        } else {
-            unauthorizedItems.push(item);
         }
     });
 
     authorizedItems.forEach(item => addMenu(item.name, item.func));
-    unauthorizedItems.forEach(item => addMenu(item.name, item.func, { unauthorized: true }));
 
+    // Auto-open all category sections so the user sees their access at the top
+    var sections = menu.querySelectorAll('.menu-section');
+    sections.forEach(function(section) { section.open = true; });
 
     filterMenuItems();
 
-    console.log('Menu loaded. Total items:', menu.children.length); // Debug line
+    // Expand sidebar so menu is visible right after login
+    var sidebar = document.querySelector('.sidebar');
+    if (sidebar) { sidebar.classList.remove('collapsed'); }
+
+    console.log('Menu loaded. Total items:', menu.children.length);
 
 }
 
