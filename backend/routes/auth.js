@@ -212,6 +212,31 @@ router.post('/login', async (req, res) => {
             } catch (seedErr) {
                 console.log('ℹ️ MD seed check:', seedErr.message);
             }
+
+            // Ensure default Admin Assistant user exists with correct credentials
+            try {
+                const assistantCheck = await db.execute(
+                    'SELECT id FROM authentication WHERE email = ?',
+                    ['assistant@kashtec.com']
+                );
+                const assistantHash = await bcrypt.hash('assistant123', 12);
+                if (!assistantCheck || assistantCheck.length === 0) {
+                    await db.execute(
+                        `INSERT INTO authentication (department_code, email, password_hash, role, department_name, manager_name, status)
+                         VALUES (?, ?, ?, ?, ?, ?, ?)`,
+                        ['ASSISTANT', 'assistant@kashtec.com', assistantHash, 'Admin Assistant', 'Administration', 'Admin Assistant', 'Active']
+                    );
+                    console.log('✅ Default Admin Assistant user seeded into authentication table');
+                } else {
+                    await db.execute(
+                        'UPDATE authentication SET password_hash = ?, role = ?, department_name = ?, status = ? WHERE email = ?',
+                        [assistantHash, 'Admin Assistant', 'Administration', 'Active', 'assistant@kashtec.com']
+                    );
+                    console.log('✅ Admin Assistant user password updated');
+                }
+            } catch (seedErr) {
+                console.log('ℹ️ Assistant seed check:', seedErr.message);
+            }
         } catch (tableError) {
             console.error('❌ Table check failed:', tableError);
             // Continue anyway - the main query will fail if table doesn't exist
