@@ -578,7 +578,9 @@ header h2 {
 /* Premium Sidebar Styles */
 .sidebar {
     width: 200px;
-    background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+    background: linear-gradient(135deg, rgba(15, 23, 42, 0.95) 0%, rgba(30, 41, 59, 0.95) 100%);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
     color: white;
     padding: 4px;
     position: sticky;
@@ -587,10 +589,12 @@ header h2 {
     overflow-y: auto;
     height: 100%;
     box-sizing: border-box;
-    border-right: 1px solid rgba(59, 130, 246, 0.15);
+    border-right: 1px solid rgba(255, 255, 255, 0.06);
+    box-shadow: 4px 0 20px rgba(0, 0, 0, 0.4);
     border-radius: 4px;
     font-size: 12px;
-    transition: width 0.3s ease;
+    transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: 50;
 }
 
 /* Slim Scrollbar */
@@ -676,15 +680,18 @@ header h2 {
 }
 
 .menu-section {
-    border: 1px solid rgba(255,255,255,0.06);
-    border-radius: 3px;
+    border: 1px solid rgba(255,255,255,0.05);
+    border-radius: 6px;
     overflow: hidden;
     background: rgba(255, 255, 255, 0.02);
-    transition: border-color 0.2s ease;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    transition: all 0.3s ease;
 }
 
 .menu-section:hover {
-    border-color: rgba(255,255,255,0.12);
+    border-color: rgba(255,255,255,0.15);
+    background: rgba(255, 255, 255, 0.03);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
 }
 
 .menu-section summary {
@@ -698,8 +705,9 @@ header h2 {
     letter-spacing: 0.02em;
     font-weight: 600;
     color: #f1f5f9;
-    background: linear-gradient(135deg, #1e293b 0%, #253545 100%);
-    transition: background 0.2s ease;
+    background: linear-gradient(135deg, rgba(30, 41, 59, 0.6) 0%, rgba(37, 53, 69, 0.6) 100%);
+    backdrop-filter: blur(4px);
+    transition: all 0.3s ease;
 }
 
 .menu-section summary::before {
@@ -739,11 +747,11 @@ header h2 {
 .sidebar button {
     width: 100%;
     padding: 1px 2px;
-    margin-bottom: 1px;
-    background: rgba(255,255,255,0.03);
+    margin-bottom: 2px;
+    background: rgba(255,255,255,0.02);
     color: #94a3b8;
-    border: 1px solid rgba(255,255,255,0.04);
-    border-radius: 2px;
+    border: 1px solid transparent;
+    border-radius: 4px;
     cursor: pointer;
     font-size: 12px;
     text-align: left;
@@ -751,7 +759,7 @@ header h2 {
     overflow: hidden;
     text-overflow: ellipsis;
     position: relative;
-    transition: all 0.2s ease;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .sidebar button:before {
@@ -766,10 +774,11 @@ header h2 {
 }
 
 .sidebar button:hover {
-    background: rgba(59,130,246,0.15);
+    background: linear-gradient(90deg, rgba(59,130,246,0.2), rgba(59,130,246,0.05));
     color: #ffffff;
-    border-color: rgba(59,130,246,0.2);
-    transform: translateX(2px);
+    border-color: rgba(59,130,246,0.3);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    transform: translateX(4px);
 }
 
 .sidebar button:hover:before {
