@@ -121,11 +121,8 @@ router.get('/users', async (req, res) => {
             console.log('✅ Personnel fetched from database:', personnel.length);
             
         } catch (dbError) {
-            console.error('❌ Database error, using fallback personnel:', dbError);
-            
-            // On database error, return empty personnel list instead of mock data
-            console.error('❌ Database error, returning empty personnel list:', dbError);
-            personnel = [];
+            console.error('❌ Database error:', dbError);
+            throw dbError;
         }
         
         // Apply filters if provided
@@ -249,8 +246,8 @@ router.get('/documents', async (req, res) => {
             console.log('✅ Documents fetched from database:', documents.length);
             
         } catch (dbError) {
-            console.error('❌ Database error, returning empty documents list:', dbError);
-            documents = [];
+            console.error('❌ Database error:', dbError);
+            throw dbError;
         }
         
         // Apply filters
@@ -327,46 +324,8 @@ router.get('/policies', async (req, res) => {
             console.log('✅ Policies fetched from database:', policies.length);
             
         } catch (dbError) {
-            console.error('❌ Database error, using fallback policies:', dbError);
-            
-            // Fallback to mock policies
-            policies = [
-                {
-                    id: 'POL001',
-                    title: 'Employee Code of Conduct',
-                    description: 'Guidelines for employee behavior and workplace ethics',
-                    submittedBy: 'HR Manager',
-                    submittedByRole: 'HR Manager',
-                    submissionDate: '2024-01-15',
-                    impact: 'High',
-                    status: 'Approved',
-                    approvedBy: 'Managing Director',
-                    approvedDate: '2024-01-18',
-                    mock: true
-                },
-                {
-                    id: 'POL002',
-                    title: 'Health and Safety Policy',
-                    description: 'Comprehensive safety guidelines for all construction sites',
-                    submittedBy: 'HSE Manager',
-                    submittedByRole: 'HSE Manager',
-                    submissionDate: '2024-01-16',
-                    impact: 'Critical',
-                    status: 'Pending',
-                    mock: true
-                },
-                {
-                    id: 'POL003',
-                    title: 'Remote Work Policy',
-                    description: 'Guidelines for remote work and flexible arrangements',
-                    submittedBy: 'HR Manager',
-                    submittedByRole: 'HR Manager',
-                    submissionDate: '2024-01-14',
-                    impact: 'Medium',
-                    status: 'Revision Requested',
-                    mock: true
-                }
-            ];
+            console.error('❌ Database error:', dbError);
+            throw dbError;
         }
         
         // Apply filters
@@ -444,41 +403,8 @@ router.get('/contracts', async (req, res) => {
             console.log('✅ Contracts fetched from database:', contracts.length);
             
         } catch (dbError) {
-            console.error('❌ Database error, using fallback contracts:', dbError);
-            
-            // Fallback to mock contracts
-            contracts = [
-                {
-                    id: 1,
-                    employeeId: 'EMP001',
-                    employeeName: 'John Doe',
-                    contractType: 'permanent',
-                    startDate: '2024-01-15',
-                    endDate: null,
-                    salary: 2500000,
-                    contractStatus: 'active',
-                    contractTerms: 'Full-time permanent employment with standard benefits',
-                    contractDocument: '/uploads/contracts/john-doe-permanent.pdf',
-                    createdBy: 'HR Manager',
-                    createdAt: '2024-01-15',
-                    mock: true
-                },
-                {
-                    id: 2,
-                    employeeId: 'EMP002',
-                    employeeName: 'Jane Smith',
-                    contractType: 'temporary',
-                    startDate: '2024-02-01',
-                    endDate: '2024-12-31',
-                    salary: 2200000,
-                    contractStatus: 'active',
-                    contractTerms: 'Fixed-term contract for project duration',
-                    contractDocument: '/uploads/contracts/jane-smith-temporary.pdf',
-                    createdBy: 'HR Manager',
-                    createdAt: '2024-02-01',
-                    mock: true
-                }
-            ];
+            console.error('❌ Database error:', dbError);
+            throw dbError;
         }
         
         // Apply filters
@@ -621,72 +547,8 @@ router.get('/analytics', async (req, res) => {
             console.log('✅ Analytics fetched from database');
             
         } catch (dbError) {
-            console.error('❌ Database error, using fallback analytics:', dbError);
-            
-            // Fallback to mock analytics
-            analytics = {
-                personnel: {
-                    totalStaff: 15,
-                    totalEmployees: 12,
-                    totalWorkers: 3,
-                    activeStaff: 14,
-                    byDepartment: {
-                        'HR': 3,
-                        'Finance': 2,
-                        'Operations': 5,
-                        'Projects': 3,
-                        'HSE': 2
-                    },
-                    byRole: {
-                        'Employee': 10,
-                        'Worker': 3,
-                        'HR Manager': 1,
-                        'Finance Manager': 1
-                    }
-                },
-                documents: {
-                    totalDocuments: 25,
-                    activeDocuments: 20,
-                    byCategory: {
-                        'HR': 8,
-                        'Safety': 6,
-                        'Finance': 5,
-                        'Projects': 6
-                    },
-                    byDepartment: {
-                        'HR': 8,
-                        'HSE': 6,
-                        'Finance': 5,
-                        'Projects': 6
-                    }
-                },
-                policies: {
-                    totalPolicies: 12,
-                    activePolicies: 8,
-                    pendingPolicies: 2,
-                    draftPolicies: 2,
-                    byImpact: {
-                        'Low': 3,
-                        'Medium': 5,
-                        'High': 3,
-                        'Critical': 1
-                    }
-                },
-                contracts: {
-                    totalContracts: 15,
-                    activeContracts: 12,
-                    byType: {
-                        'permanent': 8,
-                        'temporary': 4,
-                        'contract': 3
-                    },
-                    byStatus: {
-                        'active': 12,
-                        'expired': 2,
-                        'terminated': 1
-                    }
-                }
-            };
+            console.error('❌ Database error:', dbError);
+            throw dbError;
         }
         
         res.json({
@@ -782,16 +644,8 @@ router.post('/upload/profile-image', upload.single('profileImage'), async (req, 
             });
             
         } catch (dbError) {
-            console.error('❌ Database error, using mock response:', dbError);
-            
-            // Fallback to mock response
-            res.json({
-                success: true,
-                message: 'Profile image uploaded successfully (mock)',
-                filePath: `/uploads/profiles/${req.file.filename}`,
-                employeeId: employeeId,
-                mock: true
-            });
+            console.error('❌ Database error:', dbError);
+            res.status(500).json({ success: false, error: 'Database error', details: dbError.message || dbError });
         }
         
     } catch (error) {

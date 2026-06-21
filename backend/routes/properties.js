@@ -135,25 +135,8 @@ router.post('/', async (req, res) => {
             });
             
         } catch (dbError) {
-            console.error('❌ Database error, using mock property:', dbError);
-            
-            // Fallback to mock property creation
-            const propertyId = `PROP${Date.now().toString().slice(-6)}`;
-            
-            res.status(201).json({
-                message: 'Property created successfully (mock)',
-                id: propertyId,
-                data: {
-                    id: propertyId,
-                    title: `Property ${plotNumber}`,
-                    location: location,
-                    type: type,
-                    price: parseFloat(price),
-                    status: status || 'Available',
-                    size_sqm: parseFloat(area),
-                    mock: true
-                }
-            });
+            console.error('❌ Database error:', dbError);
+            res.status(500).json({ success: false, error: 'Database error', details: dbError.message || dbError });
         }
         
     } catch (error) {
@@ -171,37 +154,8 @@ router.get('/all', async (req, res) => {
         console.log('🏠 Fetching all properties...');
         
         if (!db) {
-            console.log('⚠️ Database not available, returning mock properties data');
-            // Return mock data when database is not available
-            const mockProperties = [
-                {
-                    id: 1,
-                    title: 'Property PLT-001',
-                    description: 'Residential property in Masaki area',
-                    location: 'Masaki, Dar es Salaam',
-                    type: 'Residential',
-                    price: 50000000,
-                    status: 'Available',
-                    size_sqm: 500,
-                    created_at: new Date().toISOString(),
-                    updated_at: new Date().toISOString()
-                },
-                {
-                    id: 2,
-                    title: 'Property PLT-002',
-                    description: 'Commercial property in Kigamboni',
-                    location: 'Kigamboni, Dar es Salaam',
-                    type: 'Commercial',
-                    price: 85000000,
-                    status: 'Under Offer',
-                    size_sqm: 750,
-                    created_at: new Date().toISOString(),
-                    updated_at: new Date().toISOString()
-                }
-            ];
-            
-            console.log('✅ Mock properties returned:', mockProperties.length);
-            return res.json(mockProperties);
+            console.log('⚠️ Database not available');
+            return res.status(500).json({ success: false, error: 'Database error', details: 'Database not connected' });
         }
         
         const propertiesResult = await db.execute('SELECT * FROM properties ORDER BY created_at DESC');
@@ -214,24 +168,7 @@ router.get('/all', async (req, res) => {
     } catch (error) {
         console.error('❌ Error fetching properties:', error);
         
-        // Return mock data on database error
-        const mockProperties = [
-            {
-                id: 1,
-                title: 'Property PLT-001',
-                description: 'Residential property in Masaki area',
-                location: 'Masaki, Dar es Salaam',
-                type: 'Residential',
-                price: 50000000,
-                status: 'Available',
-                size_sqm: 500,
-                created_at: new Date().toISOString(),
-                updated_at: new Date().toISOString()
-            }
-        ];
-        
-        console.log('⚠️ Database error, returning mock properties:', mockProperties.length);
-        res.json(mockProperties);
+        res.status(500).json({ success: false, error: 'Database error', details: error.message || error });
     }
 });
 

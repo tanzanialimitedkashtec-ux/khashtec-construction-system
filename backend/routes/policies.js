@@ -247,47 +247,8 @@ router.get('/all', async (req, res) => {
             policies = Array.isArray(policiesResult) ? policiesResult[0] : policiesResult;
             console.log('✅ Policies fetched from database:', policies.length);
         } catch (dbError) {
-            console.error('❌ Database error, using fallback policies:', dbError);
-            
-            // Fallback to mock policies
-            policies = [
-                {
-                    id: 'POL001',
-                    title: 'Employee Code of Conduct',
-                    description: 'Guidelines for employee behavior and workplace ethics',
-                    submitted_by: 'HR Manager',
-                    submitted_by_role: 'HR Manager',
-                    submission_date: '2024-01-15',
-                    impact: 'High',
-                    status: 'Approved',
-                    approved_by: 'Managing Director',
-                    approved_date: '2024-01-18'
-                },
-                {
-                    id: 'POL002',
-                    title: 'Health and Safety Policy',
-                    description: 'Comprehensive safety guidelines for all construction sites',
-                    submitted_by: 'HSE Manager',
-                    submitted_by_role: 'HSE Manager',
-                    submission_date: '2024-01-16',
-                    impact: 'Critical',
-                    status: 'Pending',
-                    approved_by: null,
-                    approved_date: null
-                },
-                {
-                    id: 'POL003',
-                    title: 'Remote Work Policy',
-                    description: 'Guidelines for remote work and flexible arrangements',
-                    submitted_by: 'HR Manager',
-                    submitted_by_role: 'HR Manager',
-                    submission_date: '2024-01-14',
-                    impact: 'Medium',
-                    status: 'Revision Requested',
-                    approved_by: null,
-                    approved_date: null
-                }
-            ];
+            console.error('❌ Database error:', dbError);
+            throw dbError;
         }
         
         res.json({
@@ -381,27 +342,8 @@ router.post('/', async (req, res) => {
             });
             
         } catch (dbError) {
-            console.error('❌ Database error, using mock policy:', dbError);
-            
-            // Fallback to mock policy creation
-            const policyId = id || `POL${Date.now().toString().slice(-6)}`;
-            
-            res.status(201).json({
-                success: true,
-                message: 'Policy created successfully (mock)',
-                policyId: policyId,
-                policy: {
-                    id: policyId,
-                    title,
-                    description,
-                    submittedBy,
-                    submittedByRole,
-                    impact: impact || 'Medium',
-                    category: category || 'General',
-                    status: 'Pending',
-                    mock: true
-                }
-            });
+            console.error('❌ Database error:', dbError);
+            throw dbError;
         }
         
     } catch (error) {
@@ -431,24 +373,8 @@ router.get('/:id', async (req, res) => {
                 console.log('✅ Policy found:', policy);
             }
         } catch (dbError) {
-            console.error('❌ Database error, using fallback policy:', dbError);
-            
-            // Fallback to mock policy
-            if (policyId === 'POL001') {
-                policy = {
-                    id: 'POL001',
-                    title: 'Employee Code of Conduct',
-                    description: 'Guidelines for employee behavior and workplace ethics',
-                    submitted_by: 'HR Manager',
-                    submitted_by_role: 'HR Manager',
-                    submission_date: '2024-01-15',
-                    impact: 'High',
-                    status: 'Approved',
-                    approved_by: 'Managing Director',
-                    approved_date: '2024-01-18',
-                    mock: true
-                };
-            }
+            console.error('❌ Database error:', dbError);
+            throw dbError;
         }
         
         if (!policy) {
@@ -529,18 +455,8 @@ router.post('/:id/approve', async (req, res) => {
             });
             
         } catch (dbError) {
-            console.error('❌ Database error, using mock approval:', dbError);
-            
-            // Fallback to mock approval
-            res.json({
-                success: true,
-                message: 'Policy approved successfully (mock)',
-                policyId: policyId,
-                status: 'Approved',
-                approvedBy: approvedBy,
-                approvedDate: new Date().toISOString().split('T')[0],
-                mock: true
-            });
+            console.error('❌ Database error:', dbError);
+            throw dbError;
         }
         
     } catch (error) {
@@ -617,18 +533,8 @@ router.post('/:id/revision', async (req, res) => {
             });
             
         } catch (dbError) {
-            console.error('❌ Database error, using mock revision request:', dbError);
-            
-            // Fallback to mock revision request
-            res.json({
-                success: true,
-                message: 'Policy revision requested successfully (mock)',
-                policyId: policyId,
-                status: 'Revision Requested',
-                revisionRequest: revisionRequest,
-                requestedBy: requestedBy,
-                mock: true
-            });
+            console.error('❌ Database error:', dbError);
+            throw dbError;
         }
         
     } catch (error) {
@@ -706,19 +612,8 @@ router.post('/:id/reject', async (req, res) => {
             });
             
         } catch (dbError) {
-            console.error('❌ Database error, using mock rejection:', dbError);
-            
-            // Fallback to mock rejection
-            res.json({
-                success: true,
-                message: 'Policy rejected successfully (mock)',
-                policyId: policyId,
-                status: 'Rejected',
-                rejectionReason: rejectionReason,
-                rejectedBy: rejectedBy,
-                rejectedDate: new Date().toISOString().split('T')[0],
-                mock: true
-            });
+            console.error('❌ Database error:', dbError);
+            throw dbError;
         }
         
     } catch (error) {
@@ -752,14 +647,8 @@ router.delete('/:id', async (req, res) => {
             });
             
         } catch (dbError) {
-            console.error('❌ Database error, using mock deletion:', dbError);
-            
-            res.json({
-                success: true,
-                message: 'Policy deleted successfully (mock)',
-                policyId: policyId,
-                mock: true
-            });
+            console.error('❌ Database error:', dbError);
+            throw dbError;
         }
         
     } catch (error) {

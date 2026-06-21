@@ -1,48 +1,6 @@
 const express = require('express');
 const router = express.Router();
 
-// Mock data for company cars (fallback when database is unavailable)
-const mockCompanyCars = [
-    {
-        id: 1,
-        track_number: 'TK001',
-        car_name: 'Toyota Hilux',
-        brand_name: 'toyota',
-        registration_number: 'T-1234',
-        plate_number: 'ABC-123',
-        car_details: 'Double cabin pickup truck',
-        description: 'Heavy duty pickup for construction sites',
-        assigned_driver: 'DRV001',
-        registration_date: '2023-01-15',
-        vehicle_type: 'pickup',
-        fuel_type: 'diesel',
-        color: 'White',
-        year_of_manufacture: 2023,
-        odometer_reading: 15000,
-        insurance_status: 'insured',
-        vehicle_status: 'active'
-    },
-    {
-        id: 2,
-        track_number: 'TK002',
-        car_name: 'Nissan Patrol',
-        brand_name: 'nissan',
-        registration_number: 'N-5678',
-        plate_number: 'XYZ-789',
-        car_details: '4x4 SUV',
-        description: 'Off-road vehicle for site supervision',
-        assigned_driver: 'DRV002',
-        registration_date: '2023-03-20',
-        vehicle_type: 'suv',
-        fuel_type: 'petrol',
-        color: 'Black',
-        year_of_manufacture: 2023,
-        odometer_reading: 8000,
-        insurance_status: 'insured',
-        vehicle_status: 'active'
-    }
-];
-
 // Test endpoint
 router.get('/test', (req, res) => {
     res.status(200).json({
@@ -167,14 +125,7 @@ router.get('/', async (req, res) => {
         
     } catch (error) {
         console.error('❌ Error fetching company cars from database:', error);
-        console.log('🔄 Database connection failed, returning mock data...');
-        
-        // Return mock data when database fails
-        res.status(200).json({
-            success: true,
-            data: mockCompanyCars,
-            message: 'Using mock data - database unavailable'
-        });
+        res.status(500).json({ success: false, error: 'Database error', details: error.message || error });
     }
 });
 
@@ -226,12 +177,7 @@ router.get('/all', async (req, res) => {
         
     } catch (error) {
         console.error('Error fetching company cars:', error);
-        // Return mock data when database fails
-        res.status(200).json({
-            success: true,
-            data: mockCompanyCars,
-            message: 'Using mock data - database unavailable'
-        });
+        res.status(500).json({ success: false, error: 'Database error', details: error.message || error });
     }
 });
 
@@ -383,23 +329,7 @@ router.post('/', async (req, res) => {
     } catch (error) {
         console.error('Error registering company car:', error);
         
-        // If table doesn't exist, return success with mock data
-        if (error.code === 'ER_NO_SUCH_TABLE') {
-            const mockCar = {
-                id: Date.now(),
-                ...req.body,
-                status: req.body.status || 'Active',
-                created_at: new Date().toISOString()
-            };
-            
-            return res.status(201).json({
-                success: true,
-                message: 'Company car registered successfully (mock data)',
-                carId: mockCar.id,
-                data: mockCar
-            });
-        }
-        
+
         res.status(500).json({
             success: false,
             message: 'Failed to register company car',

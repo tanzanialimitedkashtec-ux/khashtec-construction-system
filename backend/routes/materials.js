@@ -13,22 +13,7 @@ try {
     db = null;
 }
 
-// ===== MOCK DATA =====
-const mockMaterialsInventory = [
-    { id: 1, material_code: 'MAT-CEM-001', material_name: 'Ordinary Portland Cement', material_category: 'Cement', description: 'Dangote Cement 50kg bags', unit_of_measure: 'Bag', current_stock: 500, min_stock_level: 100, max_stock_level: 2000, reorder_point: 200, storage_location: 'Warehouse A - Section 1', supplier_name: 'Dangote Tanzania Ltd', supplier_contact: '+255 222 123 456', unit_cost: 18500, status: 'Active' },
-    { id: 2, material_code: 'MAT-SND-001', material_name: 'Fine River Sand', material_category: 'Sand', description: 'Clean washed river sand', unit_of_measure: 'Cubic Meter', current_stock: 150, min_stock_level: 50, max_stock_level: 500, reorder_point: 80, storage_location: 'Yard B - Sand Pile', supplier_name: 'Local Supplier', supplier_contact: '+255 713 987 654', unit_cost: 45000, status: 'Active' },
-    { id: 3, material_code: 'MAT-RBL-001', material_name: 'Steel Rebar 12mm', material_category: 'Steel/Rebar', description: 'High tensile steel bars', unit_of_measure: 'Meter', current_stock: 2000, min_stock_level: 500, max_stock_level: 10000, reorder_point: 1000, storage_location: 'Warehouse A - Section 3', supplier_name: 'Steel Rolling Mills', supplier_contact: '+255 222 456 789', unit_cost: 8500, status: 'Active' },
-    { id: 4, material_code: 'MAT-PVC-001', material_name: 'PVC Pressure Pipe 4 inch', material_category: 'Pipes', description: 'UPVC pipe Class C', unit_of_measure: 'Meter', current_stock: 300, min_stock_level: 100, max_stock_level: 1000, reorder_point: 150, storage_location: 'Warehouse C - Pipe Rack', supplier_name: 'P Pipe Industries', supplier_contact: '+255 713 456 123', unit_cost: 12000, status: 'Active' },
-    { id: 5, material_code: 'MAT-BRK-001', material_name: 'Clay Facing Bricks', material_category: 'Bricks', description: 'Red clay bricks', unit_of_measure: 'Piece', current_stock: 10000, min_stock_level: 2000, max_stock_level: 50000, reorder_point: 5000, storage_location: 'Yard B - Brick Stack', supplier_name: 'Kiln Masters Ltd', supplier_contact: '+255 714 321 654', unit_cost: 350, status: 'Active' }
-];
 
-const mockMaterialsIn = [
-    { id: 1, material_id: 1, track_number: 'MIN-2026-0001', receipt_date: '2026-05-01', quantity_received: 200, unit_of_measure: 'Bag', unit_price: 18500, total_cost: 3700000, transport_cost: 150000, transport_issue: 'Minor delay due to road construction', supplier_name: 'Dangote Tanzania Ltd', supplier_contact: '+255 222 123 456', invoice_number: 'INV-DG-2026-001', purchase_order_number: 'PO-KT-2026-045', delivery_note_number: 'DN-DG-2026-089', delivery_condition: 'Good', quality_check_status: 'Passed', received_by: 'John Doe', received_by_role: 'Store Keeper', project_name: 'Dar es Salaam Port Modernization', warehouse_location: 'Warehouse A - Section 1', notes: 'Delivered on time, quality verified', created_at: '2026-05-01T08:00:00Z' }
-];
-
-const mockMaterialsOut = [
-    { id: 1, material_id: 1, track_number: 'MOUT-2026-0001', issue_date: '2026-05-06', quantity_out: 50, unit_of_measure: 'Bag', unit_price: 18500, total_value: 925000, issue_type: 'Project Use', issued_to: 'Eng. Michael K. Johnson', issued_to_role: 'Site Engineer', issued_to_department: 'Project Management', project_name: 'Dar es Salaam Port Modernization', destination: 'Site A - Port Area', purpose: 'Foundation works for new warehouse', authorized_by: 'Project Manager', authorized_by_role: 'Project Manager', delivery_method: 'Company Vehicle', delivery_receipt_number: 'DR-2026-001', condition_on_issue: 'New', return_expected: false, notes: 'Issued for Phase 1 foundation concrete', created_at: '2026-05-06T09:00:00Z' }
-];
 
 // ===== HELPER FUNCTIONS =====
 
@@ -66,7 +51,7 @@ router.get('/inventory', async (req, res) => {
         res.json({ success: true, data: rows });
     } catch (error) {
         console.error('Error fetching inventory:', error.message);
-        res.json({ success: true, data: mockMaterialsInventory });
+        res.status(500).json({ success: false, error: 'Database error', details: error.message || error });
     }
 });
 
@@ -79,9 +64,7 @@ router.get('/inventory/:id', async (req, res) => {
         res.json({ success: true, data: rows[0] });
     } catch (error) {
         console.error('Error fetching material:', error.message);
-        const material = mockMaterialsInventory.find(m => m.id === parseInt(req.params.id));
-        if (material) res.json({ success: true, data: material });
-        else res.status(404).json({ success: false, message: 'Material not found' });
+        res.status(500).json({ success: false, error: 'Database error', details: error.message || error });
     }
 });
 
@@ -105,10 +88,7 @@ router.post('/inventory', async (req, res) => {
         res.status(201).json({ success: true, message: 'Material created successfully', data: { id: result.insertId, material_code: code, material_name } });
     } catch (error) {
         console.error('Error creating material:', error.message);
-        const newId = mockMaterialsInventory.length + 1;
-        const newMaterial = { id: newId, ...req.body, material_code: req.body.material_code || `MAT-${Date.now()}`, current_stock: 0, status: 'Active' };
-        mockMaterialsInventory.push(newMaterial);
-        res.status(201).json({ success: true, message: 'Material created (mock)', data: newMaterial });
+        res.status(500).json({ success: false, error: 'Database error', details: error.message || error });
     }
 });
 
@@ -125,7 +105,7 @@ router.get('/in', async (req, res) => {
         res.json({ success: true, data: rows });
     } catch (error) {
         console.error('Error fetching materials in:', error.message);
-        res.json({ success: true, data: mockMaterialsIn });
+        res.status(500).json({ success: false, error: 'Database error', details: error.message || error });
     }
 });
 
@@ -200,7 +180,7 @@ router.get('/out', async (req, res) => {
         res.json({ success: true, data: rows });
     } catch (error) {
         console.error('Error fetching materials out:', error.message);
-        res.json({ success: true, data: mockMaterialsOut });
+        res.status(500).json({ success: false, error: 'Database error', details: error.message || error });
     }
 });
 
@@ -262,18 +242,7 @@ router.get('/dashboard', async (req, res) => {
         });
     } catch (error) {
         console.error('Error fetching dashboard:', error.message);
-        res.json({
-            success: true,
-            data: {
-                totalMaterials: mockMaterialsInventory.length,
-                totalStockValue: mockMaterialsInventory.reduce((sum, m) => sum + (m.current_stock * m.unit_cost), 0),
-                totalInTransactions: mockMaterialsIn.length,
-                totalOutTransactions: mockMaterialsOut.length,
-                lowStockItems: mockMaterialsInventory.filter(m => m.current_stock <= m.reorder_point).length,
-                recentInValue: mockMaterialsIn.reduce((sum, m) => sum + (m.total_cost || 0), 0),
-                recentOutValue: mockMaterialsOut.reduce((sum, m) => sum + (m.total_value || 0), 0)
-            }
-        });
+        res.status(500).json({ success: false, error: 'Database error', details: error.message || error });
     }
 });
 
@@ -285,7 +254,7 @@ router.get('/alerts', async (req, res) => {
         res.json({ success: true, data: rows });
     } catch (error) {
         console.error('Error fetching alerts:', error.message);
-        res.json({ success: true, data: mockMaterialsInventory.filter(m => m.current_stock <= m.reorder_point) });
+        res.status(500).json({ success: false, error: 'Database error', details: error.message || error });
     }
 });
 
@@ -297,7 +266,7 @@ router.get('/by-category/:category', async (req, res) => {
         res.json({ success: true, data: rows });
     } catch (error) {
         console.error('Error fetching by category:', error.message);
-        res.json({ success: true, data: mockMaterialsInventory.filter(m => m.material_category === req.params.category) });
+        res.status(500).json({ success: false, error: 'Database error', details: error.message || error });
     }
 });
 
@@ -315,12 +284,7 @@ router.get('/search', async (req, res) => {
         res.json({ success: true, data: rows });
     } catch (error) {
         console.error('Error searching materials:', error.message);
-        const q = req.query.q?.toLowerCase() || '';
-        res.json({ success: true, data: mockMaterialsInventory.filter(m =>
-            m.material_name.toLowerCase().includes(q) ||
-            m.material_code.toLowerCase().includes(q) ||
-            m.material_category.toLowerCase().includes(q)
-        )});
+        res.status(500).json({ success: false, error: 'Database error', details: error.message || error });
     }
 });
 

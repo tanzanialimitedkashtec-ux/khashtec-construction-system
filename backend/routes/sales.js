@@ -53,42 +53,7 @@ router.get('/test', (req, res) => {
     });
 });
 
-// Helper function to return mock data consistently
-function getMockSalesData() {
-    return [
-        {
-            id: 'SALE-2026-001',
-            saleId: 'SALE-2026-001',
-            date: '2026-03-15',
-            saleDate: '2026-03-15',
-            property: 'Masaki Villa #12',
-            propertyId: 'Masaki Villa #12',
-            propertyLocation: 'Masaki Villa #12',
-            propertyType: 'residential',
-            client: 'John Michael Smith',
-            clientName: 'John Michael Smith',
-            clientContact: '+255 712 345 678',
-            clientPhone: '+255 712 345 678',
-            clientEmail: 'john.smith@email.com',
-            salePrice: 45000000,
-            propertyPrice: 45000000,
-            commission: 2250000,
-            status: 'completed',
-            paymentStatus: 'paid',
-            agent: 'Sarah Johnson',
-            commissionAgent: 'Sarah Johnson',
-            paymentMethod: 'installments',
-            installmentPeriod: 12,
-            downPayment: 15000000,
-            monthlyInstallment: 2500000,
-            interestRate: 5,
-            contractSigned: true,
-            notes: 'Premium residential property sale',
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString()
-        }
-    ];
-}
+
 
 // Helper to map DB row to frontend sale format
 function mapTransactionToSale(item) {
@@ -161,8 +126,8 @@ router.get('/', async (req, res) => {
         console.log('💰 Fetching all sales records from database...');
         
         if (!db) {
-            console.log('⚠️ Database not available, returning mock sales data');
-            return res.json(getMockSalesData());
+            console.log('⚠️ Database not available');
+            return res.status(500).json({ success: false, error: 'Database error', details: 'Database not connected' });
         }
         
         try {
@@ -193,8 +158,7 @@ router.get('/', async (req, res) => {
             
         } catch (error) {
             console.error('❌ Error fetching sales from database:', error);
-            console.log('⚠️ Database error, falling back to mock sales');
-            res.json(getMockSalesData());
+            res.status(500).json({ success: false, error: 'Database error', details: error.message || error });
         }
     } catch (error) {
         console.error('❌ Critical error in sales root GET endpoint:', error);
@@ -212,7 +176,7 @@ router.get('/all', async (req, res) => {
         console.log('💰 Fetching all sales records /all...');
         
         if (!db) {
-            return res.json(getMockSalesData());
+            return res.status(500).json({ success: false, error: 'Database error', details: 'Database not connected' });
         }
         
         try {
@@ -238,7 +202,7 @@ router.get('/all', async (req, res) => {
             res.json(formattedSales);
         } catch (error) {
             console.error('❌ Error fetching all sales:', error);
-            res.json(getMockSalesData());
+            res.status(500).json({ success: false, error: 'Database error', details: error.message || error });
         }
     } catch (error) {
         console.error('❌ Critical error in /all:', error);
@@ -353,35 +317,8 @@ router.post('/', async (req, res) => {
             });
             
         } catch (dbError) {
-            console.error('❌ Database error during insert, using mock sale:', dbError);
-            
-            // Fallback to mock sale creation
-            const saleId = `SALE${Date.now().toString().slice(-6)}`;
-            
-            res.status(201).json({
-                message: 'Sale recorded successfully (mock)',
-                id: saleId,
-                data: {
-                    id: saleId,
-                    propertyId: propertyId,
-                    propertyName: propertyName,
-                    clientName: clientName,
-                    clientContact: clientContact,
-                    salePrice: parseFloat(salePrice),
-                    commission: parseFloat(commission) || 0,
-                    paymentMethod: paymentMethod || 'full-payment',
-                    installmentPeriod: installmentPeriod || null,
-                    downPayment: downPayment || null,
-                    monthlyInstallment: monthlyInstallment || null,
-                    interestRate: interestRate || null,
-                    salesAgreement: salesAgreement || 'Contract Signed',
-                    status: status || 'completed',
-                    agent: agent || 'System',
-                    paymentStatus: paymentStatus || 'paid',
-                    contractSigned: contractSigned || false,
-                    mock: true
-                }
-            });
+            console.error('❌ Database error during insert:', dbError);
+            res.status(500).json({ success: false, error: 'Database error', details: dbError.message || dbError });
         }
         
     } catch (error) {

@@ -28,30 +28,8 @@ function loadWorkCompletions() {
     })
     .catch(error => {
         console.error('❌ Error loading work completions:', error);
-        // Display mock data on error
-        const mockData = [
-            {
-                id: 'work001',
-                work_details: 'Foundation Excavation',
-                project: 'Port Modernization Phase 1',
-                completed_by: 'John Doe - Construction Worker',
-                completed_date: '2026-03-15',
-                quality_score: 95,
-                quality_level: 'excellent',
-                status: 'pending'
-            },
-            {
-                id: 'work002',
-                work_details: 'Steel Framework Installation',
-                project: 'Warehouse Construction',
-                completed_by: 'Mike Johnson - Engineer',
-                completed_date: '2026-03-14',
-                quality_score: 88,
-                quality_level: 'good',
-                status: 'pending'
-            }
-        ];
-        displayWorkCompletions(mockData);
+        // Display empty state on error
+        displayWorkCompletions([]);
     });
 }
 

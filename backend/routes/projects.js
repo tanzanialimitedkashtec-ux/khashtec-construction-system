@@ -116,101 +116,10 @@ router.get('/', async (req, res) => {
         res.json(response);
     } catch (error) {
         console.error('❌ Error fetching projects:', error);
-        
-        // Return fallback projects when database fails
-        const fallbackProjects = [
-            {
-                id: 1,
-                name: 'Dar es Salaam Office Complex',
-                description: 'Construction of a modern 10-story office building in the city center',
-                location: 'Dar es Salaam City Center',
-                start_date: '2026-01-15',
-                end_date: '2026-12-31',
-                status: 'In Progress',
-                contract_value: 1500000000,
-                priority_level: 'High',
-                project_manager: 'John Smith',
-                client_name: 'ABC Development Corp',
-                project_code: 'PRJ-2026-001',
-                project_type: 'Commercial Construction',
-                created_at: '2026-01-10T08:00:00Z',
-                updated_at: '2026-05-04T10:30:00Z'
-            },
-            {
-                id: 2,
-                name: 'Kigamboni Residential Estate',
-                description: 'Development of 50 luxury residential units with amenities',
-                location: 'Kigamboni Peninsula',
-                start_date: '2026-02-01',
-                end_date: '2027-03-31',
-                status: 'In Progress',
-                contract_value: 850000000,
-                priority_level: 'Medium',
-                project_manager: 'Sarah Johnson',
-                client_name: 'Real Estate Investments Ltd',
-                project_code: 'PRJ-2026-002',
-                project_type: 'Residential Development',
-                created_at: '2026-01-25T14:00:00Z',
-                updated_at: '2026-05-03T16:45:00Z'
-            },
-            {
-                id: 3,
-                name: 'Industrial Warehouse Complex',
-                description: 'Construction of 20,000 sqm warehouse facility with loading docks',
-                location: 'Mikocheni Industrial Area',
-                start_date: '2026-03-10',
-                end_date: '2026-09-30',
-                status: 'Planning',
-                contract_value: 650000000,
-                priority_level: 'High',
-                project_manager: 'Michael Chen',
-                client_name: 'Logistics Solutions Ltd',
-                project_code: 'PRJ-2026-003',
-                project_type: 'Industrial Construction',
-                created_at: '2026-03-01T09:15:00Z',
-                updated_at: '2026-05-04T11:20:00Z'
-            },
-            {
-                id: 4,
-                name: 'Coastal Highway Bridge',
-                description: 'Construction of a 500m bridge connecting coastal highway sections',
-                location: 'Coastal Highway, Bagamoyo',
-                start_date: '2026-04-15',
-                end_date: '2027-02-28',
-                status: 'Planning',
-                contract_value: 1200000000,
-                priority_level: 'Critical',
-                project_manager: 'David Wilson',
-                client_name: 'Ministry of Infrastructure',
-                project_code: 'PRJ-2026-004',
-                project_type: 'Infrastructure',
-                created_at: '2026-04-01T13:30:00Z',
-                updated_at: '2026-05-02T15:10:00Z'
-            },
-            {
-                id: 5,
-                name: 'Shopping Mall Renovation',
-                description: 'Complete renovation and expansion of existing shopping mall',
-                location: 'Upanga, Dar es Salaam',
-                start_date: '2026-05-20',
-                end_date: '2026-11-30',
-                status: 'Planning',
-                contract_value: 450000000,
-                priority_level: 'Medium',
-                project_manager: 'Emily Brown',
-                client_name: 'Retail Properties Ltd',
-                project_code: 'PRJ-2026-005',
-                project_type: 'Renovation',
-                created_at: '2026-05-04T08:45:00Z',
-                updated_at: '2026-05-04T08:45:00Z'
-            }
-        ];
-        
-        res.json({
-            success: true,
-            projects: fallbackProjects,
-            total: fallbackProjects.length,
-            note: 'Using fallback data - database unavailable'
+        res.status(500).json({
+            success: false,
+            error: 'Database error',
+            details: error.message || error
         });
     }
 });

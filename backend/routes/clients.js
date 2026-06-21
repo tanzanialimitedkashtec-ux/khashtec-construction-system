@@ -164,7 +164,6 @@ router.get('/:id', async (req, res) => {
         const { id } = req.params;
         console.log(`🔍 Fetching client with ID: ${id}`);
         
-        // Try database first, fallback to mock data
         try {
             const db = require('../../database/config/database');
             
@@ -197,32 +196,8 @@ router.get('/:id', async (req, res) => {
             });
             
         } catch (dbError) {
-            console.error('❌ Database error, using mock client:', dbError);
-            
-            // Fallback to mock client data
-            const mockClient = {
-                client_id: id,
-                client_type: 'Individual',
-                full_name: 'Mock Client',
-                company_name: '',
-                phone_number: '+255 700 000 000',
-                email_address: 'mock@example.com',
-                nida_number: '1234567890123456',
-                tin_number: '',
-                physical_address: 'P.O. Box 0000, Dar es Salaam',
-                property_interest: 'residential',
-                budget_range: '50m-100m',
-                additional_notes: 'Mock client data',
-                registered_by: 'system',
-                status: 'active',
-                created_at: new Date().toISOString(),
-                mock: true
-            };
-            
-            res.json({
-                success: true,
-                client: mockClient
-            });
+            console.error('❌ Database error:', dbError);
+            res.status(500).json({ success: false, error: 'Database error', details: dbError.message || dbError });
         }
         
     } catch (error) {

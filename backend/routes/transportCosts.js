@@ -1,8 +1,7 @@
 const express = require('express');
 const router = express.Router();
 
-// Mock data for transport costs (fallback when database is unavailable)
-const mockTransportCosts = [];
+
 
 // Database connection helper
 async function getDatabase() {
@@ -43,11 +42,10 @@ router.get('/', async (req, res) => {
         const db = await getDatabase();
         
         if (!db) {
-            console.log('Database unavailable, returning mock transport costs data');
-            return res.status(200).json({
-                success: true,
-                data: mockTransportCosts,
-                message: 'Mock data: Database unavailable'
+            console.error('Database unavailable');
+            return res.status(500).json({
+                success: false,
+                message: 'Database unavailable'
             });
         }
 
@@ -66,8 +64,8 @@ router.get('/', async (req, res) => {
 
         res.status(200).json({
             success: true,
-            data: rows.length > 0 ? rows : mockTransportCosts,
-            message: rows.length > 0 ? 'Transport costs retrieved successfully' : 'No transport costs found, returning mock data'
+            data: rows,
+            message: 'Transport costs retrieved successfully'
         });
 
     } catch (error) {
@@ -95,11 +93,9 @@ router.get('/type/:type', async (req, res) => {
         const db = await getDatabase();
         
         if (!db) {
-            const filteredData = mockTransportCosts.filter(cost => cost.cost_type === type);
-            return res.status(200).json({
-                success: true,
-                data: filteredData,
-                message: 'Mock data: Database unavailable'
+            return res.status(500).json({
+                success: false,
+                message: 'Database unavailable'
             });
         }
 
@@ -119,8 +115,8 @@ router.get('/type/:type', async (req, res) => {
 
         res.status(200).json({
             success: true,
-            data: rows.length > 0 ? rows : mockTransportCosts.filter(cost => cost.cost_type === type),
-            message: rows.length > 0 ? `${type} costs retrieved successfully` : 'No costs found, returning mock data'
+            data: rows,
+            message: `${type} costs retrieved successfully`
         });
 
     } catch (error) {
@@ -149,11 +145,9 @@ router.get('/category/:category', async (req, res) => {
         const db = await getDatabase();
         
         if (!db) {
-            const filteredData = mockTransportCosts.filter(cost => cost.category === category);
-            return res.status(200).json({
-                success: true,
-                data: filteredData,
-                message: 'Mock data: Database unavailable'
+            return res.status(500).json({
+                success: false,
+                message: 'Database unavailable'
             });
         }
 
@@ -173,8 +167,8 @@ router.get('/category/:category', async (req, res) => {
 
         res.status(200).json({
             success: true,
-            data: rows.length > 0 ? rows : mockTransportCosts.filter(cost => cost.category === category),
-            message: rows.length > 0 ? `${category} costs retrieved successfully` : 'No costs found, returning mock data'
+            data: rows,
+            message: `${category} costs retrieved successfully`
         });
 
     } catch (error) {
@@ -195,11 +189,9 @@ router.get('/vehicle/:vehicleId', async (req, res) => {
         const db = await getDatabase();
         
         if (!db) {
-            const filteredData = mockTransportCosts.filter(cost => cost.vehicle_id == vehicleId);
-            return res.status(200).json({
-                success: true,
-                data: filteredData,
-                message: 'Mock data: Database unavailable'
+            return res.status(500).json({
+                success: false,
+                message: 'Database unavailable'
             });
         }
 
@@ -219,8 +211,8 @@ router.get('/vehicle/:vehicleId', async (req, res) => {
 
         res.status(200).json({
             success: true,
-            data: rows.length > 0 ? rows : mockTransportCosts.filter(cost => cost.vehicle_id == vehicleId),
-            message: rows.length > 0 ? 'Vehicle transport costs retrieved successfully' : 'No costs found, returning mock data'
+            data: rows,
+            message: 'Vehicle transport costs retrieved successfully'
         });
 
     } catch (error) {
@@ -239,19 +231,9 @@ router.get('/summary', async (req, res) => {
         const db = await getDatabase();
         
         if (!db) {
-            const summary = {
-                total_costs: mockTransportCosts.reduce((sum, cost) => sum + cost.amount, 0),
-                maintenance_costs: mockTransportCosts.filter(c => c.cost_type === 'maintenance').reduce((sum, cost) => sum + cost.amount, 0),
-                extra_costs: mockTransportCosts.filter(c => c.cost_type === 'extra').reduce((sum, cost) => sum + cost.amount, 0),
-                total_records: mockTransportCosts.length,
-                paid_amount: mockTransportCosts.filter(c => c.payment_status === 'paid').reduce((sum, cost) => sum + cost.amount, 0),
-                pending_amount: mockTransportCosts.filter(c => c.payment_status === 'pending').reduce((sum, cost) => sum + cost.amount, 0)
-            };
-            
-            return res.status(200).json({
-                success: true,
-                data: summary,
-                message: 'Mock data: Database unavailable'
+            return res.status(500).json({
+                success: false,
+                message: 'Database unavailable'
             });
         }
 
@@ -327,31 +309,9 @@ router.post('/', async (req, res) => {
         const db = await getDatabase();
         
         if (!db) {
-            // Return mock success response
-            const newCost = {
-                id: mockTransportCosts.length + 1,
-                cost_type,
-                category,
-                description,
-                vehicle_id,
-                vehicle_name: `Vehicle ${vehicle_id}`,
-                track_number: `TK${String(vehicle_id).padStart(3, '0')}`,
-                amount: parseFloat(amount),
-                currency: currency || 'TZS',
-                date_incurred,
-                provider: provider || 'Unknown Provider',
-                invoice_number: invoice_number || `INV-${Date.now()}`,
-                payment_status: payment_status || 'pending',
-                approved_by: approved_by || 'System',
-                notes: notes || ''
-            };
-
-            mockTransportCosts.push(newCost);
-
-            return res.status(201).json({
-                success: true,
-                data: newCost,
-                message: 'Transport cost created successfully (mock data)'
+            return res.status(500).json({
+                success: false,
+                message: 'Database unavailable'
             });
         }
 
@@ -405,19 +365,9 @@ router.put('/:id', async (req, res) => {
         const db = await getDatabase();
         
         if (!db) {
-            const costIndex = mockTransportCosts.findIndex(cost => cost.id == id);
-            if (costIndex === -1) {
-                return res.status(404).json({
-                    success: false,
-                    message: 'Transport cost not found'
-                });
-            }
-
-            Object.assign(mockTransportCosts[costIndex], updateFields);
-            return res.status(200).json({
-                success: true,
-                data: mockTransportCosts[costIndex],
-                message: 'Transport cost updated successfully (mock data)'
+            return res.status(500).json({
+                success: false,
+                message: 'Database unavailable'
             });
         }
 
@@ -471,18 +421,9 @@ router.delete('/:id', async (req, res) => {
         const db = await getDatabase();
         
         if (!db) {
-            const costIndex = mockTransportCosts.findIndex(cost => cost.id == id);
-            if (costIndex === -1) {
-                return res.status(404).json({
-                    success: false,
-                    message: 'Transport cost not found'
-                });
-            }
-
-            mockTransportCosts.splice(costIndex, 1);
-            return res.status(200).json({
-                success: true,
-                message: 'Transport cost deleted successfully (mock data)'
+            return res.status(500).json({
+                success: false,
+                message: 'Database unavailable'
             });
         }
 

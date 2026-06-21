@@ -6220,37 +6220,9 @@ function loadEmployeesForAction() {
 
         
 
-        // Fallback to mock data if API fails
+        // Display empty state on error
 
-        console.log('Using mock employee data as fallback');
-
-        const mockEmployees = [
-
-            { id: 'EMP001', full_name: 'John Doe', position: 'Project Manager', department: 'Projects' },
-
-            { id: 'EMP002', full_name: 'Jane Smith', position: 'HR Manager', department: 'HR' },
-
-            { id: 'EMP003', full_name: 'Mike Johnson', position: 'Engineer', department: 'Projects' }
-
-        ];
-
-        
-
-        employeeSelect.innerHTML = '<option value="">Select Employee</option>' +
-
-            mockEmployees.map(emp => `
-
-                <option value="${emp.id}">
-
-                    ${emp.full_name} - ${emp.position} (${emp.department})
-
-                </option>
-
-            `).join('');
-
-            
-
-        console.log('âœ… Employee dropdown populated with mock data');
+        employeeSelect.innerHTML = '<option value="">Select Employee</option>';
 
     });
 
@@ -45793,53 +45765,15 @@ async function loadProjectsForProgressUpdate() {
 
         
 
-        // Fallback to mock projects
-
-        const mockProjects = [
-
-            {
-
-                id: 1,
-
-                name: 'Kigali Tower Complex',
-
-                progress: 65,
-
-                status: 'active'
-
-            },
-
-            {
-
-                id: 2,
-
-                name: 'Dar es Salaam Port Expansion',
-
-                progress: 40,
-
-                status: 'active'
-
-            }
-
-        ];
-
-        
+        // Show empty state on error
 
         const projectSelect = document.getElementById('progressProject');
 
         if (projectSelect) {
 
-            projectSelect.innerHTML = `
+            projectSelect.innerHTML = '<option value="">Select Project to Update</option>';
 
-                <option value="">Select Project to Update</option>
-
-                ${mockProjects.map(project => 
-
-                    `<option value="${project.id}">${project.name} - ${project.progress}% Complete (${project.status})</option>`
-
-                ).join('')}
-
-            `;
+        }
 
         }
 

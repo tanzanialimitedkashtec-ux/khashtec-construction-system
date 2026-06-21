@@ -31,20 +31,7 @@ async function tableExists(tableName){
 router.get(['/','/all'], async (req, res) => {
     try {
         if (!db) {
-            // Fallback mock when DB not available
-            return res.json([
-                {
-                    id: 1,
-                    name: 'Human Resources',
-                    code: 'HR',
-                    manager_email: 'hr@manager0501',
-                    description: 'HR Department manages employee relations, recruitment, training, and compliance',
-                    status: 'Active',
-                    created_at: new Date().toISOString(),
-                    updated_at: new Date().toISOString(),
-                    mock: true
-                }
-            ]);
+            return res.status(500).json({ success: false, error: 'Database connection failed' });
         }
         // Try reading from both tables, combine results
         const combined = [];
@@ -130,13 +117,7 @@ router.post('/', async (req, res) => {
         const mappedStatus = status ? (statusMap[String(status).toLowerCase()] || 'Active') : 'Active';
 
         if (!db) {
-            // Fallback mock create
-            return res.status(201).json({
-                success: true,
-                message: 'Department created (mock) successfully',
-                id: `DEPT${Date.now().toString().slice(-6)}`,
-                data: { name, code, manager_email: managerEmail || null, description: description || null, status: mappedStatus, mock: true }
-            });
+            return res.status(500).json({ success: false, error: 'Database connection failed' });
         }
 
         try {
@@ -220,12 +201,7 @@ router.delete('/:id', async (req, res) => {
         const { id } = req.params;
 
         if (!db) {
-            // Fallback mock delete
-            return res.json({
-                success: true,
-                message: 'Department deleted (mock) successfully',
-                id
-            });
+            return res.status(500).json({ success: false, error: 'Database connection failed' });
         }
 
         let deletedFromDepartments = false;
@@ -260,7 +236,7 @@ router.delete('/:id', async (req, res) => {
                 id
             });
         } else {
-            // If not found by ID, it could be a mock or already deleted. Let's return 404 to be precise.
+            // If not found by ID, it could be already deleted. Let's return 404 to be precise.
             return res.status(404).json({ success: false, error: 'Department not found' });
         }
     } catch (error) {
