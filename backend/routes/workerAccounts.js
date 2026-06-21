@@ -7,6 +7,12 @@ const fs = require('fs').promises;
 const fsSync = require('fs');
 const { sendAssignmentNotification } = require('../services/emailService');
 
+// Non-BLOB columns to select (avoids returning huge binary data in JSON responses)
+const WORKER_COLS = `id, employee_id, full_name, work_email, phone_number,
+    department, job_title, account_type, access_level,
+    temporary_password, account_notes, profile_picture,
+    id_document, contract_document, status, created_at, updated_at`;
+
 // Ensure BLOB columns exist (runs once, non-blocking)
 var _blobColsChecked = false;
 function ensureBlobCols() {
@@ -120,7 +126,7 @@ router.get('/', async (req, res) => {
         }
         
         const workersResult = await db.execute(
-            'SELECT * FROM worker_accounts ORDER BY created_at DESC'
+            `SELECT ${WORKER_COLS} FROM worker_accounts ORDER BY created_at DESC`
         );
         
         // Handle different MySQL2 return formats
@@ -336,7 +342,7 @@ router.post('/assignments', async (req, res) => {
 // Get worker account by ID
 router.get('/:id', async (req, res) => {
     try {
-        const [workers] = await db.execute('SELECT * FROM worker_accounts WHERE id = ?', [req.params.id]);
+        const [workers] = await db.execute(`SELECT ${WORKER_COLS} FROM worker_accounts WHERE id = ?`, [req.params.id]);
         
         if (workers.length === 0) {
             return res.status(404).json({ error: 'Worker account not found' });
@@ -649,7 +655,7 @@ router.put('/:id', async (req, res) => {
         );
         
         // Return updated worker account
-        const [updatedWorker] = await db.execute('SELECT * FROM worker_accounts WHERE id = ?', [req.params.id]);
+        const [updatedWorker] = await db.execute(`SELECT ${WORKER_COLS} FROM worker_accounts WHERE id = ?`, [req.params.id]);
         
         res.json({
             message: 'Worker account updated successfully',
@@ -683,7 +689,7 @@ router.delete('/:id', async (req, res) => {
 router.get('/department/:department', async (req, res) => {
     try {
         const [workers] = await db.execute(
-            'SELECT * FROM worker_accounts WHERE department = ? ORDER BY full_name ASC',
+            `SELECT ${WORKER_COLS} FROM worker_accounts WHERE department = ? ORDER BY full_name ASC`,
             [req.params.department]
         );
         res.json(workers);
@@ -710,7 +716,7 @@ router.get('/stats/overview', async (req, res) => {
         const [accessLevelStats] = await db.execute('SELECT access_level, COUNT(*) as count FROM worker_accounts GROUP BY access_level');
         
         // Recent registrations
-        const [recentRegistrations] = await db.execute('SELECT * FROM worker_accounts ORDER BY created_at DESC LIMIT 5');
+        const [recentRegistrations] = await db.execute(`SELECT ${WORKER_COLS} FROM worker_accounts ORDER BY created_at DESC LIMIT 5`);
         
         res.json({
             total: totalWorkers[0].total,
