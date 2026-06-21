@@ -24810,17 +24810,7 @@ function loadMenu(){
 
     
 
-    // Reset sidebar to collapsed state when loading menu
-
-    const sidebar = document.querySelector('.sidebar');
-
-    if (sidebar) {
-
-        sidebar.classList.add('collapsed');
-
-        console.log('Sidebar reset to collapsed state');
-
-    }
+    // Sidebar will be expanded after menu loads (see below)
 
     
 
@@ -24837,8 +24827,7 @@ function loadMenu(){
             "View Employee List", "View All Workers", "View Assigned Workers",
             "Review Employee Count", "Approve Workforce Requests", "Create Senior Hiring Request",
             "Talent Acquisition", "Team Management", "Track Attendance", "Promotions",
-            "Discipline Monitoring", "Suspend/Terminate Employment",
-            "Approve Senior Staff Hiring", "Manage Policies"
+            "Discipline Monitoring", "Suspend/Terminate Employment", "Manage Policies"
         ],
         "PROJECT": [
             "Create New Project", "Update Project Progress", "Assign Tasks",
@@ -24860,7 +24849,7 @@ function loadMenu(){
         "MD": [
             "Manage Policies", "Approve Senior Staff Hiring", "User Account Management",
             "Manage Leave & Contracts", "Approve Invoices", "Audits",
-            "Document Management", "Office Portal", "Tax"
+            "Document Management", "Office Portal", "Tax", "View Suggestions"
         ],
         "HSE": [
             "Compliance Management", "Manage Policies", "Record Incident Reports",
@@ -24875,8 +24864,13 @@ function loadMenu(){
         ]
     };
 
-    const isAuthorized = (menuName) => {
-        let roleKey = currentRole;
+    // Items accessible to all roles
+    var sharedItems = ["Suggestions", "Office Resources"];
+
+    var isAuthorized = function(menuName) {
+        if (sharedItems.indexOf(menuName) !== -1) return true;
+
+        var roleKey = currentRole;
         if (currentRole === "REAL ESTATE") roleKey = "REALESTATE";
         if (currentRole === "HR manager" || currentRole === "hr@manager") roleKey = "HR";
         if (currentRole === "Finance Manager" || currentRole === "finance maneger") roleKey = "FINANCE";
@@ -24889,7 +24883,7 @@ function loadMenu(){
         roleKey = roleKey.toUpperCase().replace(/\s+/g, '');
 
         if (rolePermissions[roleKey]) {
-            return rolePermissions[roleKey].includes(menuName);
+            return rolePermissions[roleKey].indexOf(menuName) !== -1;
         }
         return false;
     };
