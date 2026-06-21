@@ -101800,13 +101800,50 @@ function showMaterialsInForm() {
 
                         <div class="form-group">
 
-                            <label for="minMaterialId">Material:</label>
+                            <label for="minMaterialName">Material Name *</label>
 
-                            <select id="minMaterialId" name="material_id" required>
+                            <input type="text" id="minMaterialName" name="material_name" placeholder="e.g. Ordinary Portland Cement" required>
 
-                                <option value="">Select Material</option>
+                        </div>
 
+                        <div class="form-group">
+
+                            <label for="minMaterialCategory">Category *</label>
+
+                            <select id="minMaterialCategory" name="material_category" required>
+                                <option value="">Select Category</option>
+                                <option value="Cement">Cement</option>
+                                <option value="Sand">Sand</option>
+                                <option value="Aggregate">Aggregate / Gravel</option>
+                                <option value="Steel/Rebar">Steel / Rebar</option>
+                                <option value="Bricks">Bricks / Blocks</option>
+                                <option value="Timber">Timber / Wood</option>
+                                <option value="Pipes">Pipes / Plumbing</option>
+                                <option value="Electrical">Electrical</option>
+                                <option value="Paint">Paint / Finishing</option>
+                                <option value="Roofing">Roofing</option>
+                                <option value="Tiles">Tiles / Flooring</option>
+                                <option value="Glass">Glass</option>
+                                <option value="Nails/Fasteners">Nails / Fasteners</option>
+                                <option value="Adhesives">Adhesives / Sealants</option>
+                                <option value="Waterproofing">Waterproofing</option>
+                                <option value="Insulation">Insulation</option>
+                                <option value="Hardware">Hardware / Tools</option>
+                                <option value="Fuel">Fuel / Lubricants</option>
+                                <option value="Other">Other</option>
                             </select>
+
+                        </div>
+
+                    </div>
+
+                    <div class="form-row" style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+
+                        <div class="form-group">
+
+                            <label for="minMaterialDesc">Description:</label>
+
+                            <input type="text" id="minMaterialDesc" name="description" placeholder="e.g. Dangote 50kg bags">
 
                         </div>
 
@@ -102052,8 +102089,6 @@ function showMaterialsInForm() {
 
     document.body.insertAdjacentHTML('beforeend', formHTML);
 
-    loadMaterialDropdown('minMaterialId');
-
     document.getElementById('minReceiptDate').valueAsDate = new Date();
 
     setTimeout(() => {
@@ -102068,7 +102103,11 @@ function showMaterialsInForm() {
 
                 const formData = {
 
-                    material_id: parseInt(document.getElementById('minMaterialId').value),
+                    material_name: document.getElementById('minMaterialName').value,
+
+                    material_category: document.getElementById('minMaterialCategory').value,
+
+                    description: document.getElementById('minMaterialDesc').value || '',
 
                     track_number: document.getElementById('minTrackNumber').value || undefined,
 
