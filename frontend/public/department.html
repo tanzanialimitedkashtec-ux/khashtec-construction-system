@@ -23898,33 +23898,9 @@ font-size: 12px;
     </div>
 
    
-    <form id="loginForm" class="login-form" onsubmit="return handleLogin(); setTimeout(() => updateNavigationForRole(document.getElementById('loginRole').value), 100);">
+    <form id="loginForm" class="login-form" onsubmit="return handleLogin();">
 
         <input type="email" id="loginEmail" placeholder="Enter your email (e.g. md@kashtec.com)" required>
-
-        <label for="loginRole" class="sr-only">Login role</label>
-
-        <select id="loginRole" onchange="updatePasswordPlaceholder()" required>
-
-            <option value="">Select Role</option>
-
-            <option value="MD">Managing Director</option>
-
-            <option value="ADMIN">Director of Administration</option>
-
-            <option value="HR">HR Manager</option>
-
-            <option value="HSE">HSE Manager</option>
-
-            <option value="FINANCE">Finance Manager</option>
-
-            <option value="PROJECT">Project Manager</option>
-
-            <option value="REALESTATE">Real Estate Manager</option>
-
-            <option value="ASSISTANT">Admin Assistant</option>
-
-        </select>
 
         <input type="password" id="loginPassword" placeholder="Enter password" required>
 
@@ -24252,80 +24228,16 @@ document.addEventListener('DOMContentLoaded', function() {
 
 
 
-function updatePasswordPlaceholder(){
-
-    const role = document.getElementById("roleSelect").value;
-
-    const passwordInput = document.getElementById("passwordInput");
-
-    
-
-    if(role === ""){
-
-        passwordInput.placeholder = "Select a role first";
-
-    } else {
-
-        passwordInput.placeholder = `Enter password for ${roleDescriptions[role]}`;
-
-    }
-
-}
-
-
+function updatePasswordPlaceholder(){}
 
 function login(){
-
-    const role = document.getElementById("roleSelect").value;
-
-    const password = document.getElementById("passwordInput").value;
-
-    
-
-    if(role === ""){
-
-        customAlert("Please select a role from the dropdown menu.", "Role Required", "error");
-
+    var email = document.getElementById("loginEmail").value;
+    var password = document.getElementById("loginPassword").value;
+    if(!email || !password){
+        customAlert("Please enter email and password.", "Login Required", "error");
         return;
-
     }
-
-    
-
-    if(password === ""){
-
-        customAlert("Please enter your password.", "Password Required", "error");
-
-        return;
-
-    }
-
-    
-
-    // Validate password
-
-    if(password !== rolePasswords[role]){
-
-        customAlert("Invalid password. Please check your credentials.", "Authentication Failed", "error");
-
-        return;
-
-    }
-
-    
-
-    currentRole = role;
-
-    document.getElementById("loginPage").classList.add("hidden");
-
-    document.getElementById("systemPage").classList.remove("hidden");
-
-    document.getElementById("userRole").innerText = roleDescriptions[role] + " Dashboard";
-
-    loadMenu();
-
-    startNotificationPolling();
-
+    handleLogin();
 }
 
 
@@ -24898,35 +24810,68 @@ function loadMenu(){
 
     
 
-    // Reset sidebar to collapsed state when loading menu
-
-    const sidebar = document.querySelector('.sidebar');
-
-    if (sidebar) {
-
-        sidebar.classList.add('collapsed');
-
-        console.log('Sidebar reset to collapsed state');
-
-    }
+    // Sidebar will be expanded after menu loads (see below)
 
     
 
         console.log('Loading menu for role:', currentRole);
 
     const rolePermissions = {
-        "HR": ["Register Employee", "Create Worker Account", "Assign Project Workers", "Update Employee Records", "Register Driver", "Register Company Car", "Manage Company Cars", "Track Attendance", "Manage Leave & Contracts", "Manage Policies", "Approve Workforce Budget", "Manage Drivers", "View Suggestions", "Payment Management"],
-        "FINANCE": ["Budgeting", "Financial Management", "Payroll Processing", "Expense Control", "Financial Reporting", "Audits", "Compliance", "Luggage Companies", "Luggage Purchases", "Payment Tracking", "View Suggestions", "Record Sale", "Manage Sales", "Generate Sales Report", "Procurement Sale", "Accountant Management", "Track Payment Progress", "Approve Payment Requests"],
-        "PROJECT": ["Create New Project", "Update Project Progress", "Assign Tasks", "Assign Project Workers", "Request Workforce", "Record Site Reports", "Approve Completed Work", "Materials Inventory", "Record Materials Out", "View Suggestions", "View Project Safety Status"],
-        "REALESTATE": ["Add Property", "Edit Property Details", "Register Client", "Record Sale", "Manage Sales", "Track Payment Progress", "Generate Sales Report", "View Suggestions", "Materials Inventory", "Record Materials In", "Record Materials Out", "Materials Dashboard", "Office Resources", "Procurement Sale", "Property"],
-        "HSE": ["Record Incident Reports", "Record Toolbox Meetings", "Track PPE Issuance", "Mark Safety Violations", "Upload Inspection Reports", "View Project Safety Status", "View Suggestions", "Upload Safety Policies", "Compliance Management", "Compliance", "Risk Management"],
-        "ADMIN": ["Administrative Operations", "Compliance Management", "Staff Oversight", "Document Management", "User Account Management", "View Suggestions", "Office Portal", "View Employee List", "Track Attendance", "Schedule Meetings", "Upload Documents", "Edit Documents", "Send Notifications", "Record Meeting Minutes", "Suggestions", "Office Resources", "View Invoices", "Payment Tracking"]
+        "ADMIN": [
+            "Mission & Vision", "Long-Term Growth Strategy", "Staff Oversight",
+            "Financial Strategies", "View Workforce Reports", "Compliance Management",
+            "Risk Management", "Department Management", "Office Resources", "Audits"
+        ],
+        "HR": [
+            "Register Employee", "Create Worker Account", "Update Employee Records",
+            "View Employee List", "View All Workers", "View Assigned Workers",
+            "Review Employee Count", "Approve Workforce Requests", "Create Senior Hiring Request",
+            "Talent Acquisition", "Team Management", "Track Attendance", "Promotions",
+            "Discipline Monitoring", "Suspend/Terminate Employment", "Manage Policies",
+            "Payment Management"
+        ],
+        "PROJECT": [
+            "Create New Project", "Update Project Progress", "Assign Tasks",
+            "Record Site Reports", "Approve Completed Work", "View Project Safety Status",
+            "View Assigned Workers", "Office Portal", "Request Workforce"
+        ],
+        "REALESTATE": [
+            "Add Property", "Edit Property Details", "Register Client", "Record Sale",
+            "Register Company Car", "Manage Sales", "Manage Company Cars",
+            "Generate Sales Report", "Register Driver", "Manage Drivers",
+            "Luggage Companies", "Transport Costs", "Luggage Purchases",
+            "Materials Inventory", "Materials Dashboard", "Record Materials In",
+            "Record Materials Out"
+        ],
+        "ASSISTANT": [
+            "Schedule Meetings", "Upload Documents", "Edit Documents",
+            "Document Management", "Send Notifications"
+        ],
+        "MD": [
+            "Manage Policies", "Approve Senior Staff Hiring", "User Account Management",
+            "Manage Leave & Contracts", "Approve Invoices", "Audits",
+            "Document Management", "Office Portal", "Tax", "View Suggestions"
+        ],
+        "HSE": [
+            "Compliance Management", "Manage Policies", "Record Incident Reports",
+            "Track PPE Issuance", "PPE Inventory", "Mark Safety Violations", "Upload Inspection Reports",
+            "Risk Management", "View Project Safety Status", "Compliance"
+        ],
+        "FINANCE": [
+            "Financial Management", "Financial Reporting", "Budgeting", "Expense Control",
+            "View Invoices", "Payroll Processing", "Accountant Management",
+            "NHIF Contribute", "NSSF Registration",
+            "Payment Tracking", "Track Payment Progress", "Approve Payment Requests"
+        ]
     };
 
-    const isAuthorized = (menuName) => {
-        if (currentRole === "MD") return true;
-        
-        let roleKey = currentRole;
+    // Items accessible to all roles
+    var sharedItems = ["Suggestions", "Office Resources"];
+
+    var isAuthorized = function(menuName) {
+        if (sharedItems.indexOf(menuName) !== -1) return true;
+
+        var roleKey = currentRole;
         if (currentRole === "REAL ESTATE") roleKey = "REALESTATE";
         if (currentRole === "HR manager" || currentRole === "hr@manager") roleKey = "HR";
         if (currentRole === "Finance Manager" || currentRole === "finance maneger") roleKey = "FINANCE";
@@ -24935,11 +24880,11 @@ function loadMenu(){
         if (currentRole === "hse maneger" || currentRole === "HSE Manager") roleKey = "HSE";
         if (currentRole === "admin") roleKey = "ADMIN";
         if (currentRole === "ASSISTANT") roleKey = "ASSISTANT";
-        
+
         roleKey = roleKey.toUpperCase().replace(/\s+/g, '');
-        
+
         if (rolePermissions[roleKey]) {
-            return rolePermissions[roleKey].includes(menuName);
+            return rolePermissions[roleKey].indexOf(menuName) !== -1;
         }
         return false;
     };
@@ -25017,6 +24962,7 @@ function loadMenu(){
         { name: "Record Incident Reports", func: recordIncidentReports },
         { name: "Record Toolbox Meetings", func: recordToolboxMeetings },
         { name: "Track PPE Issuance", func: trackPpeIssuance },
+        { name: "PPE Inventory", func: showPpeInventory },
         { name: "Mark Safety Violations", func: markSafetyViolations },
         { name: "Approve Violation", func: markSafetyViolations },
         { name: "Upload Inspection Reports", func: uploadInspectionReports },
@@ -25047,18 +24993,22 @@ function loadMenu(){
     allMenusConfig.forEach(item => {
         if (isAuthorized(item.name)) {
             authorizedItems.push(item);
-        } else {
-            unauthorizedItems.push(item);
         }
     });
 
     authorizedItems.forEach(item => addMenu(item.name, item.func));
-    unauthorizedItems.forEach(item => addMenu(item.name, item.func, { unauthorized: true }));
 
+    // Auto-open all category sections so the user sees their access at the top
+    var sections = menu.querySelectorAll('.menu-section');
+    sections.forEach(function(section) { section.open = true; });
 
     filterMenuItems();
 
-    console.log('Menu loaded. Total items:', menu.children.length); // Debug line
+    // Expand sidebar so menu is visible right after login
+    var sidebar = document.querySelector('.sidebar');
+    if (sidebar) { sidebar.classList.remove('collapsed'); }
+
+    console.log('Menu loaded. Total items:', menu.children.length);
 
 }
 
@@ -52369,25 +52319,68 @@ function trackPpeIssuance(){
                             <div class="ppe-item-row">
 
                                 <select class="ppe-type" required>
-
                                     <option value="">Select PPE</option>
-
-                                    <option value="helmet">Safety Helmet</option>
-
-                                    <option value="gloves">Safety Gloves</option>
-
-                                    <option value="boots">Safety Boots</option>
-
-                                    <option value="vest">Reflective Vest</option>
-
-                                    <option value="goggles">Safety Goggles</option>
-
-                                    <option value="mask">Dust Mask</option>
-
-                                    <option value="harness">Safety Harness</option>
-
-                                    <option value="earplugs">Ear Plugs</option>
-
+                                    <optgroup label="Head Protection">
+                                        <option value="helmet">Safety Helmet</option>
+                                        <option value="hard_hat">Hard Hat</option>
+                                        <option value="bump_cap">Bump Cap</option>
+                                        <option value="welding_helmet">Welding Helmet</option>
+                                        <option value="face_shield">Face Shield</option>
+                                    </optgroup>
+                                    <optgroup label="Eye Protection">
+                                        <option value="goggles">Safety Goggles</option>
+                                        <option value="safety_glasses">Safety Glasses</option>
+                                        <option value="welding_goggles">Welding Goggles</option>
+                                    </optgroup>
+                                    <optgroup label="Hearing Protection">
+                                        <option value="earplugs">Ear Plugs</option>
+                                        <option value="earmuffs">Ear Muffs</option>
+                                    </optgroup>
+                                    <optgroup label="Respiratory Protection">
+                                        <option value="mask">Dust Mask</option>
+                                        <option value="n95_respirator">N95 Respirator</option>
+                                        <option value="half_face_respirator">Half-Face Respirator</option>
+                                        <option value="full_face_respirator">Full-Face Respirator</option>
+                                    </optgroup>
+                                    <optgroup label="Hand Protection">
+                                        <option value="gloves">Safety Gloves</option>
+                                        <option value="rubber_gloves">Rubber Gloves</option>
+                                        <option value="welding_gloves">Welding Gloves</option>
+                                        <option value="cut_resistant_gloves">Cut-Resistant Gloves</option>
+                                        <option value="chemical_gloves">Chemical Gloves</option>
+                                    </optgroup>
+                                    <optgroup label="Foot Protection">
+                                        <option value="boots">Safety Boots</option>
+                                        <option value="steel_toe_boots">Steel Toe Boots</option>
+                                        <option value="rubber_boots">Rubber Boots</option>
+                                        <option value="metatarsal_boots">Metatarsal Boots</option>
+                                    </optgroup>
+                                    <optgroup label="Body Protection">
+                                        <option value="vest">Reflective Vest</option>
+                                        <option value="harness">Safety Harness</option>
+                                        <option value="coverall">Coverall / Overall</option>
+                                        <option value="rain_suit">Rain Suit</option>
+                                        <option value="apron">Protective Apron</option>
+                                        <option value="knee_pads">Knee Pads</option>
+                                    </optgroup>
+                                    <optgroup label="Fall Protection">
+                                        <option value="lanyard">Safety Lanyard</option>
+                                        <option value="lifeline">Lifeline</option>
+                                        <option value="fall_arrester">Fall Arrester</option>
+                                        <option value="anchor_point">Anchor Point Device</option>
+                                    </optgroup>
+                                    <optgroup label="Traffic & Visibility">
+                                        <option value="traffic_cone">Traffic Cone</option>
+                                        <option value="barricade_tape">Barricade Tape</option>
+                                        <option value="warning_sign">Warning Sign</option>
+                                        <option value="reflective_tape">Reflective Tape</option>
+                                    </optgroup>
+                                    <optgroup label="First Aid & Emergency">
+                                        <option value="first_aid_kit">First Aid Kit</option>
+                                        <option value="fire_extinguisher">Fire Extinguisher</option>
+                                        <option value="eye_wash">Eye Wash Station</option>
+                                        <option value="emergency_blanket">Emergency Blanket</option>
+                                    </optgroup>
                                 </select>
 
                                 <input type="number" class="ppe-quantity" placeholder="Qty" min="1" required>
@@ -59840,7 +59833,11 @@ function savePpeIssuance() {
             throw new Error(data.error);
         }
 
-        customAlert('PPE issuance recorded successfully!\n\nID: ' + issuance.issuance_id + '\nWorker: ' + issuance.worker_name + '\nItems: ' + ppeItemsArr.length + ' items\nProject: ' + issuance.project, "PPE Issued", "success");
+        var alertMsg = 'PPE issuance recorded successfully!\n\nID: ' + issuance.issuance_id + '\nWorker: ' + issuance.worker_name + '\nItems: ' + ppeItemsArr.length + ' items\nProject: ' + issuance.project;
+        if (data.stock_alerts && data.stock_alerts.length > 0) {
+            alertMsg += '\n\n⚠️ LOW STOCK ALERTS:\n' + data.stock_alerts.join('\n');
+        }
+        customAlert(alertMsg, "PPE Issued", "success");
 
         document.getElementById('ppeForm').reset();
         document.getElementById('issuanceId').value = 'PPE-' + Date.now();
@@ -59862,6 +59859,271 @@ function savePpeIssuance() {
 
 }
 
+
+// ===== PPE INVENTORY =====
+
+function showPpeInventory() {
+    showContent('<div class="card">' +
+        '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">' +
+            '<h3>PPE Inventory Management</h3>' +
+            '<button type="button" class="action" style="background:#007bff;" onclick="togglePpeStockForm()">+ Add Stock</button>' +
+        '</div>' +
+
+        '<div id="ppeAlertBanner" style="display:none;background:#fff3cd;border:1px solid #ffc107;border-radius:8px;padding:12px 16px;margin-bottom:16px;">' +
+            '<strong>⚠️ Low Stock Alerts</strong>' +
+            '<div id="ppeAlertList" style="margin-top:6px;"></div>' +
+        '</div>' +
+
+        '<div id="ppeStockFormContainer" style="display:none;background:#f8f9fa;border-radius:8px;padding:20px;margin-bottom:20px;">' +
+            '<h4 style="margin-top:0;">Add PPE Stock</h4>' +
+            '<form id="ppeStockForm" onsubmit="return savePpeStock()">' +
+                '<div class="form-row">' +
+                    '<div class="form-group">' +
+                        '<label>PPE Item Type *</label>' +
+                        '<select id="stockItemType" required>' +
+                            '<option value="">Select Item</option>' +
+                            '<optgroup label="Head Protection">' +
+                                '<option value="helmet">Safety Helmet</option>' +
+                                '<option value="hard_hat">Hard Hat</option>' +
+                                '<option value="bump_cap">Bump Cap</option>' +
+                                '<option value="welding_helmet">Welding Helmet</option>' +
+                                '<option value="face_shield">Face Shield</option>' +
+                            '</optgroup>' +
+                            '<optgroup label="Eye Protection">' +
+                                '<option value="goggles">Safety Goggles</option>' +
+                                '<option value="safety_glasses">Safety Glasses</option>' +
+                                '<option value="welding_goggles">Welding Goggles</option>' +
+                            '</optgroup>' +
+                            '<optgroup label="Hearing Protection">' +
+                                '<option value="earplugs">Ear Plugs</option>' +
+                                '<option value="earmuffs">Ear Muffs</option>' +
+                            '</optgroup>' +
+                            '<optgroup label="Respiratory Protection">' +
+                                '<option value="mask">Dust Mask</option>' +
+                                '<option value="n95_respirator">N95 Respirator</option>' +
+                                '<option value="half_face_respirator">Half-Face Respirator</option>' +
+                                '<option value="full_face_respirator">Full-Face Respirator</option>' +
+                            '</optgroup>' +
+                            '<optgroup label="Hand Protection">' +
+                                '<option value="gloves">Safety Gloves</option>' +
+                                '<option value="rubber_gloves">Rubber Gloves</option>' +
+                                '<option value="welding_gloves">Welding Gloves</option>' +
+                                '<option value="cut_resistant_gloves">Cut-Resistant Gloves</option>' +
+                                '<option value="chemical_gloves">Chemical Gloves</option>' +
+                            '</optgroup>' +
+                            '<optgroup label="Foot Protection">' +
+                                '<option value="boots">Safety Boots</option>' +
+                                '<option value="steel_toe_boots">Steel Toe Boots</option>' +
+                                '<option value="rubber_boots">Rubber Boots</option>' +
+                                '<option value="metatarsal_boots">Metatarsal Boots</option>' +
+                            '</optgroup>' +
+                            '<optgroup label="Body Protection">' +
+                                '<option value="vest">Reflective Vest</option>' +
+                                '<option value="harness">Safety Harness</option>' +
+                                '<option value="coverall">Coverall / Overall</option>' +
+                                '<option value="rain_suit">Rain Suit</option>' +
+                                '<option value="apron">Protective Apron</option>' +
+                                '<option value="knee_pads">Knee Pads</option>' +
+                            '</optgroup>' +
+                            '<optgroup label="Fall Protection">' +
+                                '<option value="lanyard">Safety Lanyard</option>' +
+                                '<option value="lifeline">Lifeline</option>' +
+                                '<option value="fall_arrester">Fall Arrester</option>' +
+                                '<option value="anchor_point">Anchor Point Device</option>' +
+                            '</optgroup>' +
+                            '<optgroup label="Traffic & Visibility">' +
+                                '<option value="traffic_cone">Traffic Cone</option>' +
+                                '<option value="barricade_tape">Barricade Tape</option>' +
+                                '<option value="warning_sign">Warning Sign</option>' +
+                                '<option value="reflective_tape">Reflective Tape</option>' +
+                            '</optgroup>' +
+                            '<optgroup label="First Aid & Emergency">' +
+                                '<option value="first_aid_kit">First Aid Kit</option>' +
+                                '<option value="fire_extinguisher">Fire Extinguisher</option>' +
+                                '<option value="eye_wash">Eye Wash Station</option>' +
+                                '<option value="emergency_blanket">Emergency Blanket</option>' +
+                            '</optgroup>' +
+                        '</select>' +
+                    '</div>' +
+                    '<div class="form-group">' +
+                        '<label>Quantity to Add *</label>' +
+                        '<input type="number" id="stockQuantity" min="1" placeholder="e.g. 50" required>' +
+                    '</div>' +
+                '</div>' +
+                '<div class="form-row">' +
+                    '<div class="form-group">' +
+                        '<label>Unit Price (TZS)</label>' +
+                        '<input type="number" id="stockUnitPrice" min="0" step="0.01" placeholder="e.g. 15000">' +
+                    '</div>' +
+                    '<div class="form-group">' +
+                        '<label>Min Stock Level</label>' +
+                        '<input type="number" id="stockMinLevel" min="1" value="10" placeholder="Alert threshold">' +
+                    '</div>' +
+                '</div>' +
+                '<div class="form-row">' +
+                    '<div class="form-group">' +
+                        '<label>Supplier</label>' +
+                        '<input type="text" id="stockSupplier" placeholder="e.g. SafetyPro Ltd">' +
+                    '</div>' +
+                    '<div class="form-group">' +
+                        '<label>Notes</label>' +
+                        '<input type="text" id="stockNotes" placeholder="Optional notes">' +
+                    '</div>' +
+                '</div>' +
+                '<div class="form-actions">' +
+                    '<button type="submit" class="action" style="background:#28a745;">Save Stock</button>' +
+                    '<button type="button" class="action" style="background:#6c757d;" onclick="togglePpeStockForm()">Cancel</button>' +
+                '</div>' +
+            '</form>' +
+        '</div>' +
+
+        '<div id="ppeInventoryStats" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:20px;">' +
+            '<div class="stat-item"><span class="stat-label">Total Items</span><span class="stat-value" id="invTotalItems">-</span></div>' +
+            '<div class="stat-item"><span class="stat-label">Total Stock</span><span class="stat-value" id="invTotalStock">-</span></div>' +
+            '<div class="stat-item"><span class="stat-label">Low Stock</span><span class="stat-value" id="invLowStock" style="color:#dc3545;">-</span></div>' +
+            '<div class="stat-item"><span class="stat-label">Out of Stock</span><span class="stat-value" id="invOutStock" style="color:#dc3545;">-</span></div>' +
+        '</div>' +
+
+        '<div style="overflow-x:auto;">' +
+            '<table class="data-table" style="width:100%;border-collapse:collapse;">' +
+                '<thead><tr>' +
+                    '<th>Item</th><th>Type</th><th>In Stock</th><th>Min Level</th>' +
+                    '<th>Status</th><th>Unit Price</th><th>Supplier</th><th>Last Restocked</th>' +
+                '</tr></thead>' +
+                '<tbody id="ppeInventoryBody"><tr><td colspan="8" style="text-align:center;">Loading inventory...</td></tr></tbody>' +
+            '</table>' +
+        '</div>' +
+    '</div>');
+
+    loadPpeInventory();
+}
+
+function togglePpeStockForm() {
+    var container = document.getElementById('ppeStockFormContainer');
+    if (container) container.style.display = container.style.display === 'none' ? 'block' : 'none';
+}
+
+function loadPpeInventory() {
+    var baseUrl = window.location.origin;
+    fetch(baseUrl + '/api/work/hse/ppe-inventory', {
+        headers: { 'Accept': 'application/json', 'Authorization': 'Bearer ' + sessionManager.getAuthToken() }
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+        var items = data.data || [];
+        var tbody = document.getElementById('ppeInventoryBody');
+        if (!tbody) return;
+
+        var totalStock = 0;
+        var lowCount = 0;
+        var outCount = 0;
+
+        if (items.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;">No inventory items found</td></tr>';
+        } else {
+            var html = '';
+            for (var i = 0; i < items.length; i++) {
+                var item = items[i];
+                totalStock += item.quantity || 0;
+                if (item.stock_status === 'low') lowCount++;
+                if (item.stock_status === 'out_of_stock') outCount++;
+
+                var statusBadge = '';
+                if (item.stock_status === 'out_of_stock') statusBadge = '<span style="background:#dc3545;color:#fff;padding:2px 8px;border-radius:4px;font-size:12px;">OUT OF STOCK</span>';
+                else if (item.stock_status === 'low') statusBadge = '<span style="background:#ffc107;color:#000;padding:2px 8px;border-radius:4px;font-size:12px;">LOW STOCK</span>';
+                else statusBadge = '<span style="background:#28a745;color:#fff;padding:2px 8px;border-radius:4px;font-size:12px;">OK</span>';
+
+                var price = item.unit_price ? 'TZS ' + Number(item.unit_price).toLocaleString() : '-';
+                var restocked = item.last_restocked ? new Date(item.last_restocked).toLocaleDateString() : 'Never';
+
+                html += '<tr>' +
+                    '<td><strong>' + (item.item_name || '') + '</strong></td>' +
+                    '<td>' + (item.item_type || '') + '</td>' +
+                    '<td style="font-weight:bold;' + (item.quantity <= item.min_stock_level ? 'color:#dc3545;' : '') + '">' + item.quantity + '</td>' +
+                    '<td>' + item.min_stock_level + '</td>' +
+                    '<td>' + statusBadge + '</td>' +
+                    '<td>' + price + '</td>' +
+                    '<td>' + (item.supplier || '-') + '</td>' +
+                    '<td>' + restocked + '</td>' +
+                '</tr>';
+            }
+            tbody.innerHTML = html;
+        }
+
+        // Update stats
+        var el;
+        el = document.getElementById('invTotalItems'); if (el) el.textContent = items.length;
+        el = document.getElementById('invTotalStock'); if (el) el.textContent = totalStock;
+        el = document.getElementById('invLowStock'); if (el) el.textContent = lowCount;
+        el = document.getElementById('invOutStock'); if (el) el.textContent = outCount;
+
+        // Show alert banner if low stock
+        var alertBanner = document.getElementById('ppeAlertBanner');
+        var alertList = document.getElementById('ppeAlertList');
+        if (alertBanner && alertList) {
+            var lowItems = items.filter(function(x) { return x.stock_status === 'low' || x.stock_status === 'out_of_stock'; });
+            if (lowItems.length > 0) {
+                alertBanner.style.display = 'block';
+                alertList.innerHTML = lowItems.map(function(x) {
+                    return '<div style="margin:2px 0;">' + (x.stock_status === 'out_of_stock' ? '🔴' : '🟡') + ' ' + x.item_name + ': ' + x.quantity + ' remaining (min: ' + x.min_stock_level + ')</div>';
+                }).join('');
+            } else {
+                alertBanner.style.display = 'none';
+            }
+        }
+    })
+    .catch(function(err) {
+        console.error('Error loading PPE inventory:', err);
+        var tbody = document.getElementById('ppeInventoryBody');
+        if (tbody) tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;color:#dc3545;">Failed to load inventory</td></tr>';
+    });
+}
+
+function savePpeStock() {
+    var typeSelect = document.getElementById('stockItemType');
+    var itemType = typeSelect.value;
+    var itemName = typeSelect.options[typeSelect.selectedIndex].text;
+    var quantity = parseInt(document.getElementById('stockQuantity').value) || 0;
+    var unitPrice = parseFloat(document.getElementById('stockUnitPrice').value) || 0;
+    var minLevel = parseInt(document.getElementById('stockMinLevel').value) || 10;
+    var supplier = document.getElementById('stockSupplier').value;
+    var notes = document.getElementById('stockNotes').value;
+
+    if (!itemType || quantity <= 0) {
+        customAlert('Please select an item type and enter a quantity greater than 0.', 'Validation Error', 'error');
+        return false;
+    }
+
+    var baseUrl = window.location.origin;
+    fetch(baseUrl + '/api/work/hse/ppe-inventory', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'Authorization': 'Bearer ' + sessionManager.getAuthToken() },
+        body: JSON.stringify({
+            item_type: itemType,
+            item_name: itemName,
+            quantity: quantity,
+            min_stock_level: minLevel,
+            unit_price: unitPrice,
+            supplier: supplier,
+            notes: notes
+        })
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+        if (data.error) throw new Error(data.error);
+        customAlert('Stock updated successfully!\n\n' + itemName + ': +' + quantity + ' units added', 'Stock Updated', 'success');
+        document.getElementById('ppeStockForm').reset();
+        document.getElementById('stockMinLevel').value = '10';
+        togglePpeStockForm();
+        loadPpeInventory();
+    })
+    .catch(function(err) {
+        console.error('Error saving PPE stock:', err);
+        customAlert('Failed to save stock: ' + err.message, 'Error', 'error');
+    });
+
+    return false;
+}
 
 function saveSafetyViolation() {
 
@@ -60202,25 +60464,68 @@ function addPpeItem() {
     newItem.innerHTML = `
 
         <select class="ppe-type" required>
-
             <option value="">Select PPE</option>
-
-            <option value="helmet">Safety Helmet</option>
-
-            <option value="gloves">Safety Gloves</option>
-
-            <option value="boots">Safety Boots</option>
-
-            <option value="vest">Reflective Vest</option>
-
-            <option value="goggles">Safety Goggles</option>
-
-            <option value="mask">Dust Mask</option>
-
-            <option value="harness">Safety Harness</option>
-
-            <option value="earplugs">Ear Plugs</option>
-
+            <optgroup label="Head Protection">
+                <option value="helmet">Safety Helmet</option>
+                <option value="hard_hat">Hard Hat</option>
+                <option value="bump_cap">Bump Cap</option>
+                <option value="welding_helmet">Welding Helmet</option>
+                <option value="face_shield">Face Shield</option>
+            </optgroup>
+            <optgroup label="Eye Protection">
+                <option value="goggles">Safety Goggles</option>
+                <option value="safety_glasses">Safety Glasses</option>
+                <option value="welding_goggles">Welding Goggles</option>
+            </optgroup>
+            <optgroup label="Hearing Protection">
+                <option value="earplugs">Ear Plugs</option>
+                <option value="earmuffs">Ear Muffs</option>
+            </optgroup>
+            <optgroup label="Respiratory Protection">
+                <option value="mask">Dust Mask</option>
+                <option value="n95_respirator">N95 Respirator</option>
+                <option value="half_face_respirator">Half-Face Respirator</option>
+                <option value="full_face_respirator">Full-Face Respirator</option>
+            </optgroup>
+            <optgroup label="Hand Protection">
+                <option value="gloves">Safety Gloves</option>
+                <option value="rubber_gloves">Rubber Gloves</option>
+                <option value="welding_gloves">Welding Gloves</option>
+                <option value="cut_resistant_gloves">Cut-Resistant Gloves</option>
+                <option value="chemical_gloves">Chemical Gloves</option>
+            </optgroup>
+            <optgroup label="Foot Protection">
+                <option value="boots">Safety Boots</option>
+                <option value="steel_toe_boots">Steel Toe Boots</option>
+                <option value="rubber_boots">Rubber Boots</option>
+                <option value="metatarsal_boots">Metatarsal Boots</option>
+            </optgroup>
+            <optgroup label="Body Protection">
+                <option value="vest">Reflective Vest</option>
+                <option value="harness">Safety Harness</option>
+                <option value="coverall">Coverall / Overall</option>
+                <option value="rain_suit">Rain Suit</option>
+                <option value="apron">Protective Apron</option>
+                <option value="knee_pads">Knee Pads</option>
+            </optgroup>
+            <optgroup label="Fall Protection">
+                <option value="lanyard">Safety Lanyard</option>
+                <option value="lifeline">Lifeline</option>
+                <option value="fall_arrester">Fall Arrester</option>
+                <option value="anchor_point">Anchor Point Device</option>
+            </optgroup>
+            <optgroup label="Traffic & Visibility">
+                <option value="traffic_cone">Traffic Cone</option>
+                <option value="barricade_tape">Barricade Tape</option>
+                <option value="warning_sign">Warning Sign</option>
+                <option value="reflective_tape">Reflective Tape</option>
+            </optgroup>
+            <optgroup label="First Aid & Emergency">
+                <option value="first_aid_kit">First Aid Kit</option>
+                <option value="fire_extinguisher">Fire Extinguisher</option>
+                <option value="eye_wash">Eye Wash Station</option>
+                <option value="emergency_blanket">Emergency Blanket</option>
+            </optgroup>
         </select>
 
         <input type="number" class="ppe-quantity" placeholder="Qty" min="1" required>
@@ -101496,13 +101801,50 @@ function showMaterialsInForm() {
 
                         <div class="form-group">
 
-                            <label for="minMaterialId">Material:</label>
+                            <label for="minMaterialName">Material Name *</label>
 
-                            <select id="minMaterialId" name="material_id" required>
+                            <input type="text" id="minMaterialName" name="material_name" placeholder="e.g. Ordinary Portland Cement" required>
 
-                                <option value="">Select Material</option>
+                        </div>
 
+                        <div class="form-group">
+
+                            <label for="minMaterialCategory">Category *</label>
+
+                            <select id="minMaterialCategory" name="material_category" required>
+                                <option value="">Select Category</option>
+                                <option value="Cement">Cement</option>
+                                <option value="Sand">Sand</option>
+                                <option value="Aggregate">Aggregate / Gravel</option>
+                                <option value="Steel/Rebar">Steel / Rebar</option>
+                                <option value="Bricks">Bricks / Blocks</option>
+                                <option value="Timber">Timber / Wood</option>
+                                <option value="Pipes">Pipes / Plumbing</option>
+                                <option value="Electrical">Electrical</option>
+                                <option value="Paint">Paint / Finishing</option>
+                                <option value="Roofing">Roofing</option>
+                                <option value="Tiles">Tiles / Flooring</option>
+                                <option value="Glass">Glass</option>
+                                <option value="Nails/Fasteners">Nails / Fasteners</option>
+                                <option value="Adhesives">Adhesives / Sealants</option>
+                                <option value="Waterproofing">Waterproofing</option>
+                                <option value="Insulation">Insulation</option>
+                                <option value="Hardware">Hardware / Tools</option>
+                                <option value="Fuel">Fuel / Lubricants</option>
+                                <option value="Other">Other</option>
                             </select>
+
+                        </div>
+
+                    </div>
+
+                    <div class="form-row" style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+
+                        <div class="form-group">
+
+                            <label for="minMaterialDesc">Description:</label>
+
+                            <input type="text" id="minMaterialDesc" name="description" placeholder="e.g. Dangote 50kg bags">
 
                         </div>
 
@@ -101748,8 +102090,6 @@ function showMaterialsInForm() {
 
     document.body.insertAdjacentHTML('beforeend', formHTML);
 
-    loadMaterialDropdown('minMaterialId');
-
     document.getElementById('minReceiptDate').valueAsDate = new Date();
 
     setTimeout(() => {
@@ -101764,7 +102104,11 @@ function showMaterialsInForm() {
 
                 const formData = {
 
-                    material_id: parseInt(document.getElementById('minMaterialId').value),
+                    material_name: document.getElementById('minMaterialName').value,
+
+                    material_category: document.getElementById('minMaterialCategory').value,
+
+                    description: document.getElementById('minMaterialDesc').value || '',
 
                     track_number: document.getElementById('minTrackNumber').value || undefined,
 
@@ -109144,8 +109488,37 @@ function showMaterialsInForm(preselectedMaterialId, preselectedMaterialName) {
                 <form id="materialsInForm">
                     <div style="display:grid;grid-template-columns:1fr 1fr;gap:15px;">
                         <div class="form-group">
-                            <label for="minMaterial">Material *</label>
-                            <select id="minMaterial" name="material_id" required><option value="">Loading materials...</option></select>
+                            <label for="minMaterialName">Material Name *</label>
+                            <input type="text" id="minMaterialName" name="material_name" placeholder="e.g. Ordinary Portland Cement" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="minMaterialCategory">Category *</label>
+                            <select id="minMaterialCategory" name="material_category" required>
+                                <option value="">Select Category</option>
+                                <option value="Cement">Cement</option>
+                                <option value="Sand">Sand</option>
+                                <option value="Aggregate">Aggregate / Gravel</option>
+                                <option value="Steel/Rebar">Steel / Rebar</option>
+                                <option value="Bricks">Bricks / Blocks</option>
+                                <option value="Timber">Timber / Wood</option>
+                                <option value="Pipes">Pipes / Plumbing</option>
+                                <option value="Electrical">Electrical</option>
+                                <option value="Paint">Paint / Finishing</option>
+                                <option value="Roofing">Roofing</option>
+                                <option value="Tiles">Tiles / Flooring</option>
+                                <option value="Glass">Glass</option>
+                                <option value="Nails/Fasteners">Nails / Fasteners</option>
+                                <option value="Adhesives">Adhesives / Sealants</option>
+                                <option value="Waterproofing">Waterproofing</option>
+                                <option value="Insulation">Insulation</option>
+                                <option value="Hardware">Hardware / Tools</option>
+                                <option value="Fuel">Fuel / Lubricants</option>
+                                <option value="Other">Other</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="minMaterialDesc">Description</label>
+                            <input type="text" id="minMaterialDesc" name="description" placeholder="e.g. Dangote 50kg bags">
                         </div>
                         <div class="form-group">
                             <label for="minTrackNumber">Track / Delivery Note No *</label>
@@ -109244,23 +109617,24 @@ function showMaterialsInForm(preselectedMaterialId, preselectedMaterialName) {
     setTimeout(() => {
         const form = document.getElementById('materialsInForm');
         if (form) form.addEventListener('submit', async (e) => { e.preventDefault(); await saveMaterialsIn(); });
-        loadMaterialDropdown('minMaterial');
-        if (preselectedMaterialId) {
-            const select = document.getElementById('minMaterial');
-            if (select) select.value = preselectedMaterialId;
+        if (preselectedMaterialName) {
+            const nameInput = document.getElementById('minMaterialName');
+            if (nameInput) nameInput.value = preselectedMaterialName;
         }
     }, 100);
 }
 
 async function saveMaterialsIn() {
-    const materialId = document.getElementById('minMaterial').value;
-    if (!materialId || isNaN(parseInt(materialId))) {
-        showNotification('Please select a valid material from the dropdown.', 'error');
+    const materialName = document.getElementById('minMaterialName').value;
+    if (!materialName || !materialName.trim()) {
+        showNotification('Please enter a material name.', 'error');
         return;
     }
 
     const payload = {
-        material_id: parseInt(materialId),
+        material_name: materialName.trim(),
+        material_category: document.getElementById('minMaterialCategory').value || 'Other',
+        description: document.getElementById('minMaterialDesc') ? document.getElementById('minMaterialDesc').value : '',
         track_number: document.getElementById('minTrackNumber').value,
         receipt_date: document.getElementById('minReceiptDate').value,
         quantity_received: parseFloat(document.getElementById('minQuantity').value),

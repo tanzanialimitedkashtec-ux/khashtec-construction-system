@@ -997,10 +997,38 @@ router.post('/hse/ppe', async (req, res) => {
 
         const insertId = result.insertId || result[0]?.insertId || null;
         console.log(`✅ PPE issuance record created with id: ${insertId}`);
+
+        // Auto-deduct issued items from PPE inventory
+        var stockAlerts = [];
+        try {
+            await ensurePpeInventoryTable();
+            var issuedItems = Array.isArray(ppe_items) ? ppe_items : [];
+            for (var i = 0; i < issuedItems.length; i++) {
+                var item = issuedItems[i];
+                var itemType = item.type || item.ppe_type || '';
+                var qty = parseInt(item.quantity) || 1;
+                if (itemType) {
+                    await db.execute(
+                        'UPDATE ppe_inventory SET quantity = GREATEST(quantity - ?, 0), updated_at = NOW() WHERE item_type = ?',
+                        [qty, itemType]
+                    );
+                    // Check if stock is now low
+                    var check = await db.execute('SELECT item_name, quantity, min_stock_level FROM ppe_inventory WHERE item_type = ?', [itemType]);
+                    var inv = Array.isArray(check) ? check[0] : null;
+                    if (inv && inv.quantity <= inv.min_stock_level) {
+                        stockAlerts.push(inv.item_name + ': ' + inv.quantity + ' remaining (min: ' + inv.min_stock_level + ')');
+                    }
+                }
+            }
+        } catch (invErr) {
+            console.error('⚠️ Could not deduct from PPE inventory:', invErr.message);
+        }
+
         res.status(201).json({
             message: 'PPE issuance recorded successfully',
             id: insertId,
-            issuance_id: issuance_id
+            issuance_id: issuance_id,
+            stock_alerts: stockAlerts
         });
     } catch (error) {
         console.error('❌ Error creating PPE issuance record:', error);
@@ -1126,6 +1154,248 @@ router.get('/hse/ppe/departments', async (req, res) => {
     } catch (error) {
         console.error('Error fetching departments for PPE:', error.message);
         res.json({ data: [] });
+    }
+});
+
+// ===== PPE INVENTORY =====
+
+// Ensure ppe_inventory table has the columns we need
+let ppeInventoryTableReady = false;
+async function ensurePpeInventoryTable() {
+    if (ppeInventoryTableReady) return;
+    try {
+        // Table already exists from migration (001_create_tables.sql) with columns:
+        // id, item_name, ppe_type (ENUM), quantity, min_quantity, item_condition, last_inspected, storage_location
+        // We add columns needed by the inventory management UI
+        var colsToAdd = [
+            { name: 'item_type', def: "VARCHAR(50) AFTER item_name" },
+            { name: 'min_stock_level', def: "INT NOT NULL DEFAULT 10" },
+            { name: 'unit_price', def: "DECIMAL(10,2) DEFAULT 0.00" },
+            { name: 'supplier', def: "VARCHAR(255)" },
+            { name: 'last_restocked', def: "DATE" },
+            { name: 'notes', def: "TEXT" }
+        ];
+        var existingCols = await db.execute('SHOW COLUMNS FROM ppe_inventory');
+        var colNames = new Set((Array.isArray(existingCols) ? existingCols : []).map(function(c) { return c.Field; }));
+
+        for (var i = 0; i < colsToAdd.length; i++) {
+            if (!colNames.has(colsToAdd[i].name)) {
+                try {
+                    await db.execute('ALTER TABLE ppe_inventory ADD COLUMN ' + colsToAdd[i].name + ' ' + colsToAdd[i].def);
+                    console.log('  Added column ' + colsToAdd[i].name + ' to ppe_inventory');
+                } catch (e) {
+                    console.log('  Skipped ' + colsToAdd[i].name + ': ' + e.message);
+                }
+            }
+        }
+
+        // Widen ppe_type from ENUM to VARCHAR so we can store lowercase keys
+        if (colNames.has('ppe_type')) {
+            try {
+                await db.execute("ALTER TABLE ppe_inventory MODIFY COLUMN ppe_type VARCHAR(50)");
+                console.log('  Widened ppe_type to VARCHAR(50)');
+            } catch (e) { console.log('  Could not widen ppe_type:', e.message); }
+        }
+
+        // Populate item_type from ppe_type for existing rows that don't have it
+        try {
+            await db.execute("UPDATE ppe_inventory SET item_type = LOWER(ppe_type) WHERE item_type IS NULL AND ppe_type IS NOT NULL");
+        } catch (e) {}
+
+        // Copy min_quantity to min_stock_level for existing rows
+        try {
+            await db.execute("UPDATE ppe_inventory SET min_stock_level = min_quantity WHERE min_stock_level = 10 AND min_quantity IS NOT NULL AND min_quantity != 5");
+        } catch (e) {}
+
+        // Seed default items if table is empty
+        var countRows = await db.execute('SELECT COUNT(*) as cnt FROM ppe_inventory');
+        var countRow = Array.isArray(countRows) && Array.isArray(countRows[0]) ? countRows[0][0] : (Array.isArray(countRows) ? countRows[0] : countRows);
+        var cnt = (countRow && countRow.cnt) ? countRow.cnt : 0;
+        if (cnt === 0) {
+            var seedItems = [
+                // Head Protection
+                ['helmet', 'Safety Helmet', 50, 10],
+                ['hard_hat', 'Hard Hat', 40, 10],
+                ['bump_cap', 'Bump Cap', 20, 5],
+                ['welding_helmet', 'Welding Helmet', 10, 3],
+                ['face_shield', 'Face Shield', 25, 5],
+                // Eye Protection
+                ['goggles', 'Safety Goggles', 30, 10],
+                ['safety_glasses', 'Safety Glasses', 50, 15],
+                ['welding_goggles', 'Welding Goggles', 10, 3],
+                // Hearing Protection
+                ['earplugs', 'Ear Plugs', 150, 30],
+                ['earmuffs', 'Ear Muffs', 25, 5],
+                // Respiratory Protection
+                ['mask', 'Dust Mask', 200, 50],
+                ['n95_respirator', 'N95 Respirator', 100, 25],
+                ['half_face_respirator', 'Half-Face Respirator', 15, 5],
+                ['full_face_respirator', 'Full-Face Respirator', 10, 3],
+                // Hand Protection
+                ['gloves', 'Safety Gloves', 100, 20],
+                ['rubber_gloves', 'Rubber Gloves', 50, 10],
+                ['welding_gloves', 'Welding Gloves', 15, 5],
+                ['cut_resistant_gloves', 'Cut-Resistant Gloves', 30, 10],
+                ['chemical_gloves', 'Chemical Gloves', 20, 5],
+                // Foot Protection
+                ['boots', 'Safety Boots', 40, 10],
+                ['steel_toe_boots', 'Steel Toe Boots', 30, 10],
+                ['rubber_boots', 'Rubber Boots', 20, 5],
+                ['metatarsal_boots', 'Metatarsal Boots', 10, 3],
+                // Body Protection
+                ['vest', 'Reflective Vest', 60, 15],
+                ['harness', 'Safety Harness', 20, 5],
+                ['coverall', 'Coverall / Overall', 30, 10],
+                ['rain_suit', 'Rain Suit', 15, 5],
+                ['apron', 'Protective Apron', 10, 3],
+                ['knee_pads', 'Knee Pads', 20, 5],
+                // Fall Protection
+                ['lanyard', 'Safety Lanyard', 15, 5],
+                ['lifeline', 'Lifeline', 10, 3],
+                ['fall_arrester', 'Fall Arrester', 8, 3],
+                ['anchor_point', 'Anchor Point Device', 10, 3],
+                // Traffic & Visibility
+                ['traffic_cone', 'Traffic Cone', 50, 10],
+                ['barricade_tape', 'Barricade Tape', 30, 10],
+                ['warning_sign', 'Warning Sign', 20, 5],
+                ['reflective_tape', 'Reflective Tape', 25, 5],
+                // First Aid & Emergency
+                ['first_aid_kit', 'First Aid Kit', 10, 3],
+                ['fire_extinguisher', 'Fire Extinguisher', 15, 5],
+                ['eye_wash', 'Eye Wash Station', 5, 2],
+                ['emergency_blanket', 'Emergency Blanket', 10, 3]
+            ];
+            for (var s = 0; s < seedItems.length; s++) {
+                try {
+                    await db.execute(
+                        'INSERT INTO ppe_inventory (item_type, ppe_type, item_name, quantity, min_stock_level) VALUES (?, ?, ?, ?, ?)',
+                        [seedItems[s][0], seedItems[s][0], seedItems[s][1], seedItems[s][2], seedItems[s][3]]
+                    );
+                } catch (e) { /* duplicate or other error */ }
+            }
+            console.log('✅ PPE inventory seeded with default items');
+        }
+
+        ppeInventoryTableReady = true;
+        console.log('✅ ppe_inventory table ready');
+    } catch (e) {
+        console.error('❌ Error ensuring ppe_inventory table:', e.message);
+    }
+}
+ensurePpeInventoryTable();
+
+// Get all PPE inventory items
+router.get('/hse/ppe-inventory', async (req, res) => {
+    try {
+        await ensurePpeInventoryTable();
+        var result = await db.execute('SELECT * FROM ppe_inventory ORDER BY item_name ASC');
+        // Handle MySQL2 [rows, fields] format
+        var items = [];
+        if (Array.isArray(result) && result.length > 0 && Array.isArray(result[0])) {
+            items = result[0];
+        } else if (Array.isArray(result)) {
+            items = result;
+        }
+        // Normalize and calculate stock status
+        items = items.map(function(item) {
+            var minLevel = item.min_stock_level || item.min_quantity || 10;
+            var qty = item.quantity || 0;
+            var status = 'ok';
+            if (qty <= 0) status = 'out_of_stock';
+            else if (qty <= minLevel) status = 'low';
+            return Object.assign({}, item, {
+                item_type: item.item_type || (item.ppe_type ? item.ppe_type.toLowerCase() : ''),
+                min_stock_level: minLevel,
+                stock_status: status
+            });
+        });
+        res.json({ data: items });
+    } catch (error) {
+        console.error('❌ Error fetching PPE inventory:', error);
+        res.json({ data: [] });
+    }
+});
+
+// Add stock to PPE inventory
+router.post('/hse/ppe-inventory', async (req, res) => {
+    try {
+        await ensurePpeInventoryTable();
+        var body = req.body;
+        var item_type = body.item_type;
+        var item_name = body.item_name;
+        var quantity = parseInt(body.quantity) || 0;
+        var min_stock_level = parseInt(body.min_stock_level) || 10;
+        var unit_price = parseFloat(body.unit_price) || 0;
+        var supplier = body.supplier || null;
+        var notes = body.notes || null;
+
+        if (!item_type || !item_name || quantity <= 0) {
+            return res.status(400).json({ error: 'item_type, item_name, and quantity > 0 are required' });
+        }
+
+        // Upsert: if item_type exists, add to quantity; otherwise insert
+        var existingResult = await db.execute('SELECT id, quantity FROM ppe_inventory WHERE item_type = ?', [item_type]);
+        var existingRows = Array.isArray(existingResult) && Array.isArray(existingResult[0]) ? existingResult[0] : (Array.isArray(existingResult) ? existingResult : []);
+        var existingItem = existingRows.length > 0 ? existingRows[0] : null;
+
+        if (existingItem) {
+            await db.execute(
+                `UPDATE ppe_inventory SET quantity = quantity + ?, min_stock_level = ?,
+                 unit_price = ?, supplier = COALESCE(?, supplier), notes = COALESCE(?, notes),
+                 last_restocked = CURDATE(), updated_at = NOW() WHERE item_type = ?`,
+                [quantity, min_stock_level, unit_price, supplier, notes, item_type]
+            );
+            res.json({ message: 'Stock updated', item_type: item_type, new_quantity: existingItem.quantity + quantity });
+        } else {
+            await db.execute(
+                `INSERT INTO ppe_inventory (item_type, ppe_type, item_name, quantity, min_stock_level, unit_price, supplier, notes, last_restocked)
+                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, CURDATE())`,
+                [item_type, item_type, item_name, quantity, min_stock_level, unit_price, supplier, notes]
+            );
+            res.json({ message: 'New item added to inventory', item_type: item_type, quantity: quantity });
+        }
+    } catch (error) {
+        console.error('❌ Error updating PPE inventory:', error);
+        res.status(500).json({ error: 'Failed to update inventory', details: error.message });
+    }
+});
+
+// Update min stock level for a PPE inventory item
+router.put('/hse/ppe-inventory/:id', async (req, res) => {
+    try {
+        await ensurePpeInventoryTable();
+        var id = req.params.id;
+        var body = req.body;
+        var updates = [];
+        var values = [];
+
+        if (body.min_stock_level !== undefined) { updates.push('min_stock_level = ?'); values.push(parseInt(body.min_stock_level)); }
+        if (body.unit_price !== undefined) { updates.push('unit_price = ?'); values.push(parseFloat(body.unit_price)); }
+        if (body.supplier !== undefined) { updates.push('supplier = ?'); values.push(body.supplier); }
+        if (body.notes !== undefined) { updates.push('notes = ?'); values.push(body.notes); }
+        if (body.quantity !== undefined) { updates.push('quantity = ?'); values.push(parseInt(body.quantity)); }
+
+        if (updates.length === 0) return res.status(400).json({ error: 'No fields to update' });
+
+        values.push(id);
+        await db.execute(`UPDATE ppe_inventory SET ${updates.join(', ')}, updated_at = NOW() WHERE id = ?`, values);
+        res.json({ message: 'Inventory item updated' });
+    } catch (error) {
+        console.error('❌ Error updating PPE inventory item:', error);
+        res.status(500).json({ error: 'Failed to update item', details: error.message });
+    }
+});
+
+// Get PPE inventory summary/alerts
+router.get('/hse/ppe-inventory/alerts', async (req, res) => {
+    try {
+        await ensurePpeInventoryTable();
+        var result = await db.execute('SELECT * FROM ppe_inventory WHERE quantity <= min_stock_level ORDER BY quantity ASC');
+        var lowStockItems = Array.isArray(result) && Array.isArray(result[0]) ? result[0] : (Array.isArray(result) ? result : []);
+        res.json({ data: lowStockItems, count: lowStockItems.length });
+    } catch (error) {
+        console.error('❌ Error fetching PPE alerts:', error);
+        res.json({ data: [], count: 0 });
     }
 });
 

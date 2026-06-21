@@ -948,102 +948,60 @@ function updateNavigation(state) {
     }
 }
 
-function updatePasswordPlaceholder() {
-    console.log('🔄 updatePasswordPlaceholder() called');
-    var roleSelect = document.getElementById("loginRole");
-    var passwordInput = document.getElementById("loginPassword");
-    
-    if (roleSelect && passwordInput) {
-        var selectedRole = roleSelect.value;
-        console.log('📝 Selected role:', selectedRole);
-        
-        var placeholders = {
-            'Managing Director': 'admin',
-            'Director of Administration': 'admin',
-            'HR Manager': 'hr0501',
-            'HSE Manager': 'hse0501',
-            'Finance Manager': 'finance0501',
-            'Project Manager': 'pm0501',
-            'Real Estate Manager': 'realestate0501',
-            'Admin Assistant': 'admin'
-        };
-        
-        passwordInput.placeholder = placeholders[selectedRole] || 'Enter password';
-        console.log('🔤 Password placeholder updated to:', passwordInput.placeholder);
-    } else {
-        console.error('❌ Could not find role select or password input');
-    }
-}
+function updatePasswordPlaceholder() {}
 
 function handleLogin() {
-    console.log('🔍 handleLogin function called');
-    
-    // Test if apiService is available
-    console.log('🔍 apiService available:', typeof window.apiService);
-    console.log('🔍 apiService object:', window.apiService);
-    
+    console.log('handleLogin function called');
+
     if (!window.apiService) {
-        console.error('❌ apiService not found!');
+        console.error('apiService not found!');
         showNotification('API service not loaded. Please refresh the page.', 'error', 5000);
         return false;
     }
-    
-    // Get form values
+
     var email = document.getElementById("loginEmail").value;
     var password = document.getElementById("loginPassword").value;
-    var role = document.getElementById("loginRole").value;
-    
-    console.log('📝 Form data:', { email, password: '***', role });
-    
-    // Validate input
-    if (!email || !password || !role) {
-        showNotification('Please fill in all fields: email, password, and select your role', 'warning', 5000);
+
+    if (!email || !password) {
+        showNotification('Please enter your email and password.', 'warning', 5000);
         return false;
     }
-    
-    // Show loading state
+
     var loginBtn = document.getElementById("loginBtn");
     if (loginBtn) {
         loginBtn.disabled = true;
         loginBtn.textContent = "Authenticating...";
         loginBtn.style.opacity = '0.7';
     }
-    
-    // Direct API call without testing first
-    console.log('🌐 Direct login attempt...');
+
     showNotification('Authenticating...', 'info', 3000);
-    
+
     try {
-        apiService.login(email, password, role)
-        .then(response => {
-            console.log('✅ Login successful:', response);
-            
-            // Reset button
+        apiService.login(email, password)
+        .then(function(response) {
+            console.log('Login successful:', response);
+
             if (loginBtn) {
                 loginBtn.disabled = false;
                 loginBtn.textContent = "Login";
                 loginBtn.style.opacity = '1';
             }
-            
-            // Show success
-            showNotification(`Welcome ${response.user.department_name || role}! Login successful.`, 'success', 6000);
-            
-            // Store session
+
+            var detectedRole = response.user.role || '';
+            showNotification('Welcome ' + (response.user.department_name || detectedRole) + '! Login successful.', 'success', 6000);
+
             sessionManager.setAuthToken(response.token);
             sessionManager.setCurrentUser(response.user);
-            
-            // Redirect to system page
-            setTimeout(() => {
-                // Hide login page and show system page
+
+            setTimeout(function() {
                 document.getElementById("loginPage").classList.add("hidden");
                 document.getElementById("systemPage").classList.remove("hidden");
                 document.body.classList.add('logged-in');
                 document.body.classList.remove('login-active');
-                
-                // Map full role names to short codes for menu system
-                const roleMap = {
+
+                var roleMap = {
                     'Managing Director': 'MD',
-                    'Director of Administration': 'ADMIN', 
+                    'Director of Administration': 'ADMIN',
                     'HR Manager': 'HR',
                     'HSE Manager': 'HSE',
                     'Finance Manager': 'FINANCE',
@@ -1051,43 +1009,36 @@ function handleLogin() {
                     'Real Estate Manager': 'REALESTATE',
                     'Admin Assistant': 'ASSISTANT'
                 };
-                
-                // Set global currentRole for menu system (not window.currentRole)
-                currentRole = roleMap[role] || role;
-                
-                // Set user role display
-                document.getElementById("userRole").innerText = role + " Dashboard";
-                
-                console.log('🔍 Setting currentRole:', currentRole, 'from role:', role);
-                
-                // Load menu based on role
+
+                currentRole = roleMap[detectedRole] || detectedRole;
+
+                document.getElementById("userRole").innerText = detectedRole + " Dashboard";
+
+                console.log('Setting currentRole:', currentRole, 'from detected role:', detectedRole);
+
                 if (typeof loadMenu === 'function') {
                     loadMenu();
                 }
-                
-                // Update profile widget with user info (no welcome card)
-                const userEmail = response.user.email || '';
-                const userRole = role;
+
+                var userEmail = response.user.email || '';
                 if (typeof updateProfileWidget === 'function') {
-                    updateProfileWidget(userRole, userEmail);
+                    updateProfileWidget(detectedRole, userEmail);
                 }
-                
-                showNotification(`Welcome ${response.user.department_name || role}!`, 'success', 3000);
+
+                showNotification('Welcome ' + (response.user.department_name || detectedRole) + '!', 'success', 3000);
             }, 1500);
-            
+
         })
-        .catch(error => {
-            console.error('❌ Login failed:', error);
-            
-            // Reset button
+        .catch(function(error) {
+            console.error('Login failed:', error);
+
             if (loginBtn) {
                 loginBtn.disabled = false;
                 loginBtn.textContent = "Login";
                 loginBtn.style.opacity = '1';
             }
-            
-            // Show error
-            let errorMsg = 'Login failed. ';
+
+            var errorMsg = 'Login failed. ';
             if (error.message.includes('No account found')) {
                 errorMsg = 'Email not found. Check your credentials.';
             } else if (error.message.includes('Incorrect password')) {
@@ -1097,59 +1048,61 @@ function handleLogin() {
             } else {
                 errorMsg = error.message || 'Unknown error occurred.';
             }
-            
+
             showNotification(errorMsg, 'error', 8000);
         });
     } catch (error) {
-        console.error('❌ Login error:', error);
-        
-        // Reset button
+        console.error('Login error:', error);
+
         if (loginBtn) {
             loginBtn.disabled = false;
             loginBtn.textContent = "Login";
             loginBtn.style.opacity = '1';
         }
-        
-        // Show error
+
         showNotification('Login error: ' + (error.message || 'Unknown error'), 'error', 5000);
     }
-    
-    // Return false to prevent form submission and page reload
+
     return false;
 }
 
 function handleLogout() {
-    // Show custom confirmation notification instead of alert
     showNotification('Logging out...', 'info', 2000);
-    
-    // Clear session data
+
     sessionManager.removeCurrentSession();
-    
-    // Reset current role
+
     currentRole = "";
-    
-    // Show logout success message
-    setTimeout(() => {
-        // Hide system page and show login page
+
+    // Clear content area so stale pages don't persist across role switches
+    var contentArea = document.getElementById('contentArea');
+    if (contentArea) contentArea.innerHTML = '';
+
+    // Clear sidebar menu
+    var menu = document.getElementById('menu');
+    if (menu) menu.innerHTML = '';
+
+    // Collapse sidebar
+    var sidebar = document.querySelector('.sidebar');
+    if (sidebar) sidebar.classList.add('collapsed');
+
+    setTimeout(function() {
         document.getElementById("systemPage").classList.add("hidden");
         document.getElementById("loginPage").classList.remove("hidden");
         document.body.classList.remove('logged-in');
         document.body.classList.add('login-active');
-        
-        // Clear form fields
+
         document.getElementById("loginEmail").value = "";
         document.getElementById("loginPassword").value = "";
-        document.getElementById("loginRole").value = "";
-        
-        // Reset login button
-        const loginBtn = document.getElementById("loginBtn");
+        var loginRoleEl = document.getElementById("loginRole");
+        if (loginRoleEl) loginRoleEl.value = "";
+
+        var loginBtn = document.getElementById("loginBtn");
         if (loginBtn) {
             loginBtn.disabled = false;
             loginBtn.textContent = "Login";
             loginBtn.style.opacity = '1';
         }
-        
-        // Show logout success notification
+
         showNotification('You have been logged out successfully. Please login again.', 'success', 4000);
     }, 1000);
 }
