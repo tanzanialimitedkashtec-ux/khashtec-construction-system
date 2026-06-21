@@ -24869,6 +24869,10 @@ function loadMenu(){
     var sharedItems = ["Suggestions", "Office Resources"];
 
     var isAuthorized = function(menuName) {
+        // Managing Director cannot access Suggestions
+        var isMD = currentRole === 'MD' || currentRole === 'Managing Director';
+        if (menuName === 'Suggestions' && isMD) return false;
+
         if (sharedItems.indexOf(menuName) !== -1) return true;
 
         var roleKey = currentRole;
