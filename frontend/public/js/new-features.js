@@ -602,7 +602,11 @@ async function loadOfficeResources() {
             <div class="card">
                 <h3>Office Resources</h3>
                 <button onclick="showResourceForm()">+ New Resource</button>
-                <div class="department-table-container" style="margin-top:20px;">
+                <div style="margin-bottom: 20px; margin-top: 20px; display: flex; gap: 10px; align-items: center;">
+                    <input type="text" id="resourceSearchInput" placeholder="🔍 Search resources..." style="padding: 10px 15px; border: 1px solid #ddd; border-radius: 6px; flex: 1; font-size: 14px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);" onkeyup="filterResourceTable()">
+                    <button onclick="clearResourceSearch()" style="padding: 10px 20px; background: #6c757d; color: #fff; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: 500;">Clear</button>
+                </div>
+                <div class="department-table-container">
                     <table class="department-table">
                         <thead>
                             <tr>
@@ -615,7 +619,7 @@ async function loadOfficeResources() {
                                 <th>Actions</th>
                             </tr>
                         </thead>
-                        <tbody>
+                        <tbody id="resourceTableBody">
         `;
 
         resources.forEach(resource => {
@@ -647,6 +651,30 @@ async function loadOfficeResources() {
         console.error('Error loading office resources:', error);
         showContent('<div class="card"><h3>Office Resources</h3><p>Error loading resources. Please try again.</p></div>');
     }
+}
+
+function filterResourceTable() {
+    var input = document.getElementById("resourceSearchInput");
+    if (!input) return;
+    var filter = input.value.toUpperCase();
+    var tbody = document.getElementById("resourceTableBody");
+    if (!tbody) return;
+    var tr = tbody.getElementsByTagName("tr");
+    for (var i = 0; i < tr.length; i++) {
+        var tdArray = tr[i].getElementsByTagName("td");
+        var match = false;
+        for (var j = 0; j < tdArray.length; j++) {
+            if (tdArray[j] && tdArray[j].textContent.toUpperCase().indexOf(filter) > -1) {
+                match = true;
+                break;
+            }
+        }
+        tr[i].style.display = match ? "" : "none";
+    }
+}
+function clearResourceSearch() {
+    var input = document.getElementById("resourceSearchInput");
+    if (input) { input.value = ""; filterResourceTable(); }
 }
 
 function showResourceForm(resourceId = null) {
