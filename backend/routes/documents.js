@@ -830,7 +830,12 @@ router.post('/upload', upload.single('document'), async (req, res) => {
                 'license': 'Permit',
                 'osha': 'Certificate',
                 'nssf': 'Certificate',
-                'wcf': 'Certificate'
+                'wcf': 'Certificate',
+                'contract': 'Contract',
+                'report': 'Report',
+                'plan': 'Plan',
+                'invoice': 'Invoice',
+                'permit': 'Permit'
             };
             
             const category = categoryMap[type.toLowerCase()] || 'Certificate';

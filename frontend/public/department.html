@@ -24085,6 +24085,53 @@ window.fetch = function(resource, init) {
 
 
 let currentRole = "";
+// === UTILITY: Upload files to documents table (stored with QR codes) ===
+async function uploadFileToDocumentsTable(fileInput, category, namePrefix, description) {
+    if (!fileInput || !fileInput.files || fileInput.files.length === 0) return [];
+    const results = [];
+    const baseUrl = window.location.origin;
+    const token = (typeof sessionManager !== 'undefined' && sessionManager.getAuthToken) ? sessionManager.getAuthToken() : '';
+    for (let i = 0; i < fileInput.files.length; i++) {
+        const file = fileInput.files[i];
+        try {
+            const base64 = await new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = () => resolve(reader.result.split(',')[1]);
+                reader.onerror = reject;
+                reader.readAsDataURL(file);
+            });
+            const docName = fileInput.files.length > 1 ? `${namePrefix} - File ${i + 1}` : namePrefix;
+            const ext = file.name.split('.').pop().toLowerCase();
+            let mimeType = file.type || 'application/octet-stream';
+            const payload = {
+                type: category,
+                name: docName,
+                description: description || `${namePrefix} uploaded on ${new Date().toLocaleDateString()}`,
+                filename: file.name,
+                file_size: file.size,
+                mime_type: mimeType,
+                file_base64: base64,
+                uploaded_by: 1
+            };
+            const response = await fetch(`${baseUrl}/api/documents/upload`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'Authorization': token ? `Bearer ${token}` : '' },
+                body: JSON.stringify(payload)
+            });
+            const data = await response.json();
+            if (data.success || data.id) {
+                console.log(`File "${file.name}" stored in documents table with ID: ${data.id}`);
+                results.push({ id: data.id, fileName: file.name, success: true });
+            } else {
+                results.push({ fileName: file.name, success: false, error: data.error });
+            }
+        } catch (err) {
+            console.error(`Error uploading file "${file.name}" to documents:`, err);
+            results.push({ fileName: file.name, success: false, error: err.message });
+        }
+    }
+    return results;
+}
 
 
 
@@ -44146,6 +44193,11 @@ function saveContract() {
 
         
 
+        // Upload contract document file to documents table (with QR code)
+        const contractFileInput = document.getElementById('contractDocument');
+        if (contractFileInput && contractFileInput.files.length > 0) {
+            uploadFileToDocumentsTable(contractFileInput, 'contract', `Contract Document - ${contract.employee}`, `${contract.contractType} contract for ${contract.employee}. Salary: TZS ${contract.salary}. Start: ${contract.startDate}`).then(results => { const s = results.filter(r => r.success).length; if (s > 0) console.log(`Contract file(s) stored in documents table: ${s}`); });
+        }
         customAlert(`Contract saved successfully!\n\nEmployee: ${contract.employee}\nContract Type: ${contract.contractType}\nSalary: TZS ${contract.salary}\nContract ID: ${data.id}\n\n🎉 Contract saved to database!`, "Contract Saved", "success");
 
         
@@ -60246,6 +60298,11 @@ function saveSafetyViolation() {
 
         
 
+        // Upload violation evidence files to documents table (with QR code)
+        const violationEvidenceInput = document.getElementById('violationEvidence');
+        if (violationEvidenceInput && violationEvidenceInput.files.length > 0) {
+            uploadFileToDocumentsTable(violationEvidenceInput, 'osha', `Safety Violation Evidence - ${violation.type}`, `Evidence for safety violation ${violation.id}. Project: ${violation.project}. Severity: ${violation.severity}`).then(results => { const s = results.filter(r => r.success).length; if (s > 0) console.log(`Violation evidence stored: ${s}`); });
+        }
         customAlert(`Safety violation recorded successfully!\n\nID: ${violation.id}\nType: ${violation.type}\nSeverity: ${violation.severity}\nProject: ${violation.project}\nCorrective action required by: ${violation.deadline}\nViolation ID: ${data.id}\n\n🎉 Safety violation saved to database!`, "Violation Recorded", "success");
 
         
@@ -60396,6 +60453,15 @@ function saveInspectionReport() {
 
         
 
+        // Upload inspection documents and photos to documents table (with QR code)
+        const inspDocInput = document.getElementById('inspectionDocument');
+        if (inspDocInput && inspDocInput.files.length > 0) {
+            uploadFileToDocumentsTable(inspDocInput, 'osha', `Inspection Report - ${inspection.type}`, `Inspection report for ${inspection.project}. Inspector: ${inspection.inspector}. Compliance: ${inspection.compliance}`).then(results => { const s = results.filter(r => r.success).length; if (s > 0) console.log(`Inspection document(s) stored: ${s}`); });
+        }
+        const inspPhotosInput = document.getElementById('inspectionPhotos');
+        if (inspPhotosInput && inspPhotosInput.files.length > 0) {
+            uploadFileToDocumentsTable(inspPhotosInput, 'osha', `Inspection Photos - ${inspection.type}`, `Inspection photos for ${inspection.project}. Inspector: ${inspection.inspector}`).then(results => { const s = results.filter(r => r.success).length; if (s > 0) console.log(`Inspection photo(s) stored: ${s}`); });
+        }
         customAlert(`Inspection report uploaded successfully!\n\nID: ${inspection.id}\nType: ${inspection.type}\nCompliance: ${inspection.compliance}\nRisk Level: ${inspection.riskLevel}\nInspection ID: ${data.id}\n\n🎉 Inspection report saved to database!`, "Report Uploaded", "success");
 
         
@@ -84138,6 +84204,11 @@ function saveNewProperty() {
 
         
 
+        // Upload survey plans to documents table (with QR code)
+        const surveyPlansInput = document.getElementById('surveyPlans');
+        if (surveyPlansInput && surveyPlansInput.files.length > 0) {
+            uploadFileToDocumentsTable(surveyPlansInput, 'license', `Survey Plans - ${property.propertyName}`, `Survey plans for property ${property.propertyName}. Location: ${property.location}. Type: ${property.propertyType}`).then(results => { const s = results.filter(r => r.success).length; if (s > 0) console.log(`Survey plan(s) stored: ${s}`); });
+        }
         customAlert(`Property added successfully!\n\nPlot: ${property.propertyName}\nLocation: ${property.location}\nPrice: TZS ${parseInt(property.value).toLocaleString()}\nStatus: ${property.status}\nProperty ID: ${data.id}\n\n🎉 Property saved to database!`, "Property Added", "success");
 
         
@@ -84436,6 +84507,11 @@ async function saveNewSale(event) {
         if (response.ok) {
             console.log('✅ Sale recorded successfully in the database!', result);
             customAlert(`Sale recorded successfully!\n\nProperty: ${propertyName}\nClient: ${clientName}\nPrice: TZS ${parseInt(price).toLocaleString()}\nPayment Method: ${paymentMethod}\nStatus: ${paymentStatus}`, "Sale Recorded", "success");
+            // Upload sales agreement to documents table (with QR code)
+            const salesAgreementInput = document.getElementById('salesAgreement');
+            if (salesAgreementInput && salesAgreementInput.files.length > 0) {
+                uploadFileToDocumentsTable(salesAgreementInput, 'contract', `Sales Agreement - ${propertyName}`, `Sales agreement for ${propertyName} sold to ${clientName}. Price: TZS ${parseInt(price).toLocaleString()}`).then(results => { const s = results.filter(r => r.success).length; if (s > 0) console.log(`Sales agreement stored: ${s}`); });
+            }
             document.getElementById('saleForm').reset();
         } else {
             console.error('❌ Failed to record sale. Server response error:', result);
@@ -101693,6 +101769,11 @@ function showTaxPayments() {
 
                     await window.apiService.saveTaxPayment(formData);
 
+                    // Upload tax attachments to documents table (with QR code)
+                    const taxAttInput = taxForm.querySelector('#taxAttachments');
+                    if (taxAttInput && taxAttInput.files.length > 0) {
+                        uploadFileToDocumentsTable(taxAttInput, 'tin', `Tax Document - ${formData.taxType || 'Payment'}`, `Tax payment attachment. Amount: ${formData.amount || 'N/A'}. Reference: ${formData.paymentReference || 'N/A'}`).then(results => { const s = results.filter(r => r.success).length; if (s > 0) console.log(`Tax attachment(s) stored: ${s}`); });
+                    }
                     
 
                     showNotification('Tax payment saved successfully!', 'success');
