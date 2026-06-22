@@ -3187,6 +3187,46 @@ try {
     console.error('❌ Error loading risk management routes:', error);
 }
 
+// ===== COMPANY CARS ROUTES =====
+console.log('🔍 Loading company cars routes...');
+try {
+    const companyCarsRoutes = require('./routes/companyCars');
+    app.use('/api/company-cars', companyCarsRoutes);
+    console.log('✅ Company cars routes mounted at /api/company-cars');
+} catch (error) {
+    console.error('❌ Error loading company cars routes:', error);
+}
+
+// ===== LUGGAGE CAMPAIGNS ROUTES =====
+console.log('🔍 Loading luggage campaigns routes...');
+try {
+    const luggageCampaignsRoutes = require('./routes/luggageCampaigns');
+    app.use('/api/luggage-campaigns', luggageCampaignsRoutes);
+    console.log('✅ Luggage campaigns routes mounted at /api/luggage-campaigns');
+} catch (error) {
+    console.error('❌ Error loading luggage campaigns routes:', error);
+}
+
+// ===== LUGGAGE PURCHASES ROUTES =====
+console.log('🔍 Loading luggage purchases routes...');
+try {
+    const luggagePurchasesRoutes = require('./routes/luggagePurchases');
+    app.use('/api/luggage-purchases', luggagePurchasesRoutes);
+    console.log('✅ Luggage purchases routes mounted at /api/luggage-purchases');
+} catch (error) {
+    console.error('❌ Error loading luggage purchases routes:', error);
+}
+
+// ===== LUGGAGE PAYMENT TRACKING ROUTES =====
+console.log('🔍 Loading luggage payment tracking routes...');
+try {
+    const luggagePaymentTrackingRoutes = require('./routes/luggagePaymentTracking');
+    app.use('/api/luggage-payment-tracking', luggagePaymentTrackingRoutes);
+    console.log('✅ Luggage payment tracking routes mounted at /api/luggage-payment-tracking');
+} catch (error) {
+    console.error('❌ Error loading luggage payment tracking routes:', error);
+}
+
 // Transport Costs API endpoints for Fleet Management
 app.get('/api/transport-costs', async (req, res) => {
     let connection = null;
