@@ -82105,13 +82105,11 @@ async function loadPaymentStatistics() {
 
         const elOverdue = document.getElementById('overdueCount');
 
-        if (elActive) elActive.textContent = activeInstallments;
-
-        if (elOutstanding) elOutstanding.textContent = `TZS ${Number(outstanding).toLocaleString()}`;
-
-        if (elMonthly) elMonthly.textContent = `TZS ${Number(monthlyCollections).toLocaleString()}`;
-
-        if (elOverdue) elOverdue.textContent = overdueCount;
+        // Commented out as we now calculate this accurately in updatePaymentTable locally
+        // if (elActive) elActive.textContent = activeInstallments;
+        // if (elOutstanding) elOutstanding.textContent = `TZS ${Number(outstanding).toLocaleString()}`;
+        // if (elMonthly) elMonthly.textContent = `TZS ${Number(monthlyCollections).toLocaleString()}`;
+        // if (elOverdue) elOverdue.textContent = overdueCount;
 
     }
 
@@ -82150,14 +82148,53 @@ function updatePaymentTable(payments) {
     
 
     if (!payments || payments.length === 0) {
-
         tableBody.innerHTML = '<tr><td colspan="11" class="no-data">No payment data available</td></tr>';
-
         return;
-
     }
 
-    
+    let activeInstallments = 0;
+    let outstandingBalance = 0;
+    let monthlyCollections = 0;
+    let overdueCount = 0;
+    const currentMonth = new Date().getMonth();
+    const currentYear = new Date().getFullYear();
+
+    payments.forEach(payment => {
+        const totalAmount = Number(payment.total_amount || payment.amount || 0);
+        const paidAmount = Number(payment.paid_amount || (payment.payment_status === 'completed' ? totalAmount : 0));
+        const outstanding = Number(payment.outstanding_balance || Math.max(totalAmount - paidAmount, 0));
+        const paymentStatus = payment.payment_status || payment.status || 'pending';
+        const nextPaymentDate = payment.next_payment_date || payment.due_date || payment.payment_date;
+
+        if (paymentStatus === 'pending' || paymentStatus === 'processing' || (outstanding > 0 && paymentStatus !== 'completed')) {
+            activeInstallments++;
+        }
+
+        outstandingBalance += outstanding;
+
+        const paymentDateStr = payment.payment_date || payment.created_at || payment.updated_at;
+        if (paymentDateStr) {
+            const pDate = new Date(paymentDateStr);
+            if (pDate.getMonth() === currentMonth && pDate.getFullYear() === currentYear) {
+                monthlyCollections += paidAmount;
+            }
+        }
+
+        const isOverdue = nextPaymentDate && new Date(nextPaymentDate) < new Date() && paymentStatus !== 'completed';
+        if (isOverdue || paymentStatus === 'failed' || paymentStatus === 'overdue') {
+            overdueCount++;
+        }
+    });
+
+    const elActive = document.getElementById('activeInstallments');
+    const elOutstanding = document.getElementById('outstandingBalance');
+    const elMonthly = document.getElementById('monthlyCollections');
+    const elOverdue = document.getElementById('overdueCount');
+
+    if (elActive) elActive.textContent = activeInstallments;
+    if (elOutstanding) elOutstanding.textContent = `TZS ${Number(outstandingBalance).toLocaleString()}`;
+    if (elMonthly) elMonthly.textContent = `TZS ${Number(monthlyCollections).toLocaleString()}`;
+    if (elOverdue) elOverdue.textContent = overdueCount;
 
     tableBody.innerHTML = payments.map(payment => {
 
