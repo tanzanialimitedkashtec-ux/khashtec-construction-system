@@ -94208,27 +94208,21 @@ function searchPortal(searchTerm) {
 
     // Search personnel
 
-    const personnelRows = document.querySelectorAll('.personnel-row');
+    const personnelCards = document.querySelectorAll('.personnel-card');
 
-    personnelRows.forEach(row => {
+    personnelCards.forEach(card => {
 
-        const name = row.querySelector('.personnel-name strong')?.textContent.toLowerCase() || '';
+        const name = card.querySelector('.name')?.textContent.toLowerCase() || '';
 
-        const position = row.querySelector('.role-badge')?.textContent.toLowerCase() || '';
+        const position = card.querySelector('.role')?.textContent.toLowerCase() || card.dataset.role?.toLowerCase() || '';
 
-        const department = row.querySelector('.department-badge')?.textContent.toLowerCase() || '';
+        const department = card.querySelector('.dept')?.textContent.toLowerCase() || card.dataset.department?.toLowerCase() || '';
 
         
 
-        if (name.includes(term) || position.includes(term) || department.includes(term)) {
+        const matches = name.includes(term) || position.includes(term) || department.includes(term);
 
-            row.style.display = '';
-
-        } else {
-
-            row.style.display = 'none';
-
-        }
+        card.style.display = matches ? 'block' : 'none';
 
     });
 
@@ -94334,7 +94328,7 @@ function searchPortal(searchTerm) {
 
     // Show search results notification
 
-    const visibleRows = document.querySelectorAll('.personnel-row:not([style*="none"]), .document-card[style*="block"], .policy-card[style*="block"], .contract-card[style*="block"]').length;
+    const visibleRows = document.querySelectorAll('.personnel-card[style*="block"], .document-card[style*="block"], .policy-card[style*="block"], .contract-card[style*="block"]').length;
 
     showNotification('Search Results', `Found ${visibleRows} items matching "${searchTerm}"`, 'info');
 
@@ -94348,7 +94342,7 @@ function filterPortal(category) {
 
     
 
-    const allItems = document.querySelectorAll('.personnel-row, .document-card, .policy-card, .contract-card');
+    const allItems = document.querySelectorAll('.personnel-card, .document-card, .policy-card, .contract-card');
 
     let visibleCount = 0;
 
@@ -94360,21 +94354,19 @@ function filterPortal(category) {
 
         
 
-        if (item.classList.contains('personnel-row')) {
+        if (item.classList.contains('personnel-card')) {
 
-            // Handle table rows
+            const departmentBadge = item.querySelector('.dept');
 
-            const departmentBadge = item.querySelector('.department-badge');
+            const roleBadge = item.querySelector('.role');
 
-            const roleBadge = item.querySelector('.role-badge');
-
-            cardDepartment = departmentBadge?.textContent.toLowerCase() || '';
+            cardDepartment = departmentBadge?.textContent.toLowerCase() || item.dataset.department?.toLowerCase() || '';
 
             cardCategory = cardDepartment;
 
             cardType = cardDepartment;
 
-            cardRole = roleBadge?.textContent.toLowerCase() || '';
+            cardRole = roleBadge?.textContent.toLowerCase() || item.dataset.role?.toLowerCase() || '';
 
         } else {
 
