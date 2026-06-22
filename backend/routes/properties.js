@@ -8,6 +8,10 @@ let db;
 try {
     db = require('../../database/config/database');
     console.log('✅ Properties database connection loaded successfully');
+    // Ensure zoning column exists
+    db.execute("ALTER TABLE properties ADD COLUMN IF NOT EXISTS zoning VARCHAR(50) DEFAULT 'residential'")
+        .then(() => console.log('✅ Properties zoning column ensured'))
+        .catch(err => console.warn('⚠️ Zoning column check:', err.message));
 } catch (error) {
     console.error('❌ Properties database connection failed:', error);
 }
@@ -38,19 +42,31 @@ router.post('/', async (req, res) => {
         console.log('📝 Request body:', req.body);
         
         const {
-            plotNumber,
-            type,
+            plotNumber: plotNumberRaw,
+            propertyName,
+            type: typeRaw,
+            propertyType,
             location,
-            area,
-            price,
+            area: areaRaw,
+            size,
+            price: priceRaw,
+            value,
             status,
             tpNumber,
             description,
             utilities,
             zoning,
             addedBy,
-            addedDate
+            addedDate,
+            owner,
+            contactInfo
         } = req.body;
+        
+        // Support both field naming conventions
+        const plotNumber = plotNumberRaw || propertyName;
+        const type = typeRaw || propertyType;
+        const area = areaRaw || size;
+        const price = priceRaw || value;
         
         // Validate required fields
         if (!plotNumber || !type || !location || !area || !price) {
@@ -98,8 +114,8 @@ router.post('/', async (req, res) => {
             const query = `
                 INSERT INTO properties (
                     title, description, location, type, price, status, 
-                    size_sqm, created_at, updated_at
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, NOW(), NOW())
+                    size_sqm, zoning, created_at, updated_at
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())
             `;
             
             const values = [
@@ -109,7 +125,8 @@ router.post('/', async (req, res) => {
                 mappedType, // mapped type
                 parseFloat(price), // price
                 mappedStatus, // mapped status
-                parseFloat(area) // size_sqm
+                parseFloat(area), // size_sqm
+                zoning || 'residential' // zoning
             ];
             
             console.log('🔍 Query:', query);
@@ -130,7 +147,8 @@ router.post('/', async (req, res) => {
                     type: type,
                     price: parseFloat(price),
                     status: status || 'Available',
-                    size_sqm: parseFloat(area)
+                    size_sqm: parseFloat(area),
+                    zoning: zoning || 'residential'
                 }
             });
             

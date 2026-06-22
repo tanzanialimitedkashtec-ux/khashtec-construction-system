@@ -56717,6 +56717,8 @@ function saveNewProperty() {
 
         description: document.getElementById('propertyDescription').value,
 
+        zoning: document.getElementById('propertyZoning')?.value || 'residential',
+
         owner: document.getElementById('propertyOwner')?.value || '',
 
         contactInfo: document.getElementById('propertyContact')?.value || ''
@@ -56818,6 +56820,8 @@ function saveNewProperty() {
             status: property.status,
 
             description: property.description,
+
+            zoning: property.zoning,
 
             owner: property.owner,
 
