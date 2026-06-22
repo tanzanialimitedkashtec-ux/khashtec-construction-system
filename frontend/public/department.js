@@ -71175,7 +71175,7 @@ function showProcurementSales() {
 
                     <h3 style="margin: 0;">Procurement Sales</h3>
 
-                    <button onclick="showProcurementForm()" class="btn btn-primary" style="padding: 8px 16px; background: #2196F3; color: white; border: none; border-radius: 5px; cursor: pointer;">+ New Procurement</button>
+                    ${(typeof getCurrentUserRole === 'function' && getCurrentUserRole() === 'MD') ? '' : '<button onclick="showProcurementForm()" class="btn btn-primary" style="padding: 8px 16px; background: #2196F3; color: white; border: none; border-radius: 5px; cursor: pointer;">+ New Procurement</button>'}
 
                 </div>
 
@@ -71270,9 +71270,13 @@ function loadProcurementTable() {
             const statusColor = status === 'Completed' ? '#4CAF50' : status === 'Approved' ? '#2196F3' : status === 'Pending' ? '#FF9800' : status === 'Rejected' ? '#f44336' : status === 'Under Review' ? '#FFB300' : '#607D8B';
             const urgencyColor = urgency === 'Urgent' ? '#f44336' : urgency === 'High' ? '#FF9800' : urgency === 'Normal' ? '#4CAF50' : '#607D8B';
             const bgColor = idx % 2 === 0 ? '#fff' : '#f8f9fa';
+            const currentRole = (typeof getCurrentUserRole === 'function') ? getCurrentUserRole() : null;
+            const isManagingDirector = currentRole === 'MD';
             const actions = (status === 'Pending' || status === 'Under Review') ?
-                '<button onclick="approveProcurement(' + rec.id + ')" style="padding:3px 6px;border:none;background:#28a745;color:white;border-radius:3px;cursor:pointer;font-size:11px;margin-right:3px;" title="Approve">Approve</button>' +
-                '<button onclick="rejectProcurement(' + rec.id + ')" style="padding:3px 6px;border:none;background:#dc3545;color:white;border-radius:3px;cursor:pointer;font-size:11px;" title="Reject">Reject</button>'
+                (isManagingDirector ?
+                    '<button onclick="approveProcurement(' + rec.id + ')" style="padding:3px 6px;border:none;background:#28a745;color:white;border-radius:3px;cursor:pointer;font-size:11px;margin-right:3px;" title="Approve">Approve</button>' +
+                    '<button onclick="rejectProcurement(' + rec.id + ')" style="padding:3px 6px;border:none;background:#dc3545;color:white;border-radius:3px;cursor:pointer;font-size:11px;" title="Reject">Reject</button>'
+                    : '<span style="background:#e2e8f0;color:#64748b;padding:2px 8px;border-radius:8px;font-size:10px;white-space:nowrap;">🔒 Awaiting Approval</span>')
                 : '<span style="color:#aaa;">-</span>';
 
             tableHTML += '<tr style="background:' + bgColor + ';">';

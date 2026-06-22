@@ -98108,16 +98108,16 @@ function sendReminder(saleId) {
 
 .compliance-card {
     background: linear-gradient(145deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
-    border: 1px solid rgba(99, 102, 241, 0.25);
-    border-radius: 16px;
-    padding: 28px;
+    border: 2px solid rgba(99, 102, 241, 0.35);
+    border-radius: 14px;
+    padding: 18px;
     color: #e2e8f0;
     position: relative;
     overflow: hidden;
     box-shadow:
-        0 4px 24px rgba(0, 0, 0, 0.35),
-        0 1px 0 rgba(99, 102, 241, 0.15) inset;
-    animation: ccFadeIn 0.5s ease-out;
+        0 3px 16px rgba(0, 0, 0, 0.30),
+        0 1px 0 rgba(99, 102, 241, 0.12) inset;
+    animation: ccFadeIn 0.4s ease-out;
 }
 
 .compliance-card::before {
@@ -98133,7 +98133,7 @@ function sendReminder(saleId) {
 }
 
 @keyframes ccFadeIn {
-    from { opacity: 0; transform: translateY(12px); }
+    from { opacity: 0; transform: translateY(8px); }
     to   { opacity: 1; transform: translateY(0); }
 }
 
@@ -98147,24 +98147,24 @@ function sendReminder(saleId) {
 .cc-header {
     display: flex;
     align-items: center;
-    gap: 14px;
+    gap: 12px;
 }
 
 .cc-header-icon {
-    width: 44px;
-    height: 44px;
-    border-radius: 12px;
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
     background: linear-gradient(135deg, #6366f1, #8b5cf6);
     display: flex;
     align-items: center;
     justify-content: center;
     color: #fff;
     flex-shrink: 0;
-    box-shadow: 0 0 18px rgba(99, 102, 241, 0.35);
+    box-shadow: 0 0 12px rgba(99, 102, 241, 0.30);
 }
 
 .cc-title {
-    font-size: 18px;
+    font-size: 16px;
     font-weight: 700;
     color: #f1f5f9;
     margin: 0;
@@ -98172,7 +98172,7 @@ function sendReminder(saleId) {
 }
 
 .cc-subtitle {
-    font-size: 12px;
+    font-size: 11px;
     color: #94a3b8;
     margin: 2px 0 0;
 }
@@ -98182,22 +98182,22 @@ function sendReminder(saleId) {
 .cc-divider {
     height: 1px;
     background: linear-gradient(90deg, transparent, rgba(99, 102, 241, 0.3), transparent);
-    margin: 20px 0;
+    margin: 16px 0;
 }
 
 /* ── Upload Section ─────────────────────── */
 
 .cc-upload-section {
-    background: rgba(30, 41, 59, 0.6);
-    border: 1px solid rgba(99, 102, 241, 0.15);
+    background: rgba(30, 41, 59, 0.65);
+    border: 1px solid rgba(99, 102, 241, 0.18);
     border-radius: 12px;
-    padding: 16px;
+    padding: 12px;
     transition: border-color 0.3s ease, box-shadow 0.3s ease;
 }
 
 .cc-upload-section:hover {
     border-color: rgba(99, 102, 241, 0.35);
-    box-shadow: 0 0 12px rgba(99, 102, 241, 0.08);
+    box-shadow: 0 0 10px rgba(99, 102, 241, 0.08);
 }
 
 .cc-section-header {
@@ -98212,7 +98212,7 @@ function sendReminder(saleId) {
     display: flex;
     align-items: center;
     gap: 8px;
-    font-size: 13px;
+    font-size: 12px;
     font-weight: 600;
     color: #cbd5e1;
 }
@@ -98222,7 +98222,7 @@ function sendReminder(saleId) {
 }
 
 .cc-toggle-icon {
-    font-size: 14px;
+    font-size: 13px;
     color: #818cf8;
     transition: transform 0.3s ease;
     display: inline-block;
@@ -98235,18 +98235,18 @@ function sendReminder(saleId) {
 /* ── Upload Body ─────────────────────── */
 
 .cc-upload-body {
-    margin-top: 16px;
-    padding-top: 16px;
+    margin-top: 12px;
+    padding-top: 12px;
     border-top: 1px solid rgba(99, 102, 241, 0.12);
 }
 
 .cc-form-group {
-    margin-bottom: 14px;
+    margin-bottom: 12px;
 }
 
 .cc-label {
     display: block;
-    font-size: 11px;
+    font-size: 10px;
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.6px;
@@ -98256,8 +98256,8 @@ function sendReminder(saleId) {
 
 .cc-input {
     width: 100%;
-    padding: 10px 12px;
-    font-size: 13px;
+    padding: 8px 10px;
+    font-size: 12px;
     color: #e2e8f0;
     background: rgba(15, 23, 42, 0.7);
     border: 1px solid rgba(99, 102, 241, 0.2);
@@ -100877,7 +100877,7 @@ function showProcurementSales() {
 
                     <h3 style="margin: 0;">Procurement Sales</h3>
 
-                    <button onclick="showProcurementForm()" class="btn btn-primary" style="padding: 8px 16px; background: #2196F3; color: white; border: none; border-radius: 5px; cursor: pointer;">+ New Procurement</button>
+                    ${(typeof getCurrentUserRole === 'function' && getCurrentUserRole() === 'MD') ? '' : '<button onclick="showProcurementForm()" class="btn btn-primary" style="padding: 8px 16px; background: #2196F3; color: white; border: none; border-radius: 5px; cursor: pointer;">+ New Procurement</button>'}
 
                 </div>
 
@@ -100978,9 +100978,13 @@ function loadProcurementTable() {
             const statusColor = status === 'Completed' ? '#4CAF50' : status === 'Approved' ? '#2196F3' : status === 'Pending' ? '#FF9800' : status === 'Rejected' ? '#f44336' : status === 'Under Review' ? '#FFB300' : '#607D8B';
             const urgencyColor = urgency === 'Urgent' ? '#f44336' : urgency === 'High' ? '#FF9800' : urgency === 'Normal' ? '#4CAF50' : '#607D8B';
             const bgColor = idx % 2 === 0 ? '#fff' : '#f8f9fa';
+            const currentRole = (typeof getCurrentUserRole === 'function') ? getCurrentUserRole() : null;
+            const isManagingDirector = currentRole === 'MD';
             const actions = (status === 'Pending' || status === 'Under Review') ?
-                '<button onclick="approveProcurement(' + rec.id + ')" style="padding:3px 6px;border:none;background:#28a745;color:white;border-radius:3px;cursor:pointer;font-size:11px;margin-right:3px;" title="Approve">Approve</button>' +
-                '<button onclick="rejectProcurement(' + rec.id + ')" style="padding:3px 6px;border:none;background:#dc3545;color:white;border-radius:3px;cursor:pointer;font-size:11px;" title="Reject">Reject</button>'
+                (isManagingDirector ?
+                    '<button onclick="approveProcurement(' + rec.id + ')" style="padding:3px 6px;border:none;background:#28a745;color:white;border-radius:3px;cursor:pointer;font-size:11px;margin-right:3px;" title="Approve">Approve</button>' +
+                    '<button onclick="rejectProcurement(' + rec.id + ')" style="padding:3px 6px;border:none;background:#dc3545;color:white;border-radius:3px;cursor:pointer;font-size:11px;" title="Reject">Reject</button>'
+                    : '<span style="background:#e2e8f0;color:#64748b;padding:2px 8px;border-radius:8px;font-size:10px;white-space:nowrap;">🔒 Awaiting Approval</span>')
                 : '<span style="color:#aaa;">-</span>';
 
             tableHTML += '<tr style="background:' + bgColor + ';">';
