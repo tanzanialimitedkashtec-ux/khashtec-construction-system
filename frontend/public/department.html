@@ -100375,16 +100375,22 @@ function getCurrentUserRole() {
 
     
 
-    // Map role titles back to role keys
-
-    for (const [key, config] of Object.entries(roleMenus)) {
-
-        if (config.title === roleText) {
-
-            return key;
-
+    // First try mapping from roleDescriptions
+    if (typeof roleDescriptions !== 'undefined') {
+        for (const [key, desc] of Object.entries(roleDescriptions)) {
+            if (roleText === desc + ' Dashboard' || roleText === desc) {
+                return key;
+            }
         }
-
+    }
+    
+    // Fallback to roleMenus
+    if (typeof roleMenus !== 'undefined') {
+        for (const [key, config] of Object.entries(roleMenus)) {
+            if (config.title === roleText) {
+                return key;
+            }
+        }
     }
 
     return null;
