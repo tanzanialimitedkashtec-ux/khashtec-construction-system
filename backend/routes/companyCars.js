@@ -460,11 +460,13 @@ router.delete('/:id', async (req, res) => {
         const carId = req.params.id;
         const db = require('../../database/config/database');
         
-        // Check if car exists
-        const existingResult = await db.execute(
-            'SELECT id FROM vehicles WHERE id = ?',
-            [carId]
-        );
+        // Support deletion by numeric id or track_number
+        const isNumeric = /^\d+$/.test(carId);
+        const query = isNumeric
+            ? 'SELECT id FROM vehicles WHERE id = ?'
+            : 'SELECT id FROM vehicles WHERE track_number = ?';
+        
+        const existingResult = await db.execute(query, [carId]);
         
         // Handle different MySQL2 return formats
         const existing = Array.isArray(existingResult) ? existingResult[0] : existingResult;
@@ -476,8 +478,11 @@ router.delete('/:id', async (req, res) => {
             });
         }
 
-        // Delete car
-        await db.execute('DELETE FROM vehicles WHERE id = ?', [carId]);
+        // Delete car by the same field used for lookup
+        const deleteQuery = isNumeric
+            ? 'DELETE FROM vehicles WHERE id = ?'
+            : 'DELETE FROM vehicles WHERE track_number = ?';
+        await db.execute(deleteQuery, [carId]);
 
         res.status(200).json({
             success: true,
