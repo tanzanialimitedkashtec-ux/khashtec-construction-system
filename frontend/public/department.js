@@ -66261,8 +66261,6 @@ function renderOfficePortal(officePortalUsers, clients, documents, policies, con
 
                 <button class="tab-btn-compact" onclick="showPortalSection('documents')">ðŸ“„</button>
 
-                <button class="tab-btn-compact" onclick="showPortalSection('policies')">ðŸ“‹</button>
-
                 <button class="tab-btn-compact" onclick="showPortalSection('contracts')">ðŸ“</button>
 
                 <button class="tab-btn-compact" onclick="showPortalSection('analytics')">ðŸ“Š</button>
@@ -66759,7 +66757,7 @@ function showPortalSection(section) {
 
 
 
-function searchPortal(searchTerm) {
+window.searchPortal = function(searchTerm) {
 
     const term = searchTerm.toLowerCase();
 
