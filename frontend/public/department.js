@@ -51488,7 +51488,7 @@ function addProperty(){
 
                                 <option value="Sold">Sold</option>
 
-                                <option value="Available">Under Development</option>
+                                <option value="Under Development">Under Development</option>
 
                             </select>
 
@@ -52241,7 +52241,7 @@ function displayPropertiesRecords(records) {
 
             utilities: record.utilities || [],
 
-            zoning: record.zoning || 'residential',
+            zoning: record.zoning || record.propertyType || record.type || 'residential',
 
             dateAdded: record.dateAdded || record.created_at || new Date().toISOString()
 
