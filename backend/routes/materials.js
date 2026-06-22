@@ -220,24 +220,24 @@ router.get('/dashboard', async (req, res) => {
     try {
         if (!db) throw new Error('Database not available');
 
-        const [[inventoryCount]] = await db.execute('SELECT COUNT(*) as count FROM materials_inventory');
-        const [[totalStock]] = await db.execute('SELECT SUM(current_stock * unit_cost) as value FROM materials_inventory');
-        const [[inCount]] = await db.execute('SELECT COUNT(*) as count FROM materials_in');
-        const [[outCount]] = await db.execute('SELECT COUNT(*) as count FROM materials_out');
-        const [[lowStock]] = await db.execute('SELECT COUNT(*) as count FROM materials_inventory WHERE current_stock <= reorder_point');
-        const [[recentIn]] = await db.execute('SELECT SUM(total_cost) as total FROM materials_in WHERE receipt_date >= DATE_SUB(NOW(), INTERVAL 30 DAY)');
-        const [[recentOut]] = await db.execute('SELECT SUM(total_value) as total FROM materials_out WHERE issue_date >= DATE_SUB(NOW(), INTERVAL 30 DAY)');
+        const [inventoryCount] = await db.execute('SELECT COUNT(*) as count FROM materials_inventory');
+        const [totalStock] = await db.execute('SELECT SUM(current_stock * unit_cost) as value FROM materials_inventory');
+        const [inCount] = await db.execute('SELECT COUNT(*) as count FROM materials_in');
+        const [outCount] = await db.execute('SELECT COUNT(*) as count FROM materials_out');
+        const [lowStock] = await db.execute('SELECT COUNT(*) as count FROM materials_inventory WHERE current_stock <= reorder_point');
+        const [recentIn] = await db.execute('SELECT SUM(total_cost) as total FROM materials_in WHERE receipt_date >= DATE_SUB(NOW(), INTERVAL 30 DAY)');
+        const [recentOut] = await db.execute('SELECT SUM(total_value) as total FROM materials_out WHERE issue_date >= DATE_SUB(NOW(), INTERVAL 30 DAY)');
 
         res.json({
             success: true,
             data: {
-                totalMaterials: inventoryCount.count,
-                totalStockValue: totalStock.value || 0,
-                totalInTransactions: inCount.count,
-                totalOutTransactions: outCount.count,
-                lowStockItems: lowStock.count,
-                recentInValue: recentIn.total || 0,
-                recentOutValue: recentOut.total || 0
+                totalMaterials: inventoryCount?.count || 0,
+                totalStockValue: totalStock?.value || 0,
+                totalInTransactions: inCount?.count || 0,
+                totalOutTransactions: outCount?.count || 0,
+                lowStockItems: lowStock?.count || 0,
+                recentInValue: recentIn?.total || 0,
+                recentOutValue: recentOut?.total || 0
             }
         });
     } catch (error) {
