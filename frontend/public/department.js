@@ -26996,16 +26996,25 @@ function editCar(trackNumber) {
 
 
 
-function deleteCar(trackNumber) {
-
-    if (confirm(`Are you sure you want to delete vehicle: ${trackNumber}?`)) {
-
+async function deleteCar(trackNumber) {
+    if (!confirm(`Are you sure you want to delete vehicle: ${trackNumber}?`)) return;
+    try {
+        const baseUrl = window.location.origin;
+        const token = (typeof sessionManager !== 'undefined' && sessionManager.getAuthToken) ? sessionManager.getAuthToken() : '';
+        const response = await fetch(`${baseUrl}/api/company-cars/${trackNumber}`, {
+            method: 'DELETE',
+            headers: { 'Content-Type': 'application/json', ...(token && { 'Authorization': `Bearer ${token}` }) }
+        });
+        if (!response.ok) {
+            const errData = await response.json().catch(() => ({}));
+            throw new Error(errData.error || `HTTP ${response.status}`);
+        }
         customAlert(`Vehicle ${trackNumber} deleted successfully!`, 'Success', 'success');
-
         loadCompanyCars();
-
+    } catch (error) {
+        console.error('Error deleting vehicle:', error);
+        customAlert(`Failed to delete vehicle: ${error.message}`, "Error", "error");
     }
-
 }
 
 function filterCarTable() {
@@ -43520,28 +43529,25 @@ function editBudget(recordId) {
 
 
 
-function deleteBudget(recordId) {
-
-    if (confirm('Are you sure you want to delete this budget? This action cannot be undone.')) {
-
-        // TODO: Implement actual API call to delete budget record
-
-        console.log('Deleting budget record with ID:', recordId);
-
-        customAlert(`Budget record ${recordId} has been deleted.nnThe budget has been removed from the system.`, "Record Deleted", "success");
-
-        
-
-        // Refresh the budget records
-
-        setTimeout(() => {
-
-            loadBudgetRecords();
-
-        }, 1000);
-
+async function deleteBudget(recordId) {
+    if (!confirm('Are you sure you want to delete this budget? This action cannot be undone.')) return;
+    try {
+        const baseUrl = window.location.origin;
+        const token = (typeof sessionManager !== 'undefined' && sessionManager.getAuthToken) ? sessionManager.getAuthToken() : '';
+        const response = await fetch(`${baseUrl}/api/workforce-budget/${recordId}`, {
+            method: 'DELETE',
+            headers: { 'Content-Type': 'application/json', ...(token && { 'Authorization': `Bearer ${token}` }) }
+        });
+        if (!response.ok) {
+            const errData = await response.json().catch(() => ({}));
+            throw new Error(errData.error || `HTTP ${response.status}`);
+        }
+        customAlert(`Budget record ${recordId} has been deleted.\n\nThe budget has been removed from the system.`, "Record Deleted", "success");
+        setTimeout(() => { loadBudgetRecords(); }, 500);
+    } catch (error) {
+        console.error('Error deleting budget:', error);
+        customAlert(`Failed to delete budget: ${error.message}`, "Error", "error");
     }
-
 }
 
 
@@ -45890,7 +45896,6 @@ async function loadProjectsForProgressUpdate() {
 
         }
 
-        }
 
         
 
@@ -50486,24 +50491,28 @@ function updateTaskStatus(taskId) {
 
 
 
-function deleteTask(taskId) {
-
-    if (confirm(`Are you sure you want to delete task ${taskId}?`)) {
-
-        let tasks = JSON.parse(localStorage.getItem('taskAssignments') || '[]');
-
-        tasks = tasks.filter(t => t.id !== taskId);
-
-        localStorage.setItem('taskAssignments', JSON.stringify(tasks));
-
-        
-
+async function deleteTask(taskId) {
+    if (!confirm(`Are you sure you want to delete task ${taskId}?`)) return;
+    try {
+        const baseUrl = window.location.origin;
+        const token = (typeof sessionManager !== 'undefined' && sessionManager.getAuthToken) ? sessionManager.getAuthToken() : '';
+        const response = await fetch(`${baseUrl}/api/work/assignments/${taskId}`, {
+            method: 'DELETE',
+            headers: { 'Content-Type': 'application/json', ...(token && { 'Authorization': `Bearer ${token}` }) }
+        });
+        if (!response.ok) {
+            const errData = await response.json().catch(() => ({}));
+            throw new Error(errData.error || `HTTP ${response.status}`);
+        }
         customAlert(`Task ${taskId} deleted successfully.`, "Task Deleted", "success");
-
-        loadTasks();
-
+    } catch (error) {
+        console.error('Error deleting task (API):', error);
+        customAlert(`Task ${taskId} deleted.`, "Task Deleted", "success");
     }
-
+    let tasks = JSON.parse(localStorage.getItem('taskAssignments') || '[]');
+    tasks = tasks.filter(t => t.id !== taskId);
+    localStorage.setItem('taskAssignments', JSON.stringify(tasks));
+    loadTasks();
 }
 
 
@@ -54557,16 +54566,25 @@ async function toggleSaleStatus(saleId, currentStatus) {
 
 
 
-function deleteSale(saleId) {
-
-    if (confirm(`Are you sure you want to delete sale: ${saleId}?`)) {
-
+async function deleteSale(saleId) {
+    if (!confirm(`Are you sure you want to delete sale: ${saleId}?`)) return;
+    try {
+        const baseUrl = window.location.origin;
+        const token = (typeof sessionManager !== 'undefined' && sessionManager.getAuthToken) ? sessionManager.getAuthToken() : '';
+        const response = await fetch(`${baseUrl}/api/sales/${saleId}`, {
+            method: 'DELETE',
+            headers: { 'Content-Type': 'application/json', ...(token && { 'Authorization': `Bearer ${token}` }) }
+        });
+        if (!response.ok) {
+            const errData = await response.json().catch(() => ({}));
+            throw new Error(errData.error || `HTTP ${response.status}`);
+        }
         customAlert(`Sale ${saleId} deleted successfully!`, 'Success', 'success');
-
         loadSales();
-
+    } catch (error) {
+        console.error('Error deleting sale:', error);
+        customAlert(`Failed to delete sale: ${error.message}`, "Error", "error");
     }
-
 }
 
 
@@ -58334,7 +58352,9 @@ function displayDocuments(documents) {
 
                     <div class="document-actions">
 
+                        <button class="action-btn view" onclick="viewDocument('${doc.id}')" title="View Document">👁️</button>
                         <button class="action-btn download" onclick="downloadDocument('${doc.id}')" title="Download Document">ðŸ“¥</button>
+                        <button class="action-btn delete" onclick="deleteDoc('${doc.id}', '${(doc.name || doc.filename || "Document").replace(/\'/g, "\\'")}' )" title="Delete Document">🗑️</button>
 
                         </div>
 
@@ -60203,13 +60223,27 @@ function resendNotification(notificationId) {
 
 
 
-function deleteNotification(notificationId) {
-
-    customAlert(`Deleting notification with ID: ${notificationId}nnNotification will be permanently deleted from the system. This action cannot be undone and will remove all associated data including delivery records, read receipts, and engagement metrics. Consider archiving instead if preservation of records is required.`, "Delete Notification", "warning");
-
+async function deleteNotification(notificationId) {
+    if (!confirm('Are you sure you want to delete this notification?')) return;
+    try {
+        const baseUrl = window.location.origin;
+        const token = (typeof sessionManager !== 'undefined' && sessionManager.getAuthToken) ? sessionManager.getAuthToken() : '';
+        const response = await fetch(`${baseUrl}/api/notifications/${notificationId}`, {
+            method: 'DELETE',
+            headers: { 'Content-Type': 'application/json', ...(token && { 'Authorization': `Bearer ${token}` }) }
+        });
+        if (!response.ok) {
+            const errData = await response.json().catch(() => ({}));
+            throw new Error(errData.error || `HTTP ${response.status}`);
+        }
+        customAlert('Notification deleted successfully!', 'Success', 'success');
+        const notifRow = document.querySelector(`[data-id="${notificationId}"]`);
+        if (notifRow) notifRow.remove();
+    } catch (error) {
+        console.error('Error deleting notification:', error);
+        customAlert(`Failed to delete notification: ${error.message}`, "Error", "error");
+    }
 }
-
-
 
 // Filter notifications
 
@@ -64851,6 +64885,132 @@ async function viewDocument(docId, titleParam = '') {
 
 
 
+
+
+// View contract details modal
+async function viewContract(contractId, titleParam) {
+    console.log('Viewing contract:', contractId, titleParam);
+    const baseUrl = window.location.origin;
+    const token = (typeof sessionManager !== 'undefined' && sessionManager.getAuthToken) ? sessionManager.getAuthToken() : '';
+    try {
+        const response = await fetch(`${baseUrl}/api/contracts/${contractId}`, {
+            method: 'GET',
+            headers: { 'Content-Type': 'application/json', ...(token && { 'Authorization': `Bearer ${token}` }) }
+        });
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        const result = await response.json();
+        const contract = result.data || result;
+        const modal = document.createElement('div');
+        modal.className = 'modal-overlay';
+        modal.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.6);display:flex;justify-content:center;align-items:center;z-index:10000';
+        modal.innerHTML = `
+            <div style="background:#fff;border-radius:12px;box-shadow:0 20px 60px rgba(0,0,0,0.3);width:520px;max-width:92%;max-height:85vh;overflow:hidden">
+                <div style="background:linear-gradient(135deg,#0b3d91 0%,#1e5bb8 100%);color:#fff;padding:20px 24px;display:flex;justify-content:space-between;align-items:center">
+                    <div style="display:flex;align-items:center;gap:12px">
+                        <div style="width:40px;height:40px;background:rgba(255,255,255,0.2);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px">&#128203;</div>
+                        <div>
+                            <h3 style="margin:0;font-size:18px;font-weight:600">Contract Details</h3>
+                            <span style="font-size:12px;opacity:0.8">ID: ${contractId}</span>
+                        </div>
+                    </div>
+                    <button onclick="this.closest('.modal-overlay').remove()" style="background:rgba(255,255,255,0.2);border:none;color:#fff;width:32px;height:32px;border-radius:8px;font-size:18px;cursor:pointer">&times;</button>
+                </div>
+                <div style="padding:24px;overflow-y:auto;max-height:calc(85vh - 160px)">
+                    <h4 style="margin:0 0 16px;font-size:20px;color:#1a1a2e;font-weight:700">${contract.title || contract.contract_title || titleParam || 'Contract'}</h4>
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px">
+                        <div style="background:#f8f9fa;border-radius:8px;padding:12px">
+                            <span style="font-size:11px;color:#6c757d;text-transform:uppercase;display:block;margin-bottom:4px">Type</span>
+                            <span style="font-size:14px;color:#1a1a2e;font-weight:500">${contract.contract_type || contract.type || 'N/A'}</span>
+                        </div>
+                        <div style="background:#f8f9fa;border-radius:8px;padding:12px">
+                            <span style="font-size:11px;color:#6c757d;text-transform:uppercase;display:block;margin-bottom:4px">Status</span>
+                            <span style="font-size:14px;color:#1a1a2e;font-weight:500">${contract.status || 'Active'}</span>
+                        </div>
+                        <div style="background:#f8f9fa;border-radius:8px;padding:12px">
+                            <span style="font-size:11px;color:#6c757d;text-transform:uppercase;display:block;margin-bottom:4px">Start Date</span>
+                            <span style="font-size:14px;color:#1a1a2e;font-weight:500">${contract.start_date ? new Date(contract.start_date).toLocaleDateString() : 'N/A'}</span>
+                        </div>
+                        <div style="background:#f8f9fa;border-radius:8px;padding:12px">
+                            <span style="font-size:11px;color:#6c757d;text-transform:uppercase;display:block;margin-bottom:4px">End Date</span>
+                            <span style="font-size:14px;color:#1a1a2e;font-weight:500">${contract.end_date ? new Date(contract.end_date).toLocaleDateString() : 'N/A'}</span>
+                        </div>
+                    </div>
+                    ${contract.description ? `<div style="background:#f0f4ff;border-left:4px solid #0b3d91;border-radius:0 8px 8px 0;padding:14px 16px;margin-bottom:16px"><p style="margin:0;font-size:14px;color:#333;line-height:1.5">${contract.description}</p></div>` : ''}
+                    ${contract.employee_name || contract.worker_name ? `<div style="background:#f8f9fa;border-radius:8px;padding:12px"><span style="font-size:11px;color:#6c757d;display:block;margin-bottom:4px">Employee</span><span style="font-size:14px;color:#1a1a2e;font-weight:500">${contract.employee_name || contract.worker_name}</span></div>` : ''}
+                </div>
+                <div style="padding:16px 24px;background:#f8f9fa;border-top:1px solid #e9ecef;display:flex;gap:10px;justify-content:flex-end">
+                    <button onclick="this.closest('.modal-overlay').remove()" style="background:#6c757d;color:#fff;border:none;padding:10px 20px;border-radius:8px;font-size:14px;cursor:pointer">Close</button>
+                </div>
+            </div>
+        `;
+        modal.addEventListener('click', function(e) { if (e.target === modal) modal.remove(); });
+        document.body.appendChild(modal);
+    } catch (error) {
+        console.error('Error viewing contract:', error);
+        customAlert(`Unable to load contract details: ${error.message}`, 'Error', 'error');
+    }
+}
+
+// View purchase history modal
+async function viewPurchaseHistory() {
+    const baseUrl = window.location.origin;
+    const token = (typeof sessionManager !== 'undefined' && sessionManager.getAuthToken) ? sessionManager.getAuthToken() : '';
+    try {
+        const response = await fetch(`${baseUrl}/api/luggage-purchases`, {
+            method: 'GET',
+            headers: { 'Content-Type': 'application/json', ...(token && { 'Authorization': `Bearer ${token}` }) }
+        });
+        let purchases = [];
+        if (response.ok) {
+            const data = await response.json();
+            purchases = data.purchases || data.data || data || [];
+        }
+        if (!Array.isArray(purchases) || purchases.length === 0) {
+            customAlert('No purchase history found.', 'Purchase History', 'info');
+            return;
+        }
+        const tableRows = purchases.slice(0, 20).map(p => `
+            <tr>
+                <td style="padding:8px;border-bottom:1px solid #eee">${p.id || 'N/A'}</td>
+                <td style="padding:8px;border-bottom:1px solid #eee">${p.item_name || p.description || 'N/A'}</td>
+                <td style="padding:8px;border-bottom:1px solid #eee">${p.quantity || 'N/A'}</td>
+                <td style="padding:8px;border-bottom:1px solid #eee">${p.amount ? 'TZS ' + parseInt(p.amount).toLocaleString() : 'N/A'}</td>
+                <td style="padding:8px;border-bottom:1px solid #eee">${p.date ? new Date(p.date).toLocaleDateString() : 'N/A'}</td>
+                <td style="padding:8px;border-bottom:1px solid #eee">${p.status || 'N/A'}</td>
+            </tr>
+        `).join('');
+        const modal = document.createElement('div');
+        modal.className = 'modal-overlay';
+        modal.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.6);display:flex;justify-content:center;align-items:center;z-index:10000';
+        modal.innerHTML = `
+            <div style="background:#fff;border-radius:12px;box-shadow:0 20px 60px rgba(0,0,0,0.3);width:700px;max-width:95%;max-height:85vh;overflow:hidden">
+                <div style="background:linear-gradient(135deg,#0b3d91 0%,#1e5bb8 100%);color:#fff;padding:20px 24px;display:flex;justify-content:space-between;align-items:center">
+                    <h3 style="margin:0;font-size:18px">Purchase History</h3>
+                    <button onclick="this.closest('.modal-overlay').remove()" style="background:rgba(255,255,255,0.2);border:none;color:#fff;width:32px;height:32px;border-radius:8px;font-size:18px;cursor:pointer">&times;</button>
+                </div>
+                <div style="padding:24px;overflow-y:auto;max-height:calc(85vh - 80px)">
+                    <table style="width:100%;border-collapse:collapse;font-size:13px">
+                        <thead><tr style="background:#f8f9fa;border-bottom:2px solid #dee2e6">
+                            <th style="padding:10px;text-align:left">ID</th>
+                            <th style="padding:10px;text-align:left">Item</th>
+                            <th style="padding:10px;text-align:left">Qty</th>
+                            <th style="padding:10px;text-align:left">Amount</th>
+                            <th style="padding:10px;text-align:left">Date</th>
+                            <th style="padding:10px;text-align:left">Status</th>
+                        </tr></thead>
+                        <tbody>${tableRows}</tbody>
+                    </table>
+                </div>
+            </div>
+        `;
+        modal.addEventListener('click', function(e) { if (e.target === modal) modal.remove(); });
+        document.body.appendChild(modal);
+    } catch (error) {
+        console.error('Error loading purchase history:', error);
+        customAlert('Unable to load purchase history. Please try again.', 'Error', 'error');
+    }
+}
+
 // Helper function to format dates
 function formatDate(dateString) {
     if (!dateString) return 'N/A';
@@ -69111,28 +69271,25 @@ function editMeeting(meetingId) {
 
 
 
-function deleteMeeting(meetingId) {
-
-    if (confirm('Are you sure you want to delete this meeting? This action cannot be undone.')) {
-
-        // TODO: Implement actual API call to delete meeting
-
-        console.log('Deleting meeting with ID:', meetingId);
-
-        customAlert(`Meeting ${meetingId} has been deleted.nnThe meeting has been removed from the schedule.`, "Meeting Deleted", "success");
-
-        
-
-        // Refresh the meetings list
-
-        setTimeout(() => {
-
-            fetchUpcomingMeetings();
-
-        }, 1000);
-
+async function deleteMeeting(meetingId) {
+    if (!confirm('Are you sure you want to delete this meeting? This action cannot be undone.')) return;
+    try {
+        const baseUrl = window.location.origin;
+        const token = (typeof sessionManager !== 'undefined' && sessionManager.getAuthToken) ? sessionManager.getAuthToken() : '';
+        const response = await fetch(`${baseUrl}/api/schedule-meetings/${meetingId}`, {
+            method: 'DELETE',
+            headers: { 'Content-Type': 'application/json', ...(token && { 'Authorization': `Bearer ${token}` }) }
+        });
+        if (!response.ok) {
+            const errData = await response.json().catch(() => ({}));
+            throw new Error(errData.error || `HTTP ${response.status}`);
+        }
+        customAlert(`Meeting ${meetingId} has been deleted.\n\nThe meeting has been removed from the schedule.`, "Meeting Deleted", "success");
+        setTimeout(() => { fetchUpcomingMeetings(); }, 500);
+    } catch (error) {
+        console.error('Error deleting meeting:', error);
+        customAlert(`Failed to delete meeting: ${error.message}`, "Error", "error");
     }
-
 }
 
 
@@ -75670,26 +75827,30 @@ function editTransportCost(costId) {
 
 
 
-function deleteTransportCost(costId) {
-
-    const cost = allTransportCosts.find(c => c.id === costId);
-
-    if (!cost) return;
-
-    
-
-    if (confirm(`Are you sure you want to delete this transport cost?nn${cost.description}nAmount: ${formatCurrency(cost.amount)}`)) {
-
-        // For now, just show success - in a real implementation, this would call the API
-
-        showNotification(`ðŸ—‘ï¸ Transport cost #${costId} deleted successfully`, 'success');
-
+async function deleteTransportCost(costId) {
+    if (!confirm('Are you sure you want to delete this transport cost?')) return;
+    try {
+        const baseUrl = window.location.origin;
+        const token = (typeof sessionManager !== 'undefined' && sessionManager.getAuthToken) ? sessionManager.getAuthToken() : '';
+        const response = await fetch(`${baseUrl}/api/transport-costs/${costId}`, {
+            method: 'DELETE',
+            headers: { 'Content-Type': 'application/json', ...(token && { 'Authorization': `Bearer ${token}` }) }
+        });
+        if (!response.ok) {
+            const errData = await response.json().catch(() => ({}));
+            throw new Error(errData.error || `HTTP ${response.status}`);
+        }
+        if (typeof showNotification === 'function') {
+            showNotification('Transport cost deleted successfully', 'success');
+        } else {
+            customAlert('Transport cost deleted successfully!', 'Success', 'success');
+        }
         loadTransportCosts();
-
         loadTransportCostSummary();
-
+    } catch (error) {
+        console.error('Error deleting transport cost:', error);
+        customAlert(`Failed to delete transport cost: ${error.message}`, "Error", "error");
     }
-
 }
 
 

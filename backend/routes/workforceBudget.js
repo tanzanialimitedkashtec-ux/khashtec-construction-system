@@ -294,4 +294,24 @@ router.post('/:id/modify', async (req, res) => {
     }
 });
 
+// Delete workforce budget
+router.delete('/:id', async (req, res) => {
+    try {
+        const { id } = req.params;
+        console.log('🗑️ Deleting workforce budget:', id);
+
+        const [result] = await db.execute('DELETE FROM workforce_budgets WHERE id = ?', [id]);
+
+        if (result.affectedRows === 0) {
+            return res.status(404).json({ error: 'Budget record not found' });
+        }
+
+        console.log('✅ Workforce budget deleted successfully');
+        res.json({ message: 'Budget record deleted successfully', id: parseInt(id) });
+    } catch (error) {
+        console.error('❌ Error deleting workforce budget:', error);
+        res.status(500).json({ error: 'Failed to delete budget record' });
+    }
+});
+
 module.exports = router;
