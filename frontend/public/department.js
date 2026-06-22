@@ -70568,8 +70568,6 @@ const roleMenus = {
 
             'System Audit Dashboard',
 
-            'Approve Violation',
-
             'Materials Management'
 
         ]
@@ -70608,7 +70606,9 @@ const roleMenus = {
 
             'View Employee List',
 
-            'Office Portal'
+            'Office Portal',
+
+            'Approve Violation'
 
         ]
 
