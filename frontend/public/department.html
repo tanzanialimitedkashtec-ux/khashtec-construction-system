@@ -89940,98 +89940,84 @@ async function complianceManagement(){
 
     const formHtml = `
 
-        <div class="card">
+        <div class="card compliance-card">
 
-            <h3>Compliance Management</h3>       
+            <div class="cc-header">
+                <div class="cc-header-icon">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                        <path d="M9 12l2 2 4-4"/>
+                    </svg>
+                </div>
+                <div>
+                    <h3 class="cc-title">Compliance Management</h3>
+                    <p class="cc-subtitle">Manage certificates &amp; regulatory documents</p>
+                </div>
+            </div>
 
-            <div class="doc-upload collapsed" id="docUpload">
+            <div class="cc-divider"></div>
 
-                <div class="doc-upload-header" style="display:flex;align-items:center;justify-content:space-between;gap:6px">
-
-                    <h4 style="font-size:12px;margin:0">Upload Company Certificates</h4>
-
-                    <button class="toggle-btn" id="docToggle" aria-expanded="false" onclick="toggleDocUpload()" style="background:#007bff;color:#fff;border:none;padding:4px 6px;font-size:11px;border-radius:4px;cursor:pointer;line-height:1">
-
-                        <span class="toggle-arrow">▸</span>
-
-                    </button>
-
+            <div class="cc-upload-section collapsed" id="docUpload">
+                <div class="cc-section-header" id="docToggle" onclick="toggleDocUpload()" aria-expanded="false">
+                    <div class="cc-section-label">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                            <polyline points="17 8 12 3 7 8"/>
+                            <line x1="12" y1="3" x2="12" y2="15"/>
+                        </svg>
+                        <span>Upload Company Certificates</span>
+                    </div>
+                    <span class="cc-toggle-icon">&#9654;</span>
                 </div>
 
-                <div class="doc-upload-body" id="docUploadBody" style="margin-top:8px;display:none">
-
-                    <div class="form-group" style="margin-bottom:6px">
-
-                        <label style="display:block;font-size:11px;margin-bottom:3px;color:#333">Certificate Type</label>
-
-                        <select id="certType" style="width:100%;font-size:11px;padding:4px;border:1px solid #ccc;border-radius:4px;box-sizing:border-box">
-
+                <div class="cc-upload-body" id="docUploadBody" style="display:none">
+                    <div class="cc-form-group">
+                        <label class="cc-label">Certificate Type</label>
+                        <select id="certType" class="cc-input">
                             <option value="">Select Type</option>
-
                             <option value="tin">TIN Certificate</option>
-
                             <option value="vrn">VRN Certificate</option>
-
                             <option value="crb">CRB Certificate</option>
-
                             <option value="license">Business License</option>
-
                             <option value="osha">OSHA Compliance</option>
-
                             <option value="nssf">NSSF Compliance</option>
-
                             <option value="wcf">WCF Compliance</option>
-
                         </select>
-
                     </div>
 
-                    <div class="form-group" style="margin-bottom:6px">
-
-                        <label style="display:block;font-size:11px;margin-bottom:3px;color:#333">Document File</label>
-
-                        <input type="file" id="certFile" accept=".pdf,.jpg,.jpeg,.png" style="width:100%;font-size:11px;padding:4px;border:1px solid #ccc;border-radius:4px;box-sizing:border-box" />
-
+                    <div class="cc-form-group">
+                        <label class="cc-label">Document File</label>
+                        <input type="file" id="certFile" accept=".pdf,.jpg,.jpeg,.png" class="cc-input cc-file-input" />
                     </div>
 
-                    <div class="form-group" style="margin-bottom:6px">
-
-                        <label style="display:block;font-size:11px;margin-bottom:3px;color:#333">Expiry Date</label>
-
-                        <input type="date" id="certExpiry" style="width:100%;font-size:11px;padding:4px;border:1px solid #ccc;border-radius:4px;box-sizing:border-box" />
-
+                    <div class="cc-form-group">
+                        <label class="cc-label">Expiry Date</label>
+                        <input type="date" id="certExpiry" class="cc-input" />
                     </div>
 
-                    <div class="form-group" style="margin-bottom:6px">
-
-                        <label style="display:block;font-size:11px;margin-bottom:3px;color:#333">Description</label>
-
-                        <textarea id="certDescription" placeholder="Enter certificate description..." style="width:100%;font-size:11px;padding:4px;border:1px solid #ccc;border-radius:4px;box-sizing:border-box;height:44px;resize:vertical"></textarea>
-
+                    <div class="cc-form-group">
+                        <label class="cc-label">Description</label>
+                        <textarea id="certDescription" placeholder="Enter certificate description..." class="cc-input cc-textarea"></textarea>
                     </div>
 
-                    <button class="action" onclick="uploadCertificate()" style="width:100%;padding:6px;font-size:11px;border-radius:4px;border:none;background:#28a745;color:#fff;cursor:pointer">Upload Certificate</button>
-
+                    <button class="cc-upload-btn" onclick="uploadCertificate()">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                        Upload Certificate
+                    </button>
                 </div>
-
             </div>
 
-            
-
-            <div class="compliance-actions" style="margin-top:20px;">
-
-                <h4>Quick Actions</h4>
-
-                <button class="action-btn" onclick="documentManagement()">View All Documents</button>
-
+            <div class="cc-quick-actions">
+                <h4 class="cc-section-title">Quick Actions</h4>
+                <button class="cc-action-btn" onclick="documentManagement()">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+                    View All Documents
+                </button>
             </div>
 
-            
-
-            <div class="disclaimer" style="margin-top:20px;">
-
-                <p><strong>Note:</strong> Upload certificates in PDF, JPG, or PNG format. Maximum file size: 10MB.</p>
-
+            <div class="cc-disclaimer">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+                <p>Upload certificates in PDF, JPG, or PNG format. Maximum file size: 10MB.</p>
             </div>
 
         </div>`;
@@ -98116,6 +98102,326 @@ function sendReminder(saleId) {
 
     min-height: 80px;
 
+}
+
+/* ── Premium Compliance Card Styles ─────────────────────── */
+
+.compliance-card {
+    background: linear-gradient(145deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
+    border: 1px solid rgba(99, 102, 241, 0.25);
+    border-radius: 16px;
+    padding: 28px;
+    color: #e2e8f0;
+    position: relative;
+    overflow: hidden;
+    box-shadow:
+        0 4px 24px rgba(0, 0, 0, 0.35),
+        0 1px 0 rgba(99, 102, 241, 0.15) inset;
+    animation: ccFadeIn 0.5s ease-out;
+}
+
+.compliance-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, #6366f1, #8b5cf6, #a78bfa, #6366f1);
+    background-size: 200% 100%;
+    animation: ccGradientSlide 4s ease infinite;
+}
+
+@keyframes ccFadeIn {
+    from { opacity: 0; transform: translateY(12px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes ccGradientSlide {
+    0%, 100% { background-position: 0% 50%; }
+    50%      { background-position: 100% 50%; }
+}
+
+/* ── Header ─────────────────────── */
+
+.cc-header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.cc-header-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    flex-shrink: 0;
+    box-shadow: 0 0 18px rgba(99, 102, 241, 0.35);
+}
+
+.cc-title {
+    font-size: 18px;
+    font-weight: 700;
+    color: #f1f5f9;
+    margin: 0;
+    letter-spacing: -0.3px;
+}
+
+.cc-subtitle {
+    font-size: 12px;
+    color: #94a3b8;
+    margin: 2px 0 0;
+}
+
+/* ── Divider ─────────────────────── */
+
+.cc-divider {
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(99, 102, 241, 0.3), transparent);
+    margin: 20px 0;
+}
+
+/* ── Upload Section ─────────────────────── */
+
+.cc-upload-section {
+    background: rgba(30, 41, 59, 0.6);
+    border: 1px solid rgba(99, 102, 241, 0.15);
+    border-radius: 12px;
+    padding: 16px;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.cc-upload-section:hover {
+    border-color: rgba(99, 102, 241, 0.35);
+    box-shadow: 0 0 12px rgba(99, 102, 241, 0.08);
+}
+
+.cc-section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    cursor: pointer;
+    user-select: none;
+}
+
+.cc-section-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #cbd5e1;
+}
+
+.cc-section-label svg {
+    color: #818cf8;
+}
+
+.cc-toggle-icon {
+    font-size: 14px;
+    color: #818cf8;
+    transition: transform 0.3s ease;
+    display: inline-block;
+}
+
+.cc-upload-section:not(.collapsed) .cc-toggle-icon {
+    transform: rotate(90deg);
+}
+
+/* ── Upload Body ─────────────────────── */
+
+.cc-upload-body {
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px solid rgba(99, 102, 241, 0.12);
+}
+
+.cc-form-group {
+    margin-bottom: 14px;
+}
+
+.cc-label {
+    display: block;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    color: #94a3b8;
+    margin-bottom: 6px;
+}
+
+.cc-input {
+    width: 100%;
+    padding: 10px 12px;
+    font-size: 13px;
+    color: #e2e8f0;
+    background: rgba(15, 23, 42, 0.7);
+    border: 1px solid rgba(99, 102, 241, 0.2);
+    border-radius: 8px;
+    box-sizing: border-box;
+    transition: border-color 0.25s ease, box-shadow 0.25s ease, background 0.25s ease;
+    outline: none;
+    font-family: inherit;
+}
+
+.cc-input:focus {
+    border-color: #6366f1;
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
+    background: rgba(15, 23, 42, 0.9);
+}
+
+.cc-input::placeholder {
+    color: #64748b;
+}
+
+.cc-input option {
+    background: #1e293b;
+    color: #e2e8f0;
+}
+
+.cc-file-input {
+    padding: 8px 10px;
+    cursor: pointer;
+}
+
+.cc-file-input::file-selector-button {
+    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+    color: #fff;
+    border: none;
+    padding: 5px 12px;
+    border-radius: 6px;
+    font-size: 11px;
+    font-weight: 600;
+    cursor: pointer;
+    margin-right: 10px;
+    transition: opacity 0.2s ease;
+}
+
+.cc-file-input::file-selector-button:hover {
+    opacity: 0.85;
+}
+
+.cc-textarea {
+    min-height: 60px;
+    resize: vertical;
+}
+
+/* ── Upload Button ─────────────────────── */
+
+.cc-upload-btn {
+    width: 100%;
+    padding: 11px 16px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #fff;
+    background: linear-gradient(135deg, #059669, #10b981);
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: transform 0.2s ease, box-shadow 0.2s ease, opacity 0.2s ease;
+    box-shadow: 0 2px 10px rgba(16, 185, 129, 0.25);
+}
+
+.cc-upload-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 16px rgba(16, 185, 129, 0.35);
+}
+
+.cc-upload-btn:active {
+    transform: translateY(0);
+}
+
+/* ── Quick Actions ─────────────────────── */
+
+.cc-quick-actions {
+    margin-top: 22px;
+}
+
+.cc-section-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: #94a3b8;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    margin: 0 0 12px;
+}
+
+.cc-action-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 18px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #c7d2fe;
+    background: rgba(99, 102, 241, 0.12);
+    border: 1px solid rgba(99, 102, 241, 0.25);
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.25s ease;
+}
+
+.cc-action-btn:hover {
+    background: rgba(99, 102, 241, 0.22);
+    border-color: rgba(99, 102, 241, 0.45);
+    color: #e0e7ff;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.15);
+}
+
+.cc-action-btn svg {
+    color: #818cf8;
+}
+
+/* ── Disclaimer ─────────────────────── */
+
+.cc-disclaimer {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    margin-top: 20px;
+    padding: 12px 14px;
+    background: rgba(99, 102, 241, 0.06);
+    border: 1px solid rgba(99, 102, 241, 0.12);
+    border-radius: 10px;
+}
+
+.cc-disclaimer svg {
+    color: #818cf8;
+    flex-shrink: 0;
+    margin-top: 1px;
+}
+
+.cc-disclaimer p {
+    margin: 0;
+    font-size: 12px;
+    color: #94a3b8;
+    line-height: 1.5;
+}
+
+/* ── Responsive ─────────────────────── */
+
+@media (max-width: 480px) {
+    .compliance-card {
+        padding: 18px;
+        border-radius: 12px;
+    }
+    .cc-header-icon {
+        width: 36px;
+        height: 36px;
+        border-radius: 10px;
+    }
+    .cc-title {
+        font-size: 15px;
+    }
 }
 
 
