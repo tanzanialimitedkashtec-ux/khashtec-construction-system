@@ -70568,6 +70568,8 @@ const roleMenus = {
 
             'System Audit Dashboard',
 
+            'Approve Violation',
+
             'Materials Management'
 
         ]
