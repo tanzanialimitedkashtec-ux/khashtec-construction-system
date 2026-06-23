@@ -50544,16 +50544,28 @@ function editCar(trackNumber) {
 
 
 
-function deleteCar(trackNumber) {
-
-    if (confirm(`Are you sure you want to delete vehicle: ${trackNumber}?`)) {
-
+async function deleteCar(trackNumber) {
+    if (!confirm(`Are you sure you want to delete vehicle: ${trackNumber}?`)) return;
+    try {
+        const baseUrl = window.location.origin;
+        const token = (typeof sessionManager !== 'undefined' && sessionManager.getAuthToken) ? sessionManager.getAuthToken() : '';
+        const response = await fetch(`${baseUrl}/api/company-cars/${encodeURIComponent(trackNumber)}`, {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json',
+                ...(token && { 'Authorization': `Bearer ${token}` })
+            }
+        });
+        const data = await response.json().catch(() => ({}));
+        if (!response.ok || data.success === false) {
+            throw new Error(data.message || data.error || `HTTP ${response.status}`);
+        }
         customAlert(`Vehicle ${trackNumber} deleted successfully!`, 'Success', 'success');
-
         loadCompanyCars();
-
+    } catch (error) {
+        console.error('Error deleting vehicle:', error);
+        customAlert(`Failed to delete vehicle: ${error.message}`, "Error", "error");
     }
-
 }
 
 

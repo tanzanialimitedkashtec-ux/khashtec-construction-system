@@ -409,9 +409,11 @@ router.put('/:id', async (req, res) => {
         );
         
         // Handle different MySQL2 return formats
-        const existing = Array.isArray(existingResult) ? existingResult[0] : existingResult;
+        const existing = Array.isArray(existingResult)
+            ? (Array.isArray(existingResult[0]) ? existingResult[0] : existingResult)
+            : (existingResult && existingResult.rows ? existingResult.rows : []);
         
-        if (existing.length === 0) {
+        if (!existing || existing.length === 0) {
             return res.status(404).json({
                 success: false,
                 message: 'Company car not found'

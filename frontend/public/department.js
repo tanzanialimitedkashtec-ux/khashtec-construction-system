@@ -27001,13 +27001,13 @@ async function deleteCar(trackNumber) {
     try {
         const baseUrl = window.location.origin;
         const token = (typeof sessionManager !== 'undefined' && sessionManager.getAuthToken) ? sessionManager.getAuthToken() : '';
-        const response = await fetch(`${baseUrl}/api/company-cars/${trackNumber}`, {
+        const response = await fetch(`${baseUrl}/api/company-cars/${encodeURIComponent(trackNumber)}`, {
             method: 'DELETE',
             headers: { 'Content-Type': 'application/json', ...(token && { 'Authorization': `Bearer ${token}` }) }
         });
-        if (!response.ok) {
-            const errData = await response.json().catch(() => ({}));
-            throw new Error(errData.error || `HTTP ${response.status}`);
+        const data = await response.json().catch(() => ({}));
+        if (!response.ok || data.success === false) {
+            throw new Error(data.message || data.error || `HTTP ${response.status}`);
         }
         customAlert(`Vehicle ${trackNumber} deleted successfully!`, 'Success', 'success');
         loadCompanyCars();
