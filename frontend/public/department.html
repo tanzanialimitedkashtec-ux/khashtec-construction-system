@@ -79930,9 +79930,9 @@ function displayPropertiesRecords(records) {
 
                     <div class="property-actions">
 
-                        <button class="action-btn view" onclick="viewPropertyDetails('${record.id}')" title="View Details">👁️</button>
+                        <button class="action-btn view" onclick="viewPropertyDetails('${record.id}')" title="View Details">&#128065;</button>
 
-                        <button class="action-btn delete" onclick="deleteProperty('${record.id}')" title="Delete Property">🗑️</button>
+                        <button class="action-btn delete" onclick="deleteProperty('${record.id}')" title="Delete Property">&#128465;</button>
 
                     </div>
 
@@ -79946,6 +79946,8 @@ function displayPropertiesRecords(records) {
 
     
 
+    window._propertiesRecordsCache = mappedRecords;
+
     recordsList.innerHTML = recordsHTML;
 
 }
@@ -79954,10 +79956,119 @@ function displayPropertiesRecords(records) {
 
 // Property action functions
 
-function viewPropertyDetails(propertyId) {
+function normalizePropertyUtilities(value) {
+    if (Array.isArray(value)) return value;
+    if (typeof value !== 'string') return [];
 
-    customAlert(`Viewing property details for ID: ${propertyId}\n\nFull property information including location details, utilities, zoning regulations, survey plans, title deeds, and property descriptions will be displayed.`, "Property Details", "info");
+    const trimmed = value.trim();
+    if (!trimmed || trimmed === '[]') return [];
 
+    try {
+        const parsed = JSON.parse(trimmed);
+        return Array.isArray(parsed) ? parsed : [];
+    } catch (e) {
+        return trimmed.split(',').map(item => item.trim()).filter(Boolean);
+    }
+}
+
+function getPropertyZoningLabel(value) {
+    const zoningMap = {
+        residential: 'Residential',
+        commercial: 'Commercial',
+        mixed: 'Mixed Use',
+        'mixed-use': 'Mixed Use'
+    };
+    const key = String(value || '').trim().toLowerCase();
+    return zoningMap[key] || 'Not specified';
+}
+
+function getPropertyUtilityLabel(value) {
+    const utilityMap = {
+        water: 'Water',
+        electricity: 'Electricity',
+        road: 'Road Access',
+        sewage: 'Sewage System'
+    };
+    const key = String(value || '').trim().toLowerCase();
+    return utilityMap[key] || value;
+}
+
+function formatPropertyDetails(record) {
+    const title = record.plotNumber || record.propertyName || record.property_name || record.name || record.title || `Property ${record.id}`;
+    const area = Number(record.area || record.size_sqm || record.size || 0);
+    const price = Number(record.price || record.value || 0);
+    const utilities = normalizePropertyUtilities(record.utilities).map(getPropertyUtilityLabel);
+    const zoning = getPropertyZoningLabel(record.zoning);
+
+    return [
+        `Plot Number: ${String(title).replace(/^Property\s+/i, '')}`,
+        `Property Type: ${record.propertyType || record.property_type || record.type || 'Not specified'}`,
+        `Location: ${record.location || 'Not specified'}`,
+        `Area: ${area ? area.toLocaleString() + ' sqm' : 'Not specified'}`,
+        `Price: ${price ? 'TZS ' + price.toLocaleString() : 'Not specified'}`,
+        `Status: ${record.status || 'Not specified'}`,
+        `TP Number: ${record.tpNumber || record.tp_number || '-'}`,
+        `Description: ${record.description || '-'}`,
+        `Utilities: ${utilities.length ? utilities.join(', ') : 'None'}`,
+        `Zoning: ${zoning}`
+    ].join('\n');
+}
+
+async function viewPropertyDetails(propertyId) {
+    try {
+        let property = (window._propertiesRecordsCache || []).find(item => String(item.id) === String(propertyId));
+
+        if (!property) {
+            const response = await fetch(`/api/properties/${encodeURIComponent(propertyId)}`, {
+                headers: {
+                    'Accept': 'application/json',
+                    'Authorization': `Bearer ${sessionManager.getAuthToken()}`
+                }
+            });
+
+            if (!response.ok) {
+                throw new Error(`Unable to load property details (${response.status})`);
+            }
+
+            property = await response.json();
+        }
+
+        customAlert(formatPropertyDetails(property), "Property Details", "info");
+    } catch (error) {
+        console.error('Error viewing property details:', error);
+        customAlert(`Failed to load property details: ${error.message}`, "Property Details Error", "error");
+    }
+}
+
+async function deleteProperty(propertyId) {
+    const property = (window._propertiesRecordsCache || []).find(item => String(item.id) === String(propertyId));
+    const label = property ? property.plotNumber : `Property ${propertyId}`;
+
+    if (!confirm(`Delete ${label}?\n\nThis action cannot be undone.`)) {
+        return;
+    }
+
+    try {
+        const response = await fetch(`/api/properties/${encodeURIComponent(propertyId)}`, {
+            method: 'DELETE',
+            headers: {
+                'Accept': 'application/json',
+                'Authorization': `Bearer ${sessionManager.getAuthToken()}`
+            }
+        });
+
+        const data = await response.json().catch(() => ({}));
+
+        if (!response.ok || data.success === false || data.error) {
+            throw new Error(data.message || data.error || `Delete failed (${response.status})`);
+        }
+
+        customAlert('Property deleted successfully.', "Property Deleted", "success");
+        await loadPropertiesRecords();
+    } catch (error) {
+        console.error('Error deleting property:', error);
+        customAlert(`Failed to delete property: ${error.message}`, "Delete Error", "error");
+    }
 }
 
 
