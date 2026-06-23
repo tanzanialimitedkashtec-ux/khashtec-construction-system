@@ -949,38 +949,44 @@ function showNotifications() { toggleNotificationPanel();
 
 }
 
+window.dashboardOverviewMetrics = [];
+window.dashboardOverviewLoading = false;
+window.dashboardOverviewError = '';
+
 function getDashboardOverviewMetrics() {
-    return [
-        { category: 'Projects', label: 'Total Projects', value: '24', detail: 'All registered projects' },
-        { category: 'Projects', label: 'Active Projects', value: '18', detail: 'Currently in progress' },
-        { category: 'Projects', label: 'This Month', value: '3', detail: 'New projects this month' },
-        { category: 'Site Reports', label: 'Total Reports', value: '42', detail: 'Recorded site reports' },
-        { category: 'Site Reports', label: 'This Week', value: '5', detail: 'Reports submitted this week' },
-        { category: 'Site Reports', label: 'Safety Issues', value: '2', detail: 'Issues flagged in reports' },
-        { category: 'Finance', label: 'Total Budgets', value: '12', detail: 'Budget records' },
-        { category: 'Finance', label: 'This Quarter', value: 'TZS 38,000,000', detail: 'Quarter budget value' },
-        { category: 'Finance', label: 'Active Departments', value: '6', detail: 'Departments with budgets' },
-        { category: 'Real Estate', label: 'Total Properties', value: '156', detail: 'Registered properties' },
-        { category: 'Real Estate', label: 'Available', value: '42', detail: 'Available properties' },
-        { category: 'Real Estate', label: 'Under Offer', value: '18', detail: 'Properties under offer' },
-        { category: 'Clients', label: 'Total Clients', value: '284', detail: 'Registered clients' },
-        { category: 'Clients', label: 'Individual', value: '156', detail: 'Individual clients' },
-        { category: 'Clients', label: 'Companies', value: '89', detail: 'Company clients' },
-        { category: 'Clients', label: 'Investors', value: '39', detail: 'Investor clients' },
-        { category: 'Safety', label: 'Total Violations', value: '12', detail: 'Recorded violations' },
-        { category: 'Safety', label: 'This Month', value: '3', detail: 'Violations this month' },
-        { category: 'Safety', label: 'Pending Actions', value: '5', detail: 'Actions still pending' },
-        { category: 'Meetings', label: "Today's Meetings", value: '0', detail: 'Meetings scheduled today' },
-        { category: 'Meetings', label: 'This Week', value: '0', detail: 'Meetings scheduled this week' },
-        { category: 'Meetings', label: 'Upcoming', value: '0', detail: 'Upcoming meetings' },
-        { category: 'Meetings', label: 'Room Usage', value: '0%', detail: 'Meeting room usage' }
-    ];
+    return Array.isArray(window.dashboardOverviewMetrics) ? window.dashboardOverviewMetrics : [];
+}
+
+async function loadDashboardOverviewMetrics() {
+    window.dashboardOverviewLoading = true;
+    window.dashboardOverviewError = '';
+    renderDashboardOverviewMetrics();
+
+    try {
+        const response = await fetch('/api/dashboard/overview', {
+            headers: { 'Accept': 'application/json' }
+        });
+        const data = await response.json();
+
+        if (!response.ok || !data.success || !Array.isArray(data.metrics)) {
+            throw new Error(data.message || data.error || 'Dashboard metrics could not be loaded');
+        }
+
+        window.dashboardOverviewMetrics = data.metrics;
+        window.dashboardOverviewGeneratedAt = data.generatedAt || new Date().toISOString();
+    } catch (error) {
+        console.error('Dashboard overview load failed:', error);
+        window.dashboardOverviewMetrics = [];
+        window.dashboardOverviewError = error.message || 'Dashboard metrics could not be loaded';
+    } finally {
+        window.dashboardOverviewLoading = false;
+        renderDashboardOverviewMetrics();
+    }
 }
 
 function showDashboardOverview() {
-    const metrics = getDashboardOverviewMetrics();
-    const categories = ['All'].concat([...new Set(metrics.map(metric => metric.category))]);
     window.dashboardOverviewCategory = 'All';
+    window.dashboardOverviewMetrics = [];
 
     showContent(`
         <style>
@@ -1111,6 +1117,20 @@ function showDashboardOverview() {
                 color: #667085;
                 text-align: center;
             }
+            .dashboard-overview-status {
+                grid-column: 1 / -1;
+                background: #fff;
+                border: 1px solid #e5e7eb;
+                border-radius: 8px;
+                padding: 28px;
+                color: #475467;
+                text-align: center;
+            }
+            .dashboard-overview-status.error {
+                border-color: #fecaca;
+                color: #b91c1c;
+                background: #fff5f5;
+            }
             @media (max-width: 760px) {
                 .dashboard-overview-header,
                 .dashboard-overview-tools {
@@ -1129,21 +1149,20 @@ function showDashboardOverview() {
                     <p>All department summary metrics are grouped here for Managing Director review, with category filters and search in one place.</p>
                 </div>
                 <div class="dashboard-overview-count">
-                    <strong id="dashboardMetricCount">${metrics.length}</strong>
+                    <strong id="dashboardMetricCount">0</strong>
                     <span>metrics</span>
                 </div>
             </div>
             <div class="dashboard-overview-tools">
                 <input type="search" id="dashboardMetricSearch" class="dashboard-overview-search" placeholder="Search metrics, categories, or notes..." oninput="renderDashboardOverviewMetrics()">
-                <div class="dashboard-overview-categories">
-                    ${categories.map(category => `<button type="button" data-dashboard-category="${category}" onclick="setDashboardOverviewCategory('${category}')">${category}</button>`).join('')}
-                </div>
+                <div id="dashboardMetricCategories" class="dashboard-overview-categories"></div>
             </div>
             <div id="dashboardMetricGrid" class="dashboard-metric-grid"></div>
         </div>
     `);
 
     renderDashboardOverviewMetrics();
+    loadDashboardOverviewMetrics();
 }
 
 function setDashboardOverviewCategory(category) {
@@ -1156,9 +1175,11 @@ function renderDashboardOverviewMetrics() {
     if (!grid) return;
 
     const metrics = getDashboardOverviewMetrics();
+    const categories = ['All'].concat([...new Set(metrics.map(metric => metric.category))]);
     const queryInput = document.getElementById('dashboardMetricSearch');
     const query = queryInput ? queryInput.value.trim().toLowerCase() : '';
     const activeCategory = window.dashboardOverviewCategory || 'All';
+    const categoriesEl = document.getElementById('dashboardMetricCategories');
 
     const filtered = metrics.filter(metric => {
         const haystack = `${metric.category} ${metric.label} ${metric.value} ${metric.detail}`.toLowerCase();
@@ -1167,12 +1188,24 @@ function renderDashboardOverviewMetrics() {
         return matchesSearch && matchesCategory;
     });
 
-    document.querySelectorAll('[data-dashboard-category]').forEach(button => {
-        button.classList.toggle('active', button.dataset.dashboardCategory === activeCategory);
-    });
+    if (categoriesEl) {
+        categoriesEl.innerHTML = categories.map(category => (
+            `<button type="button" data-dashboard-category="${category}" class="${category === activeCategory ? 'active' : ''}" onclick="setDashboardOverviewCategory('${category}')">${category}</button>`
+        )).join('');
+    }
 
     const count = document.getElementById('dashboardMetricCount');
     if (count) count.textContent = filtered.length;
+
+    if (window.dashboardOverviewLoading) {
+        grid.innerHTML = '<div class="dashboard-overview-status">Loading live metrics from database...</div>';
+        return;
+    }
+
+    if (window.dashboardOverviewError) {
+        grid.innerHTML = `<div class="dashboard-overview-status error">${window.dashboardOverviewError}</div>`;
+        return;
+    }
 
     if (!filtered.length) {
         grid.innerHTML = '<div class="dashboard-overview-empty">No metrics match this search.</div>';

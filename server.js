@@ -1386,6 +1386,214 @@ app.post('/api/test', (req, res) => {
 
 });
 
+app.get('/api/dashboard/overview', async (req, res) => {
+    const db = require('./database/config/database');
+
+    const metric = (category, label, value, detail) => ({
+        category,
+        label,
+        value: value == null ? '0' : String(value),
+        detail
+    });
+
+    const formatNumber = (value) => Number(value || 0).toLocaleString();
+    const formatCurrency = (value) => `TZS ${Number(value || 0).toLocaleString()}`;
+    const tableNames = new Set([
+        'projects',
+        'site_reports',
+        'workforce_budgets',
+        'properties',
+        'clients',
+        'violations',
+        'hse_work',
+        'schedule_meetings'
+    ]);
+
+    const quoteName = (name) => {
+        if (!tableNames.has(name)) {
+            throw new Error(`Unsupported dashboard table: ${name}`);
+        }
+        return `\`${name}\``;
+    };
+
+    const firstRow = (rows) => Array.isArray(rows) ? (rows[0] || {}) : {};
+
+    const tableExists = async (table) => {
+        const rows = await db.execute(
+            'SELECT COUNT(*) AS count FROM information_schema.tables WHERE table_schema = DATABASE() AND table_name = ?',
+            [table]
+        );
+        return Number(firstRow(rows).count || 0) > 0;
+    };
+
+    const columnExists = async (table, column) => {
+        const rows = await db.execute(
+            'SELECT COUNT(*) AS count FROM information_schema.columns WHERE table_schema = DATABASE() AND table_name = ? AND column_name = ?',
+            [table, column]
+        );
+        return Number(firstRow(rows).count || 0) > 0;
+    };
+
+    const firstExistingColumn = async (table, candidates) => {
+        for (const column of candidates) {
+            if (await columnExists(table, column)) return column;
+        }
+        return null;
+    };
+
+    const countRows = async (table, where = '', params = []) => {
+        if (!(await tableExists(table))) return 0;
+        const sql = `SELECT COUNT(*) AS count FROM ${quoteName(table)}${where ? ` WHERE ${where}` : ''}`;
+        const rows = await db.execute(sql, params);
+        return Number(firstRow(rows).count || 0);
+    };
+
+    const sumRows = async (table, column, where = '', params = []) => {
+        if (!(await tableExists(table)) || !(await columnExists(table, column))) return 0;
+        const sql = `SELECT COALESCE(SUM(CAST(\`${column}\` AS DECIMAL(18,2))), 0) AS total FROM ${quoteName(table)}${where ? ` WHERE ${where}` : ''}`;
+        const rows = await db.execute(sql, params);
+        return Number(firstRow(rows).total || 0);
+    };
+
+    const countByDateRange = async (table, dateColumns, rangeSql) => {
+        const dateColumn = await firstExistingColumn(table, dateColumns);
+        if (!dateColumn) return 0;
+        return countRows(table, `\`${dateColumn}\` ${rangeSql}`);
+    };
+
+    try {
+        const projectCreatedColumn = await firstExistingColumn('projects', ['created_at', 'start_date']);
+        const projectActiveWhere = await columnExists('projects', 'status')
+            ? "LOWER(COALESCE(status, '')) NOT IN ('completed', 'finished', 'cancelled', 'canceled', 'closed', 'rejected')"
+            : '';
+
+        const propertyStatusColumn = await firstExistingColumn('properties', ['status']);
+        const clientTypeColumn = await firstExistingColumn('clients', ['client_type', 'type']);
+        const violationDateColumn = await firstExistingColumn('violations', ['date', 'created_at']);
+        const violationStatusColumn = await firstExistingColumn('violations', ['status']);
+        const hseWorkTypeColumn = await firstExistingColumn('hse_work', ['work_type']);
+        const hseStatusColumn = await firstExistingColumn('hse_work', ['status']);
+        const siteSafetyColumns = [];
+        for (const column of ['safety_incidents', 'site_issues']) {
+            if (await columnExists('site_reports', column)) siteSafetyColumns.push(column);
+        }
+        const meetingDateColumn = await firstExistingColumn('schedule_meetings', ['meeting_date', 'created_at']);
+
+        const totalProjects = await countRows('projects');
+        const activeProjects = projectActiveWhere ? await countRows('projects', projectActiveWhere) : totalProjects;
+        const projectsThisMonth = projectCreatedColumn
+            ? await countRows('projects', `\`${projectCreatedColumn}\` >= DATE_FORMAT(CURDATE(), '%Y-%m-01')`)
+            : 0;
+
+        const totalReports = await countRows('site_reports');
+        const reportsThisWeek = await countByDateRange('site_reports', ['report_date', 'created_at'], '>= DATE_SUB(CURDATE(), INTERVAL WEEKDAY(CURDATE()) DAY)');
+        const reportSafetyIssues = siteSafetyColumns.length
+            ? await countRows('site_reports', siteSafetyColumns.map(column => `(\`${column}\` IS NOT NULL AND TRIM(\`${column}\`) <> '' AND LOWER(TRIM(\`${column}\`)) NOT IN ('none', 'no', 'n/a', 'na'))`).join(' OR '))
+            : 0;
+
+        const totalBudgets = await countRows('workforce_budgets');
+        const budgetAmountColumn = await firstExistingColumn('workforce_budgets', ['total_proposed', 'total_budget']);
+        const budgetDateColumn = await firstExistingColumn('workforce_budgets', ['submission_date', 'created_at']);
+        const budgetThisQuarterWhere = budgetDateColumn
+            ? `\`${budgetDateColumn}\` >= MAKEDATE(YEAR(CURDATE()), 1) + INTERVAL QUARTER(CURDATE()) QUARTER - INTERVAL 3 MONTH`
+            : '';
+        const quarterBudgetValue = budgetAmountColumn
+            ? await sumRows('workforce_budgets', budgetAmountColumn, budgetThisQuarterWhere)
+            : 0;
+        const activeDepartmentsRows = (await tableExists('workforce_budgets') && await columnExists('workforce_budgets', 'department'))
+            ? await db.execute(`SELECT COUNT(DISTINCT department) AS count FROM workforce_budgets WHERE department IS NOT NULL AND TRIM(department) <> ''`)
+            : [{ count: 0 }];
+        const activeDepartments = Number(firstRow(activeDepartmentsRows).count || 0);
+
+        const totalProperties = await countRows('properties');
+        const availableProperties = propertyStatusColumn
+            ? await countRows('properties', `LOWER(COALESCE(\`${propertyStatusColumn}\`, '')) = 'available'`)
+            : 0;
+        const underOfferProperties = propertyStatusColumn
+            ? await countRows('properties', `LOWER(COALESCE(\`${propertyStatusColumn}\`, '')) IN ('under offer', 'under_offer', 'reserved')`)
+            : 0;
+
+        const totalClients = await countRows('clients');
+        const individualClients = clientTypeColumn
+            ? await countRows('clients', `LOWER(COALESCE(\`${clientTypeColumn}\`, '')) IN ('individual', 'person')`)
+            : 0;
+        const companyClients = clientTypeColumn
+            ? await countRows('clients', `LOWER(COALESCE(\`${clientTypeColumn}\`, '')) IN ('company', 'corporate', 'business')`)
+            : 0;
+        const investorClients = clientTypeColumn
+            ? await countRows('clients', `LOWER(COALESCE(\`${clientTypeColumn}\`, '')) = 'investor'`)
+            : 0;
+
+        const totalViolationRows = await countRows('violations');
+        const hseViolationWhere = hseWorkTypeColumn ? `LOWER(COALESCE(\`${hseWorkTypeColumn}\`, '')) LIKE '%violation%'` : '';
+        const hseViolationRows = hseViolationWhere ? await countRows('hse_work', hseViolationWhere) : 0;
+        const violationsThisMonth = violationDateColumn
+            ? await countRows('violations', `\`${violationDateColumn}\` >= DATE_FORMAT(CURDATE(), '%Y-%m-01')`)
+            : 0;
+        const hseViolationsThisMonth = (hseViolationWhere && await columnExists('hse_work', 'submitted_date'))
+            ? await countRows('hse_work', `${hseViolationWhere} AND submitted_date >= DATE_FORMAT(CURDATE(), '%Y-%m-01')`)
+            : 0;
+        const pendingViolations = violationStatusColumn
+            ? await countRows('violations', `LOWER(COALESCE(\`${violationStatusColumn}\`, '')) IN ('pending', 'open', 'in progress', 'in-progress')`)
+            : 0;
+        const pendingHseViolations = (hseViolationWhere && hseStatusColumn)
+            ? await countRows('hse_work', `${hseViolationWhere} AND LOWER(COALESCE(\`${hseStatusColumn}\`, '')) IN ('pending', 'open', 'in progress', 'in-progress')`)
+            : 0;
+
+        const todayMeetings = meetingDateColumn
+            ? await countRows('schedule_meetings', `DATE(\`${meetingDateColumn}\`) = CURDATE()`)
+            : 0;
+        const weekMeetings = meetingDateColumn
+            ? await countRows('schedule_meetings', `\`${meetingDateColumn}\` >= DATE_SUB(CURDATE(), INTERVAL WEEKDAY(CURDATE()) DAY) AND \`${meetingDateColumn}\` < DATE_ADD(DATE_SUB(CURDATE(), INTERVAL WEEKDAY(CURDATE()) DAY), INTERVAL 7 DAY)`)
+            : 0;
+        const upcomingMeetings = meetingDateColumn
+            ? await countRows('schedule_meetings', `\`${meetingDateColumn}\` >= CURDATE()`)
+            : 0;
+        const roomUsage = meetingDateColumn
+            ? Math.min(100, Math.round((weekMeetings / 40) * 100))
+            : 0;
+
+        const metrics = [
+            metric('Projects', 'Total Projects', formatNumber(totalProjects), 'All registered projects'),
+            metric('Projects', 'Active Projects', formatNumber(activeProjects), 'Currently in progress'),
+            metric('Projects', 'This Month', formatNumber(projectsThisMonth), 'New projects this month'),
+            metric('Site Reports', 'Total Reports', formatNumber(totalReports), 'Recorded site reports'),
+            metric('Site Reports', 'This Week', formatNumber(reportsThisWeek), 'Reports submitted this week'),
+            metric('Site Reports', 'Safety Issues', formatNumber(reportSafetyIssues), 'Issues flagged in reports'),
+            metric('Finance', 'Total Budgets', formatNumber(totalBudgets), 'Budget records'),
+            metric('Finance', 'This Quarter', formatCurrency(quarterBudgetValue), 'Quarter budget value'),
+            metric('Finance', 'Active Departments', formatNumber(activeDepartments), 'Departments with budgets'),
+            metric('Real Estate', 'Total Properties', formatNumber(totalProperties), 'Registered properties'),
+            metric('Real Estate', 'Available', formatNumber(availableProperties), 'Available properties'),
+            metric('Real Estate', 'Under Offer', formatNumber(underOfferProperties), 'Properties under offer'),
+            metric('Clients', 'Total Clients', formatNumber(totalClients), 'Registered clients'),
+            metric('Clients', 'Individual', formatNumber(individualClients), 'Individual clients'),
+            metric('Clients', 'Companies', formatNumber(companyClients), 'Company clients'),
+            metric('Clients', 'Investors', formatNumber(investorClients), 'Investor clients'),
+            metric('Safety', 'Total Violations', formatNumber(totalViolationRows + hseViolationRows), 'Recorded violations'),
+            metric('Safety', 'This Month', formatNumber(violationsThisMonth + hseViolationsThisMonth), 'Violations this month'),
+            metric('Safety', 'Pending Actions', formatNumber(pendingViolations + pendingHseViolations), 'Actions still pending'),
+            metric('Meetings', "Today's Meetings", formatNumber(todayMeetings), 'Meetings scheduled today'),
+            metric('Meetings', 'This Week', formatNumber(weekMeetings), 'Meetings scheduled this week'),
+            metric('Meetings', 'Upcoming', formatNumber(upcomingMeetings), 'Upcoming meetings'),
+            metric('Meetings', 'Room Usage', `${roomUsage}%`, 'Meeting room usage')
+        ];
+
+        res.status(200).json({
+            success: true,
+            generatedAt: new Date().toISOString(),
+            metrics
+        });
+    } catch (error) {
+        console.error('Error loading dashboard overview:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Failed to load dashboard overview',
+            error: error.message
+        });
+    }
+});
+
 
 
 // Violations API endpoints
