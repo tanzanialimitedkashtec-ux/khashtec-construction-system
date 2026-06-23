@@ -26568,7 +26568,7 @@ async function loadCompanyCars() {
 
                         <div class="car-actions">
 
-                            <button class="action-btn delete" onclick="deleteCar('${mappedCar.track_number}')" title="Delete Vehicle">ðŸ—‘ï¸</button>
+                            <button class="action-btn delete car-delete-btn" data-track-number="${mappedCar.track_number}" onclick="deleteCar('${mappedCar.track_number}')" title="Delete Vehicle">ðŸ—‘ï¸</button>
 
                         </div>
 
@@ -26579,6 +26579,8 @@ async function loadCompanyCars() {
                 `;
 
             }).join('');
+
+            bindCarActionButtons();
 
         } else {
 
@@ -26960,7 +26962,7 @@ function loadSampleCars() {
 
                 <div class="car-actions">
 
-                    <button class="action-btn delete" onclick="deleteCar('${car.track_number}')" title="Delete Vehicle">ðŸ—‘ï¸</button>
+                    <button class="action-btn delete car-delete-btn" data-track-number="${car.track_number}" onclick="deleteCar('${car.track_number}')" title="Delete Vehicle">ðŸ—‘ï¸</button>
 
                 </div>
 
@@ -26969,6 +26971,8 @@ function loadSampleCars() {
         </tr>
 
     `).join('');
+
+    bindCarActionButtons();
 
     
 
@@ -27024,6 +27028,19 @@ async function deleteCar(trackNumber) {
 }
 
 window.deleteCar = deleteCar;
+
+function bindCarActionButtons() {
+    document.querySelectorAll('.car-delete-btn[data-track-number]').forEach(button => {
+        if (button.dataset.boundDelete === 'true') return;
+        button.dataset.boundDelete = 'true';
+        button.addEventListener('click', event => {
+            event.preventDefault();
+            event.stopPropagation();
+            event.stopImmediatePropagation();
+            deleteCar(button.dataset.trackNumber);
+        });
+    });
+}
 
 function filterCarTable() {
     const searchInput = document.getElementById('carSearchInput');
@@ -52536,9 +52553,9 @@ function displayPropertiesRecords(records) {
 
                     <div class="property-actions">
 
-                        <button class="action-btn view" onclick="viewPropertyDetails('${record.id}')" title="View Details">&#128065;</button>
+                        <button class="action-btn view property-view-btn" data-property-id="${record.id}" onclick="viewPropertyDetails('${record.id}')" title="View Details">&#128065;</button>
 
-                        <button class="action-btn delete" onclick="deleteProperty('${record.id}')" title="Delete Property">&#128465;</button>
+                        <button class="action-btn delete property-delete-btn" data-property-id="${record.id}" onclick="deleteProperty('${record.id}')" title="Delete Property">&#128465;</button>
 
                     </div>
 
@@ -52555,6 +52572,8 @@ function displayPropertiesRecords(records) {
     window._propertiesRecordsCache = mappedRecords;
 
     recordsList.innerHTML = recordsHTML;
+
+    if (typeof bindPropertyActionButtons === 'function') bindPropertyActionButtons();
 
 }
 
@@ -52644,7 +52663,12 @@ async function viewPropertyDetails(propertyId) {
                 })();
         }
 
-        customAlert(formatPropertyDetails(property), "Property Details", "info");
+        const detailsMessage = formatPropertyDetails(property);
+        if (typeof customAlert === 'function') {
+            customAlert(detailsMessage, "Property Details", "info");
+        } else {
+            alert(detailsMessage);
+        }
     } catch (error) {
         console.error('Error viewing property details:', error);
         customAlert(`Failed to load property details: ${error.message}`, "Property Details Error", "error");
@@ -52691,6 +52715,30 @@ async function deleteProperty(propertyId) {
 
 window.viewPropertyDetails = viewPropertyDetails;
 window.deleteProperty = deleteProperty;
+
+function bindPropertyActionButtons() {
+    document.querySelectorAll('.property-view-btn[data-property-id]').forEach(button => {
+        if (button.dataset.boundView === 'true') return;
+        button.dataset.boundView = 'true';
+        button.addEventListener('click', event => {
+            event.preventDefault();
+            event.stopPropagation();
+            event.stopImmediatePropagation();
+            viewPropertyDetails(button.dataset.propertyId);
+        });
+    });
+
+    document.querySelectorAll('.property-delete-btn[data-property-id]').forEach(button => {
+        if (button.dataset.boundDelete === 'true') return;
+        button.dataset.boundDelete = 'true';
+        button.addEventListener('click', event => {
+            event.preventDefault();
+            event.stopPropagation();
+            event.stopImmediatePropagation();
+            deleteProperty(button.dataset.propertyId);
+        });
+    });
+}
 
 if (!window._propertyVehicleActionDelegatesAttached) {
     window._propertyVehicleActionDelegatesAttached = true;
