@@ -949,6 +949,249 @@ function showNotifications() { toggleNotificationPanel();
 
 }
 
+function getDashboardOverviewMetrics() {
+    return [
+        { category: 'Projects', label: 'Total Projects', value: '24', detail: 'All registered projects' },
+        { category: 'Projects', label: 'Active Projects', value: '18', detail: 'Currently in progress' },
+        { category: 'Projects', label: 'This Month', value: '3', detail: 'New projects this month' },
+        { category: 'Site Reports', label: 'Total Reports', value: '42', detail: 'Recorded site reports' },
+        { category: 'Site Reports', label: 'This Week', value: '5', detail: 'Reports submitted this week' },
+        { category: 'Site Reports', label: 'Safety Issues', value: '2', detail: 'Issues flagged in reports' },
+        { category: 'Finance', label: 'Total Budgets', value: '12', detail: 'Budget records' },
+        { category: 'Finance', label: 'This Quarter', value: 'TZS 38,000,000', detail: 'Quarter budget value' },
+        { category: 'Finance', label: 'Active Departments', value: '6', detail: 'Departments with budgets' },
+        { category: 'Real Estate', label: 'Total Properties', value: '156', detail: 'Registered properties' },
+        { category: 'Real Estate', label: 'Available', value: '42', detail: 'Available properties' },
+        { category: 'Real Estate', label: 'Under Offer', value: '18', detail: 'Properties under offer' },
+        { category: 'Clients', label: 'Total Clients', value: '284', detail: 'Registered clients' },
+        { category: 'Clients', label: 'Individual', value: '156', detail: 'Individual clients' },
+        { category: 'Clients', label: 'Companies', value: '89', detail: 'Company clients' },
+        { category: 'Clients', label: 'Investors', value: '39', detail: 'Investor clients' },
+        { category: 'Safety', label: 'Total Violations', value: '12', detail: 'Recorded violations' },
+        { category: 'Safety', label: 'This Month', value: '3', detail: 'Violations this month' },
+        { category: 'Safety', label: 'Pending Actions', value: '5', detail: 'Actions still pending' },
+        { category: 'Meetings', label: "Today's Meetings", value: '0', detail: 'Meetings scheduled today' },
+        { category: 'Meetings', label: 'This Week', value: '0', detail: 'Meetings scheduled this week' },
+        { category: 'Meetings', label: 'Upcoming', value: '0', detail: 'Upcoming meetings' },
+        { category: 'Meetings', label: 'Room Usage', value: '0%', detail: 'Meeting room usage' }
+    ];
+}
+
+function showDashboardOverview() {
+    const metrics = getDashboardOverviewMetrics();
+    const categories = ['All'].concat([...new Set(metrics.map(metric => metric.category))]);
+    window.dashboardOverviewCategory = 'All';
+
+    showContent(`
+        <style>
+            .dashboard-overview-page {
+                padding: 20px;
+                background: #f6f8fb;
+                min-height: calc(100vh - 80px);
+            }
+            .dashboard-overview-header {
+                display: flex;
+                justify-content: space-between;
+                gap: 16px;
+                align-items: flex-start;
+                margin-bottom: 16px;
+            }
+            .dashboard-overview-header h2 {
+                margin: 0;
+                color: #172033;
+                font-size: 26px;
+            }
+            .dashboard-overview-header p {
+                margin: 6px 0 0;
+                color: #667085;
+                max-width: 680px;
+            }
+            .dashboard-overview-count {
+                background: #172033;
+                color: #fff;
+                border-radius: 8px;
+                padding: 12px 16px;
+                min-width: 130px;
+                text-align: center;
+            }
+            .dashboard-overview-count strong {
+                display: block;
+                font-size: 26px;
+                line-height: 1;
+            }
+            .dashboard-overview-tools {
+                display: grid;
+                grid-template-columns: minmax(220px, 1fr) auto;
+                gap: 12px;
+                align-items: center;
+                background: #fff;
+                border: 1px solid #e5e7eb;
+                border-radius: 8px;
+                padding: 12px;
+                margin-bottom: 16px;
+            }
+            .dashboard-overview-search {
+                width: 100%;
+                border: 1px solid #cfd6e4;
+                border-radius: 8px;
+                padding: 11px 12px;
+                font-size: 14px;
+                box-sizing: border-box;
+            }
+            .dashboard-overview-categories {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 8px;
+                justify-content: flex-end;
+            }
+            .dashboard-overview-categories button {
+                border: 1px solid #cfd6e4;
+                background: #fff;
+                color: #344054;
+                border-radius: 8px;
+                padding: 9px 12px;
+                cursor: pointer;
+                font-weight: 600;
+            }
+            .dashboard-overview-categories button.active {
+                background: #0f766e;
+                color: #fff;
+                border-color: #0f766e;
+            }
+            .dashboard-metric-grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+                gap: 12px;
+            }
+            .dashboard-metric-card {
+                background: #fff;
+                border: 1px solid #e5e7eb;
+                border-left: 4px solid #0f766e;
+                border-radius: 8px;
+                padding: 16px;
+                box-shadow: 0 8px 20px rgba(15, 23, 42, 0.06);
+            }
+            .dashboard-metric-card.finance { border-left-color: #7c3aed; }
+            .dashboard-metric-card.safety { border-left-color: #dc2626; }
+            .dashboard-metric-card.clients { border-left-color: #2563eb; }
+            .dashboard-metric-card.meetings { border-left-color: #ca8a04; }
+            .dashboard-metric-card.real-estate { border-left-color: #16a34a; }
+            .dashboard-metric-category {
+                display: inline-block;
+                color: #475467;
+                background: #eef2f7;
+                border-radius: 999px;
+                padding: 4px 9px;
+                font-size: 12px;
+                font-weight: 700;
+            }
+            .dashboard-metric-label {
+                color: #475467;
+                font-size: 13px;
+                margin: 12px 0 6px;
+            }
+            .dashboard-metric-value {
+                color: #111827;
+                font-size: 25px;
+                font-weight: 800;
+                line-height: 1.15;
+                word-break: break-word;
+            }
+            .dashboard-metric-detail {
+                color: #667085;
+                font-size: 12px;
+                margin-top: 8px;
+            }
+            .dashboard-overview-empty {
+                grid-column: 1 / -1;
+                background: #fff;
+                border: 1px dashed #cfd6e4;
+                border-radius: 8px;
+                padding: 28px;
+                color: #667085;
+                text-align: center;
+            }
+            @media (max-width: 760px) {
+                .dashboard-overview-header,
+                .dashboard-overview-tools {
+                    grid-template-columns: 1fr;
+                    display: grid;
+                }
+                .dashboard-overview-categories {
+                    justify-content: flex-start;
+                }
+            }
+        </style>
+        <div class="dashboard-overview-page">
+            <div class="dashboard-overview-header">
+                <div>
+                    <h2>Dashboard Overview</h2>
+                    <p>All department summary metrics are grouped here for Managing Director review, with category filters and search in one place.</p>
+                </div>
+                <div class="dashboard-overview-count">
+                    <strong id="dashboardMetricCount">${metrics.length}</strong>
+                    <span>metrics</span>
+                </div>
+            </div>
+            <div class="dashboard-overview-tools">
+                <input type="search" id="dashboardMetricSearch" class="dashboard-overview-search" placeholder="Search metrics, categories, or notes..." oninput="renderDashboardOverviewMetrics()">
+                <div class="dashboard-overview-categories">
+                    ${categories.map(category => `<button type="button" data-dashboard-category="${category}" onclick="setDashboardOverviewCategory('${category}')">${category}</button>`).join('')}
+                </div>
+            </div>
+            <div id="dashboardMetricGrid" class="dashboard-metric-grid"></div>
+        </div>
+    `);
+
+    renderDashboardOverviewMetrics();
+}
+
+function setDashboardOverviewCategory(category) {
+    window.dashboardOverviewCategory = category || 'All';
+    renderDashboardOverviewMetrics();
+}
+
+function renderDashboardOverviewMetrics() {
+    const grid = document.getElementById('dashboardMetricGrid');
+    if (!grid) return;
+
+    const metrics = getDashboardOverviewMetrics();
+    const queryInput = document.getElementById('dashboardMetricSearch');
+    const query = queryInput ? queryInput.value.trim().toLowerCase() : '';
+    const activeCategory = window.dashboardOverviewCategory || 'All';
+
+    const filtered = metrics.filter(metric => {
+        const haystack = `${metric.category} ${metric.label} ${metric.value} ${metric.detail}`.toLowerCase();
+        const matchesSearch = !query || haystack.includes(query);
+        const matchesCategory = activeCategory === 'All' || metric.category === activeCategory;
+        return matchesSearch && matchesCategory;
+    });
+
+    document.querySelectorAll('[data-dashboard-category]').forEach(button => {
+        button.classList.toggle('active', button.dataset.dashboardCategory === activeCategory);
+    });
+
+    const count = document.getElementById('dashboardMetricCount');
+    if (count) count.textContent = filtered.length;
+
+    if (!filtered.length) {
+        grid.innerHTML = '<div class="dashboard-overview-empty">No metrics match this search.</div>';
+        return;
+    }
+
+    grid.innerHTML = filtered.map(metric => {
+        const className = metric.category.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+        return `
+            <article class="dashboard-metric-card ${className}">
+                <span class="dashboard-metric-category">${metric.category}</span>
+                <div class="dashboard-metric-label">${metric.label}</div>
+                <div class="dashboard-metric-value">${metric.value}</div>
+                <div class="dashboard-metric-detail">${metric.detail}</div>
+            </article>
+        `;
+    }).join('');
+}
+
 
 
 function loadMenu(){
@@ -956,6 +1199,7 @@ function loadMenu(){
     const menu = document.getElementById("menu");
 
     menu.innerHTML = "";
+    if (typeof resetMenuSearch === 'function') resetMenuSearch();
 
     
 
@@ -978,6 +1222,8 @@ function loadMenu(){
 
 
     if(currentRole === "MD"){
+
+        addMenu("Dashboard Overview", showDashboardOverview);
 
         addMenu("Approve Recruitment Policies", approveRecruitmentPolicies);
 
@@ -1298,6 +1544,16 @@ function loadMenu(){
 
     
 
+    if (typeof filterMenuItems === 'function') {
+        var sections = menu.querySelectorAll('.menu-section');
+        sections.forEach(function(section) { section.open = true; });
+        filterMenuItems();
+    }
+
+    if (sidebar) {
+        sidebar.classList.remove('collapsed');
+    }
+
     console.log('Menu loaded. Total items:', menu.children.length); // Debug line
 
 }
@@ -1307,6 +1563,14 @@ function loadMenu(){
 function addMenu(name, func){
 
     try {
+
+        if (typeof addMenuItem === 'function') {
+            const categorizedBtn = addMenuItem(name, func);
+            if (categorizedBtn) {
+                console.log('Added menu item:', name);
+                return;
+            }
+        }
 
         const btn = document.createElement("button");
 
@@ -29203,36 +29467,6 @@ function markSafetyViolations(){
 
             
 
-            <div class="violation-stats">
-
-                <div class="stat-item">
-
-                    <span class="stat-label">Total Violations:</span>
-
-                    <span class="stat-value">12</span>
-
-                </div>
-
-                <div class="stat-item">
-
-                    <span class="stat-label">This Month:</span>
-
-                    <span class="stat-value">3</span>
-
-                </div>
-
-                <div class="stat-item">
-
-                    <span class="stat-label">Pending Actions:</span>
-
-                    <span class="stat-value">5</span>
-
-                </div>
-
-            </div>
-
-            
-
             <div id="violationFormContainer" style="display: none;">
 
                 <div class="form-header">
@@ -36511,40 +36745,6 @@ function financeBudgeting(){
                     ðŸ’° Create New Budget
 
                 </button>
-
-            </div>
-
-            
-
-            <div class="budget-overview">
-
-                <div class="budget-stats">
-
-                    <div class="stat-item">
-
-                        <span class="stat-label">Total Budgets:</span>
-
-                        <span class="stat-value">12</span>
-
-                    </div>
-
-                    <div class="stat-item">
-
-                        <span class="stat-label">This Quarter:</span>
-
-                        <span class="stat-value">TZS 38,000,000</span>
-
-                    </div>
-
-                    <div class="stat-item">
-
-                        <span class="stat-label">Active Departments:</span>
-
-                        <span class="stat-value">6</span>
-
-                    </div>
-
-                </div>
 
             </div>
 
@@ -44535,40 +44735,6 @@ function createNewProject(){
 
             
 
-            <div class="project-overview">
-
-                <div class="project-stats">
-
-                    <div class="stat-item">
-
-                        <span class="stat-label">Total Projects:</span>
-
-                        <span class="stat-value">24</span>
-
-                    </div>
-
-                    <div class="stat-item">
-
-                        <span class="stat-label">Active Projects:</span>
-
-                        <span class="stat-value">18</span>
-
-                    </div>
-
-                    <div class="stat-item">
-
-                        <span class="stat-label">This Month:</span>
-
-                        <span class="stat-value">3</span>
-
-                    </div>
-
-                </div>
-
-            </div>
-
-            
-
             <div id="projectFormContainer" style="display: none;">
 
                 <div class="form-header">
@@ -47704,40 +47870,6 @@ function recordSiteReports(){
                     ðŸ“ Record Site Report
 
                 </button>
-
-            </div>
-
-            
-
-            <div class="site-report-overview">
-
-                <div class="site-report-stats">
-
-                    <div class="stat-item">
-
-                        <span class="stat-label">Total Reports:</span>
-
-                        <span class="stat-value">42</span>
-
-                    </div>
-
-                    <div class="stat-item">
-
-                        <span class="stat-label">This Week:</span>
-
-                        <span class="stat-value">5</span>
-
-                    </div>
-
-                    <div class="stat-item">
-
-                        <span class="stat-label">Safety Issues:</span>
-
-                        <span class="stat-value">2</span>
-
-                    </div>
-
-                </div>
 
             </div>
 
@@ -51385,40 +51517,6 @@ function addProperty(){
 
             
 
-            <div class="property-overview">
-
-                <div class="property-stats">
-
-                    <div class="stat-item">
-
-                        <span class="stat-label">Total Properties:</span>
-
-                        <span class="stat-value">156</span>
-
-                    </div>
-
-                    <div class="stat-item">
-
-                        <span class="stat-label">Available:</span>
-
-                        <span class="stat-value">42</span>
-
-                    </div>
-
-                    <div class="stat-item">
-
-                        <span class="stat-label">Under Offer:</span>
-
-                        <span class="stat-value">18</span>
-
-                    </div>
-
-                </div>
-
-            </div>
-
-            
-
             <div id="propertyFormContainer" style="display: none;">
 
                 <div class="form-header">
@@ -52553,8 +52651,6 @@ function displayPropertiesRecords(records) {
 
                     <div class="property-actions">
 
-                        <button class="action-btn view property-view-btn" data-property-id="${record.id}" onclick="viewPropertyDetails('${record.id}')" title="View Details">&#128065;</button>
-
                         <button class="action-btn delete property-delete-btn" data-property-id="${record.id}" onclick="deleteProperty('${record.id}')" title="Delete Property">&#128465;</button>
 
                     </div>
@@ -52717,17 +52813,6 @@ window.viewPropertyDetails = viewPropertyDetails;
 window.deleteProperty = deleteProperty;
 
 function bindPropertyActionButtons() {
-    document.querySelectorAll('.property-view-btn[data-property-id]').forEach(button => {
-        if (button.dataset.boundView === 'true') return;
-        button.dataset.boundView = 'true';
-        button.addEventListener('click', event => {
-            event.preventDefault();
-            event.stopPropagation();
-            event.stopImmediatePropagation();
-            viewPropertyDetails(button.dataset.propertyId);
-        });
-    });
-
     document.querySelectorAll('.property-delete-btn[data-property-id]').forEach(button => {
         if (button.dataset.boundDelete === 'true') return;
         button.dataset.boundDelete = 'true';
@@ -52998,48 +53083,6 @@ function registerClient(){
                     ðŸ‘¤ Register New Client
 
                 </button>
-
-            </div>
-
-            
-
-            <div class="client-overview">
-
-                <div class="client-stats">
-
-                    <div class="stat-item">
-
-                        <span class="stat-label">Total Clients:</span>
-
-                        <span class="stat-value">284</span>
-
-                    </div>
-
-                    <div class="stat-item">
-
-                        <span class="stat-label">Individual:</span>
-
-                        <span class="stat-value">156</span>
-
-                    </div>
-
-                    <div class="stat-item">
-
-                        <span class="stat-label">Companies:</span>
-
-                        <span class="stat-value">89</span>
-
-                    </div>
-
-                    <div class="stat-item">
-
-                        <span class="stat-label">Investors:</span>
-
-                        <span class="stat-value">39</span>
-
-                    </div>
-
-                </div>
 
             </div>
 
@@ -62189,48 +62232,6 @@ function scheduleMeeting(){
 
             
 
-            <div class="meeting-overview">
-
-                <div class="meeting-stats">
-
-                    <div class="stat-item">
-
-                        <span class="stat-label">Today's Meetings:</span>
-
-                        <span class="stat-value" id="todayMeetingsCount">0</span>
-
-                    </div>
-
-                    <div class="stat-item">
-
-                        <span class="stat-label">This Week:</span>
-
-                        <span class="stat-value" id="weekMeetingsCount">0</span>
-
-                    </div>
-
-                    <div class="stat-item">
-
-                        <span class="stat-label">Upcoming:</span>
-
-                        <span class="stat-value" id="upcomingMeetingsCount">0</span>
-
-                    </div>
-
-                    <div class="stat-item">
-
-                        <span class="stat-label">Room Usage:</span>
-
-                        <span class="stat-value" id="roomUsagePercentage">0%</span>
-
-                    </div>
-
-                </div>
-
-            </div>
-
-            
-
             <div id="meetingFormContainer" style="display: none;">
 
                 <div class="form-header">
@@ -71131,9 +71132,11 @@ const roleMenus = {
 
     'MD': {
 
-        title: 'HR Dashboard',
+        title: 'Managing Director Dashboard',
 
         buttons: [
+
+            'Dashboard Overview',
 
             'Register Employee',
 
@@ -71512,6 +71515,12 @@ function handleMenuClick(menuItem) {
         // Handle specific menu items
 
         switch(menuItem) {
+
+            case 'Dashboard Overview':
+
+                showDashboardOverview();
+
+                break;
 
             case 'Team Management':
 
