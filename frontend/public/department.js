@@ -52213,37 +52213,80 @@ function displayPropertiesRecords(records) {
 
     
 
+    const toKey = value => String(value || '').trim().toLowerCase().replace(/[\s_]+/g, '-');
+    const parseNumber = value => {
+        const number = Number(value);
+        return Number.isFinite(number) ? number : 0;
+    };
+    const normalizeUtilities = value => {
+        if (Array.isArray(value)) return value.map(item => toKey(item)).filter(Boolean);
+        if (typeof value !== 'string') return [];
+
+        const trimmed = value.trim();
+        if (!trimmed || trimmed === '[]' || toKey(trimmed) === 'none') return [];
+
+        try {
+            const parsed = JSON.parse(trimmed);
+            return normalizeUtilities(parsed);
+        } catch (e) {
+            return trimmed.split(',').map(item => toKey(item)).filter(Boolean);
+        }
+    };
+    const normalizeZoning = value => {
+        const zoningMap = {
+            residential: 'residential',
+            commercial: 'commercial',
+            mixed: 'mixed',
+            'mixed-use': 'mixed'
+        };
+        return zoningMap[toKey(value)] || '';
+    };
+    const normalizeStatus = value => {
+        const statusMap = {
+            available: 'Available',
+            sold: 'Sold',
+            reserved: 'Reserved',
+            'under-offer': 'Reserved',
+            'under-contract': 'Reserved',
+            'under-development': 'Under Development',
+            'off-market': 'Under Development'
+        };
+        return statusMap[toKey(value)] || (value || 'Available');
+    };
+
     // Map database fields to frontend display fields
 
     const mappedRecords = records.map(record => {
 
-        // Handle database field mapping
+        const rawTitle = record.plotNumber || record.propertyName || record.property_name || record.name || record.title || '';
+        const plotNumber = String(rawTitle).replace(/^Property\s+/i, '') || `PLT-${record.id}`;
+        const rawType = record.propertyType || record.property_type || record.type || 'residential';
 
         return {
 
             id: record.id || `PROP-${Date.now()}`,
 
-            plotNumber: record.plotNumber || record.title || `PLT-${record.id}`,
+            plotNumber,
 
-            propertyType: record.propertyType || record.type || 'residential',
+            propertyType: rawType,
 
             location: record.location || 'Unknown Location',
 
-            area: record.area || record.size_sqm || 0,
+            area: parseNumber(record.area || record.size_sqm || record.size),
 
-            price: record.price || 0,
+            price: parseNumber(record.price || record.value),
 
-            status: record.status || 'Available',
+            status: normalizeStatus(record.status),
 
-            tpNumber: record.tpNumber || `TP-${record.id}`,
+            tpNumber: record.tpNumber || record.tp_number || `TP-${record.id}`,
 
             description: record.description || 'No description available',
 
-            utilities: record.utilities || [],
+            utilities: normalizeUtilities(record.utilities),
 
-            zoning: record.zoning || record.propertyType || record.type || 'residential',
+            zoning: normalizeZoning(record.zoning),
 
-            dateAdded: record.dateAdded || record.created_at || new Date().toISOString()
+            dateAdded: record.dateAdded || record.addedDate || record.created_at || new Date().toISOString()
 
         };
 
@@ -52283,7 +52326,7 @@ function displayPropertiesRecords(records) {
 
                            record.status === 'Sold' ? 'status-sold' : 
 
-                           record.status === 'Under Offer' ? 'status-under-offer' : 'status-default';
+                           record.status === 'Under Development' ? 'status-under-offer' : 'status-default';
 
         
 
@@ -52296,6 +52339,14 @@ function displayPropertiesRecords(records) {
                            record.status === 'Under Offer' ? '🤝 Under Offer' : '❓ Unknown';
 
         
+
+        const correctedStatusBadge = record.status === 'Available' ? 'Available' :
+
+                           record.status === 'Reserved' ? 'Reserved' :
+
+                           record.status === 'Sold' ? 'Sold' :
+
+                           record.status === 'Under Development' ? 'Under Development' : 'Unknown';
 
         // Truncate description for display
 
@@ -52331,11 +52382,43 @@ function displayPropertiesRecords(records) {
 
         
 
+        const correctedUtilitiesDisplay = record.utilities && record.utilities.length > 0 ?
+
+            record.utilities.map(utility => {
+
+                const utilityNames = {
+
+                    water: 'Water',
+
+                    electricity: 'Electricity',
+
+                    road: 'Road',
+
+                    sewage: 'Sewage'
+
+                };
+
+                return utilityNames[toKey(utility)] || utility;
+
+            }).join(', ') : 'None';
+
         // Format zoning display
 
         const zoningDisplay = record.zoning ? 
 
             record.zoning.charAt(0).toUpperCase() + record.zoning.slice(1) : 'Not specified';
+
+        const zoningNames = {
+
+            residential: 'Residential',
+
+            commercial: 'Commercial',
+
+            mixed: 'Mixed Use'
+
+        };
+
+        const correctedZoningDisplay = record.zoning ? zoningNames[record.zoning] : 'Not specified';
 
         
 
@@ -52397,7 +52480,7 @@ function displayPropertiesRecords(records) {
 
                 <td>
 
-                    <span class="status-badge ${statusClass}">${statusBadge}</span>
+                    <span class="status-badge ${statusClass}">${correctedStatusBadge}</span>
 
                 </td>
 
@@ -52425,7 +52508,7 @@ function displayPropertiesRecords(records) {
 
                     <div class="utilities-info">
 
-                        <div class="utilities-display">${utilitiesDisplay}</div>
+                        <div class="utilities-display">${correctedUtilitiesDisplay}</div>
 
                     </div>
 
@@ -52435,7 +52518,7 @@ function displayPropertiesRecords(records) {
 
                     <div class="zoning-info">
 
-                        <div class="zoning-badge zoning-${record.zoning}">${zoningDisplay}</div>
+                        <div class="zoning-badge zoning-${record.zoning || 'not-specified'}">${correctedZoningDisplay}</div>
 
                     </div>
 

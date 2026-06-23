@@ -8,8 +8,11 @@ let db;
 try {
     db = require('../../database/config/database');
     console.log('✅ Properties database connection loaded successfully');
-    // Ensure zoning column exists
-    db.execute("ALTER TABLE properties ADD COLUMN IF NOT EXISTS zoning VARCHAR(50) DEFAULT 'residential'")
+    // Ensure optional property detail columns exist
+    db.query("ALTER TABLE properties ADD COLUMN IF NOT EXISTS utilities TEXT")
+        .then(() => console.log('✅ Properties utilities column ensured'))
+        .catch(err => console.warn('⚠️ Utilities column check:', err.message));
+    db.query("ALTER TABLE properties ADD COLUMN IF NOT EXISTS zoning VARCHAR(50) DEFAULT 'residential'")
         .then(() => console.log('✅ Properties zoning column ensured'))
         .catch(err => console.warn('⚠️ Zoning column check:', err.message));
 } catch (error) {
@@ -101,21 +104,27 @@ router.post('/', async (req, res) => {
                 'available': 'Available',
                 'sold': 'Sold',
                 'reserved': 'Under Offer',
+                'under-offer': 'Under Offer',
+                'under offer': 'Under Offer',
                 'under-development': 'Off Market',
+                'under development': 'Off Market',
                 'rented': 'Rented',
-                'off-market': 'Off Market'
+                'off-market': 'Off Market',
+                'off market': 'Off Market'
             };
             
-            const mappedStatus = statusMapping[status.toLowerCase()] || 'Available';
+            const mappedStatus = statusMapping[String(status || '').trim().toLowerCase()] || 'Available';
             
             console.log('DEBUG: Original status:', status, '-> Mapped status:', mappedStatus);
             
+            const utilitiesStr = Array.isArray(utilities) ? JSON.stringify(utilities) : (utilities || '[]');
+
             // Map frontend fields to database fields
             const query = `
                 INSERT INTO properties (
                     title, description, location, type, price, status, 
-                    size_sqm, zoning, created_at, updated_at
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())
+                    size_sqm, utilities, zoning, created_at, updated_at
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())
             `;
             
             const values = [
@@ -126,6 +135,7 @@ router.post('/', async (req, res) => {
                 parseFloat(price), // price
                 mappedStatus, // mapped status
                 parseFloat(area), // size_sqm
+                utilitiesStr, // utilities
                 zoning || 'residential' // zoning
             ];
             
@@ -148,6 +158,7 @@ router.post('/', async (req, res) => {
                     price: parseFloat(price),
                     status: status || 'Available',
                     size_sqm: parseFloat(area),
+                    utilities: utilitiesStr,
                     zoning: zoning || 'residential'
                 }
             });

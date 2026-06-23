@@ -3872,6 +3872,11 @@ app.post('/api/properties', async (req, res) => {
 
 
 
+        await db.query("ALTER TABLE properties ADD COLUMN IF NOT EXISTS utilities TEXT")
+            .catch(err => console.warn('Utilities column check failed:', err.message));
+        await db.query("ALTER TABLE properties ADD COLUMN IF NOT EXISTS zoning VARCHAR(50) DEFAULT 'residential'")
+            .catch(err => console.warn('Zoning column check failed:', err.message));
+
         // Insert property
 
         const columns = await db.execute('SHOW COLUMNS FROM properties');
@@ -3882,10 +3887,14 @@ app.post('/api/properties', async (req, res) => {
             sold: 'Sold',
             reserved: 'Under Offer',
             'under-offer': 'Under Offer',
+            'under offer': 'Under Offer',
             'under-contract': 'Under Contract',
+            'under contract': 'Under Contract',
             rented: 'Rented',
             'off-market': 'Off Market',
-            'under-development': 'Off Market'
+            'off market': 'Off Market',
+            'under-development': 'Off Market',
+            'under development': 'Off Market'
         };
 
         const normalizeStatus = (input) => {
