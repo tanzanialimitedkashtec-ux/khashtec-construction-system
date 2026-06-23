@@ -84121,6 +84121,11 @@ function downloadSalesContract(transactionId) {
 
 function saveNewProperty() {
 
+    const propertyForm = document.getElementById('propertyForm');
+    const selectedUtilities = propertyForm ?
+        Array.from(propertyForm.querySelectorAll('.checkbox-group input[type="checkbox"]:checked')).map(cb => cb.value) :
+        [];
+
     const property = {
 
         id: 'PROP-' + Date.now(),
@@ -84138,6 +84143,10 @@ function saveNewProperty() {
         status: document.getElementById('propertyStatus').value,
 
         description: document.getElementById('propertyDescription').value,
+
+        zoning: document.getElementById('propertyZoning')?.value || 'residential',
+
+        utilities: selectedUtilities,
 
         owner: document.getElementById('propertyOwner')?.value || '',
 
@@ -84240,6 +84249,10 @@ function saveNewProperty() {
             status: property.status,
 
             description: property.description,
+
+            zoning: property.zoning,
+
+            utilities: property.utilities,
 
             owner: property.owner,
 

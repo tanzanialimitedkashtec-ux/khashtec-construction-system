@@ -56782,6 +56782,11 @@ function editSalesTransaction(transactionId) {
 
 function saveNewProperty() {
 
+    const propertyForm = document.getElementById('propertyForm');
+    const selectedUtilities = propertyForm ?
+        Array.from(propertyForm.querySelectorAll('.checkbox-group input[type="checkbox"]:checked')).map(cb => cb.value) :
+        [];
+
     const property = {
 
         id: 'PROP-' + Date.now(),
@@ -56801,6 +56806,8 @@ function saveNewProperty() {
         description: document.getElementById('propertyDescription').value,
 
         zoning: document.getElementById('propertyZoning')?.value || 'residential',
+
+        utilities: selectedUtilities,
 
         owner: document.getElementById('propertyOwner')?.value || '',
 
@@ -56905,6 +56912,8 @@ function saveNewProperty() {
             description: property.description,
 
             zoning: property.zoning,
+
+            utilities: property.utilities,
 
             owner: property.owner,
 

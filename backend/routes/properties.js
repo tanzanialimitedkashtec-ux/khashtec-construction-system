@@ -84,6 +84,10 @@ router.post('/', async (req, res) => {
         // Try database first, fallback to mock
         try {
             const db = require('../../database/config/database');
+            await db.query("ALTER TABLE properties ADD COLUMN IF NOT EXISTS utilities TEXT")
+                .catch(err => console.warn('⚠️ Utilities column check:', err.message));
+            await db.query("ALTER TABLE properties ADD COLUMN IF NOT EXISTS zoning VARCHAR(50) DEFAULT 'residential'")
+                .catch(err => console.warn('⚠️ Zoning column check:', err.message));
             
             // Map frontend property types to database ENUM values
             const typeMapping = {
