@@ -26999,15 +26999,21 @@ function editCar(trackNumber) {
 async function deleteCar(trackNumber) {
     if (!confirm(`Are you sure you want to delete vehicle: ${trackNumber}?`)) return;
     try {
-        const baseUrl = window.location.origin;
-        const token = (typeof sessionManager !== 'undefined' && sessionManager.getAuthToken) ? sessionManager.getAuthToken() : '';
-        const response = await fetch(`${baseUrl}/api/company-cars/${encodeURIComponent(trackNumber)}`, {
-            method: 'DELETE',
-            headers: { 'Content-Type': 'application/json', ...(token && { 'Authorization': `Bearer ${token}` }) }
-        });
-        const data = await response.json().catch(() => ({}));
-        if (!response.ok || data.success === false) {
-            throw new Error(data.message || data.error || `HTTP ${response.status}`);
+        const data = window.KashTecAPI && typeof window.KashTecAPI.delete === 'function'
+            ? await window.KashTecAPI.delete(`/company-cars/${encodeURIComponent(trackNumber)}`)
+            : await (async () => {
+                const baseUrl = window.location.origin;
+                const token = (typeof sessionManager !== 'undefined' && sessionManager.getAuthToken) ? sessionManager.getAuthToken() : '';
+                const response = await fetch(`${baseUrl}/api/company-cars/${encodeURIComponent(trackNumber)}`, {
+                    method: 'DELETE',
+                    headers: { 'Content-Type': 'application/json', ...(token && { 'Authorization': `Bearer ${token}` }) }
+                });
+                const responseData = await response.json().catch(() => ({}));
+                if (!response.ok) throw new Error(responseData.message || responseData.error || `HTTP ${response.status}`);
+                return responseData;
+            })();
+        if (data && data.success === false) {
+            throw new Error(data.message || data.error || 'Delete failed');
         }
         customAlert(`Vehicle ${trackNumber} deleted successfully!`, 'Success', 'success');
         loadCompanyCars();
@@ -27016,6 +27022,8 @@ async function deleteCar(trackNumber) {
         customAlert(`Failed to delete vehicle: ${error.message}`, "Error", "error");
     }
 }
+
+window.deleteCar = deleteCar;
 
 function filterCarTable() {
     const searchInput = document.getElementById('carSearchInput');
@@ -52617,18 +52625,23 @@ async function viewPropertyDetails(propertyId) {
         let property = (window._propertiesRecordsCache || []).find(item => String(item.id) === String(propertyId));
 
         if (!property) {
-            const response = await fetch(`/api/properties/${encodeURIComponent(propertyId)}`, {
-                headers: {
-                    'Accept': 'application/json',
-                    'Authorization': `Bearer ${sessionManager.getAuthToken()}`
-                }
-            });
+            property = window.KashTecAPI && typeof window.KashTecAPI.get === 'function'
+                ? await window.KashTecAPI.get(`/properties/${encodeURIComponent(propertyId)}`)
+                : await (async () => {
+                    const token = (typeof sessionManager !== 'undefined' && sessionManager.getAuthToken) ? sessionManager.getAuthToken() : '';
+                    const response = await fetch(`/api/properties/${encodeURIComponent(propertyId)}`, {
+                        headers: {
+                            'Accept': 'application/json',
+                            ...(token && { 'Authorization': `Bearer ${token}` })
+                        }
+                    });
 
-            if (!response.ok) {
-                throw new Error(`Unable to load property details (${response.status})`);
-            }
+                    if (!response.ok) {
+                        throw new Error(`Unable to load property details (${response.status})`);
+                    }
 
-            property = await response.json();
+                    return response.json();
+                })();
         }
 
         customAlert(formatPropertyDetails(property), "Property Details", "info");
@@ -52647,18 +52660,25 @@ async function deleteProperty(propertyId) {
     }
 
     try {
-        const response = await fetch(`/api/properties/${encodeURIComponent(propertyId)}`, {
-            method: 'DELETE',
-            headers: {
-                'Accept': 'application/json',
-                'Authorization': `Bearer ${sessionManager.getAuthToken()}`
-            }
-        });
+        const data = window.KashTecAPI && typeof window.KashTecAPI.delete === 'function'
+            ? await window.KashTecAPI.delete(`/properties/${encodeURIComponent(propertyId)}`)
+            : await (async () => {
+                const token = (typeof sessionManager !== 'undefined' && sessionManager.getAuthToken) ? sessionManager.getAuthToken() : '';
+                const response = await fetch(`/api/properties/${encodeURIComponent(propertyId)}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Accept': 'application/json',
+                        ...(token && { 'Authorization': `Bearer ${token}` })
+                    }
+                });
 
-        const data = await response.json().catch(() => ({}));
+                const responseData = await response.json().catch(() => ({}));
+                if (!response.ok) throw new Error(responseData.message || responseData.error || `Delete failed (${response.status})`);
+                return responseData;
+            })();
 
-        if (!response.ok || data.success === false || data.error) {
-            throw new Error(data.message || data.error || `Delete failed (${response.status})`);
+        if (data && (data.success === false || data.error)) {
+            throw new Error(data.message || data.error || 'Delete failed');
         }
 
         customAlert('Property deleted successfully.', "Property Deleted", "success");
@@ -52667,6 +52687,42 @@ async function deleteProperty(propertyId) {
         console.error('Error deleting property:', error);
         customAlert(`Failed to delete property: ${error.message}`, "Delete Error", "error");
     }
+}
+
+window.viewPropertyDetails = viewPropertyDetails;
+window.deleteProperty = deleteProperty;
+
+if (!window._propertyVehicleActionDelegatesAttached) {
+    window._propertyVehicleActionDelegatesAttached = true;
+    document.addEventListener('click', function(event) {
+        const button = event.target.closest('button.action-btn');
+        if (!button) return;
+
+        const onclickValue = button.getAttribute('onclick') || '';
+        const propertyViewMatch = onclickValue.match(/viewPropertyDetails\('([^']+)'\)/);
+        const propertyDeleteMatch = onclickValue.match(/deleteProperty\('([^']+)'\)/);
+        const carDeleteMatch = onclickValue.match(/deleteCar\('([^']+)'\)/);
+
+        if (propertyViewMatch) {
+            event.preventDefault();
+            event.stopPropagation();
+            viewPropertyDetails(propertyViewMatch[1]);
+            return;
+        }
+
+        if (propertyDeleteMatch) {
+            event.preventDefault();
+            event.stopPropagation();
+            deleteProperty(propertyDeleteMatch[1]);
+            return;
+        }
+
+        if (carDeleteMatch) {
+            event.preventDefault();
+            event.stopPropagation();
+            deleteCar(carDeleteMatch[1]);
+        }
+    }, true);
 }
 
 

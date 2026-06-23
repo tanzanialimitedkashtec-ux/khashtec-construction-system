@@ -212,7 +212,9 @@ router.get('/:id', async (req, res) => {
         console.log('🔍 Fetching property:', id);
         
         const propertyResult = await db.execute('SELECT * FROM properties WHERE id = ?', [id]);
-        const properties = Array.isArray(propertyResult) ? propertyResult[0] : propertyResult;
+        const properties = Array.isArray(propertyResult)
+            ? (Array.isArray(propertyResult[0]) ? propertyResult[0] : propertyResult)
+            : (propertyResult && propertyResult.rows ? propertyResult.rows : []);
         
         if (properties.length === 0) {
             return res.status(404).json({ error: 'Property not found' });
