@@ -1,5 +1,6 @@
 const express = require('express');
 const router = express.Router();
+const { sendAssignmentNotification } = require('../services/emailService');
 
 var notify = require('../utils/notify');
 console.log('Projects route file is being loaded...');
@@ -646,6 +647,143 @@ router.get('/progress-updates/recent', async (req, res) => {
             total: 0,
             error: 'Failed to fetch recent progress updates',
             details: error && error.message
+        });
+    }
+});
+
+// Helper: ensure the project_assignments table exists
+async function ensureProjectAssignmentsTable() {
+    try {
+        await db.execute(`
+            CREATE TABLE IF NOT EXISTS project_assignments (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                project_id INT NOT NULL,
+                employee_id VARCHAR(50) NOT NULL,
+                employee_name VARCHAR(255),
+                role VARCHAR(100) DEFAULT 'Team Member',
+                assigned_by VARCHAR(255),
+                assigned_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                INDEX idx_project_id (project_id),
+                INDEX idx_employee_id (employee_id)
+            )
+        `);
+    } catch (e) {
+        console.warn('⚠️ Could not ensure project_assignments table:', e.message);
+    }
+}
+
+// Get project assignments
+router.get('/:id/assignments', async (req, res) => {
+    try {
+        await ensureProjectAssignmentsTable();
+        const projectId = req.params.id;
+        
+        const assignments = asRows(await db.execute(
+            'SELECT * FROM project_assignments WHERE project_id = ? ORDER BY assigned_at DESC',
+            [projectId]
+        ));
+        
+        res.json({
+            success: true,
+            assignments: assignments
+        });
+    } catch (error) {
+        console.error('Error fetching project assignments:', error);
+        res.status(500).json({
+            error: 'Failed to fetch assignments',
+            details: error.message
+        });
+    }
+});
+
+// Assign employees to a project
+router.post('/:id/assign-employees', async (req, res) => {
+    try {
+        await ensureProjectAssignmentsTable();
+        const projectId = req.params.id;
+        const { employees, assignedBy } = req.body; // employees: [{ employee_id, employee_name, role }]
+        
+        if (!employees || !Array.isArray(employees) || employees.length === 0) {
+            return res.status(400).json({ error: 'No employees provided' });
+        }
+        
+        // Fetch project details for email
+        const projects = asRows(await db.execute('SELECT * FROM projects WHERE id = ?', [projectId]));
+        if (projects.length === 0) {
+            return res.status(404).json({ error: 'Project not found' });
+        }
+        const project = projects[0];
+
+        const results = [];
+
+        for (const emp of employees) {
+            if (!emp.employee_id) continue;
+            
+            // Check if already assigned
+            const existing = asRows(await db.execute(
+                'SELECT id FROM project_assignments WHERE project_id = ? AND employee_id = ?',
+                [projectId, emp.employee_id]
+            ));
+            
+            if (existing.length > 0) continue; // Skip existing
+            
+            await db.execute(`
+                INSERT INTO project_assignments (project_id, employee_id, employee_name, role, assigned_by)
+                VALUES (?, ?, ?, ?, ?)
+            `, [projectId, emp.employee_id, emp.employee_name || '', emp.role || 'Team Member', assignedBy || 'System']);
+            
+            results.push(emp);
+            
+            // Look up email and send notification
+            try {
+                const [empRows] = await db.execute(
+                    'SELECT ed.gmail FROM employee_details ed LEFT JOIN employees e ON ed.employee_id = e.id WHERE e.employee_id = ? OR e.id = ? LIMIT 1',
+                    [emp.employee_id, emp.employee_id]
+                );
+                
+                let recipientEmail = null;
+                if (empRows && empRows[0] && empRows[0].gmail) {
+                    recipientEmail = empRows[0].gmail;
+                } else {
+                    // Try full name match if ID fails
+                    const [nameRows] = await db.execute(
+                        'SELECT gmail FROM employee_details WHERE full_name = ? LIMIT 1',
+                        [emp.employee_name]
+                    );
+                    if (nameRows && nameRows[0] && nameRows[0].gmail) {
+                        recipientEmail = nameRows[0].gmail;
+                    }
+                }
+
+                if (recipientEmail) {
+                    console.log(`📧 Attempting to send project assignment email to: ${recipientEmail}`);
+                    const details = [
+                        { label: 'Project Name', value: project.name },
+                        { label: 'Role', value: emp.role || 'Team Member' },
+                        { label: 'Client', value: project.client_name || 'Internal' },
+                        { label: 'Start Date', value: project.start_date || 'TBD' },
+                        { label: 'End Date', value: project.end_date || 'TBD' },
+                        { label: 'Assigned By', value: assignedBy || 'System' }
+                    ];
+                    await sendAssignmentNotification(recipientEmail, details);
+                }
+            } catch (emailErr) {
+                console.error('Failed to send project assignment email:', emailErr);
+            }
+        }
+        
+        notify('Project Assignment', `Assigned ${results.length} employees to project ${project.name}`, 'success');
+        
+        res.status(201).json({
+            success: true,
+            message: `Successfully assigned ${results.length} employees`,
+            assigned: results
+        });
+    } catch (error) {
+        console.error('Error assigning employees:', error);
+        res.status(500).json({
+            error: 'Failed to assign employees',
+            details: error.message
         });
     }
 });

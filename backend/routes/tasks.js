@@ -376,6 +376,51 @@ router.put('/:id', async (req, res) => {
             const result = Array.isArray(resultResult) ? resultResult[0] : resultResult;
             
             console.log('✅ Task updated successfully:', result);
+
+            // Send re-assignment email if assigned_to was updated
+            if (updateData.assigned_to) {
+                try {
+                    const taskResult = await db.execute(`
+                        SELECT t.*, p.name as project_name 
+                        FROM tasks t 
+                        LEFT JOIN projects p ON t.project_id = p.id 
+                        WHERE t.id = ?
+                    `, [taskId]);
+                    
+                    let updatedTask = null;
+                    if (taskResult && Array.isArray(taskResult[0]) && taskResult[0].length > 0) {
+                        updatedTask = taskResult[0][0];
+                    } else if (Array.isArray(taskResult) && taskResult.length > 0) {
+                        updatedTask = taskResult[0];
+                    }
+
+                    if (updatedTask) {
+                        let recipientEmail = null;
+                        if (updateData.assigned_to.includes('@')) {
+                            recipientEmail = updateData.assigned_to;
+                        } else {
+                            const [empRows] = await db.execute('SELECT gmail FROM employee_details WHERE full_name = ? OR gmail = ?', [updateData.assigned_to, updateData.assigned_to]);
+                            if (empRows && empRows.length > 0 && empRows[0].gmail) {
+                                recipientEmail = empRows[0].gmail;
+                            }
+                        }
+
+                        if (recipientEmail) {
+                            console.log(`📧 Attempting to send task re-assignment email to: ${recipientEmail}`);
+                            const details = [
+                                { label: 'Task Name', value: updatedTask.task_name },
+                                { label: 'Priority', value: updatedTask.task_priority },
+                                { label: 'Due Date', value: updatedTask.due_date },
+                                { label: 'Project Name', value: updatedTask.project_name || 'Unknown' },
+                                { label: 'Assigned By', value: updatedTask.created_by || 'System Update' }
+                            ];
+                            await sendAssignmentNotification(recipientEmail, details);
+                        }
+                    }
+                } catch (emailErr) {
+                    console.error('Failed to send task re-assignment email:', emailErr);
+                }
+            }
             
             res.json({
                 success: true,

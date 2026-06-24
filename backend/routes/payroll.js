@@ -495,6 +495,27 @@ router.post('/employee-payments', async (req, res) => {
         var channelInfo = method === 'mpesa' ? ' via M-Pesa (' + mpesaPhone + ')' : method === 'nmb_bank' ? ' via NMB Bank' : ' via ' + method;
         notify('Employee Payment', (employeeName || 'Employee #' + employeeId) + ' paid TZS ' + parsedAmount.toLocaleString() + channelInfo, 'success');
 
+        // After INSERT succeeds, look up employee email and send notification
+        try {
+            const { sendPaymentNotification } = require('../services/emailService');
+            const [empRows] = await db.execute(
+                'SELECT ed.gmail FROM employee_details ed LEFT JOIN employees e ON ed.employee_id = e.id WHERE e.employee_id = ? OR e.id = ? LIMIT 1',
+                [employeeId, employeeId]
+            );
+            if (empRows && empRows[0] && empRows[0].gmail) {
+                await sendPaymentNotification(empRows[0].gmail, [
+                    { label: 'Employee Name', value: employeeName || 'Employee #' + employeeId },
+                    { label: 'Amount', value: 'TZS ' + parsedAmount.toLocaleString() },
+                    { label: 'Payment Method', value: method },
+                    { label: 'Payment Date', value: date },
+                    { label: 'Transaction ID', value: transactionId || 'N/A' },
+                    { label: 'Status', value: paymentStatus }
+                ]);
+            }
+        } catch (emailErr) {
+            console.error('Failed to send payment email:', emailErr);
+        }
+
         res.status(201).json({
             success: true,
             message: 'Payment processed successfully',
