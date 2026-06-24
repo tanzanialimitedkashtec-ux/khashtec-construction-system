@@ -25054,7 +25054,7 @@ async function loadExpenseStats() {
         const monthNames = ['January','February','March','April','May','June','July','August','September','October','November','December'];
         const currentMonth = monthNames[now.getMonth()] + ' ' + now.getFullYear();
 
-        const response = await fetch('/api/expenses', { headers: { 'Accept': 'application/json' } });
+        const response = await fetch('/api/finance/expenses', { headers: { 'Accept': 'application/json' } });
         const data = await response.json();
         let expenses = [];
         if (data.success && Array.isArray(data.expenses)) {
