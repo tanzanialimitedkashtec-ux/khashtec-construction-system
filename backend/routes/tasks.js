@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { sendAssignmentNotification } = require('../services/emailService');
+const { sendAssignmentNotification } = require('../services/employeeEmailService');
 
 console.log('📋 Tasks route file is being loaded...');
 

@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { sendAssignmentNotification } = require('../services/emailService');
+const { sendAssignmentNotification } = require('../services/employeeEmailService');
 
 var notify = require('../utils/notify');
 console.log('Projects route file is being loaded...');

@@ -497,7 +497,7 @@ router.post('/employee-payments', async (req, res) => {
 
         // After INSERT succeeds, look up employee email and send notification
         try {
-            const { sendPaymentNotification } = require('../services/emailService');
+            const { sendPaymentNotification } = require('../services/employeeEmailService');
             const [empRows] = await db.execute(
                 'SELECT ed.gmail FROM employee_details ed LEFT JOIN employees e ON ed.employee_id = e.id WHERE e.employee_id = ? OR e.id = ? LIMIT 1',
                 [employeeId, employeeId]
