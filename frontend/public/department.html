@@ -25032,6 +25032,22 @@ function showDashboardOverview() {
                     <span>metrics</span>
                 </div>
             </div>
+
+            <div class="worker-stats" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px;margin-bottom:18px;">
+                <div class="stat-item" style="background:#fff;border:1px solid #e5e7eb;border-left:4px solid #1a5276;border-radius:8px;padding:18px 20px;box-shadow:0 4px 12px rgba(15,23,42,0.05);display:flex;justify-content:space-between;align-items:center;">
+                    <span class="stat-label" style="color:#475467;font-size:14px;font-weight:600;">Total Registered Employees:</span>
+                    <span class="stat-value" id="totalEmployees" style="color:#1a5276;font-size:26px;font-weight:800;">—</span>
+                </div>
+                <div class="stat-item" style="background:#fff;border:1px solid #e5e7eb;border-left:4px solid #0f766e;border-radius:8px;padding:18px 20px;box-shadow:0 4px 12px rgba(15,23,42,0.05);display:flex;justify-content:space-between;align-items:center;">
+                    <span class="stat-label" style="color:#475467;font-size:14px;font-weight:600;">Active Worker Accounts:</span>
+                    <span class="stat-value" id="activeWorkerAccounts" style="color:#0f766e;font-size:26px;font-weight:800;">—</span>
+                </div>
+                <div class="stat-item" style="background:#fff;border:1px solid #e5e7eb;border-left:4px solid #7c3aed;border-radius:8px;padding:18px 20px;box-shadow:0 4px 12px rgba(15,23,42,0.05);display:flex;justify-content:space-between;align-items:center;">
+                    <span class="stat-label" style="color:#475467;font-size:14px;font-weight:600;">Departments:</span>
+                    <span class="stat-value" id="totalDepartments" style="color:#7c3aed;font-size:26px;font-weight:800;">—</span>
+                </div>
+            </div>
+
             <div class="dashboard-overview-tools">
                 <input type="search" id="dashboardMetricSearch" class="dashboard-overview-search" placeholder="Search metrics, categories, or notes..." oninput="renderDashboardOverviewMetrics()">
                 <div id="dashboardMetricCategories" class="dashboard-overview-categories"></div>
@@ -25042,6 +25058,30 @@ function showDashboardOverview() {
 
     renderDashboardOverviewMetrics();
     loadDashboardOverviewMetrics();
+    loadWorkerStats();
+}
+
+async function loadWorkerStats() {
+    try {
+        const response = await fetch('/api/employees', { headers: { 'Accept': 'application/json' } });
+        const data = await response.json();
+        let employees = [];
+        if (data.success && Array.isArray(data.employees)) {
+            employees = data.employees;
+        } else if (Array.isArray(data)) {
+            employees = data;
+        }
+        const totalEl = document.getElementById('totalEmployees');
+        const activeEl = document.getElementById('activeWorkerAccounts');
+        const deptEl = document.getElementById('totalDepartments');
+        if (totalEl) totalEl.textContent = employees.length;
+        const active = employees.filter(e => e.status === 'Active' || e.status === 'active' || !e.status).length;
+        if (activeEl) activeEl.textContent = active;
+        const departments = new Set(employees.map(e => e.department).filter(Boolean));
+        if (deptEl) deptEl.textContent = departments.size || '6';
+    } catch (err) {
+        console.error('Failed to load worker stats:', err);
+    }
 }
 
 function setDashboardOverviewCategory(category) {
