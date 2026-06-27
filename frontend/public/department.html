@@ -25039,75 +25039,58 @@ function showDashboardOverview() {
                 <div id="dashboardMetricCategories" class="dashboard-overview-categories"></div>
             </div>
 
-            <div class="sales-overview" style="margin-bottom: 18px; margin-top: 16px;">
-                <div class="sales-stats" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px;">
-                    <div class="stat-item" style="background:#fff;border:1px solid #e5e7eb;border-left:4px solid #4338ca;border-radius:8px;padding:18px 20px;box-shadow:0 4px 12px rgba(15,23,42,0.05);display:flex;justify-content:space-between;align-items:center;">
-                        <span class="stat-label" style="color:#475467;font-size:14px;font-weight:600;">Total Sales:</span>
-                        <span class="stat-value" style="color:#4338ca;font-size:26px;font-weight:800;">142</span>
-                    </div>
-                    <div class="stat-item" style="background:#fff;border:1px solid #e5e7eb;border-left:4px solid #0284c7;border-radius:8px;padding:18px 20px;box-shadow:0 4px 12px rgba(15,23,42,0.05);display:flex;justify-content:space-between;align-items:center;">
-                        <span class="stat-label" style="color:#475467;font-size:14px;font-weight:600;">This Month:</span>
-                        <span class="stat-value" style="color:#0284c7;font-size:26px;font-weight:800;">18</span>
-                    </div>
-                    <div class="stat-item" style="background:#fff;border:1px solid #e5e7eb;border-left:4px solid #059669;border-radius:8px;padding:18px 20px;box-shadow:0 4px 12px rgba(15,23,42,0.05);display:flex;justify-content:space-between;align-items:center;">
-                        <span class="stat-label" style="color:#475467;font-size:14px;font-weight:600;">Revenue:</span>
-                        <span class="stat-value" style="color:#059669;font-size:26px;font-weight:800;">TZS 8.5B</span>
-                    </div>
-                    <div class="stat-item" style="background:#fff;border:1px solid #e5e7eb;border-left:4px solid #d97706;border-radius:8px;padding:18px 20px;box-shadow:0 4px 12px rgba(15,23,42,0.05);display:flex;justify-content:space-between;align-items:center;">
-                        <span class="stat-label" style="color:#475467;font-size:14px;font-weight:600;">Pending:</span>
-                        <span class="stat-value" style="color:#d97706;font-size:26px;font-weight:800;">7</span>
-                    </div>
-                </div>
+            <div id="salesOverviewStats" class="dashboard-metric-grid" style="margin-bottom: 16px; margin-top: 16px;">
+                <article class="dashboard-metric-card sales">
+                    <span class="dashboard-metric-category">Sales</span>
+                    <div class="dashboard-metric-label">Total Sales</div>
+                    <div class="dashboard-metric-value" id="salesStatTotal">Loading...</div>
+                    <div class="dashboard-metric-detail">All time sales</div>
+                </article>
+                <article class="dashboard-metric-card sales">
+                    <span class="dashboard-metric-category">Sales</span>
+                    <div class="dashboard-metric-label">This Month</div>
+                    <div class="dashboard-metric-value" id="salesStatMonth">Loading...</div>
+                    <div class="dashboard-metric-detail">Sales this month</div>
+                </article>
+                <article class="dashboard-metric-card sales">
+                    <span class="dashboard-metric-category">Sales</span>
+                    <div class="dashboard-metric-label">Revenue</div>
+                    <div class="dashboard-metric-value" id="salesStatRevenue">Loading...</div>
+                    <div class="dashboard-metric-detail">Total revenue generated</div>
+                </article>
+                <article class="dashboard-metric-card sales">
+                    <span class="dashboard-metric-category">Sales</span>
+                    <div class="dashboard-metric-label">Pending</div>
+                    <div class="dashboard-metric-value" id="salesStatPending">Loading...</div>
+                    <div class="dashboard-metric-detail">Pending sales</div>
+                </article>
             </div>
 
-            <div class="expense-stats" id="expenseOverviewStats" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 8px; margin-bottom: 16px;">
-                <div class="metric-card" style="background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%); padding: 8px 10px; border-radius: 6px; box-shadow: 0 1px 4px rgba(0,0,0,0.05); border-left: 2px solid #2196F3; transition: transform 0.2s ease;">
-                    <h5 style="color: #666; font-size: 0.65rem; margin: 0 0 2px 0; text-transform: uppercase; letter-spacing: 0.5px;">Monthly Budget</h5>
-                    <div class="metric-value" style="font-size: 1rem; font-weight: 700; color: #2c3e50; margin: 2px 0;">TZS <span id="expStatBudget">61,500,000</span></div>
-                    <div class="metric-bar-container" style="background: #eef2f3; height: 4px; border-radius: 2px; margin: 4px 0 2px 0; overflow: hidden; position: relative;">
-                        <div class="metric-bar" style="background: #2196F3; height: 100%; width: 100%; border-radius: 2px; transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);"></div>
-                    </div>
-                    <div class="metric-change" style="color: #7f8c8d; font-size: 0.55rem; font-weight: 600; display: flex; justify-content: space-between; align-items: center; margin-top: 2px;">
-                        <span>Target allocation</span>
-                        <span style="color: #2196F3;" id="expStatMonth">June 2026</span>
-                    </div>
-                </div>
-
-                <div class="metric-card" style="background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%); padding: 8px 10px; border-radius: 6px; box-shadow: 0 1px 4px rgba(0,0,0,0.05); border-left: 2px solid #F44336; transition: transform 0.2s ease;">
-                    <h5 style="color: #666; font-size: 0.65rem; margin: 0 0 2px 0; text-transform: uppercase; letter-spacing: 0.5px;">Expenses This Month</h5>
-                    <div class="metric-value" style="font-size: 1rem; font-weight: 700; color: #2c3e50; margin: 2px 0;">TZS <span id="expStatUsed">0</span></div>
-                    <div class="metric-bar-container" style="background: #eef2f3; height: 4px; border-radius: 2px; margin: 4px 0 2px 0; overflow: hidden; position: relative;">
-                        <div class="metric-bar" id="expStatUsedBar" style="background: #F44336; height: 100%; width: 0%; border-radius: 2px; transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);"></div>
-                    </div>
-                    <div class="metric-change" style="color: #7f8c8d; font-size: 0.55rem; font-weight: 600; display: flex; justify-content: space-between; align-items: center; margin-top: 2px;">
-                        <span>Current usage</span>
-                        <span style="color: #F44336;" id="expStatPercent" class="stat-change ">0% Used</span>
-                    </div>
-                </div>
-
-                <div class="metric-card" style="background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%); padding: 8px 10px; border-radius: 6px; box-shadow: 0 1px 4px rgba(0,0,0,0.05); border-left: 2px solid #4CAF50; transition: transform 0.2s ease;">
-                    <h5 style="color: #666; font-size: 0.65rem; margin: 0 0 2px 0; text-transform: uppercase; letter-spacing: 0.5px;">Remaining Budget</h5>
-                    <div class="metric-value" style="font-size: 1rem; font-weight: 700; color: #2c3e50; margin: 2px 0;">TZS <span id="expStatRemaining">61,500,000</span></div>
-                    <div class="metric-bar-container" style="background: #eef2f3; height: 4px; border-radius: 2px; margin: 4px 0 2px 0; overflow: hidden; position: relative;">
-                        <div class="metric-bar" id="expStatRemainingBar" style="background: #4CAF50; height: 100%; width: 100%; border-radius: 2px; transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);"></div>
-                    </div>
-                    <div class="metric-change" style="color: #7f8c8d; font-size: 0.55rem; font-weight: 600; display: flex; justify-content: space-between; align-items: center; margin-top: 2px;">
-                        <span>Available balance</span>
-                        <span style="color: #4CAF50;" id="expStatAvailable" class="stat-change positive">100% Available</span>
-                    </div>
-                </div>
-
-                <div class="metric-card" style="background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%); padding: 8px 10px; border-radius: 6px; box-shadow: 0 1px 4px rgba(0,0,0,0.05); border-left: 2px solid #FF9800; transition: transform 0.2s ease;">
-                    <h5 style="color: #666; font-size: 0.65rem; margin: 0 0 2px 0; text-transform: uppercase; letter-spacing: 0.5px;">Pending Confirmation</h5>
-                    <div class="metric-value" style="font-size: 1rem; font-weight: 700; color: #2c3e50; margin: 2px 0;" id="expStatPending">0</div>
-                    <div class="metric-bar-container" style="background: #eef2f3; height: 4px; border-radius: 2px; margin: 4px 0 2px 0; overflow: hidden; position: relative;">
-                        <div class="metric-bar" style="background: #FF9800; height: 100%; width: 100%; border-radius: 2px; animation: pulse 2s infinite;"></div>
-                    </div>
-                    <div class="metric-change" style="color: #7f8c8d; font-size: 0.55rem; font-weight: 600; display: flex; justify-content: space-between; align-items: center; margin-top: 2px;">
-                        <span>Action required</span>
-                        <span style="color: #FF9800;">Awaiting Review</span>
-                    </div>
-                </div>
+            <div id="expenseOverviewStats" class="dashboard-metric-grid" style="margin-bottom: 16px;">
+                <article class="dashboard-metric-card finance">
+                    <span class="dashboard-metric-category">Expense</span>
+                    <div class="dashboard-metric-label">Monthly Budget</div>
+                    <div class="dashboard-metric-value">TZS <span id="expStatBudget">Loading...</span></div>
+                    <div class="dashboard-metric-detail" id="expStatMonth">--</div>
+                </article>
+                <article class="dashboard-metric-card finance">
+                    <span class="dashboard-metric-category">Expense</span>
+                    <div class="dashboard-metric-label">Expenses This Month</div>
+                    <div class="dashboard-metric-value">TZS <span id="expStatUsed">Loading...</span></div>
+                    <div class="dashboard-metric-detail" id="expStatPercent">--</div>
+                </article>
+                <article class="dashboard-metric-card finance">
+                    <span class="dashboard-metric-category">Expense</span>
+                    <div class="dashboard-metric-label">Remaining Budget</div>
+                    <div class="dashboard-metric-value">TZS <span id="expStatRemaining">Loading...</span></div>
+                    <div class="dashboard-metric-detail" id="expStatAvailable">--</div>
+                </article>
+                <article class="dashboard-metric-card finance">
+                    <span class="dashboard-metric-category">Expense</span>
+                    <div class="dashboard-metric-label">Pending Confirmation</div>
+                    <div class="dashboard-metric-value" id="expStatPending">Loading...</div>
+                    <div class="dashboard-metric-detail">Awaiting Review</div>
+                </article>
             </div>
 
             <div id="dashboardMetricGrid" class="dashboard-metric-grid"></div>
@@ -25117,7 +25100,65 @@ function showDashboardOverview() {
     renderDashboardOverviewMetrics();
     loadDashboardOverviewMetrics();
     loadWorkerStats();
+    loadSalesStats();
     loadExpenseStats();
+}
+
+async function loadSalesStats() {
+    try {
+        const authToken = (typeof sessionManager !== 'undefined' && sessionManager.getAuthToken) ? sessionManager.getAuthToken() : '';
+        let response = await fetch('/api/sales/all', {
+            headers: {
+                'Accept': 'application/json',
+                ...(authToken ? { 'Authorization': `Bearer ${authToken}` } : {})
+            }
+        });
+        
+        let sales = [];
+        if (response.ok) {
+            const data = await response.json();
+            if (data.success && Array.isArray(data.sales)) sales = data.sales;
+            else if (Array.isArray(data)) sales = data;
+            else if (data.data && Array.isArray(data.data)) sales = data.data;
+        } else {
+            response = await fetch('/api/sales', {
+                headers: { 'Accept': 'application/json', ...(authToken ? { 'Authorization': `Bearer ${authToken}` } : {}) }
+            });
+            const data = await response.json();
+            if (data.success && Array.isArray(data.sales)) sales = data.sales;
+            else if (Array.isArray(data)) sales = data;
+            else if (data.data && Array.isArray(data.data)) sales = data.data;
+        }
+
+        const now = new Date();
+        const thisMonth = now.getMonth();
+        const thisYear = now.getFullYear();
+        
+        const monthlySales = sales.filter(s => {
+            const d = new Date(s.date || s.created_at || s.sale_date);
+            return d.getMonth() === thisMonth && d.getFullYear() === thisYear;
+        });
+
+        const totalSales = sales.length;
+        const thisMonthCount = monthlySales.length;
+        const revenue = sales.reduce((sum, s) => sum + (parseFloat(s.amount || s.total_amount || s.value) || 0), 0);
+        const pending = sales.filter(s => (s.status || '').toLowerCase() === 'pending').length;
+
+        let formattedRevenue = 'TZS 0';
+        if (revenue >= 1000000000) formattedRevenue = 'TZS ' + (revenue / 1000000000).toFixed(1) + 'B';
+        else if (revenue >= 1000000) formattedRevenue = 'TZS ' + (revenue / 1000000).toFixed(1) + 'M';
+        else formattedRevenue = 'TZS ' + revenue.toLocaleString('en-US');
+
+        if (document.getElementById('salesStatTotal')) {
+            document.getElementById('salesStatTotal').textContent = totalSales;
+            document.getElementById('salesStatMonth').textContent = thisMonthCount;
+            document.getElementById('salesStatRevenue').textContent = formattedRevenue;
+            document.getElementById('salesStatPending').textContent = pending;
+        }
+
+    } catch (err) {
+        console.error('Failed to load sales stats:', err);
+    }
 }
 
 async function loadExpenseStats() {
@@ -25162,11 +25203,13 @@ async function loadExpenseStats() {
             document.getElementById('expStatMonth').textContent = currentMonth;
             
             document.getElementById('expStatUsed').textContent = fmt(totalUsed);
-            document.getElementById('expStatUsedBar').style.width = Math.max(percentUsed, 2) + '%';
+            const expUsedBar = document.getElementById('expStatUsedBar');
+            if(expUsedBar) expUsedBar.style.width = Math.max(percentUsed, 2) + '%';
             document.getElementById('expStatPercent').textContent = percentUsed + '% Used';
             
             document.getElementById('expStatRemaining').textContent = fmt(remaining);
-            document.getElementById('expStatRemainingBar').style.width = Math.max(percentAvail, 2) + '%';
+            const expRemBar = document.getElementById('expStatRemainingBar');
+            if(expRemBar) expRemBar.style.width = Math.max(percentAvail, 2) + '%';
             document.getElementById('expStatAvailable').textContent = percentAvail + '% Available';
             
             document.getElementById('expStatPending').textContent = pending;
