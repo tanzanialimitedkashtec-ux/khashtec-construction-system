@@ -1159,7 +1159,28 @@ function showDashboardOverview() {
                 <div id="dashboardMetricCategories" class="dashboard-overview-categories"></div>
             </div>
 
-            <div class="expense-stats" id="expenseOverviewStats" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 8px; margin-bottom: 16px; margin-top: 8px;">
+            <div class="sales-overview" style="margin-bottom: 18px; margin-top: 16px;">
+                <div class="sales-stats" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px;">
+                    <div class="stat-item" style="background:#fff;border:1px solid #e5e7eb;border-left:4px solid #4338ca;border-radius:8px;padding:18px 20px;box-shadow:0 4px 12px rgba(15,23,42,0.05);display:flex;justify-content:space-between;align-items:center;">
+                        <span class="stat-label" style="color:#475467;font-size:14px;font-weight:600;">Total Sales:</span>
+                        <span class="stat-value" style="color:#4338ca;font-size:26px;font-weight:800;">142</span>
+                    </div>
+                    <div class="stat-item" style="background:#fff;border:1px solid #e5e7eb;border-left:4px solid #0284c7;border-radius:8px;padding:18px 20px;box-shadow:0 4px 12px rgba(15,23,42,0.05);display:flex;justify-content:space-between;align-items:center;">
+                        <span class="stat-label" style="color:#475467;font-size:14px;font-weight:600;">This Month:</span>
+                        <span class="stat-value" style="color:#0284c7;font-size:26px;font-weight:800;">18</span>
+                    </div>
+                    <div class="stat-item" style="background:#fff;border:1px solid #e5e7eb;border-left:4px solid #059669;border-radius:8px;padding:18px 20px;box-shadow:0 4px 12px rgba(15,23,42,0.05);display:flex;justify-content:space-between;align-items:center;">
+                        <span class="stat-label" style="color:#475467;font-size:14px;font-weight:600;">Revenue:</span>
+                        <span class="stat-value" style="color:#059669;font-size:26px;font-weight:800;">TZS 8.5B</span>
+                    </div>
+                    <div class="stat-item" style="background:#fff;border:1px solid #e5e7eb;border-left:4px solid #d97706;border-radius:8px;padding:18px 20px;box-shadow:0 4px 12px rgba(15,23,42,0.05);display:flex;justify-content:space-between;align-items:center;">
+                        <span class="stat-label" style="color:#475467;font-size:14px;font-weight:600;">Pending:</span>
+                        <span class="stat-value" style="color:#d97706;font-size:26px;font-weight:800;">7</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="expense-stats" id="expenseOverviewStats" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 8px; margin-bottom: 16px;">
                 <div class="metric-card" style="background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%); padding: 8px 10px; border-radius: 6px; box-shadow: 0 1px 4px rgba(0,0,0,0.05); border-left: 2px solid #2196F3; transition: transform 0.2s ease;">
                     <h5 style="color: #666; font-size: 0.65rem; margin: 0 0 2px 0; text-transform: uppercase; letter-spacing: 0.5px;">Monthly Budget</h5>
                     <div class="metric-value" style="font-size: 1rem; font-weight: 700; color: #2c3e50; margin: 2px 0;">TZS <span id="expStatBudget">61,500,000</span></div>
