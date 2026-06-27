@@ -24948,6 +24948,10 @@ function showDashboardOverview() {
                 grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
                 gap: 12px;
             }
+            .dashboard-metric-grid.small-grid {
+                grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+                gap: 8px;
+            }
             .dashboard-metric-card {
                 background: #fff;
                 border: 1px solid #e5e7eb;
@@ -24955,6 +24959,9 @@ function showDashboardOverview() {
                 border-radius: 8px;
                 padding: 16px;
                 box-shadow: 0 8px 20px rgba(15, 23, 42, 0.06);
+            }
+            .small-grid .dashboard-metric-card {
+                padding: 12px;
             }
             .dashboard-metric-card.finance { border-left-color: #7c3aed; }
             .dashboard-metric-card.safety { border-left-color: #dc2626; }
@@ -24971,10 +24978,18 @@ function showDashboardOverview() {
                 font-size: 12px;
                 font-weight: 700;
             }
+            .small-grid .dashboard-metric-category {
+                font-size: 10px;
+                padding: 2px 6px;
+            }
             .dashboard-metric-label {
                 color: #475467;
                 font-size: 13px;
                 margin: 12px 0 6px;
+            }
+            .small-grid .dashboard-metric-label {
+                font-size: 11px;
+                margin: 6px 0 4px;
             }
             .dashboard-metric-value {
                 color: #111827;
@@ -24983,10 +24998,17 @@ function showDashboardOverview() {
                 line-height: 1.15;
                 word-break: break-word;
             }
+            .small-grid .dashboard-metric-value {
+                font-size: 18px;
+            }
             .dashboard-metric-detail {
                 color: #667085;
                 font-size: 12px;
                 margin-top: 8px;
+            }
+            .small-grid .dashboard-metric-detail {
+                margin-top: 4px;
+                font-size: 10px;
             }
             .dashboard-overview-empty {
                 grid-column: 1 / -1;
@@ -25039,7 +25061,7 @@ function showDashboardOverview() {
                 <div id="dashboardMetricCategories" class="dashboard-overview-categories"></div>
             </div>
 
-            <div id="salesOverviewStats" class="dashboard-metric-grid" style="margin-bottom: 16px; margin-top: 16px;">
+            <div id="salesOverviewStats" class="dashboard-metric-grid small-grid" style="margin-bottom: 16px; margin-top: 16px;">
                 <article class="dashboard-metric-card sales">
                     <span class="dashboard-metric-category">Sales</span>
                     <div class="dashboard-metric-label">Total Sales</div>
