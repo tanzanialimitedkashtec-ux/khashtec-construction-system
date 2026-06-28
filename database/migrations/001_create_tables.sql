@@ -982,24 +982,7 @@ CREATE TABLE IF NOT EXISTS worker_assignments (
   INDEX idx_assigned_by (assigned_by)
 );
 
--- Insert sample worker assignment data
-INSERT IGNORE INTO worker_assignments (
-  employee_id, 
-  employee_name, 
-  project_id, 
-  project_name, 
-  role_in_project, 
-  start_date, 
-  end_date, 
-  assignment_notes, 
-  status, 
-  assigned_by, 
-  assigned_by_role
-) VALUES
-('emp001', 'John Doe', 'proj001', 'Dar es Salaam Port Modernization', 'Site Supervisor', '2026-01-15', NULL, 'Leading the port modernization team', 'Active', 'HR Manager', 'HR Manager'),
-('emp002', 'Jane Smith', 'proj002', 'Residential Buildings - Kinondoni', 'Project Manager', '2026-02-01', '2026-03-15', 'Successfully completed residential project', 'Completed', 'HR Manager', 'HR Manager'),
-('emp003', 'Mike Johnson', 'proj003', 'Fukayosi Real Estate Project', 'Construction Worker', '2026-01-20', NULL, 'Skilled labor for real estate development', 'Active', 'HR Manager', 'HR Manager'),
-('emp004', 'Sarah Wilson', 'proj004', 'Road Construction - Bagamoyo', 'Engineer', '2026-03-01', NULL, 'Road construction and infrastructure work', 'Active', 'HR Manager', 'HR Manager');
+-- Insert sample worker assignment data (removed mock data)
 
 -- Insert sample mission & vision data
 INSERT IGNORE INTO mission_vision (
