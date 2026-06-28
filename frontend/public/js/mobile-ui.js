@@ -51,17 +51,18 @@
         '.sidebar{display:none!important}',
         '.menu-toggle{display:none!important}',
 
-        /* === HEADER === */
-        'header{padding:8px 12px!important;font-size:13px!important;position:sticky!important;top:0!important;z-index:1000!important;background:' + C.primary + '!important;box-shadow:0 2px 8px rgba(0,0,0,0.15)!important}',
+        /* === HEADER — fixed at top so it never scrolls away === */
+        'header{padding:8px 12px!important;font-size:13px!important;position:fixed!important;top:0!important;left:0!important;right:0!important;z-index:1000!important;background:' + C.primary + '!important;box-shadow:0 2px 8px rgba(0,0,0,0.15)!important;width:100%!important}',
         'header h2{font-size:14px!important;font-weight:600!important;letter-spacing:0.3px!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important;max-width:70vw!important}',
 
         /* === TOP CONTROLS === */
-        '.top-controls{padding:6px 12px!important;gap:8px!important;position:sticky!important;z-index:999!important;background:' + C.bg + '!important;border-bottom:1px solid ' + C.border + '!important}',
+        '.top-controls{padding:6px 12px!important;gap:8px!important;position:fixed!important;top:38px!important;left:0!important;right:0!important;z-index:999!important;background:' + C.bg + '!important;border-bottom:1px solid ' + C.border + '!important;width:100%!important}',
         '.notification-btn{width:36px!important;height:36px!important;font-size:18px!important;border-radius:10px!important;background:' + C.card + '!important;border:1px solid ' + C.border + '!important;display:flex!important;align-items:center!important;justify-content:center!important;box-shadow:0 1px 3px rgba(0,0,0,0.08)!important}',
 
-        /* === LAYOUT === */
-        '.system-content{display:block!important}',
-        '.content,#contentArea{width:100%!important;max-width:100%!important;min-width:0!important;padding:10px!important;overflow-x:hidden!important;background:' + C.bg + '!important}',
+        /* === LAYOUT — fix scroll container so header stays fixed === */
+        '.container{height:auto!important;min-height:100vh!important;overflow:visible!important}',
+        '.system-content{display:block!important;overflow:visible!important;flex:none!important;padding-top:80px!important}',
+        '.content,#contentArea{width:100%!important;max-width:100%!important;min-width:0!important;padding:10px!important;overflow-x:hidden!important;overflow-y:visible!important;background:' + C.bg + '!important}',
         '.content h3{font-size:16px!important;font-weight:700!important;color:' + C.text + '!important;margin-bottom:10px!important;letter-spacing:-0.3px!important}',
         '#contentArea>div,#contentArea>div>div{width:100%!important;max-width:100%!important}',
 
@@ -126,6 +127,15 @@
         /* === BOTTOM NAV — only show after login === */
         'body:not(.login-active) #m-nav{display:flex!important}',
         'body.login-active #m-nav{display:none!important}',
+
+        /* === INLINE STYLE OVERRIDES — beat style= attributes on grid/flex containers === */
+        'div[style*="grid-template-columns"]{grid-template-columns:1fr!important}',
+        'div[style*="grid-template-columns: repeat"]{grid-template-columns:1fr 1fr!important}',
+        'div[style*="display: grid"]{gap:8px!important}',
+        'div[style*="display: flex"][style*="gap"]{flex-wrap:wrap!important}',
+        'div[style*="min-width"]{min-width:0!important}',
+        'div[style*="width:"][style*="px"]{width:100%!important;max-width:100%!important}',
+        'span[style*="font-size"]{font-size:inherit!important}',
 
         '}', /* end 768px */
 
@@ -363,7 +373,34 @@
                 var mnw = parseInt(st.minWidth, 10);
                 if (mnw > 200) st.minWidth = '0';
             }
+            if (st.display === 'flex' || st.display === 'grid') {
+                st.flexWrap = 'wrap';
+            }
+            if (st.overflow === 'hidden') {
+                st.overflow = 'visible';
+            }
+            if (st.position === 'fixed' && el.tagName !== 'HEADER') {
+                // don't override fixed modals/overlays
+            }
+            if (st.fontSize) {
+                var fs = parseInt(st.fontSize, 10);
+                if (fs > 18) st.fontSize = '14px';
+            }
+            if (st.padding) {
+                var p = parseInt(st.padding, 10);
+                if (p > 20) st.padding = '10px';
+            }
+            if (st.margin) {
+                var m = parseInt(st.margin, 10);
+                if (m > 20) st.margin = '8px';
+            }
         });
+
+        // Fix the system-content and container overflow
+        var sc = document.querySelector('.system-content');
+        if (sc) { sc.style.overflow = 'visible'; sc.style.display = 'block'; }
+        var ct = document.querySelector('.container');
+        if (ct) { ct.style.height = 'auto'; ct.style.overflow = 'visible'; }
     }
 
     /* =========================================================
