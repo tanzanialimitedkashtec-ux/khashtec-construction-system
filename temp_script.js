@@ -48123,7 +48123,7 @@ function complianceReports() {
 
 
 function createNewProject(){
-
+    const autoProjectCode = "PRJ-" + new Date().getFullYear() + "-" + Math.floor(Math.random() * 1000).toString().padStart(3, "0");
     showContent(`
 
         <div class="card">
@@ -48170,7 +48170,7 @@ function createNewProject(){
 
                             <label>Project Code *</label>
 
-                            <input type="text" id="projectCode" placeholder="e.g., PRJ-2026-002" required>
+                            <input type="text" id="projectCode" value="${autoProjectCode}" readonly style="background-color: #f8f9fa; cursor: not-allowed; font-weight: bold; color: #555;" required />
 
                         </div>
 

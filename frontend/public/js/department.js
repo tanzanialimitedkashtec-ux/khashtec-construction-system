@@ -172,6 +172,7 @@
   function showDepartmentForm(){
     const container = document.getElementById('departmentFormContainer');
     if (!container) return;
+    const autoDeptCode = `DPT-${new Date().getFullYear()}-${Math.floor(Math.random() * 1000).toString().padStart(3, '0')}`;
     container.classList.remove('hidden');
     container.innerHTML = `
       <h4 style="margin:0 0 12px 0">Add Department</h4>
@@ -182,7 +183,7 @@
         </div>
         <div>
           <label>Department Code</label>
-          <input type="text" name="departmentCode" placeholder="e.g. HR" required />
+          <input type="text" name="departmentCode" value="${autoDeptCode}" readonly style="background-color: #f8f9fa; cursor: not-allowed; font-weight: bold; color: #555;" required />
         </div>
         <div>
           <label>Manager Email</label>
