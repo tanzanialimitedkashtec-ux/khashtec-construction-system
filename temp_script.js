@@ -31663,43 +31663,7 @@ function displayInspectionRecords(data) {
 
     // Sort records by date (most recent first)
 
-    mappedRecords\.sort\(\(a, b\) => new Date\(b\.date\) - new Date\(a\.date\)\);
-
-    // Update Sales Report Metrics dynamically
-    if (mappedRecords) {
-        let totalRevenue = 0;
-        let totalCommission = 0;
-        let propertiesSold = mappedRecords.length;
-        
-        mappedRecords.forEach(record => {
-            totalRevenue += parseFloat(record.salePrice || 0);
-            totalCommission += parseFloat(record.commission || 0);
-        });
-        
-        let avgSalePrice = propertiesSold > 0 ? (totalRevenue / propertiesSold) : 0;
-        
-        const elTotalSales = document.getElementById('totalSalesValue');
-        const elPropertiesSold = document.getElementById('propertiesSoldValue');
-        const elAvgSalePrice = document.getElementById('avgSalePriceValue');
-        const elCommissionEarned = document.getElementById('commissionEarnedValue');
-        
-        if (elTotalSales) elTotalSales.textContent = "TZS " + totalRevenue.toLocaleString();
-        if (elPropertiesSold) elPropertiesSold.textContent = propertiesSold;
-        if (elAvgSalePrice) elAvgSalePrice.textContent = "TZS " + Math.round(avgSalePrice).toLocaleString();
-        if (elCommissionEarned) elCommissionEarned.textContent = "TZS " + totalCommission.toLocaleString();
-        
-        // Update bars
-        const elTotalSalesBar = document.getElementById('totalSalesBar');
-        const elPropertiesSoldBar = document.getElementById('propertiesSoldBar');
-        const elAvgSalePriceBar = document.getElementById('avgSalePriceBar');
-        const elCommissionEarnedBar = document.getElementById('commissionEarnedBar');
-        
-        if (elTotalSalesBar) elTotalSalesBar.style.width = Math.min(100, (totalRevenue / 1000000000) * 100) + '%';
-        if (elPropertiesSoldBar) elPropertiesSoldBar.style.width = Math.min(100, (propertiesSold / 10) * 100) + '%';
-        if (elAvgSalePriceBar) elAvgSalePriceBar.style.width = Math.min(100, (avgSalePrice / 500000000) * 100) + '%';
-        if (elCommissionEarnedBar) elCommissionEarnedBar.style.width = Math.min(100, (totalCommission / 50000000) * 100) + '%';
-    }
-
+    mappedRecords.sort((a, b) => new Date(b.date) - new Date(a.date));
 
     
 
@@ -59536,52 +59500,55 @@ function generateSalesReport(){
             <div class="report-metrics" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 8px; margin-bottom: 15px;">
                 <div class="metric-card" style="background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%); padding: 8px 10px; border-radius: 6px; box-shadow: 0 1px 4px rgba(0,0,0,0.05); border-left: 2px solid #4CAF50; transition: transform 0.2s ease;">
                     <h5 style="color: #666; font-size: 0.65rem; margin: 0 0 2px 0; text-transform: uppercase; letter-spacing: 0.5px;">Total Sales</h5>
-                    <div id="totalSalesValue" class="metric-value" style="font-size: 1rem; font-weight: 700; color: #2c3e50; margin: 2px 0;">Loading...</div>
+                    <div id="totalSalesValue" class="metric-value" style="font-size: 1rem; font-weight: 700; color: #2c3e50; margin: 2px 0;">TZS 470,909,090</div>
                     <div class="metric-bar-container" style="background: #eef2f3; height: 4px; border-radius: 2px; margin: 4px 0 2px 0; overflow: hidden; position: relative;">
-                        <div id="totalSalesBar" class="metric-bar" style="background: #4CAF50; height: 100%; width: 0%; border-radius: 2px; transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);"></div>
+                        <div id="totalSalesBar" class="metric-bar" style="background: #4CAF50; height: 100%; width: 47%; border-radius: 2px; transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);"></div>
                     </div>
                     <div class="metric-change positive" style="color: #7f8c8d; font-size: 0.55rem; font-weight: 600; display: flex; justify-content: space-between; align-items: center; margin-top: 2px;">
-                        <span id="totalSalesPct">Live Data</span>
+                        <span id="totalSalesPct">47% of target (TZS 1B)</span>
                         <span style="color: #4CAF50;">Auto-updated</span>
                     </div>
                 </div>
                 
                 <div class="metric-card" style="background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%); padding: 8px 10px; border-radius: 6px; box-shadow: 0 1px 4px rgba(0,0,0,0.05); border-left: 2px solid #2196F3; transition: transform 0.2s ease;">
                     <h5 style="color: #666; font-size: 0.65rem; margin: 0 0 2px 0; text-transform: uppercase; letter-spacing: 0.5px;">Properties Sold</h5>
-                    <div id="propertiesSoldValue" class="metric-value" style="font-size: 1rem; font-weight: 700; color: #2c3e50; margin: 2px 0;">Loading...</div>
+                    <div id="propertiesSoldValue" class="metric-value" style="font-size: 1rem; font-weight: 700; color: #2c3e50; margin: 2px 0;">2</div>
                     <div class="metric-bar-container" style="background: #eef2f3; height: 4px; border-radius: 2px; margin: 4px 0 2px 0; overflow: hidden; position: relative;">
-                        <div id="propertiesSoldBar" class="metric-bar" style="background: #2196F3; height: 100%; width: 0%; border-radius: 2px; transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);"></div>
+                        <div id="propertiesSoldBar" class="metric-bar" style="background: #2196F3; height: 100%; width: 20%; border-radius: 2px; transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);"></div>
                     </div>
                     <div class="metric-change positive" style="color: #7f8c8d; font-size: 0.55rem; font-weight: 600; display: flex; justify-content: space-between; align-items: center; margin-top: 2px;">
-                        <span id="propertiesSoldPct">Live Data</span>
+                        <span id="propertiesSoldPct">20% of target (10 Sold)</span>
                         <span style="color: #4CAF50;">Auto-updated</span>
                     </div>
                 </div>
                 
                 <div class="metric-card" style="background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%); padding: 8px 10px; border-radius: 6px; box-shadow: 0 1px 4px rgba(0,0,0,0.05); border-left: 2px solid #9C27B0; transition: transform 0.2s ease;">
                     <h5 style="color: #666; font-size: 0.65rem; margin: 0 0 2px 0; text-transform: uppercase; letter-spacing: 0.5px;">Average Sale Price</h5>
-                    <div id="avgSalePriceValue" class="metric-value" style="font-size: 1rem; font-weight: 700; color: #2c3e50; margin: 2px 0;">Loading...</div>
+                    <div id="avgSalePriceValue" class="metric-value" style="font-size: 1rem; font-weight: 700; color: #2c3e50; margin: 2px 0;">TZS 235,454,545</div>
                     <div class="metric-bar-container" style="background: #eef2f3; height: 4px; border-radius: 2px; margin: 4px 0 2px 0; overflow: hidden; position: relative;">
-                        <div id="avgSalePriceBar" class="metric-bar" style="background: #9C27B0; height: 100%; width: 0%; border-radius: 2px; transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);"></div>
+                        <div id="avgSalePriceBar" class="metric-bar" style="background: #9C27B0; height: 100%; width: 47%; border-radius: 2px; transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);"></div>
                     </div>
                     <div class="metric-change positive" style="color: #7f8c8d; font-size: 0.55rem; font-weight: 600; display: flex; justify-content: space-between; align-items: center; margin-top: 2px;">
-                        <span id="avgSalePricePct">Live Data</span>
+                        <span id="avgSalePricePct">47% of target (TZS 500M)</span>
                         <span style="color: #4CAF50;">Auto-updated</span>
                     </div>
                 </div>
                 
                 <div class="metric-card" style="background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%); padding: 8px 10px; border-radius: 6px; box-shadow: 0 1px 4px rgba(0,0,0,0.05); border-left: 2px solid #FF9800; transition: transform 0.2s ease;">
                     <h5 style="color: #666; font-size: 0.65rem; margin: 0 0 2px 0; text-transform: uppercase; letter-spacing: 0.5px;">Commission Earned</h5>
-                    <div id="commissionEarnedValue" class="metric-value" style="font-size: 1rem; font-weight: 700; color: #2c3e50; margin: 2px 0;">Loading...</div>
+                    <div id="commissionEarnedValue" class="metric-value" style="font-size: 1rem; font-weight: 700; color: #2c3e50; margin: 2px 0;">TZS 23,545,454.5</div>
                     <div class="metric-bar-container" style="background: #eef2f3; height: 4px; border-radius: 2px; margin: 4px 0 2px 0; overflow: hidden; position: relative;">
-                        <div id="commissionEarnedBar" class="metric-bar" style="background: #FF9800; height: 100%; width: 0%; border-radius: 2px; transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);"></div>
+                        <div id="commissionEarnedBar" class="metric-bar" style="background: #FF9800; height: 100%; width: 47%; border-radius: 2px; transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);"></div>
                     </div>
                     <div class="metric-change positive" style="color: #7f8c8d; font-size: 0.55rem; font-weight: 600; display: flex; justify-content: space-between; align-items: center; margin-top: 2px;">
-                        <span id="commissionEarnedPct">Live Data</span>
+                        <span id="commissionEarnedPct">47% of target (TZS 50M)</span>
                         <span style="color: #4CAF50;">Auto-updated</span>
                     </div>
                 </div>
             </div>
+
+            
+
             <div class="sales-records">
 
                 <div class="sales-table-container">
@@ -60245,43 +60212,7 @@ function displaySalesRecords(records) {
     
 
     // Sort records by date (most recent first)
-    mappedRecords\.sort\(\(a, b\) => new Date\(b\.date\) - new Date\(a\.date\)\);
-
-    // Update Sales Report Metrics dynamically
-    if (mappedRecords) {
-        let totalRevenue = 0;
-        let totalCommission = 0;
-        let propertiesSold = mappedRecords.length;
-        
-        mappedRecords.forEach(record => {
-            totalRevenue += parseFloat(record.salePrice || 0);
-            totalCommission += parseFloat(record.commission || 0);
-        });
-        
-        let avgSalePrice = propertiesSold > 0 ? (totalRevenue / propertiesSold) : 0;
-        
-        const elTotalSales = document.getElementById('totalSalesValue');
-        const elPropertiesSold = document.getElementById('propertiesSoldValue');
-        const elAvgSalePrice = document.getElementById('avgSalePriceValue');
-        const elCommissionEarned = document.getElementById('commissionEarnedValue');
-        
-        if (elTotalSales) elTotalSales.textContent = "TZS " + totalRevenue.toLocaleString();
-        if (elPropertiesSold) elPropertiesSold.textContent = propertiesSold;
-        if (elAvgSalePrice) elAvgSalePrice.textContent = "TZS " + Math.round(avgSalePrice).toLocaleString();
-        if (elCommissionEarned) elCommissionEarned.textContent = "TZS " + totalCommission.toLocaleString();
-        
-        // Update bars
-        const elTotalSalesBar = document.getElementById('totalSalesBar');
-        const elPropertiesSoldBar = document.getElementById('propertiesSoldBar');
-        const elAvgSalePriceBar = document.getElementById('avgSalePriceBar');
-        const elCommissionEarnedBar = document.getElementById('commissionEarnedBar');
-        
-        if (elTotalSalesBar) elTotalSalesBar.style.width = Math.min(100, (totalRevenue / 1000000000) * 100) + '%';
-        if (elPropertiesSoldBar) elPropertiesSoldBar.style.width = Math.min(100, (propertiesSold / 10) * 100) + '%';
-        if (elAvgSalePriceBar) elAvgSalePriceBar.style.width = Math.min(100, (avgSalePrice / 500000000) * 100) + '%';
-        if (elCommissionEarnedBar) elCommissionEarnedBar.style.width = Math.min(100, (totalCommission / 50000000) * 100) + '%';
-    }
-
+    mappedRecords.sort((a, b) => new Date(b.date) - new Date(a.date));
 
     // Calculate and update metrics
     let totalSales = 0;
