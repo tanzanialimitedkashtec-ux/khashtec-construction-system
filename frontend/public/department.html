@@ -24196,19 +24196,6 @@ font-size: 12px;
 
 
 
-<script>
-// Ensure toggleSidebar and toggleNotificationPanel are available before buttons that call them
-function toggleSidebar(){
-    var sidebar = document.querySelector('.sidebar');
-    if (!sidebar) return;
-    sidebar.classList.toggle('collapsed');
-}
-function toggleNotificationPanel(){
-    var panel = document.getElementById('notificationPanel');
-    if (!panel) return;
-    panel.style.display = panel.style.display === 'block' ? 'none' : 'block';
-}
-</script>
 <div id="systemPage" class="container hidden">
 
     <div class="top-controls">
@@ -106562,7 +106549,6 @@ if (!document.getElementById('transport-cost-styles')) {
 <script src="js/financial-strategies.js"></script>
 <!-- Removed missing work-approval-functions.js include (caused 404 + syntax errors) -->
 <script src="js/new-features.js"></script>
-<script src="js/mobile-ui.js"></script>
 
 
 
@@ -112210,7 +112196,7 @@ function confirmPayEmployee(e) {
 }
 </script>
 
-<!-- FINAL MOBILE OVERRIDES: now handled by js/mobile-ui.js which injects styles + bottom nav -->
+<!-- FINAL MOBILE OVERRIDES: placed last to override all inline styles and later style blocks -->
 <style>
 @media (max-width: 768px) {
     /* Override later style blocks for modals */
