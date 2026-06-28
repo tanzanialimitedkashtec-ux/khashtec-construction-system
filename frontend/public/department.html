@@ -106549,7 +106549,6 @@ if (!document.getElementById('transport-cost-styles')) {
 <script src="js/financial-strategies.js"></script>
 <!-- Removed missing work-approval-functions.js include (caused 404 + syntax errors) -->
 <script src="js/new-features.js"></script>
-<script src="js/mobile-ui.js"></script>
 
 
 
@@ -112197,7 +112196,7 @@ function confirmPayEmployee(e) {
 }
 </script>
 
-<!-- FINAL MOBILE OVERRIDES: now handled by js/mobile-ui.js which injects styles + bottom nav -->
+<!-- FINAL MOBILE OVERRIDES: placed last to override all inline styles and later style blocks -->
 <style>
 @media (max-width: 768px) {
     /* Override later style blocks for modals */
