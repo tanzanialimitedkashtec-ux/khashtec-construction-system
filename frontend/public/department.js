@@ -53982,48 +53982,6 @@ async function recordSale(){
 
             
 
-            <div class="sales-overview">
-
-                <div class="sales-stats">
-
-                    <div class="stat-item">
-
-                        <span class="stat-label">Total Sales:</span>
-
-                        <span class="stat-value">142</span>
-
-                    </div>
-
-                    <div class="stat-item">
-
-                        <span class="stat-label">This Month:</span>
-
-                        <span class="stat-value">18</span>
-
-                    </div>
-
-                    <div class="stat-item">
-
-                        <span class="stat-label">Revenue:</span>
-
-                        <span class="stat-value">TZS 8.5B</span>
-
-                    </div>
-
-                    <div class="stat-item">
-
-                        <span class="stat-label">Pending:</span>
-
-                        <span class="stat-value">7</span>
-
-                    </div>
-
-                </div>
-
-            </div>
-
-            
-
             <div id="saleFormContainer" style="display: none;">
 
                 <div class="form-header">
@@ -54354,51 +54312,27 @@ function manageSales() {
                 </div>
 
             </div>
-
-            
-
             <div class="sales-overview">
-
-                <div class="sales-stats">
-
+                <div class="sales-stats" id="dynamicSalesStats">
                     <div class="stat-item">
-
                         <span class="stat-label">Total Sales:</span>
-
-                        <span class="stat-value">142</span>
-
+                        <span class="stat-value" id="statTotalSales">Loading...</span>
                     </div>
-
                     <div class="stat-item">
-
                         <span class="stat-label">This Month:</span>
-
-                        <span class="stat-value">18</span>
-
+                        <span class="stat-value" id="statThisMonth">Loading...</span>
                     </div>
-
                     <div class="stat-item">
-
                         <span class="stat-label">Revenue:</span>
-
-                        <span class="stat-value">TZS 8.5B</span>
-
+                        <span class="stat-value" id="statRevenue">Loading...</span>
                     </div>
-
                     <div class="stat-item">
-
                         <span class="stat-label">Pending:</span>
-
-                        <span class="stat-value">7</span>
-
+                        <span class="stat-value" id="statPending">Loading...</span>
                     </div>
-
                 </div>
-
             </div>
-
             
-
             <div class="sales-records">
 
                 <div class="sales-table-container">
@@ -54486,6 +54420,44 @@ async function loadSales() {
             sales = Array.isArray(response.data) ? response.data : [];
         } else if (response && response.sales) {
             sales = Array.isArray(response.sales) ? response.sales : [];
+        }
+        if (sales) {
+            const currentMonth = new Date().getMonth();
+            const currentYear = new Date().getFullYear();
+            let totalSales = sales.length;
+            let thisMonth = 0;
+            let revenue = 0;
+            let pending = 0;
+
+            sales.forEach(sale => {
+                const saleDate = new Date(sale.saleDate || sale.date || new Date());
+                if (saleDate.getMonth() === currentMonth && saleDate.getFullYear() === currentYear) {
+                    thisMonth++;
+                }
+                revenue += parseFloat(sale.salePrice || sale.sale_price || sale.propertyPrice || 0);
+                const status = (sale.paymentStatus || sale.payment_status || sale.status || '').toLowerCase();
+                if (status === 'pending') {
+                    pending++;
+                }
+            });
+
+            let formattedRevenue = 'TZS ' + revenue;
+            if (revenue >= 1000000000) {
+                formattedRevenue = 'TZS ' + (revenue / 1000000000).toFixed(1) + 'B';
+            } else if (revenue >= 1000000) {
+                formattedRevenue = 'TZS ' + (revenue / 1000000).toFixed(1) + 'M';
+            } else {
+                formattedRevenue = 'TZS ' + revenue.toLocaleString();
+            }
+
+            const elTotal = document.getElementById('statTotalSales');
+            const elThisMonth = document.getElementById('statThisMonth');
+            const elRevenue = document.getElementById('statRevenue');
+            const elPending = document.getElementById('statPending');
+            if (elTotal) elTotal.textContent = totalSales;
+            if (elThisMonth) elThisMonth.textContent = thisMonth;
+            if (elRevenue) elRevenue.textContent = formattedRevenue;
+            if (elPending) elPending.textContent = pending;
         }
 
         if (sales.length > 0) {
