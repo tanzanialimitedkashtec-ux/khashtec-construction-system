@@ -1208,32 +1208,7 @@ function showDashboardOverview() {
                 </article>
             </div>
 
-            <div id="expenseOverviewStats" class="dashboard-metric-grid" style="margin-bottom: 16px;">
-                <article class="dashboard-metric-card finance">
-                    <span class="dashboard-metric-category">Expense</span>
-                    <div class="dashboard-metric-label">Monthly Budget</div>
-                    <div class="dashboard-metric-value">TZS <span id="expStatBudget">Loading...</span></div>
-                    <div class="dashboard-metric-detail" id="expStatMonth">--</div>
-                </article>
-                <article class="dashboard-metric-card finance">
-                    <span class="dashboard-metric-category">Expense</span>
-                    <div class="dashboard-metric-label">Expenses This Month</div>
-                    <div class="dashboard-metric-value">TZS <span id="expStatUsed">Loading...</span></div>
-                    <div class="dashboard-metric-detail" id="expStatPercent">--</div>
-                </article>
-                <article class="dashboard-metric-card finance">
-                    <span class="dashboard-metric-category">Expense</span>
-                    <div class="dashboard-metric-label">Remaining Budget</div>
-                    <div class="dashboard-metric-value">TZS <span id="expStatRemaining">Loading...</span></div>
-                    <div class="dashboard-metric-detail" id="expStatAvailable">--</div>
-                </article>
-                <article class="dashboard-metric-card finance">
-                    <span class="dashboard-metric-category">Expense</span>
-                    <div class="dashboard-metric-label">Pending Confirmation</div>
-                    <div class="dashboard-metric-value" id="expStatPending">Loading...</div>
-                    <div class="dashboard-metric-detail">Awaiting Review</div>
-                </article>
-            </div>
+
 
             <div id="dashboardMetricGrid" class="dashboard-metric-grid"></div>
         </div>
@@ -38466,61 +38441,6 @@ function expenseControl(){
     showContent(`<div class="card">
 
         <h3>Expense Control</h3>
-
-        <div class="expense-overview">
-
-            <h4>Expense Overview</h4>
-
-            <div class="expense-stats" id="expenseOverviewStats" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 8px; margin-top: 8px;">
-                <div class="metric-card" style="background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%); padding: 8px 10px; border-radius: 6px; box-shadow: 0 1px 4px rgba(0,0,0,0.05); border-left: 2px solid #2196F3; transition: transform 0.2s ease;">
-                    <h5 style="color: #666; font-size: 0.65rem; margin: 0 0 2px 0; text-transform: uppercase; letter-spacing: 0.5px;">Monthly Budget</h5>
-                    <div class="metric-value" style="font-size: 1rem; font-weight: 700; color: #2c3e50; margin: 2px 0;">TZS <span id="expStatBudget">Loading...</span></div>
-                    <div class="metric-bar-container" style="background: #eef2f3; height: 4px; border-radius: 2px; margin: 4px 0 2px 0; overflow: hidden; position: relative;">
-                        <div class="metric-bar" style="background: #2196F3; height: 100%; width: 100%; border-radius: 2px; transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);"></div>
-                    </div>
-                    <div class="metric-change" style="color: #7f8c8d; font-size: 0.55rem; font-weight: 600; display: flex; justify-content: space-between; align-items: center; margin-top: 2px;">
-                        <span>Target allocation</span>
-                        <span style="color: #2196F3;" id="expStatMonth">--</span>
-                    </div>
-                </div>
-
-                <div class="metric-card" style="background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%); padding: 8px 10px; border-radius: 6px; box-shadow: 0 1px 4px rgba(0,0,0,0.05); border-left: 2px solid #F44336; transition: transform 0.2s ease;">
-                    <h5 style="color: #666; font-size: 0.65rem; margin: 0 0 2px 0; text-transform: uppercase; letter-spacing: 0.5px;">Expenses This Month</h5>
-                    <div class="metric-value" style="font-size: 1rem; font-weight: 700; color: #2c3e50; margin: 2px 0;">TZS <span id="expStatUsed">Loading...</span></div>
-                    <div class="metric-bar-container" style="background: #eef2f3; height: 4px; border-radius: 2px; margin: 4px 0 2px 0; overflow: hidden; position: relative;">
-                        <div class="metric-bar" id="expStatUsedBar" style="background: #F44336; height: 100%; width: 0%; border-radius: 2px; transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);"></div>
-                    </div>
-                    <div class="metric-change" style="color: #7f8c8d; font-size: 0.55rem; font-weight: 600; display: flex; justify-content: space-between; align-items: center; margin-top: 2px;">
-                        <span>Current usage</span>
-                        <span style="color: #F44336;" id="expStatPercent">--</span>
-                    </div>
-                </div>
-
-                <div class="metric-card" style="background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%); padding: 8px 10px; border-radius: 6px; box-shadow: 0 1px 4px rgba(0,0,0,0.05); border-left: 2px solid #4CAF50; transition: transform 0.2s ease;">
-                    <h5 style="color: #666; font-size: 0.65rem; margin: 0 0 2px 0; text-transform: uppercase; letter-spacing: 0.5px;">Remaining Budget</h5>
-                    <div class="metric-value" style="font-size: 1rem; font-weight: 700; color: #2c3e50; margin: 2px 0;">TZS <span id="expStatRemaining">Loading...</span></div>
-                    <div class="metric-bar-container" style="background: #eef2f3; height: 4px; border-radius: 2px; margin: 4px 0 2px 0; overflow: hidden; position: relative;">
-                        <div class="metric-bar" id="expStatRemainingBar" style="background: #4CAF50; height: 100%; width: 0%; border-radius: 2px; transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);"></div>
-                    </div>
-                    <div class="metric-change" style="color: #7f8c8d; font-size: 0.55rem; font-weight: 600; display: flex; justify-content: space-between; align-items: center; margin-top: 2px;">
-                        <span>Available balance</span>
-                        <span style="color: #4CAF50;" id="expStatAvailable">--</span>
-                    </div>
-                </div>
-
-                <div class="metric-card" style="background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%); padding: 8px 10px; border-radius: 6px; box-shadow: 0 1px 4px rgba(0,0,0,0.05); border-left: 2px solid #FF9800; transition: transform 0.2s ease;">
-                    <h5 style="color: #666; font-size: 0.65rem; margin: 0 0 2px 0; text-transform: uppercase; letter-spacing: 0.5px;">Pending Confirmation</h5>
-                    <div class="metric-value" style="font-size: 1rem; font-weight: 700; color: #2c3e50; margin: 2px 0;" id="expStatPending">Loading...</div>
-                    <div class="metric-bar-container" style="background: #eef2f3; height: 4px; border-radius: 2px; margin: 4px 0 2px 0; overflow: hidden; position: relative;">
-                        <div class="metric-bar" style="background: #FF9800; height: 100%; width: 100%; border-radius: 2px; animation: pulse 2s infinite;"></div>
-                    </div>
-                    <div class="metric-change" style="color: #7f8c8d; font-size: 0.55rem; font-weight: 600; display: flex; justify-content: space-between; align-items: center; margin-top: 2px;">
-                        <span>Action required</span>
-                        <span style="color: #FF9800;">Awaiting Review</span>
-                    </div>
-                </div>
-            </div>
-
         </div>
 
         <div class="expense-management">

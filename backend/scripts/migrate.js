@@ -449,7 +449,32 @@ async function runMigration() {
             }
         }
         
-        // Insert sample data (removed mock assignments)
+        // Insert sample data
+        console.log('📝 Inserting sample worker assignment data...');
+        const sampleDataSQL = `
+            INSERT IGNORE INTO worker_assignments (
+                employee_id, employee_name, project_id, project_name, role_in_project,
+                start_date, end_date, assignment_notes, status, assigned_by, assigned_by_role
+            ) VALUES
+            ('emp001', 'John Doe', 'proj001', 'Dar es Salaam Port Modernization', 'Site Supervisor', '2026-01-15', NULL, 'Leading the port modernization team', 'Active', 'HR Manager', 'HR Manager'),
+            ('emp002', 'Jane Smith', 'proj002', 'Residential Buildings - Kinondoni', 'Project Manager', '2026-02-01', '2026-03-15', 'Successfully completed residential project', 'Completed', 'HR Manager', 'HR Manager'),
+            ('emp003', 'Mike Johnson', 'proj003', 'Fukayosi Real Estate Project', 'Construction Worker', '2026-01-20', NULL, 'Skilled labor for real estate development', 'Active', 'HR Manager', 'HR Manager'),
+            ('emp004', 'Sarah Wilson', 'proj004', 'Road Construction - Bagamoyo', 'Engineer', '2026-03-01', NULL, 'Road construction and infrastructure work', 'Active', 'HR Manager', 'HR Manager')
+        `;
+        
+        await db.execute(sampleDataSQL);
+        console.log('✅ Sample data inserted successfully');
+        
+        // Verify sample data was inserted
+        console.log('🔍 Verifying sample worker assignment data...');
+        const [dataCheck] = await db.execute('SELECT COUNT(*) as count FROM worker_assignments');
+        
+        if (dataCheck[0].count > 0) {
+            console.log(`✅ Sample data verified: ${dataCheck[0].count} worker assignments found`);
+        } else {
+            console.error('❌ No sample data was inserted!');
+            throw new Error('Sample data insertion verification failed');
+        }
         
         // Insert sample policy if policies table is empty
         console.log('📝 Checking if policies table needs sample data...');
