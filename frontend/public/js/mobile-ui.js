@@ -239,24 +239,100 @@
     }
 
     /* =========================================================
-       2. BOTTOM NAV BAR
+       2. BOTTOM NAV BAR — role-based items
        ========================================================= */
+
+    // Map each role to nav items (icon, label, action key)
+    // Home and More are always included; middle items are role-specific
+    var roleNavItems = {
+        'MD': [
+            { icon: '&#9989;', label: 'Approvals', action: 'approvals' },
+            { icon: '&#128196;', label: 'Docs', action: 'docs' },
+            { icon: '&#128176;', label: 'Tax', action: 'tax' }
+        ],
+        'ADMIN': [
+            { icon: '&#128101;', label: 'Staff', action: 'workers' },
+            { icon: '&#127970;', label: 'Office', action: 'office' },
+            { icon: '&#128202;', label: 'Reports', action: 'reports' }
+        ],
+        'HR': [
+            { icon: '&#128101;', label: 'Team', action: 'workers' },
+            { icon: '&#128197;', label: 'Attendance', action: 'attendance' },
+            { icon: '&#128176;', label: 'Payments', action: 'payments' }
+        ],
+        'PROJECT': [
+            { icon: '&#128204;', label: 'Projects', action: 'projects' },
+            { icon: '&#128203;', label: 'Tasks', action: 'tasks' },
+            { icon: '&#128101;', label: 'Workers', action: 'workers' }
+        ],
+        'REALESTATE': [
+            { icon: '&#127968;', label: 'Properties', action: 'properties' },
+            { icon: '&#128176;', label: 'Sales', action: 'sales' },
+            { icon: '&#128666;', label: 'Vehicles', action: 'vehicles' }
+        ],
+        'ASSISTANT': [
+            { icon: '&#128196;', label: 'Docs', action: 'docs' },
+            { icon: '&#128197;', label: 'Meetings', action: 'meetings' },
+            { icon: '&#128276;', label: 'Notify', action: 'notify' }
+        ],
+        'HSE': [
+            { icon: '&#9888;', label: 'Safety', action: 'safety' },
+            { icon: '&#129694;', label: 'PPE', action: 'ppe' },
+            { icon: '&#128203;', label: 'Incidents', action: 'incidents' }
+        ],
+        'FINANCE': [
+            { icon: '&#128176;', label: 'Finance', action: 'finance' },
+            { icon: '&#128200;', label: 'Budget', action: 'budget' },
+            { icon: '&#128179;', label: 'Payroll', action: 'payroll' }
+        ]
+    };
+
+    function getRoleKey() {
+        var role = (typeof currentRole !== 'undefined') ? currentRole : '';
+        if (!role) return '';
+        if (role === 'REAL ESTATE' || role === 'real estate') return 'REALESTATE';
+        if (role === 'HR manager' || role === 'hr@manager') return 'HR';
+        if (role === 'Finance Manager' || role === 'finance maneger') return 'FINANCE';
+        if (role === 'project manager') return 'PROJECT';
+        if (role === 'hse maneger' || role === 'HSE Manager') return 'HSE';
+        if (role === 'admin') return 'ADMIN';
+        if (role === 'ASSISTANT') return 'ASSISTANT';
+        if (role === 'MD' || role === 'Managing Director') return 'MD';
+        return role.toUpperCase().replace(/\s+/g, '');
+    }
+
     function createNav() {
-        if (document.getElementById('m-nav')) return;
-        var n = document.createElement('div');
-        n.id = 'm-nav';
-        n.innerHTML =
-            '<button class="m-ni act" data-a="dashboard" onclick="mNav(\'dashboard\')">' +
-                '<span class="ni">&#127968;</span><span class="nl">Home</span></button>' +
-            '<button class="m-ni" data-a="projects" onclick="mNav(\'projects\')">' +
-                '<span class="ni">&#128204;</span><span class="nl">Projects</span></button>' +
-            '<button class="m-ni" data-a="workers" onclick="mNav(\'workers\')">' +
-                '<span class="ni">&#128101;</span><span class="nl">Team</span></button>' +
-            '<button class="m-ni" data-a="docs" onclick="mNav(\'docs\')">' +
-                '<span class="ni">&#128196;</span><span class="nl">Docs</span></button>' +
-            '<button class="m-ni" data-a="menu" onclick="mNav(\'menu\')">' +
-                '<span class="ni">&#9776;</span><span class="nl">More</span></button>';
-        document.body.appendChild(n);
+        var n = document.getElementById('m-nav');
+        if (!n) {
+            n = document.createElement('div');
+            n.id = 'm-nav';
+            document.body.appendChild(n);
+        }
+
+        var rk = getRoleKey();
+        var middleItems = roleNavItems[rk] || [
+            { icon: '&#128196;', label: 'Docs', action: 'docs' },
+            { icon: '&#128101;', label: 'Team', action: 'workers' },
+            { icon: '&#128276;', label: 'Notify', action: 'notify' }
+        ];
+
+        var html = '<button class="m-ni act" data-a="dashboard" onclick="mNav(\'dashboard\')">' +
+            '<span class="ni">&#127968;</span><span class="nl">Home</span></button>';
+
+        middleItems.forEach(function(item) {
+            html += '<button class="m-ni" data-a="' + item.action + '" onclick="mNav(\'' + item.action + '\')">' +
+                '<span class="ni">' + item.icon + '</span><span class="nl">' + item.label + '</span></button>';
+        });
+
+        html += '<button class="m-ni" data-a="menu" onclick="mNav(\'menu\')">' +
+            '<span class="ni">&#9776;</span><span class="nl">More</span></button>';
+
+        n.innerHTML = html;
+    }
+
+    // Rebuild nav when role changes (after login)
+    function refreshNav() {
+        createNav();
     }
 
     /* =========================================================
@@ -307,18 +383,41 @@
         if (role && title) title.textContent = role.textContent || 'Menu';
     }
 
+    // Action-to-function mapping for all nav items
+    var navActions = {
+        'dashboard': function() { if (typeof showDashboardOverview === 'function') showDashboardOverview(); },
+        'projects': function() { if (typeof createNewProject === 'function') createNewProject(); },
+        'workers': function() {
+            if (typeof viewAllWorkers === 'function') viewAllWorkers();
+            else if (typeof viewEmployeeList === 'function') viewEmployeeList();
+        },
+        'docs': function() { if (typeof documentManagement === 'function') documentManagement(); },
+        'attendance': function() { if (typeof attendance === 'function') attendance(); },
+        'payments': function() { if (typeof showPaymentManagement === 'function') showPaymentManagement(); },
+        'approvals': function() { if (typeof showPaymentApprovals === 'function') showPaymentApprovals(); },
+        'tax': function() { if (typeof showTaxPayments === 'function') showTaxPayments(); },
+        'office': function() { if (typeof officePortal === 'function') officePortal(); },
+        'reports': function() { if (typeof viewWorkforceReports === 'function') viewWorkforceReports(); },
+        'properties': function() { if (typeof addProperty === 'function') addProperty(); },
+        'sales': function() { if (typeof manageSales === 'function') manageSales(); },
+        'vehicles': function() { if (typeof manageCompanyCars === 'function') manageCompanyCars(); },
+        'meetings': function() { if (typeof scheduleMeeting === 'function') scheduleMeeting(); },
+        'notify': function() { if (typeof sendNotifications === 'function') sendNotifications(); },
+        'safety': function() { if (typeof markSafetyViolations === 'function') markSafetyViolations(); },
+        'ppe': function() { if (typeof showPpeInventory === 'function') showPpeInventory(); },
+        'incidents': function() { if (typeof recordIncidentReports === 'function') recordIncidentReports(); },
+        'finance': function() { if (typeof financialManagement === 'function') financialManagement(); },
+        'budget': function() { if (typeof financeBudgeting === 'function') financeBudgeting(); },
+        'payroll': function() { if (typeof payrollProcessing === 'function') payrollProcessing(); },
+        'tasks': function() { if (typeof assignTasks === 'function') assignTasks(); }
+    };
+
     window.mNav = function(a) {
         document.querySelectorAll('.m-ni').forEach(function(i) {
             i.classList.toggle('act', i.getAttribute('data-a') === a);
         });
         if (a === 'menu') { openMenu(); return; }
-        if (a === 'dashboard' && typeof showDashboardOverview === 'function') showDashboardOverview();
-        else if (a === 'projects' && typeof showCreateProjectForm === 'function') showCreateProjectForm();
-        else if (a === 'workers') {
-            if (typeof viewAllWorkers === 'function') viewAllWorkers();
-            else if (typeof viewEmployeeList === 'function') viewEmployeeList();
-        }
-        else if (a === 'docs' && typeof documentManagement === 'function') documentManagement();
+        if (navActions[a]) navActions[a]();
     };
 
     window.openMenu = function() {
@@ -472,4 +571,20 @@
             }
         }, 200);
     });
+
+    // Watch for login-active class removal (login complete) to rebuild nav with role
+    var bodyObs = new MutationObserver(function(mutations) {
+        mutations.forEach(function(m) {
+            if (m.type === 'attributes' && m.attributeName === 'class') {
+                var isLogin = document.body.classList.contains('login-active');
+                if (!isLogin && isMobile()) {
+                    setTimeout(function() { createNav(); }, 300);
+                }
+            }
+        });
+    });
+    bodyObs.observe(document.body, { attributes: true, attributeFilter: ['class'] });
+
+    // Also expose refreshNav globally so it can be called after login
+    window.refreshMobileNav = refreshNav;
 })();
