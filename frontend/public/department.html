@@ -24195,7 +24195,16 @@ font-size: 12px;
     </div>
 
 
-
+<script>
+function toggleSidebar(){
+    var s=document.querySelector('.sidebar');
+    if(s)s.classList.toggle('collapsed');
+}
+function toggleNotificationPanel(){
+    var p=document.getElementById('notificationPanel');
+    if(p)p.style.display=p.style.display==='block'?'none':'block';
+}
+</script>
 <div id="systemPage" class="container hidden">
 
     <div class="top-controls">
@@ -106480,6 +106489,7 @@ if (!document.getElementById('transport-cost-styles')) {
 <script src="js/financial-strategies.js"></script>
 <!-- Removed missing work-approval-functions.js include (caused 404 + syntax errors) -->
 <script src="js/new-features.js"></script>
+<script src="js/mobile-ui.js"></script>
 
 
 
