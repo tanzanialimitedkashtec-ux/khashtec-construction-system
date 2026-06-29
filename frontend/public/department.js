@@ -23583,7 +23583,7 @@ function submitIncidentToDatabase() {
 
         
 
-        console.log('Form values:', { incidentType, severityLevel, incidentDescription, reportedBy, project, location });
+        console.log('Form values:', { incidentType, severityLevel, incidentDescription, reportedBy, incidentProject, incidentLocation });
 
         
 
@@ -23662,7 +23662,7 @@ function submitIncidentToDatabase() {
         
 
         // Send data to backend API - NO FORM INVOLVED
-        fetch(`${baseUrl}/api/work/hse`, {
+        fetch(`${baseUrl}/api/hse/hse`, {
             method: 'POST',
 
             headers: {
@@ -33760,393 +33760,30 @@ function filterSafetyProjects() {
 
     
 
-    console.log('ðŸ” Filtering projects by:', filterValue);
 
-    
+    console.log('Filtering projects by:', filterValue);
 
     projectItems.forEach(item => {
-
         let shouldShow = true;
 
-        
-
         if (filterValue === 'high-risk') {
-
             const riskLevel = item.querySelector('.risk-high');
-
             shouldShow = riskLevel !== null;
-
         } else if (filterValue === 'recent-incidents') {
-
             const daysWithoutIncident = parseInt(item.querySelector('.safety-stat:nth-child(1) .value')?.textContent || '0');
-
             shouldShow = daysWithoutIncident < 7;
-
         } else if (filterValue === 'good-performance') {
-
             const safetyScoreText = item.querySelector('.safety-score')?.textContent || '';
-
-            const safetyScore = parseInt(safetyScoreText.match(/d+/)?.[0] || '0');
-
+            const safetyScore = parseInt(safetyScoreText.match(/\d+/)?.[0] || '0');
             shouldShow = safetyScore >= 90;
-
         }
 
-        
-
         item.style.display = shouldShow ? 'block' : 'none';
-
     });
 
-    
-
-    // Update visible count
-
     const visibleCount = Array.from(projectItems).filter(item => item.style.display !== 'none').length;
-
-    const filterLabel = document.querySelector('.project-filter select option:checked')?.textContent || 'All Projects';
-
-    
-
-    console.log(`âœ… Showing ${visibleCount} projects for filter: ${filterLabel}`);
-
+    console.log('Showing ' + visibleCount + ' projects');
 }
-
-
-
-// Add immediate form interception (runs before DOM loaded)
-
-(function() {
-
-    console.log('ðŸš€ Immediate form protection script executing');
-
-    
-
-    // Override the original recordIncidentReports function to add protection
-
-    const originalRecordIncidentReports = window.recordIncidentReports;
-
-    window.recordIncidentReports = function() {
-
-        console.log('ðŸ”§ recordIncidentReports called, adding form protection');
-
-        
-
-        // Call original function
-
-        const result = originalRecordIncidentReports.call(this);
-
-        
-
-        // Wait a moment for DOM to update, then add protection
-
-        setTimeout(() => {
-
-            const incidentForm = document.getElementById('incidentForm');
-
-            if (incidentForm) {
-
-                console.log('ðŸ›¡ï¸ Adding immediate form protection');
-
-                
-
-                // Remove all form attributes that could cause submission
-
-                incidentForm.removeAttribute('onsubmit');
-
-                incidentForm.removeAttribute('action');
-
-                incidentForm.removeAttribute('method');
-
-                incidentForm.setAttribute('data-protected', 'true');
-
-                
-
-                // Override the submit method
-
-                incidentForm.submit = function() {
-
-                    console.log('ðŸš« Form.submit() called - PREVENTING!');
-
-                    return false;
-
-                };
-
-                
-
-                // Add submit event listener with maximum priority
-
-                incidentForm.addEventListener('submit', function(event) {
-
-                    console.log('ðŸ›‘ Form submit event - PREVENTING!');
-
-                    event.preventDefault();
-
-                    event.stopPropagation();
-
-                    event.stopImmediatePropagation();
-
-                    
-
-                    // Call save function
-
-                    saveIncidentReport();
-
-                    return false;
-
-                }, true); // Use capture phase
-
-                
-
-                // Find and override all buttons
-
-                const allButtons = incidentForm.querySelectorAll('button, input[type="submit"]');
-
-                allButtons.forEach((button, index) => {
-
-                    console.log(`ðŸ”˜ Overriding button ${index + 1}`);
-
-                    button.addEventListener('click', function(clickEvent) {
-
-                        console.log('ðŸ”˜ Button clicked - PREVENTING default!');
-
-                        clickEvent.preventDefault();
-
-                        clickEvent.stopPropagation();
-
-                        clickEvent.stopImmediatePropagation();
-
-                        
-
-                        // Call save function
-
-                        saveIncidentReport();
-
-                        return false;
-
-                    }, true);
-
-                    
-
-                    // Override onclick if it exists
-
-                    if (button.onclick) {
-
-                        const originalOnclick = button.onclick;
-
-                        button.onclick = function(e) {
-
-                            console.log('ðŸ”˜ Button onclick overridden');
-
-                            e.preventDefault();
-
-                            e.stopPropagation();
-
-                            saveIncidentReport();
-
-                            return false;
-
-                        };
-
-                    }
-
-                });
-
-                
-
-                console.log('âœ… Immediate form protection applied');
-
-            } else {
-
-                console.log('âŒ Form not found for immediate protection');
-
-            }
-
-        }, 100);
-
-        
-
-        return result;
-
-    };
-
-})();
-
-
-
-// Add multiple layers of form submission prevention
-
-document.addEventListener('DOMContentLoaded', function() {
-
-    console.log('ðŸš€ DOM loaded, setting up comprehensive form protection');
-
-    
-
-    // Find the incident form
-
-    const incidentForm = document.getElementById('incidentForm');
-
-    if (incidentForm) {
-
-        console.log('âœ… Incident form found, adding multiple protection layers');
-
-        
-
-        // Method 1: Remove the onsubmit attribute and add our own
-
-        incidentForm.removeAttribute('onsubmit');
-
-        incidentForm.removeAttribute('action');
-
-        incidentForm.removeAttribute('method');
-
-        console.log('ðŸ”§ Removed form attributes');
-
-        
-
-        // Method 2: Override the submit method
-
-        incidentForm.submit = function() {
-
-            console.log('ðŸš« Native form.submit() called - PREVENTING!');
-
-            return false;
-
-        };
-
-        
-
-        // Method 3: Add submit event listener
-
-        incidentForm.addEventListener('submit', function(event) {
-
-            console.log('ðŸ“ Form submit event triggered - PREVENTING!');
-
-            event.preventDefault();
-
-            event.stopPropagation();
-
-            event.stopImmediatePropagation();
-
-            
-
-            console.log('ðŸ”’ Default form submission prevented');
-
-            
-
-            // Call the save function
-
-            const result = saveIncidentReport();
-
-            console.log('ðŸ“Š saveIncidentReport returned:', result);
-
-            
-
-            return false;
-
-        }, true); // Use capture phase
-
-        
-
-        // Method 4: Intercept all button clicks in the form
-
-        const submitButtons = incidentForm.querySelectorAll('button[type="submit"], input[type="submit"], button');
-
-        submitButtons.forEach((button, index) => {
-
-            console.log(`ðŸ”˜ Adding protection to button ${index + 1}`);
-
-            button.addEventListener('click', function(event) {
-
-                console.log('ðŸ”˜ Submit button clicked - PREVENTING!');
-
-                event.preventDefault();
-
-                event.stopPropagation();
-
-                event.stopImmediatePropagation();
-
-                
-
-                // Call the save function directly
-
-                saveIncidentReport();
-
-                return false;
-
-            }, true);
-
-        });
-
-        
-
-        console.log('âœ… Multiple form protection layers added successfully');
-
-    } else {
-
-        console.log('â„¹ï¸ Incident form not found - may not be visible yet');
-
-    }
-
-});
-
-
-
-// Also add a global form submission catcher
-
-window.addEventListener('submit', function(event) {
-
-    if (event.target && event.target.id === 'incidentForm') {
-
-        console.log('ðŸŒ Global form submit catcher - PREVENTING!');
-
-        event.preventDefault();
-
-        event.stopPropagation();
-
-        event.stopImmediatePropagation();
-
-        return false;
-
-    }
-
-}, true); // Use capture phase
-
-
-
-// Global click catcher for any form-related clicks
-
-window.addEventListener('click', function(event) {
-
-    const target = event.target;
-
-    const form = target.closest('#incidentForm');
-
-    
-
-    if (form && (target.tagName === 'BUTTON' || target.type === 'submit')) {
-
-        console.log('ðŸŒ Global click catcher - PREVENTING form submission!');
-
-        event.preventDefault();
-
-        event.stopPropagation();
-
-        event.stopImmediatePropagation();
-
-        
-
-        // Call save function
-
-        saveIncidentReport();
-
-        return false;
-
-    }
-
-}, true);
-
-
 
 // HSE Helper Functions
 
@@ -34168,15 +33805,16 @@ function saveIncidentReport() {
         const incidentDescription = document.getElementById('incidentDescription').value;
         
         const incidentLocation = document.getElementById('incidentLocation').value;
+        const incidentProject = document.getElementById('incidentProject') ? document.getElementById('incidentProject').value : '';
         const status = document.getElementById('incidentStatus') ? document.getElementById('incidentStatus').value : 'pending';
 
         
 
-        console.log('📝 Form values:', { incidentType, severityLevel, incidentDescription, project, location, status });
+        console.log('📝 Form values:', { incidentType, severityLevel, incidentDescription, incidentProject, incidentLocation, status });
 
         
 
-        if (!incidentType || !severityLevel || !incidentDescription || !project || !location) {
+        if (!incidentType || !severityLevel || !incidentDescription) {
 
             console.log('âŒ Validation failed - missing required fields');
 
@@ -34242,7 +33880,7 @@ function saveIncidentReport() {
             ? sessionManager.getAuthToken()
             : (sessionStorage.getItem('authToken') || localStorage.getItem('authToken') || '');
 
-    fetch(`${baseUrl}/api/hse/work`, {
+    fetch(`${baseUrl}/api/hse/hse`, {
 
             method: 'POST',
 
@@ -34398,12 +34036,12 @@ function saveIncidentReport() {
 
             return false;
 
-        });
+        })
+        .finally(() => {
             window.isSavingIncident = false;
+        });
 
-        
-
-        console.log('âœ… Function completed, returning false to prevent form submission');
+        console.log('Function completed, returning false to prevent form submission');
 
         return false;
 
@@ -34411,10 +34049,11 @@ function saveIncidentReport() {
 
     } catch (error) {
 
-        console.error('âŒ Unexpected error in saveIncidentReport:', error);
+        console.error('Unexpected error in saveIncidentReport:', error);
 
-        customAlert(`Unexpected error: ${error.message}nnPlease try again or contact support.`, "System Error", "error");
+        customAlert(`Unexpected error: ${error.message}\n\nPlease try again or contact support.`, "System Error", "error");
 
+        window.isSavingIncident = false;
         return false;
 
     }
