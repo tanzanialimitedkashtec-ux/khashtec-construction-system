@@ -12112,14 +12112,6 @@ function toggleEmployeeForm() {
 
         toggleBtn.style.background = '#dc3545';
 
-        // Auto-generate plot number if empty
-        const plotNumInput = document.getElementById('plotNumber');
-        if (plotNumInput && !plotNumInput.value) {
-            const year = new Date().getFullYear();
-            const randomNum = String(Math.floor(Math.random() * 10000)).padStart(4, '0');
-            plotNumInput.value = `PLT-${year}-${randomNum}`;
-        }
-
         // Smooth scroll to form
 
         setTimeout(() => {
@@ -13904,6 +13896,14 @@ function togglePropertyForm() {
         toggleBtn.style.background = '#dc3545';
 
         
+
+        // Auto-generate plot number if empty
+        const plotNumInput = document.getElementById('plotNumber');
+        if (plotNumInput && !plotNumInput.value) {
+            const year = new Date().getFullYear();
+            const randomNum = String(Math.floor(Math.random() * 10000)).padStart(4, '0');
+            plotNumInput.value = `PLT-${year}-${randomNum}`;
+        }
 
         // Smooth scroll to form
 
@@ -51721,7 +51721,7 @@ function addProperty(){
 
                             <label>Plot Number *</label>
 
-                            <input type="text" id="plotNumber" placeholder="e.g., PLT-2026-001" required />
+                            <input type="text" id="plotNumber" placeholder="e.g., PLT-2026-001" required readonly />
 
                         </div>
 
