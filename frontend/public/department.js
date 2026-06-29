@@ -12112,7 +12112,7 @@ function toggleEmployeeForm() {
 
         toggleBtn.innerHTML = 'âŒ Close Registration Form';
 
-        toggleBtn.style.background = '#dc3545';
+        if (toggleBtn) toggleBtn.style.background = '#dc3545';
 
         // Smooth scroll to form
 
@@ -12130,7 +12130,7 @@ function toggleEmployeeForm() {
 
         toggleBtn.innerHTML = 'ðŸ“ Open Registration Form';
 
-        toggleBtn.style.background = '#007bff';
+        if (toggleBtn) toggleBtn.style.background = '#007bff';
 
         
 
@@ -12168,7 +12168,7 @@ function toggleWorkerAccountForm() {
 
         toggleBtn.innerHTML = 'âŒ Close Worker Form';
 
-        toggleBtn.style.background = '#dc3545';
+        if (toggleBtn) toggleBtn.style.background = '#dc3545';
 
         
 
@@ -12188,7 +12188,7 @@ function toggleWorkerAccountForm() {
 
         toggleBtn.innerHTML = 'ðŸ‘¤ Create Worker Account';
 
-        toggleBtn.style.background = '#007bff';
+        if (toggleBtn) toggleBtn.style.background = '#007bff';
 
         
 
@@ -12260,7 +12260,7 @@ function toggleAssignWorkerForm() {
 
         toggleBtn.innerHTML = 'âŒ Close Assignment Form';
 
-        toggleBtn.style.background = '#dc3545';
+        if (toggleBtn) toggleBtn.style.background = '#dc3545';
 
         
 
@@ -12280,7 +12280,7 @@ function toggleAssignWorkerForm() {
 
         toggleBtn.innerHTML = 'ðŸ—ï¸ Assign Worker to Project';
 
-        toggleBtn.style.background = '#007bff';
+        if (toggleBtn) toggleBtn.style.background = '#007bff';
 
         
 
@@ -12340,7 +12340,7 @@ function toggleAttendanceForm() {
 
         toggleBtn.innerHTML = 'âŒ Close Attendance Form';
 
-        toggleBtn.style.background = '#dc3545';
+        if (toggleBtn) toggleBtn.style.background = '#dc3545';
 
         
 
@@ -12360,7 +12360,7 @@ function toggleAttendanceForm() {
 
         toggleBtn.innerHTML = 'ðŸ“… Mark Attendance';
 
-        toggleBtn.style.background = '#007bff';
+        if (toggleBtn) toggleBtn.style.background = '#007bff';
 
         
 
@@ -12420,7 +12420,7 @@ function toggleLeaveContractsForm() {
 
         toggleBtn.innerHTML = 'âŒ Close Management Forms';
 
-        toggleBtn.style.background = '#dc3545';
+        if (toggleBtn) toggleBtn.style.background = '#dc3545';
 
         
 
@@ -12440,7 +12440,7 @@ function toggleLeaveContractsForm() {
 
         toggleBtn.innerHTML = 'ðŸ“‹ Manage Leave & Contracts';
 
-        toggleBtn.style.background = '#007bff';
+        if (toggleBtn) toggleBtn.style.background = '#007bff';
 
         
 
@@ -12534,7 +12534,7 @@ function toggleSeniorHiringForm() {
 
         toggleBtn.innerHTML = 'âŒ Close Hiring Review';
 
-        toggleBtn.style.background = '#dc3545';
+        if (toggleBtn) toggleBtn.style.background = '#dc3545';
 
         
 
@@ -12554,7 +12554,7 @@ function toggleSeniorHiringForm() {
 
         toggleBtn.innerHTML = 'ðŸ‘” Review Senior Hiring Requests';
 
-        toggleBtn.style.background = '#007bff';
+        if (toggleBtn) toggleBtn.style.background = '#007bff';
 
         
 
@@ -12592,7 +12592,7 @@ function toggleWorkforceBudgetForm() {
 
         toggleBtn.innerHTML = 'âŒ Close Budget Review';
 
-        toggleBtn.style.background = '#dc3545';
+        if (toggleBtn) toggleBtn.style.background = '#dc3545';
 
         
 
@@ -12612,7 +12612,7 @@ function toggleWorkforceBudgetForm() {
 
         toggleBtn.innerHTML = 'ðŸ’° Review Budget Proposals';
 
-        toggleBtn.style.background = '#007bff';
+        if (toggleBtn) toggleBtn.style.background = '#007bff';
 
         
 
@@ -12650,7 +12650,7 @@ function toggleEmploymentActionForm() {
 
         toggleBtn.innerHTML = 'âŒ Close Employment Actions';
 
-        toggleBtn.style.background = '#dc3545';
+        if (toggleBtn) toggleBtn.style.background = '#dc3545';
 
         
 
@@ -12670,7 +12670,7 @@ function toggleEmploymentActionForm() {
 
         toggleBtn.innerHTML = 'âš–ï¸ Manage Employment Actions';
 
-        toggleBtn.style.background = '#007bff';
+        if (toggleBtn) toggleBtn.style.background = '#007bff';
 
         
 
@@ -12750,7 +12750,7 @@ function toggleIncidentForm() {
 
         toggleBtn.innerHTML = 'âŒ Close Incident Form';
 
-        toggleBtn.style.background = '#dc3545';
+        if (toggleBtn) toggleBtn.style.background = '#dc3545';
 
         
 
@@ -12780,9 +12780,9 @@ function toggleIncidentForm() {
 
         formContainer.classList.remove('show');
 
-        toggleBtn.innerHTML = 'ðŸš¨ Record New Incident';
+        if (toggleBtn) toggleBtn.innerHTML = 'ðŸš¨ Record New Incident';
 
-        toggleBtn.style.background = '#007bff';
+        if (toggleBtn) toggleBtn.style.background = '#007bff';
 
         
 
@@ -12820,7 +12820,7 @@ function togglePolicyForm() {
 
         toggleBtn.innerHTML = 'âŒ Close Policy Form';
 
-        toggleBtn.style.background = '#dc3545';
+        if (toggleBtn) toggleBtn.style.background = '#dc3545';
 
         
 
@@ -12840,7 +12840,7 @@ function togglePolicyForm() {
 
         toggleBtn.innerHTML = 'ðŸ“‹ Upload New Policy';
 
-        toggleBtn.style.background = '#007bff';
+        if (toggleBtn) toggleBtn.style.background = '#007bff';
 
         
 
@@ -12912,7 +12912,7 @@ function toggleToolboxForm() {
 
         toggleBtn.innerHTML = 'âŒ Close Meeting Form';
 
-        toggleBtn.style.background = '#dc3545';
+        if (toggleBtn) toggleBtn.style.background = '#dc3545';
 
         
 
@@ -12944,7 +12944,7 @@ function toggleToolboxForm() {
 
         toggleBtn.innerHTML = 'ðŸ› ï¸ Record New Meeting';
 
-        toggleBtn.style.background = '#007bff';
+        if (toggleBtn) toggleBtn.style.background = '#007bff';
 
         
 
@@ -13036,7 +13036,7 @@ function togglePpeForm() {
 
         toggleBtn.innerHTML = 'âŒ Close PPE Form';
 
-        toggleBtn.style.background = '#dc3545';
+        if (toggleBtn) toggleBtn.style.background = '#dc3545';
 
         
 
@@ -13076,7 +13076,7 @@ function togglePpeForm() {
 
         toggleBtn.innerHTML = 'ðŸ›¡ï¸ Issue New PPE';
 
-        toggleBtn.style.background = '#007bff';
+        if (toggleBtn) toggleBtn.style.background = '#007bff';
 
         
 
@@ -13170,7 +13170,7 @@ function toggleViolationForm() {
 
         toggleBtn.innerHTML = 'âŒ Close Violation Form';
 
-        toggleBtn.style.background = '#dc3545';
+        if (toggleBtn) toggleBtn.style.background = '#dc3545';
 
         
 
@@ -13202,7 +13202,7 @@ function toggleViolationForm() {
 
         toggleBtn.innerHTML = 'âš ï¸ Record New Violation';
 
-        toggleBtn.style.background = '#007bff';
+        if (toggleBtn) toggleBtn.style.background = '#007bff';
 
         
 
@@ -13286,7 +13286,7 @@ function toggleInspectionForm() {
 
         toggleBtn.innerHTML = 'âŒ Close Inspection Form';
 
-        toggleBtn.style.background = '#dc3545';
+        if (toggleBtn) toggleBtn.style.background = '#dc3545';
 
         
 
@@ -13318,7 +13318,7 @@ function toggleInspectionForm() {
 
         toggleBtn.innerHTML = 'ðŸ“‹ Upload New Report';
 
-        toggleBtn.style.background = '#007bff';
+        if (toggleBtn) toggleBtn.style.background = '#007bff';
 
         
 
@@ -13410,7 +13410,7 @@ function toggleBudgetForm() {
 
         toggleBtn.innerHTML = 'âŒ Close Budget Form';
 
-        toggleBtn.style.background = '#dc3545';
+        if (toggleBtn) toggleBtn.style.background = '#dc3545';
 
         
 
@@ -13430,7 +13430,7 @@ function toggleBudgetForm() {
 
         toggleBtn.innerHTML = 'ðŸ’° Create New Budget';
 
-        toggleBtn.style.background = '#007bff';
+        if (toggleBtn) toggleBtn.style.background = '#007bff';
 
         
 
@@ -13502,7 +13502,7 @@ function toggleProjectForm() {
 
         toggleBtn.innerHTML = 'âŒ Close Project Form';
 
-        toggleBtn.style.background = '#dc3545';
+        if (toggleBtn) toggleBtn.style.background = '#dc3545';
 
         
 
@@ -13522,7 +13522,7 @@ function toggleProjectForm() {
 
         toggleBtn.innerHTML = 'ðŸ—ï¸ Create New Project';
 
-        toggleBtn.style.background = '#007bff';
+        if (toggleBtn) toggleBtn.style.background = '#007bff';
 
         
 
@@ -13594,7 +13594,7 @@ function toggleWorkforceForm() {
 
         toggleBtn.innerHTML = 'âŒ Close Workforce Form';
 
-        toggleBtn.style.background = '#dc3545';
+        if (toggleBtn) toggleBtn.style.background = '#dc3545';
 
         
 
@@ -13614,7 +13614,7 @@ function toggleWorkforceForm() {
 
         toggleBtn.innerHTML = 'ðŸ‘¥ Request Workforce';
 
-        toggleBtn.style.background = '#007bff';
+        if (toggleBtn) toggleBtn.style.background = '#007bff';
 
         
 
@@ -13706,7 +13706,7 @@ function toggleSiteReportForm() {
 
         toggleBtn.innerHTML = 'âŒ Close Site Report Form';
 
-        toggleBtn.style.background = '#dc3545';
+        if (toggleBtn) toggleBtn.style.background = '#dc3545';
 
         loadReportProjects();
         
@@ -13727,7 +13727,7 @@ function toggleSiteReportForm() {
 
         toggleBtn.innerHTML = 'ðŸ“ Record Site Report';
 
-        toggleBtn.style.background = '#007bff';
+        if (toggleBtn) toggleBtn.style.background = '#007bff';
 
         
 
@@ -13811,7 +13811,7 @@ function toggleApprovalForm() {
 
         toggleBtn.innerHTML = 'âŒ Close Approval Form';
 
-        toggleBtn.style.background = '#dc3545';
+        if (toggleBtn) toggleBtn.style.background = '#dc3545';
 
         
 
@@ -13831,7 +13831,7 @@ function toggleApprovalForm() {
 
         toggleBtn.innerHTML = 'âœ… Work Approval Form';
 
-        toggleBtn.style.background = '#007bff';
+        if (toggleBtn) toggleBtn.style.background = '#007bff';
 
         
 
@@ -13895,7 +13895,7 @@ function togglePropertyForm() {
 
         toggleBtn.innerHTML = 'âŒ Close Property Form';
 
-        toggleBtn.style.background = '#dc3545';
+        if (toggleBtn) toggleBtn.style.background = '#dc3545';
 
         
 
@@ -13925,7 +13925,7 @@ function togglePropertyForm() {
 
         toggleBtn.innerHTML = 'ðŸ  Add New Property';
 
-        toggleBtn.style.background = '#007bff';
+        if (toggleBtn) toggleBtn.style.background = '#007bff';
 
         
 
@@ -14009,7 +14009,7 @@ function toggleClientForm() {
 
         toggleBtn.innerHTML = 'âŒ Close Client Form';
 
-        toggleBtn.style.background = '#dc3545';
+        if (toggleBtn) toggleBtn.style.background = '#dc3545';
 
         
 
@@ -14041,7 +14041,7 @@ function toggleClientForm() {
 
         toggleBtn.innerHTML = 'ðŸ‘¤ Register New Client';
 
-        toggleBtn.style.background = '#007bff';
+        if (toggleBtn) toggleBtn.style.background = '#007bff';
 
         
 
@@ -14113,7 +14113,7 @@ function toggleSaleForm() {
 
         toggleBtn.innerHTML = 'âŒ Close Sale Form';
 
-        toggleBtn.style.background = '#dc3545';
+        if (toggleBtn) toggleBtn.style.background = '#dc3545';
 
         
 
@@ -14145,7 +14145,7 @@ function toggleSaleForm() {
 
         toggleBtn.innerHTML = 'ðŸ’° Record New Sale';
 
-        toggleBtn.style.background = '#007bff';
+        if (toggleBtn) toggleBtn.style.background = '#007bff';
 
         
 
@@ -14241,7 +14241,7 @@ function toggleUploadForm() {
 
         toggleBtn.innerHTML = 'âŒ Close Upload Form';
 
-        toggleBtn.style.background = '#dc3545';
+        if (toggleBtn) toggleBtn.style.background = '#dc3545';
 
         
 
@@ -14261,7 +14261,7 @@ function toggleUploadForm() {
 
         toggleBtn.innerHTML = 'ðŸ“„ Upload New Document';
 
-        toggleBtn.style.background = '#007bff';
+        if (toggleBtn) toggleBtn.style.background = '#007bff';
 
         
 
@@ -14339,7 +14339,7 @@ function toggleMeetingForm() {
 
         toggleBtn.innerHTML = 'âŒ Close Meeting Form';
 
-        toggleBtn.style.background = '#dc3545';
+        if (toggleBtn) toggleBtn.style.background = '#dc3545';
 
         
 
@@ -14371,7 +14371,7 @@ function toggleMeetingForm() {
 
         toggleBtn.innerHTML = 'ðŸ“… Schedule New Meeting';
 
-        toggleBtn.style.background = '#007bff';
+        if (toggleBtn) toggleBtn.style.background = '#007bff';
 
         
 
@@ -14477,7 +14477,7 @@ function toggleNotificationForm() {
 
         toggleBtn.innerHTML = 'âŒ Close Notification Form';
 
-        toggleBtn.style.background = '#dc3545';
+        if (toggleBtn) toggleBtn.style.background = '#dc3545';
 
         
 
@@ -14497,7 +14497,7 @@ function toggleNotificationForm() {
 
         toggleBtn.innerHTML = 'ðŸ“§ Compose New Notification';
 
-        toggleBtn.style.background = '#007bff';
+        if (toggleBtn) toggleBtn.style.background = '#007bff';
 
         
 
@@ -14593,7 +14593,7 @@ function toggleWorkerView() {
 
         toggleBtn.innerHTML = 'âŒ Close Search';
 
-        toggleBtn.style.background = '#dc3545';
+        if (toggleBtn) toggleBtn.style.background = '#dc3545';
 
         
 
@@ -14613,7 +14613,7 @@ function toggleWorkerView() {
 
         toggleBtn.innerHTML = 'ðŸ‘¥ Search & Filter Workers';
 
-        toggleBtn.style.background = '#007bff';
+        if (toggleBtn) toggleBtn.style.background = '#007bff';
 
         
 
@@ -14689,7 +14689,7 @@ function toggleMinutesForm() {
 
         toggleBtn.innerHTML = 'âŒ Close Minutes Form';
 
-        toggleBtn.style.background = '#dc3545';
+        if (toggleBtn) toggleBtn.style.background = '#dc3545';
 
         
 
@@ -14721,7 +14721,7 @@ function toggleMinutesForm() {
 
         toggleBtn.innerHTML = 'ðŸ“ Record New Minutes';
 
-        toggleBtn.style.background = '#007bff';
+        if (toggleBtn) toggleBtn.style.background = '#007bff';
 
         
 
@@ -14805,7 +14805,7 @@ function togglePolicySearch() {
 
         toggleBtn.innerHTML = 'âŒ Close Search';
 
-        toggleBtn.style.background = '#dc3545';
+        if (toggleBtn) toggleBtn.style.background = '#dc3545';
 
         
 
@@ -14825,7 +14825,7 @@ function togglePolicySearch() {
 
         toggleBtn.innerHTML = 'ðŸ” Search & Filter Policies';
 
-        toggleBtn.style.background = '#007bff';
+        if (toggleBtn) toggleBtn.style.background = '#007bff';
 
         
 
@@ -23511,8 +23511,8 @@ function testSimpleSave() {
         const severityLevel = document.getElementById('severityLevel').value;
 
         const incidentDescription = document.getElementById('incidentDescription').value;
-        const project = document.getElementById('incidentProject').value;
-        const location = document.getElementById('incidentLocation').value;
+        
+        const incidentLocation = document.getElementById('incidentLocation').value;
         const status = document.getElementById('incidentStatus') ? document.getElementById('incidentStatus').value : 'pending';
 
         const reportedBy = document.getElementById('reportedBy').value;
@@ -23573,8 +23573,8 @@ function submitIncidentToDatabase() {
         const severityLevel = document.getElementById('severityLevel').value;
 
         const incidentDescription = document.getElementById('incidentDescription').value;
-        const project = document.getElementById('incidentProject').value;
-        const location = document.getElementById('incidentLocation').value;
+        
+        const incidentLocation = document.getElementById('incidentLocation').value;
         const status = document.getElementById('incidentStatus') ? document.getElementById('incidentStatus').value : 'pending';
 
         const reportedBy = document.getElementById('reportedBy').value;
@@ -23585,7 +23585,7 @@ function submitIncidentToDatabase() {
 
         
 
-        if (!incidentType || !severityLevel || !incidentDescription || !reportedBy || !incidentProject) {
+        if (!incidentType || !severityLevel || !incidentDescription || !reportedBy || !incidentProject || !incidentLocation) {
 
             console.log('âŒ Validation failed - missing required fields');
 
@@ -23597,7 +23597,7 @@ function submitIncidentToDatabase() {
 
                     severityLevel: !severityLevel,
 
-                    incidentDescription: !incidentDescription, project: !project, location: !location,
+                    incidentDescription: !incidentDescription, incidentLocation: !incidentLocation, incidentProject: !incidentProject,
 
                     reportedBy: !reportedBy
 
@@ -23633,9 +23633,9 @@ function submitIncidentToDatabase() {
             assigned_to: 'HSE Manager',
 
             submitted_by: reportedBy,
-            project: project,
-            project_name: project,
-            location: location,
+            project: incidentProject,
+            project_name: incidentProject,
+            location: incidentLocation,
             status: status
         };
 
@@ -23660,9 +23660,7 @@ function submitIncidentToDatabase() {
         
 
         // Send data to backend API - NO FORM INVOLVED
-
-        fetch(`${baseUrl}/api/hse/work`, {
-
+        fetch(`${baseUrl}/api/work/hse`, {
             method: 'POST',
 
             headers: {
@@ -25380,8 +25378,8 @@ function manualSubmitIncident() {
         const severityLevel = document.getElementById('severityLevel').value;
 
         const incidentDescription = document.getElementById('incidentDescription').value;
-        const project = document.getElementById('incidentProject').value;
-        const location = document.getElementById('incidentLocation').value;
+        
+        const incidentLocation = document.getElementById('incidentLocation').value;
         const status = document.getElementById('incidentStatus') ? document.getElementById('incidentStatus').value : 'pending';
 
         const reportedBy = document.getElementById('reportedBy').value;
@@ -25425,9 +25423,9 @@ function manualSubmitIncident() {
             assigned_to: 'HSE Manager',
 
             submitted_by: reportedBy,
-            project: project,
-            project_name: project,
-            location: location,
+            project: incidentProject,
+            project_name: incidentProject,
+            location: incidentLocation,
             status: status
         };
 
@@ -34166,8 +34164,8 @@ function saveIncidentReport() {
         const severityLevel = document.getElementById('severityLevel').value;
 
         const incidentDescription = document.getElementById('incidentDescription').value;
-        const project = document.getElementById('incidentProject').value;
-        const location = document.getElementById('incidentLocation').value;
+        
+        const incidentLocation = document.getElementById('incidentLocation').value;
         const status = document.getElementById('incidentStatus') ? document.getElementById('incidentStatus').value : 'pending';
 
         
@@ -62700,7 +62698,7 @@ function scheduleMeetingSubmit() {
 
         endTime: endTime,
 
-        location: location,
+        location: incidentLocation,
 
         department: department,
 
