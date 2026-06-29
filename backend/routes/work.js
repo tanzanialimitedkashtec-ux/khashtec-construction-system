@@ -5642,8 +5642,15 @@ router.get('/notifications', async (req, res) => {
             
             // Role-based filtering: each role sees only their notifications; MD sees all
             if (role && role !== 'MD') {
-                query += ' AND (recipient_type = ? OR recipients LIKE ? OR recipients LIKE ? OR recipients = ?)';
-                params.push('all', '%' + role + '%', '%All Staff%', 'All Staff');
+                const roleLower = role.toLowerCase();
+                const categoryMap = { hr: 'hr', finance: 'finance', project: 'project', hse: 'safety', admin: 'admin', realestate: 'operations', assistant: 'admin' };
+                const categoryMatch = categoryMap[roleLower] || roleLower;
+                query += ` AND (
+                    (LOWER(COALESCE(recipients,'')) IN ('all staff', 'all', '') AND LOWER(COALESCE(category,'')) IN ('system', ''))
+                    OR LOWER(COALESCE(recipients,'')) LIKE ?
+                    OR LOWER(COALESCE(category,'')) = ?
+                )`;
+                params.push('%' + roleLower + '%', categoryMatch);
             }
             
             query += ' ORDER BY created_at DESC';

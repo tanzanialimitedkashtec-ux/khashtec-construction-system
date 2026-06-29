@@ -52,8 +52,20 @@ router.get('/', async (req, res) => {
         
         // Role-based filtering: each role sees only their notifications; MD sees all
         if (role && role !== 'MD') {
-            query += ' AND (recipient_type = ? OR recipients LIKE ? OR recipients LIKE ? OR recipients = ?)';
-            params.push('all', '%' + role + '%', '%All Staff%', 'All Staff');
+            const roleLower = role.toLowerCase();
+            // Map role to category name for matching
+            const categoryMap = { hr: 'hr', finance: 'finance', project: 'project', hse: 'safety', admin: 'admin', realestate: 'operations', assistant: 'admin' };
+            const categoryMatch = categoryMap[roleLower] || roleLower;
+            // A notification is visible if:
+            // 1. It's a system/general notification with 'All Staff' recipients AND system category
+            // 2. recipients field contains the role name (case-insensitive)
+            // 3. category matches the role's department
+            query += ` AND (
+                (LOWER(COALESCE(recipients,'')) IN ('all staff', 'all', '') AND LOWER(COALESCE(category,'')) IN ('system', ''))
+                OR LOWER(COALESCE(recipients,'')) LIKE ?
+                OR LOWER(COALESCE(category,'')) = ?
+            )`;
+            params.push('%' + roleLower + '%', categoryMatch);
         }
         
         if (userId) {
