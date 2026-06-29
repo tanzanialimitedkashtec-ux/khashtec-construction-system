@@ -58726,12 +58726,8 @@ window.addEventListener('click', function(event) {
 // HSE Helper Functions
 
 function saveIncidentReport() {
-    console.log('🚀 saveIncidentReport function called');
-    if (window.isSavingIncident) {
-        console.log('⚠️ Save already in progress, ignoring double click');
-        return false;
-    }
-    window.isSavingIncident = true;
+    console.log('🚀 saveIncidentReport neutered, delegating to submitIncidentToDatabase()');
+    return true;
     try {
 
         // Validate required fields
