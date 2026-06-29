@@ -12112,7 +12112,13 @@ function toggleEmployeeForm() {
 
         toggleBtn.style.background = '#dc3545';
 
-        
+        // Auto-generate plot number if empty
+        const plotNumInput = document.getElementById('plotNumber');
+        if (plotNumInput && !plotNumInput.value) {
+            const year = new Date().getFullYear();
+            const randomNum = String(Math.floor(Math.random() * 10000)).padStart(4, '0');
+            plotNumInput.value = `PLT-${year}-${randomNum}`;
+        }
 
         // Smooth scroll to form
 
