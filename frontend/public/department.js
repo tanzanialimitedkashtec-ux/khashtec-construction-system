@@ -47290,7 +47290,7 @@ function requestWorkforce(){
 
                                 <th>Status</th>
 
-                                <th>Actions</th>
+                                ${currentRole !== 'PROJECT' ? '<th>Actions</th>' : ''}
 
                             </tr>
 
@@ -47850,15 +47850,11 @@ function displayWorkforceRequests(requests) {
 
                 </td>
 
-                <td>
-
+                ${currentRole !== 'PROJECT' ? `<td>
                     <div class="request-actions">
-
-                        <button class="action-btn approve" onclick="approveWorkforceRequest('${request.id}')" title="Approve">âœ…</button>
-
+                        <button class="action-btn approve" onclick="approveWorkforceRequest('${request.id}')" title="Approve">✅</button>
                     </div>
-
-                </td>
+                </td>` : ''}
 
             </tr>
 
