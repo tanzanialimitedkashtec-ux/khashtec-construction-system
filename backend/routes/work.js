@@ -5634,11 +5634,21 @@ router.get('/notifications', async (req, res) => {
         
         let notifications = [];
         
+        const { role } = req.query;
+        
         try {
-            const dbResult = await db.execute(`
-                SELECT * FROM notifications 
-                ORDER BY created_at DESC
-            `);
+            let query = 'SELECT * FROM notifications WHERE 1=1';
+            const params = [];
+            
+            // Role-based filtering: each role sees only their notifications; MD sees all
+            if (role && role !== 'MD') {
+                query += ' AND (recipient_type = ? OR recipients LIKE ? OR recipients LIKE ? OR recipients = ?)';
+                params.push('all', '%' + role + '%', '%All Staff%', 'All Staff');
+            }
+            
+            query += ' ORDER BY created_at DESC';
+            
+            const dbResult = await db.execute(query, params);
             // Handle different mysql2 return formats
             if (Array.isArray(dbResult) && Array.isArray(dbResult[0])) {
                 notifications = dbResult[0];

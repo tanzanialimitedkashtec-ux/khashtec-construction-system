@@ -796,7 +796,8 @@ document.addEventListener('click', function(e) {
 
 async function loadNotifications() {
     try {
-        var res = await fetch('/api/notifications');
+        var roleParam = (typeof currentRole !== 'undefined' && currentRole) ? '?role=' + encodeURIComponent(currentRole) : '';
+        var res = await fetch('/api/notifications' + roleParam);
         var data = await res.json();
         var notifications = data.notifications || [];
         var listEl = document.getElementById('notificationList');
@@ -842,7 +843,8 @@ let lastUnreadCount = -1;
 
 async function updateNotificationBadge() {
     try {
-        var res = await fetch('/api/notifications?unread=true');
+        var roleParam = (typeof currentRole !== 'undefined' && currentRole) ? '&role=' + encodeURIComponent(currentRole) : '';
+        var res = await fetch('/api/notifications?unread=true' + roleParam);
         var data = await res.json();
         var unread = (data.notifications || []).length;
         var badge = document.getElementById('notifBadge');
@@ -60265,7 +60267,8 @@ async function loadNotificationsTable() {
 
         try {
 
-            response = await fetch(`${baseUrl}/api/work/notifications`, {
+            var notifRoleParam = (typeof currentRole !== 'undefined' && currentRole) ? '?role=' + encodeURIComponent(currentRole) : '';
+            response = await fetch(`${baseUrl}/api/work/notifications${notifRoleParam}`, {
 
                 method: 'GET',
 

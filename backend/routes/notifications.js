@@ -27,6 +27,7 @@ router.get('/', async (req, res) => {
                     user_id VARCHAR(50),
                     category VARCHAR(50) DEFAULT 'system',
                     action_url VARCHAR(500) NULL,
+                    department VARCHAR(100) NULL,
                     expires_at TIMESTAMP NULL,
                     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
@@ -37,10 +38,23 @@ router.get('/', async (req, res) => {
             console.log('⚠️ Could not create notifications table:', tableError.message);
         }
         
-        const { userId, type, category, read, unread } = req.query;
+        // Ensure department column exists for role-based filtering
+        try {
+            await db.execute(`ALTER TABLE notifications ADD COLUMN IF NOT EXISTS department VARCHAR(100) NULL`);
+        } catch (e) {
+            // Column may already exist
+        }
+        
+        const { userId, type, category, read, unread, role } = req.query;
         
         let query = 'SELECT *, recipient_type as recipientType, recipients, sent_by as sentBy FROM notifications WHERE 1=1';
         const params = [];
+        
+        // Role-based filtering: each role sees only their notifications; MD sees all
+        if (role && role !== 'MD') {
+            query += ' AND (recipient_type = ? OR recipients LIKE ? OR recipients LIKE ? OR recipients = ?)';
+            params.push('all', '%' + role + '%', '%All Staff%', 'All Staff');
+        }
         
         if (userId) {
             query += ' AND user_id = ?';
