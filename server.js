@@ -3969,9 +3969,9 @@ app.post('/api/properties', async (req, res) => {
             status,
 
             owner,
-
-            contactInfo
-
+            contactInfo,
+            utilities,
+            zoning
         } = req.body;
 
 
@@ -4150,11 +4150,14 @@ app.post('/api/properties', async (req, res) => {
             const mappedType = normalizeTypeForTitleSchema(propertyType);
             const mappedStatus = normalizeStatus(status);
 
+            const utilitiesStr = Array.isArray(utilities) ? JSON.stringify(utilities) : (utilities || '[]');
+            const zoningValue = zoning || 'residential';
+
             insertQuery = `
             INSERT INTO properties (
                 title, description, location, type, price, status, 
-                size_sqm, created_at, updated_at
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, NOW(), NOW())
+                size_sqm, utilities, zoning, created_at, updated_at
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())
         `;
 
             insertParams = [
@@ -4164,7 +4167,9 @@ app.post('/api/properties', async (req, res) => {
                 mappedType,
                 parsedPrice,
                 mappedStatus,
-                parsedSize
+                parsedSize,
+                utilitiesStr,
+                zoningValue
             ];
 
             const result = await db.execute(insertQuery, insertParams);
@@ -4175,11 +4180,14 @@ app.post('/api/properties', async (req, res) => {
             const mappedType = normalizeTypeForPropertyTypeSchema(propertyType);
             const mappedStatus = normalizeStatus(status);
 
+            const utilitiesStr = Array.isArray(utilities) ? JSON.stringify(utilities) : (utilities || '[]');
+            const zoningValue = zoning || 'residential';
+
             insertQuery = `
             INSERT INTO properties (
                 property_name, property_type, location, size, value, status,
-                description, owner, contact_info, created_at, updated_at
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())
+                description, owner, contact_info, utilities, zoning, created_at, updated_at
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())
         `;
 
             insertParams = [
@@ -4191,7 +4199,9 @@ app.post('/api/properties', async (req, res) => {
                 mappedStatus,
                 description || '',
                 owner || null,
-                contactInfo || null
+                contactInfo || null,
+                utilitiesStr,
+                zoningValue
             ];
 
             const result = await db.execute(insertQuery, insertParams);
@@ -4202,11 +4212,14 @@ app.post('/api/properties', async (req, res) => {
             const mappedStatus = normalizeStatus(status);
             const mappedStatusForSchemaC = mappedStatus === 'Under Offer' ? 'Under Contract' : mappedStatus;
 
+            const utilitiesStr = Array.isArray(utilities) ? JSON.stringify(utilities) : (utilities || '[]');
+            const zoningValue = zoning || 'residential';
+
             insertQuery = `
             INSERT INTO properties (
                 name, type, location, size, value, description, status, owner, contact_info,
-                created_at, updated_at
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())
+                utilities, zoning, created_at, updated_at
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())
         `;
 
             insertParams = [
@@ -4218,7 +4231,9 @@ app.post('/api/properties', async (req, res) => {
                 description || '',
                 mappedStatusForSchemaC,
                 owner || null,
-                contactInfo || null
+                contactInfo || null,
+                utilitiesStr,
+                zoningValue
             ];
 
             const result = await db.execute(insertQuery, insertParams);
@@ -4535,6 +4550,14 @@ app.put('/api/properties/:id', async (req, res) => {
         if (data.updateReason !== undefined || data.update_reason !== undefined) {
             fields.push('update_reason = ?');
             values.push(data.updateReason !== undefined ? data.updateReason : data.update_reason);
+        }
+        if (data.utilities !== undefined) {
+            fields.push('utilities = ?');
+            values.push(Array.isArray(data.utilities) ? JSON.stringify(data.utilities) : (data.utilities || '[]'));
+        }
+        if (data.zoning !== undefined) {
+            fields.push('zoning = ?');
+            values.push(data.zoning || 'residential');
         }
 
         if (fields.length === 0) {
