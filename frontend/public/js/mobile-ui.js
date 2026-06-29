@@ -81,9 +81,10 @@
         '.form-container{max-width:100%!important;width:100%!important;margin:0!important;padding:8px!important;border-radius:2px!important;background:' + C.card + '!important;border:1px solid ' + C.border + '!important}',
 
         /* === TABLES === */
-        'table{display:block!important;overflow-x:auto!important;border-radius:2px!important;border:1px solid ' + C.border + '!important;background:' + C.card + '!important;font-size:12px!important}',
-        'thead,tbody,tr{display:table!important;table-layout:auto!important}',
-        'thead,tbody{width:100%!important}',
+        'table{display:block!important;overflow-x:auto!important;border-radius:2px!important;border:1px solid ' + C.border + '!important;background:' + C.card + '!important;font-size:12px!important;width:100%!important}',
+        'thead{display:table!important;table-layout:auto!important;min-width:100%!important}',
+        'tbody{display:table!important;table-layout:auto!important;min-width:100%!important}',
+        'tr{display:table-row!important}',
         'table th{padding:5px 8px!important;font-size:9px!important;font-weight:700!important;text-transform:uppercase!important;letter-spacing:0.4px!important;color:' + C.textSec + '!important;background:' + C.bg + '!important;border-bottom:2px solid ' + C.border + '!important;position:sticky!important;top:0!important;white-space:nowrap!important}',
         'table td{padding:5px 8px!important;font-size:10px!important;color:' + C.text + '!important;border-bottom:1px solid ' + C.border + '!important;white-space:nowrap!important}',
         'table tr:active{background:#f0f7ff!important}',
@@ -482,22 +483,24 @@
         root = root || document.getElementById('contentArea');
         if (!root) return;
 
+        var tableTags = {TABLE:1,THEAD:1,TBODY:1,TR:1,TH:1,TD:1};
         root.querySelectorAll('[style]').forEach(function(el) {
             var st = el.style;
+            var isTable = tableTags[el.tagName];
             if (st.gridTemplateColumns && st.gridTemplateColumns !== '1fr') {
                 st.gridTemplateColumns = '1fr';
             }
-            if (st.width) {
+            if (!isTable && st.width) {
                 var w = parseInt(st.width, 10);
                 if (w > 300 && st.width.indexOf('%') === -1) {
                     st.width = '100%';
                 }
             }
-            if (st.maxWidth && st.maxWidth.indexOf('px') !== -1) {
+            if (!isTable && st.maxWidth && st.maxWidth.indexOf('px') !== -1) {
                 var mw = parseInt(st.maxWidth, 10);
                 if (mw > 300) st.maxWidth = '100%';
             }
-            if (st.minWidth) {
+            if (!isTable && st.minWidth) {
                 var mnw = parseInt(st.minWidth, 10);
                 if (mnw > 200) st.minWidth = '0';
             }
