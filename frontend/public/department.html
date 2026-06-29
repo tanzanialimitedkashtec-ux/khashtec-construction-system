@@ -81641,11 +81641,7 @@ function displayClientsRecords(data) {
 
                     <div class="client-actions">
 
-                        <button class="action-btn view" onclick="viewClientDetails('${record.id}')" title="View Details">👁️</button>
-
-                        <button class="action-btn edit" onclick="editClient('${record.id}')" title="Edit Client">✏️</button>
-
-                        <button class="action-btn contact" onclick="contactClient('${record.id}')" title="Contact">📞</button>
+                        <button class="action-btn contact" onclick="window.location.href='tel:${record.phone}'" title="Contact">📞</button>
 
                     </div>
 

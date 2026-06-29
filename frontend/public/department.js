@@ -53590,7 +53590,7 @@ async function loadClientsRecords() {
 
     } catch (error) {
 
-        console.error('âŒ Error loading clients records:', error);
+        console.error('â Œ Error loading clients records:', error);
 
         // Show empty state on error instead of mock data
 
@@ -53922,7 +53922,7 @@ function displayClientsRecords(data) {
 
                     <div class="client-actions">
 
-                        <button class="action-btn contact" onclick="contactClient('${record.id}')" title="Contact">ðŸ“ž</button>
+                        <button class="action-btn contact" onclick="window.location.href='tel:${record.phone}'" title="Contact">📞</button>
 
                     </div>
 
