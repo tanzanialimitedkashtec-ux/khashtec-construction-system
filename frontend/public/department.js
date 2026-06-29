@@ -23624,10 +23624,10 @@ function submitIncidentToDatabase() {
             incident_type: incidentType,
             project_id: incidentProject,
 
-            severity: severityLevel,
-
+            severity: severityLevel === 'critical' || severityLevel === 'fatal' ? 'Critical' : 
+                      severityLevel === 'major' ? 'High' : 
+                      severityLevel === 'minor' ? 'Low' : 'Medium',
             priority: severityLevel === 'critical' || severityLevel === 'fatal' ? 'Critical' : 
-
                       severityLevel === 'major' ? 'High' : 'Medium',
 
             due_date: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], // 7 days from now
@@ -25414,10 +25414,10 @@ function manualSubmitIncident() {
 
             incident_type: incidentType,
 
-            severity: severityLevel,
-
+            severity: severityLevel === 'critical' || severityLevel === 'fatal' ? 'Critical' : 
+                      severityLevel === 'major' ? 'High' : 
+                      severityLevel === 'minor' ? 'Low' : 'Medium',
             priority: severityLevel === 'critical' || severityLevel === 'fatal' ? 'Critical' : 
-
                       severityLevel === 'major' ? 'High' : 'Medium',
 
             due_date: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], // 7 days from now
