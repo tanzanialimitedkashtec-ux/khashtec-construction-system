@@ -1725,6 +1725,8 @@ function loadMenu(){
 
         addMenu("View Assigned Workers", viewAssignedWorkers);
 
+        addMenu("Assign Project Workers", assignWorker);
+
         addMenu("Record Site Reports", recordSiteReports);
 
         addMenu("Approve Completed Work", approveCompletedWork);
