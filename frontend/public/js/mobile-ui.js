@@ -119,8 +119,14 @@
         '.profile-widget-footer{padding:6px 10px!important}',
         '.profile-widget-footer button{padding:6px 10px!important;font-size:10px!important;border-radius:2px!important;min-height:28px!important}',
 
+        /* === CHARTS & GRAPHS — responsive on mobile === */
+        'canvas{max-width:100%!important;height:auto!important;min-height:180px!important;max-height:260px!important}',
+        '.chart-container,.chart-wrapper,div:has(>canvas){width:100%!important;max-width:100%!important;padding:6px!important;background:' + C.card + '!important;border:1px solid ' + C.border + '!important;border-radius:2px!important;margin-bottom:8px!important;overflow:hidden!important}',
+        '.chart-box{min-width:auto!important;font-size:10px!important;padding:6px 8px!important}',
+        '.chart-level{gap:4px!important;flex-wrap:wrap!important}',
+
         /* === MEDIA === */
-        'img,canvas,svg,video,iframe{max-width:100%!important;height:auto!important}',
+        'img,svg,video,iframe{max-width:100%!important;height:auto!important}',
 
         /* === LOGIN === */
         '.login-container{width:90%!important;max-width:360px!important;padding:24px 20px!important;border-radius:2px!important;background:' + C.card + '!important;box-shadow:0 8px 32px rgba(0,0,0,0.12)!important}',
@@ -135,6 +141,19 @@
         /* === BOTTOM NAV — only show after login === */
         'body:not(.login-active) #m-nav{display:flex!important}',
         'body.login-active #m-nav{display:none!important}',
+
+        /* === PREMIUM COMPACT POLISH === */
+        'h1,h2,h3,h4,h5,h6{margin-top:0!important}',
+        'p{margin:2px 0!important;line-height:1.4!important}',
+        '.card h3,.card h4,.stat-card h3{font-size:11px!important;margin-bottom:4px!important}',
+        '.card p,.stat-card p{font-size:10px!important}',
+        'hr{margin:6px 0!important;border-color:' + C.border + '!important}',
+        'ul,ol{padding-left:16px!important;margin:4px 0!important}',
+        'li{font-size:10px!important;margin-bottom:2px!important}',
+        'a{font-size:inherit!important}',
+        '.section-title,.section-header,h3.section{font-size:12px!important;font-weight:700!important;margin-bottom:6px!important;padding-bottom:4px!important;border-bottom:1px solid ' + C.border + '!important}',
+        'textarea{min-height:60px!important;resize:vertical!important}',
+        'select{background-image:none!important}',
 
         /* === INLINE STYLE OVERRIDES — beat style= attributes on grid/flex containers === */
         'div[style*="grid-template-columns"]{grid-template-columns:1fr!important}',
@@ -493,15 +512,27 @@
             }
             if (st.fontSize) {
                 var fs = parseInt(st.fontSize, 10);
-                if (fs > 18) st.fontSize = '14px';
+                if (fs > 16) st.fontSize = '12px';
             }
             if (st.padding) {
                 var p = parseInt(st.padding, 10);
-                if (p > 20) st.padding = '10px';
+                if (p > 16) st.padding = '8px';
             }
             if (st.margin) {
                 var m = parseInt(st.margin, 10);
-                if (m > 20) st.margin = '8px';
+                if (m > 16) st.margin = '6px';
+            }
+        });
+
+        // Fix chart canvases to fit mobile viewport
+        root.querySelectorAll('canvas').forEach(function(c) {
+            c.style.maxWidth = '100%';
+            c.style.height = 'auto';
+            var parent = c.parentElement;
+            if (parent) {
+                parent.style.width = '100%';
+                parent.style.maxWidth = '100%';
+                parent.style.overflow = 'hidden';
             }
         });
 
