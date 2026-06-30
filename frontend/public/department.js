@@ -57323,7 +57323,7 @@ async function saveNewSale(event) {
                 paymentMethod: paymentMethod,
                 paymentStatus: paymentStatus,
                 agent: commissionAgent || 'Real Estate Manager',
-                status: 'completed',
+                status: paymentStatus,
                 date: date,
                 notes: notes,
                 installmentPeriod: installmentPeriod,

@@ -77,11 +77,19 @@ function mapTransactionToSale(item) {
         }
     }
     
-    // Map db status ENUM ('Pending', 'Approved', 'Rejected', 'Processed') to frontend paymentStatus
+    // Extract actual payment status from description if stored (format: [paymentStatus:xxx])
+    const paymentStatusMatch = description.match(/\[paymentStatus:(\w+)\]/);
     let frontendStatus = 'completed';
-    if (item.status === 'Pending') frontendStatus = 'pending';
-    if (item.status === 'Rejected') frontendStatus = 'rejected';
-    if (item.status === 'Approved' || item.status === 'Processed') frontendStatus = 'completed';
+    if (paymentStatusMatch) {
+        // Use the actual stored payment status
+        frontendStatus = paymentStatusMatch[1];
+    } else {
+        // Fallback: Map db status ENUM ('Pending', 'Approved', 'Rejected', 'Processed') to frontend paymentStatus
+        if (item.status === 'Pending') frontendStatus = 'pending';
+        else if (item.status === 'Rejected') frontendStatus = 'overdue';
+        else if (item.status === 'Approved') frontendStatus = 'partial';
+        else if (item.status === 'Processed') frontendStatus = 'completed';
+    }
     
     const createdYear = item.created_at ? new Date(item.created_at).getFullYear() : new Date().getFullYear();
     const saleIdStr = `SALE-${createdYear}-${String(item.id).padStart(3, '0')}`;
@@ -256,18 +264,27 @@ router.post('/', async (req, res) => {
                 ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())
             `;
             
-            // Map status correctly to valid ENUM values ('Pending', 'Approved', 'Rejected', 'Processed')
-            let mappedStatus = 'Processed';
-            if (status === 'pending' || paymentStatus === 'pending') mappedStatus = 'Pending';
-            if (status === 'rejected' || paymentStatus === 'rejected') mappedStatus = 'Rejected';
+            // Determine the actual payment status from user selection
+            const actualPaymentStatus = paymentStatus || status || 'pending';
+            
+            // Map to valid DB ENUM values ('Pending', 'Approved', 'Rejected', 'Processed')
+            let mappedStatus = 'Pending'; // default to Pending
+            if (actualPaymentStatus === 'completed') mappedStatus = 'Processed';
+            else if (actualPaymentStatus === 'pending') mappedStatus = 'Pending';
+            else if (actualPaymentStatus === 'partial') mappedStatus = 'Approved'; // Use Approved to represent partial
+            else if (actualPaymentStatus === 'overdue') mappedStatus = 'Rejected'; // Use Rejected to represent overdue
+            else if (actualPaymentStatus === 'rejected') mappedStatus = 'Rejected';
             
             // Format the date properly for standard MySQL DATE format (YYYY-MM-DD)
             const dateVal = req.body.date || new Date().toISOString().slice(0, 10);
             
+            // Store the actual payment status in the description so we can retrieve it later
+            const descriptionText = `Property Sale: ${propertyName} to ${clientName} [paymentStatus:${actualPaymentStatus}]`;
+            
             const values = [
                 'Income', // type (valid ENUM value)
                 'Real Estate Sale', // category (for identification)
-                `Property Sale: ${propertyName} to ${clientName}`, // description
+                descriptionText, // description (includes actual payment status)
                 parseFloat(salePrice), // amount
                 mappedStatus, // status (valid ENUM value)
                 dateVal.slice(0, 10), // date (YYYY-MM-DD)
@@ -309,9 +326,9 @@ router.post('/', async (req, res) => {
                     monthlyInstallment: monthlyInstallment || null,
                     interestRate: interestRate || null,
                     salesAgreement: salesAgreement || 'Contract Signed',
-                    status: mappedStatus === 'Processed' ? 'completed' : 'pending',
+                    status: actualPaymentStatus,
                     agent: agent || 'Real Estate Manager',
-                    paymentStatus: mappedStatus === 'Processed' ? 'completed' : 'pending',
+                    paymentStatus: actualPaymentStatus,
                     contractSigned: contractSigned || true
                 }
             });
