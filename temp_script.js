@@ -55049,7 +55049,7 @@ function addProperty(){
 
                 
 
-                <form id="propertyForm" onsubmit="return saveNewProperty()">
+                <form id="propertyForm" onsubmit="event.preventDefault(); saveNewProperty(event); return false;">
 
                     <div class="form-row">
 
