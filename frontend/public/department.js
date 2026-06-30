@@ -51368,7 +51368,7 @@ function addProperty(){
 
                             <label>Plot Number *</label>
 
-                            <input type="text" id="plotNumber" placeholder="e.g., PLT-2026-001" required readonly />
+                            <input type="text" id="plotNumber" placeholder="e.g., PLT-2026-001" required />
 
                         </div>
 
