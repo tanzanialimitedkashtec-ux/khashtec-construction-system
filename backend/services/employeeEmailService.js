@@ -15,6 +15,11 @@ const transporter = nodemailer.createTransport({
     auth: {
         user: GMAIL_USER,
         pass: GMAIL_APP_PASSWORD
+    },
+    // Force IPv4 — Railway and many cloud hosts lack IPv6 connectivity
+    family: 4,
+    tls: {
+        rejectUnauthorized: false
     }
 });
 
