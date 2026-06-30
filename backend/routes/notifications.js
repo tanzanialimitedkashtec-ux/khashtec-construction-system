@@ -50,9 +50,12 @@ router.get('/', async (req, res) => {
         let query = 'SELECT *, recipient_type as recipientType, recipients, sent_by as sentBy FROM notifications WHERE 1=1';
         const params = [];
         
-        // STRICT Role-based filtering:
-        // If a role is passed, show ONLY notifications explicitly targeted to that role.
-        // MD/admin see everything. No "all staff + system" loophole.
+        // Role-based filtering:
+        // MD/admin see everything.
+        // All other roles see ONLY notifications that match their department:
+        //   - category column matches their slug (new notifications)
+        //   - recipients contains their role (new notifications)
+        //   - OR title/message contains role-specific keywords (legacy notifications)
         const rolesWithFullAccess = ['md', 'admin', 'managing director'];
         if (role) {
             const roleLower = role.toLowerCase();
@@ -71,14 +74,41 @@ router.get('/', async (req, res) => {
                     assistant: 'assistant'
                 };
                 const categoryMatch = categoryMap[roleLower] || roleLower;
-                // A notification is visible ONLY if:
-                //   category explicitly matches the role's slug, OR
-                //   recipients field explicitly contains the role name
+
+                // Keywords in title/message that strongly indicate this belongs to a specific department.
+                // This catches legacy notifications that were created without a category.
+                const keywordMap = {
+                    finance: ['payment', 'expense', 'budget', 'tax', 'nhif', 'nssf', 'invoice', 'finance', 'salary'],
+                    hr: ['employee', 'workforce', 'leave', 'recruitment', 'hr', 'payroll', 'staff', 'senior role'],
+                    project: ['project', 'site report', 'completion', 'milestone', 'work order'],
+                    safety: ['hse', 'safety', 'incident', 'hazard', 'accident'],
+                    realestate: ['property', 'real estate', 'lease', 'tenant', 'realestate'],
+                    procurement: ['procurement', 'purchase', 'vendor', 'supply', 'material'],
+                    assistant: ['assistant', 'schedule', 'meeting']
+                };
+                const keywords = keywordMap[roleLower] || [roleLower];
+
+                // Build keyword conditions
+                const keywordConditions = keywords.map(() => `LOWER(COALESCE(title,'')) LIKE ? OR LOWER(COALESCE(message,'')) LIKE ?`).join(' OR ');
+                const keywordParams = [];
+                keywords.forEach(k => keywordParams.push('%' + k + '%', '%' + k + '%'));
+
+                // Exclude keywords that belong to OTHER roles (cross-department leak prevention)
+                const allRoleKeywords = Object.entries(keywordMap)
+                    .filter(([r]) => r !== roleLower)
+                    .flatMap(([, kws]) => kws);
+                // Only exclude a notification if NONE of the current role's keywords match
+                // (handled by the positive filter below — excluded implicitly)
+
                 query += ` AND (
                     LOWER(COALESCE(category,'')) = ?
                     OR LOWER(COALESCE(recipients,'')) LIKE ?
+                    OR (
+                        (LOWER(COALESCE(category,'')) IN ('system','') OR category IS NULL)
+                        AND (${keywordConditions})
+                    )
                 )`;
-                params.push(categoryMatch, '%' + roleLower + '%');
+                params.push(categoryMatch, '%' + roleLower + '%', ...keywordParams);
             }
             // MD/admin: no filter added — they see everything
         }

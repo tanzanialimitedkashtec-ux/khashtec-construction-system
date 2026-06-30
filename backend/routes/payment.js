@@ -398,7 +398,8 @@ router.put('/:id/status', async (req, res) => {
                     senderId: approvedByUserId,
                     relatedType: 'payment_request',
                     relatedId: id,
-                    priority: 'Medium'
+                    priority: 'Medium',
+                    category: 'finance'
                 });
             }
         } catch (notificationError) {
