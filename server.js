@@ -44,6 +44,8 @@ const { sendAssignmentNotification } = require('./backend/services/emailService'
 
 const authRoutes = require('./backend/routes/auth');
 
+const workflowRoutes = require('./backend/routes/workflows');
+
 const employeeRoutes = require('./backend/routes/employees');
 
 const projectRoutes = require('./backend/routes/projects');
@@ -844,6 +846,8 @@ app.use('/api/auth', asyncHandler(async (req, res, next) => {
 }));
 
 
+
+app.use('/api/workflows', workflowRoutes);
 
 app.use('/api/employees', asyncHandler(async (req, res, next) => {
 
