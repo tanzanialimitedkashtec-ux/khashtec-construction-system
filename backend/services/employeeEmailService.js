@@ -1,9 +1,7 @@
 require('dotenv').config();
 const nodemailer = require('nodemailer');
 const dns = require('dns');
-
-// Force Node.js to resolve DNS to IPv4 first (Railway lacks IPv6)
-dns.setDefaultResultOrder('ipv4first');
+const { promisify } = require('util');
 
 // ============================================
 // NODEMAILER EMAIL SERVICE (For Employees)
@@ -14,35 +12,55 @@ dns.setDefaultResultOrder('ipv4first');
 const GMAIL_USER = process.env.GMAIL_USER || 'tanzanialimitedkashtec@gmail.com';
 const GMAIL_APP_PASSWORD = process.env.GMAIL_APP_PASSWORD || '';
 
-const transporter = nodemailer.createTransport({
-    host: 'smtp.gmail.com',
-    port: 465,
-    secure: true,
-    auth: {
-        user: GMAIL_USER,
-        pass: GMAIL_APP_PASSWORD
-    },
-    family: 4,
-    tls: {
-        rejectUnauthorized: false
-    },
-    // Explicit IPv4-only DNS lookup as final safeguard
-    lookup: (hostname, options, callback) => {
-        dns.resolve4(hostname, (err, addresses) => {
-            if (err) return callback(err);
-            callback(null, addresses[0], 4);
-        });
-    }
-});
+// We'll initialize this asynchronously to force IPv4
+let transporter = null;
 
-// Verify on startup
-if (GMAIL_APP_PASSWORD) {
-    transporter.verify(function(error, success) {
-        if (error) {
-            console.error('❌ Nodemailer configuration error:', error.message);
-        } else {
-            console.log('✅ Employee email service configured (Nodemailer)');
+async function initTransporter() {
+    if (transporter) return transporter;
+
+    // Resolve smtp.gmail.com to IPv4 BEFORE creating transport
+    let smtpHost = 'smtp.gmail.com';
+    try {
+        const resolve4 = promisify(dns.resolve4);
+        const addresses = await resolve4('smtp.gmail.com');
+        if (addresses && addresses.length > 0) {
+            smtpHost = addresses[0];
+            console.log(`📧 Resolved smtp.gmail.com to IPv4: ${smtpHost}`);
         }
+    } catch (e) {
+        console.warn('⚠️ DNS resolve4 failed, using hostname:', e.message);
+    }
+
+    transporter = nodemailer.createTransport({
+        host: smtpHost,
+        port: 465,
+        secure: true,
+        auth: {
+            user: GMAIL_USER,
+            pass: GMAIL_APP_PASSWORD
+        },
+        tls: {
+            // Required when using raw IP so TLS certificate validates against the real hostname
+            servername: 'smtp.gmail.com',
+            rejectUnauthorized: false
+        }
+    });
+
+    return transporter;
+}
+
+// Initialize and verify on startup
+if (GMAIL_APP_PASSWORD) {
+    initTransporter().then(t => {
+        t.verify(function(error, success) {
+            if (error) {
+                console.error('❌ Nodemailer configuration error:', error.message);
+            } else {
+                console.log('✅ Employee email service configured (Nodemailer)');
+            }
+        });
+    }).catch(e => {
+        console.error('❌ Nodemailer init failed:', e.message);
     });
 } else {
     console.warn('⚠️ GMAIL_APP_PASSWORD not set — Employee emails will fail.');
@@ -122,7 +140,8 @@ async function sendAssignmentNotification(toEmail, details) {
     const html = buildAssignmentEmailHTML(details);
 
     try {
-        const info = await transporter.sendMail({
+        const t = await initTransporter();
+        const info = await t.sendMail({
             from: `"KASHTEC System" <${GMAIL_USER}>`,
             to: toEmail,
             subject: subject,
@@ -216,7 +235,8 @@ async function sendPaymentNotification(toEmail, details) {
     const html = buildPaymentEmailHTML(details);
 
     try {
-        const info = await transporter.sendMail({
+        const t = await initTransporter();
+        const info = await t.sendMail({
             from: `"KASHTEC System" <${GMAIL_USER}>`,
             to: toEmail,
             subject: subject,
