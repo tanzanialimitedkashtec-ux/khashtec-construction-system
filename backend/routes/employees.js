@@ -568,15 +568,15 @@ router.post('/', (req, res, next) => {
                 );
             }
             
-            // Create notification for new employee registration
+            // Create notification for new employee registration (Target HR only)
             try {
-                await db.execute(`
-                    INSERT INTO notifications (title, message, type, priority, recipient_id, created_at)
-                    VALUES (?, ?, 'info', 'Medium', NULL, NOW())
-                `, [
+                await notify(
                     'New Employee Registered',
-                    `New employee ${fullName} has been registered in ${department} department as ${finalJobCategory}.`
-                ]);
+                    `New employee ${fullName} has been registered in ${department} department as ${finalJobCategory}.`,
+                    'info',
+                    'hr',
+                    'System'
+                );
             } catch (notifErr) {
                 console.warn('⚠️ Could not create notification:', notifErr.message);
             }
