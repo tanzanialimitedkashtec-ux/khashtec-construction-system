@@ -1,5 +1,6 @@
 const express = require('express');
 const router = express.Router();
+const notify = require('../utils/notify');
 
 console.log('🚀 Workforce Requests route file is being loaded...');
 
@@ -278,6 +279,15 @@ router.post('/', async (req, res) => {
             const result = Array.isArray(resultResult) ? resultResult[0] : resultResult;
             
             console.log('✅ Workforce request inserted successfully:', result);
+
+            // Trigger targeted notification to HR department
+            await notify(
+                'New Workforce Request',
+                `A new workforce request (${requestId}) for project ${workforceProject} has been submitted and requires HR approval.`,
+                'info',
+                'hr', // targetRole
+                'Current User' // ideally req.session.user
+            );
             
             // Return success response
             res.status(201).json({

@@ -3,12 +3,11 @@ const router = express.Router();
 const WorkflowEngine = require('../../workflow-engine'); // using the standalone file
 
 // Instantiate a global workflow engine
-// Note: Since this is in-memory, state will reset on server restart.
-// To fully persist, you would integrate this with the MySQL database.
+// Now persisting to MySQL
 const engine = new WorkflowEngine();
+const notify = require('../utils/notify');
 
-// --- Example Pre-defined Workflow ---
-// We can define a default workflow for demonstration purposes
+// --- Workflows ---
 engine.defineWorkflow('DocumentApproval', {
     initialState: 'DRAFT',
     states: {
@@ -21,12 +20,96 @@ engine.defineWorkflow('DocumentApproval', {
             transitions: {
                 'APPROVE': { 
                     to: 'APPROVED',
-                    onTransition: (data, actionData, userContext) => {
+                    onTransition: async (data, actionData, userContext) => {
                         console.log(`[Workflow] Document approved by ${userContext.userId}`);
                     }
                 },
                 'REJECT': { to: 'REJECTED' },
                 'REQUEST_CHANGES': { to: 'DRAFT' }
+            }
+        },
+        'APPROVED': { isEndState: true },
+        'REJECTED': { isEndState: true }
+    }
+});
+
+// 1. Workforce Request Workflow (Sends notification to HR)
+engine.defineWorkflow('WorkforceRequest', {
+    initialState: 'DRAFT',
+    states: {
+        'DRAFT': {
+            transitions: {
+                'SUBMIT': { 
+                    to: 'PENDING_HR_APPROVAL',
+                    onTransition: async (data, actionData, userContext) => {
+                        await notify(
+                            'New Workforce Request',
+                            `A new workforce request was submitted by ${userContext.userId}.`,
+                            'info',
+                            'hr',
+                            userContext.userId || 'System'
+                        );
+                    }
+                }
+            }
+        },
+        'PENDING_HR_APPROVAL': {
+            transitions: {
+                'APPROVE': { 
+                    to: 'APPROVED',
+                    allowedRoles: ['hr', 'admin', 'MD'],
+                    onTransition: async (data, actionData, userContext) => {
+                        // Notify original submitter it was approved
+                        await notify(
+                            'Workforce Request Approved',
+                            `Your workforce request was approved.`,
+                            'success',
+                            data.submittedBy || 'system',
+                            'HR'
+                        );
+                    }
+                },
+                'REJECT': { 
+                    to: 'REJECTED',
+                    allowedRoles: ['hr', 'admin', 'MD']
+                }
+            }
+        },
+        'APPROVED': { isEndState: true },
+        'REJECTED': { isEndState: true }
+    }
+});
+
+// 2. Payment Request Workflow (Sends notification to Finance)
+engine.defineWorkflow('PaymentRequest', {
+    initialState: 'DRAFT',
+    states: {
+        'DRAFT': {
+            transitions: {
+                'SUBMIT': { 
+                    to: 'PENDING_FINANCE_APPROVAL',
+                    onTransition: async (data, actionData, userContext) => {
+                        await notify(
+                            'New Payment Request',
+                            `A payment request requires finance approval from ${userContext.userId}.`,
+                            'warning',
+                            'finance',
+                            userContext.userId || 'System'
+                        );
+                    }
+                }
+            }
+        },
+        'PENDING_FINANCE_APPROVAL': {
+            transitions: {
+                'APPROVE': { 
+                    to: 'APPROVED',
+                    allowedRoles: ['finance', 'admin', 'MD']
+                },
+                'REJECT': { 
+                    to: 'REJECTED',
+                    allowedRoles: ['finance', 'admin', 'MD']
+                }
             }
         },
         'APPROVED': { isEndState: true },
