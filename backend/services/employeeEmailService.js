@@ -1,5 +1,9 @@
 require('dotenv').config();
 const nodemailer = require('nodemailer');
+const dns = require('dns');
+
+// Force Node.js to resolve DNS to IPv4 first (Railway lacks IPv6)
+dns.setDefaultResultOrder('ipv4first');
 
 // ============================================
 // NODEMAILER EMAIL SERVICE (For Employees)
@@ -18,10 +22,16 @@ const transporter = nodemailer.createTransport({
         user: GMAIL_USER,
         pass: GMAIL_APP_PASSWORD
     },
-    // Force IPv4 — Railway and many cloud hosts lack IPv6 connectivity
     family: 4,
     tls: {
         rejectUnauthorized: false
+    },
+    // Explicit IPv4-only DNS lookup as final safeguard
+    lookup: (hostname, options, callback) => {
+        dns.resolve4(hostname, (err, addresses) => {
+            if (err) return callback(err);
+            callback(null, addresses[0], 4);
+        });
     }
 });
 
