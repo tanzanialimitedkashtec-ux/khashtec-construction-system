@@ -38,12 +38,15 @@ router.get('/', async (req, res) => {
             console.log('⚠️ Could not create notifications table:', tableError.message);
         }
         
-        // Ensure department column exists for role-based filtering
+        // Ensure department and category columns exist for role-based filtering
         try {
-            await db.execute(`ALTER TABLE notifications ADD COLUMN IF NOT EXISTS department VARCHAR(100) NULL`);
-        } catch (e) {
-            // Column may already exist
-        }
+            // Use query instead of execute for DDL to prevent prepared statement errors
+            await db.execute(`ALTER TABLE notifications ADD COLUMN department VARCHAR(100) NULL`);
+        } catch (e) { /* Column may already exist */ }
+        
+        try {
+            await db.execute(`ALTER TABLE notifications ADD COLUMN category VARCHAR(50) DEFAULT 'system'`);
+        } catch (e) { /* Column may already exist */ }
         
         const { userId, type, category, read, unread, role } = req.query;
         
