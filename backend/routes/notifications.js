@@ -50,23 +50,39 @@ router.get('/', async (req, res) => {
         let query = 'SELECT *, recipient_type as recipientType, recipients, sent_by as sentBy FROM notifications WHERE 1=1';
         const params = [];
         
-        // Role-based filtering: each role sees only their notifications; MD sees all
-        if (role && role !== 'MD') {
+        // STRICT Role-based filtering:
+        // If a role is passed, show ONLY notifications explicitly targeted to that role.
+        // MD/admin see everything. No "all staff + system" loophole.
+        const rolesWithFullAccess = ['md', 'admin', 'managing director'];
+        if (role) {
             const roleLower = role.toLowerCase();
-            // Map role to category name for matching
-            const categoryMap = { hr: 'hr', finance: 'finance', project: 'project', hse: 'safety', admin: 'admin', realestate: 'operations', assistant: 'admin' };
-            const categoryMatch = categoryMap[roleLower] || roleLower;
-            // A notification is visible if:
-            // 1. It's a system/general notification with 'All Staff' recipients AND system category
-            // 2. recipients field contains the role name (case-insensitive)
-            // 3. category matches the role's department
-            query += ` AND (
-                (LOWER(COALESCE(recipients,'')) IN ('all staff', 'all', '') AND LOWER(COALESCE(category,'')) IN ('system', ''))
-                OR LOWER(COALESCE(recipients,'')) LIKE ?
-                OR LOWER(COALESCE(category,'')) = ?
-            )`;
-            params.push('%' + roleLower + '%', categoryMatch);
+            if (!rolesWithFullAccess.includes(roleLower)) {
+                // Map known roles to their category slug
+                const categoryMap = {
+                    hr: 'hr',
+                    finance: 'finance',
+                    project: 'project',
+                    projects: 'project',
+                    hse: 'safety',
+                    safety: 'safety',
+                    realestate: 'realestate',
+                    operations: 'operations',
+                    procurement: 'procurement',
+                    assistant: 'assistant'
+                };
+                const categoryMatch = categoryMap[roleLower] || roleLower;
+                // A notification is visible ONLY if:
+                //   category explicitly matches the role's slug, OR
+                //   recipients field explicitly contains the role name
+                query += ` AND (
+                    LOWER(COALESCE(category,'')) = ?
+                    OR LOWER(COALESCE(recipients,'')) LIKE ?
+                )`;
+                params.push(categoryMatch, '%' + roleLower + '%');
+            }
+            // MD/admin: no filter added — they see everything
         }
+
         
         if (userId) {
             query += ' AND user_id = ?';

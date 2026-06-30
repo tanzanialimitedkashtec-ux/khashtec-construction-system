@@ -55,12 +55,12 @@ function mapUrgencyToPriority(urgency) {
     return 'Medium';
 }
 
-async function createNotification({ title, message, type, recipientId, senderId, relatedType, relatedId, priority }) {
+async function createNotification({ title, message, type, recipientId, senderId, relatedType, relatedId, priority, category }) {
     await db.execute(
         `
             INSERT INTO notifications (
-                title, message, type, recipient_id, sender_id, related_type, related_id, priority
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                title, message, type, recipient_id, sender_id, related_type, related_id, priority, category, recipients, recipient_type
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         `,
         [
             title,
@@ -70,7 +70,10 @@ async function createNotification({ title, message, type, recipientId, senderId,
             senderId || null,
             relatedType || null,
             relatedId || null,
-            priority || 'Medium'
+            priority || 'Medium',
+            category || 'finance',
+            category || 'finance',
+            'role'
         ]
     );
 }

@@ -168,8 +168,8 @@ router.post('/', async (req, res) => {
 
         // Create notification for Finance department
         await db.execute(`
-            INSERT INTO notifications (title, message, type, priority, recipient_id, created_at)
-            VALUES (?, ?, 'info', 'High', NULL, NOW())
+            INSERT INTO notifications (title, message, type, priority, recipient_type, recipients, category, recipient_id, created_at)
+            VALUES (?, ?, 'info', 'High', 'role', 'finance', 'finance', NULL, NOW())
         `, [
             'New Tax Payment Recorded',
             `${taxType} payment of ${totalAmount} recorded for ${taxPeriod}`

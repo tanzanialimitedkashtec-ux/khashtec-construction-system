@@ -348,8 +348,8 @@ router.post('/', async (req, res) => {
         // Create notification (non-fatal)
         try {
             await db.execute(`
-                INSERT INTO notifications (title, message, type, priority, recipient_id, created_at)
-                VALUES (?, ?, 'info', 'Medium', ?, NOW())
+                INSERT INTO notifications (title, message, type, priority, recipient_type, recipients, category, recipient_id, created_at)
+                VALUES (?, ?, 'info', 'Medium', 'role', 'procurement', 'procurement', ?, NOW())
             `, [
                 'New Procurement Sale Request',
                 `${requestedByRole || 'User'} submitted procurement request: ${requestTitle} (Budget: ${totalBudget})`,
@@ -445,8 +445,8 @@ router.put('/:id/status', async (req, res) => {
         try {
             const requesterId = updatedRequest ? updatedRequest.submitted_by : reviewerId;
             await db.execute(`
-                INSERT INTO notifications (title, message, type, priority, recipient_id, created_at)
-                VALUES (?, ?, 'info', 'Medium', ?, NOW())
+                INSERT INTO notifications (title, message, type, priority, recipient_type, recipients, category, recipient_id, created_at)
+                VALUES (?, ?, 'info', 'Medium', 'role', 'procurement', 'procurement', ?, NOW())
             `, [
                 `Procurement Request ${status}`,
                 `Your procurement request "${updatedRequest ? updatedRequest.request_title : id}" has been ${status.toLowerCase()}`,

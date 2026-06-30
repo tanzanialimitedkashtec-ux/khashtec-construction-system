@@ -120,8 +120,8 @@ router.post('/', async (req, res) => {
         // Create notification for Finance department
         try {
             await db.execute(`
-                INSERT INTO notifications (title, message, type, priority, recipient_id, created_at)
-                VALUES (?, ?, 'info', 'Medium', NULL, NOW())
+                INSERT INTO notifications (title, message, type, priority, recipient_type, recipients, category, recipient_id, created_at)
+                VALUES (?, ?, 'info', 'Medium', 'role', 'finance', 'finance', NULL, NOW())
             `, [
                 'New NHIF Contribution Recorded',
                 `NHIF contribution of ${total} recorded for employee ID: ${employeeId}`

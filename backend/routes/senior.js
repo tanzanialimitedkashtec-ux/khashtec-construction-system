@@ -138,8 +138,8 @@ router.post('/', async (req, res) => {
 
         // Create notifications for MD and HR
         await db.execute(`
-            INSERT INTO notifications (title, message, type, priority, recipient_id, created_at)
-            VALUES (?, ?, 'info', 'High', NULL, NOW())
+            INSERT INTO notifications (title, message, type, priority, recipient_type, recipients, category, recipient_id, created_at)
+            VALUES (?, ?, 'info', 'High', 'role', 'hr', 'hr', NULL, NOW())
         `, [
             'New Senior Role Request',
             `${submittedByRole} submitted senior role request: ${proposedTitle} for ${newRequest[0].employee_name}`
@@ -232,12 +232,13 @@ router.put('/:id/status', async (req, res) => {
         // Create notification for the submitter
         const submitterId = updatedRequest[0].submitted_by;
         await db.execute(`
-            INSERT INTO notifications (title, message, type, priority, recipient_id, created_at)
-            VALUES (?, ?, 'info', 'High', ?, NOW())
+            INSERT INTO notifications (title, message, type, priority, recipient_type, recipients, category, recipient_id, created_at)
+            VALUES (?, ?, 'info', 'High', 'role', 'hr', 'hr', ?, NOW())
         `, [
             `Senior Role Request ${status}`,
-            `Your senior role request "${updatedRequest[0].proposed_title}" has been ${status.toLowerCase()}`
-        ], [submitterId]);
+            `Your senior role request "${updatedRequest[0].proposed_title}" has been ${status.toLowerCase()}`,
+            submitterId
+        ]);
 
         res.json({
             success: true,
@@ -298,8 +299,8 @@ router.post('/:id/send-to-md', async (req, res) => {
 
         // Create notification for MD
         await db.execute(`
-            INSERT INTO notifications (title, message, type, priority, recipient_id, created_at)
-            VALUES (?, ?, 'info', 'High', NULL, NOW())
+            INSERT INTO notifications (title, message, type, priority, recipient_type, recipients, category, recipient_id, created_at)
+            VALUES (?, ?, 'info', 'High', 'role', 'md', 'md', NULL, NOW())
         `, [
             'Senior Role Request - MD Approval Required',
             `${sentByRole} has sent senior role request "${request[0].proposed_title}" for ${request[0].employee_name} to MD for approval. ${message || ''}`
