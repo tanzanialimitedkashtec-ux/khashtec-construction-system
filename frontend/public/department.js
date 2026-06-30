@@ -56844,6 +56844,9 @@ function editSalesTransaction(transactionId) {
 // Real Estate Helper Functions
 
 function saveNewProperty() {
+    if (typeof event !== 'undefined' && event.preventDefault) {
+        event.preventDefault();
+    }
 
     const propertyForm = document.getElementById('propertyForm');
     const selectedUtilities = propertyForm ?
@@ -56954,7 +56957,7 @@ function saveNewProperty() {
 
             'Accept': 'application/json',
 
-            'Authorization': `Bearer ${sessionManager.getAuthToken()}`
+            'Authorization': `Bearer ${(typeof sessionManager !== 'undefined' && sessionManager.getAuthToken) ? sessionManager.getAuthToken() : ''}`
 
         },
 
