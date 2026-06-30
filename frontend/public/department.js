@@ -825,13 +825,13 @@ async function loadNotifications() {
             var statusCls = isRead ? ' read' : ' unread';
             var dotCls = isRead ? 'read-dot' : 'unread-dot';
             var timeAgo = getTimeAgo(n.created_at);
-            return '<div class="notification-item'+statusCls+'" onclick="openNotification('+n.id+'">'+
+            return '<div class="notification-item'+statusCls+'" onclick="openNotification('+n.id+')">'+
                 '<div class="notif-read-indicator '+dotCls+'"></div>'+
                 '<div class="notif-icon '+typeCls+'">'+typeIcon+'</div>' +
                 '<div class="notif-content">' +
                 '<p class="notif-title">'+(n.title||'Notification').replace(/</g,'&lt;')+'</p>' +
                 '<p class="notif-msg">'+(n.message||'').replace(/</g,'&lt;')+'</p>' +
-                '<span class="notif-time">'+(isRead ? 'Read u00b7 ' : '')+timeAgo+'</span>' +
+                '<span class="notif-time">'+(isRead ? 'Read · ' : '<strong>New · </strong>')+timeAgo+'</span>' +
                 '</div></div>';
         }).join('');
     } catch(e) {
@@ -872,11 +872,11 @@ async function openNotification(id) {
     try {
         var res = await fetch('/api/notifications/' + id + '/read', { method: 'PUT' });
         if (res.ok) {
-            console.log('ud83dudd14 Notification', id, 'marked as read successfully');
+            console.log('🔔 Notification', id, 'marked as read successfully');
             if (typeof customAlert === 'function') customAlert('Notification marked as read', 'Success', 'success');
         }
     } catch(e) {
-        console.error('ud83dudd14 Error marking notification as read:', e);
+        console.error('🔔 Error marking notification as read:', e);
     }
     var panel = document.getElementById('notificationPanel');
     panel.classList.remove('open');
@@ -887,23 +887,23 @@ async function openNotification(id) {
 }
 
 async function markAllNotificationsRead() {
-    console.log('ud83dudd14 markAllNotificationsRead() called');
+    console.log('🔔 markAllNotificationsRead() called');
     var btn = document.querySelector('.notification-panel-header button');
     if (btn) { btn.disabled = true; btn.textContent = 'Marking...'; }
     try {
         // Try bulk endpoint first
-        console.log('ud83dudd14 Calling PUT /api/notifications/read-all...');
+        console.log('🔔 Calling PUT /api/notifications/read-all...');
         var bulkRes = await fetch('/api/notifications/read-all', {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ userId: 'all' })
         });
-        console.log('ud83dudd14 read-all response status:', bulkRes.status);
+        console.log('🔔 read-all response status:', bulkRes.status);
         if (bulkRes.ok) {
             var bulkData = await bulkRes.json();
-            console.log('ud83dudd14 read-all result:', bulkData);
+            console.log('🔔 read-all result:', bulkData);
         } else {
-            console.log('ud83dudd14 read-all failed, falling back to one-by-one...');
+            console.log('🔔 read-all failed, falling back to one-by-one...');
             // Fallback: mark one-by-one
             var res = await fetch('/api/notifications');
             var data = await res.json();
@@ -915,17 +915,17 @@ async function markAllNotificationsRead() {
                     await fetch('/api/notifications/' + notifications[i].id + '/read', { method: 'PUT' });
                 }
             }
-            console.log('ud83dudd14 Marked', unreadCount, 'notifications as read one-by-one');
+            console.log('🔔 Marked', unreadCount, 'notifications as read one-by-one');
         }
     } catch(e) {
-        console.error('ud83dudd14 markAllNotificationsRead error:', e);
+        console.error('🔔 markAllNotificationsRead error:', e);
     }
     if (btn) { btn.disabled = false; btn.textContent = 'Mark all read'; }
-    console.log('ud83dudd14 Updating badge and reloading notifications...');
+    console.log('🔔 Updating badge and reloading notifications...');
     updateNotificationBadge();
     loadNotifications();
     if (typeof customAlert === 'function') customAlert('All notifications marked as read', 'Success', 'success');
-    console.log('ud83dudd14 markAllNotificationsRead() complete');
+    console.log('🔔 markAllNotificationsRead() complete');
 }
 
 function getTimeAgo(dateStr) {
@@ -944,7 +944,14 @@ function getTimeAgo(dateStr) {
 function startNotificationPolling() {
     updateNotificationBadge();
     if (notificationPollInterval) clearInterval(notificationPollInterval);
-    notificationPollInterval = setInterval(updateNotificationBadge, 30000);
+    notificationPollInterval = setInterval(function() {
+        updateNotificationBadge();
+        // Also refresh the panel list live if it is open
+        var panel = document.getElementById('notificationPanel');
+        if (panel && panel.classList.contains('open')) {
+            loadNotifications();
+        }
+    }, 15000); // every 15 seconds
 }
 
 function showNotifications() { toggleNotificationPanel();
