@@ -1,77 +1,55 @@
 require('dotenv').config();
-const nodemailer = require('nodemailer');
-const dns = require('dns');
-const { promisify } = require('util');
+const { sendAssignmentWhatsApp, sendPaymentWhatsApp } = require('./whatsappService');
 
 // ============================================
-// NODEMAILER EMAIL SERVICE (For Employees)
-// Bypasses Resend domain restrictions.
-// Uses Gmail App Passwords to send to ANY email.
+// EMPLOYEE NOTIFICATION SERVICE
+// Uses Resend HTTP API for email (Railway blocks SMTP)
+// + WhatsApp for instant mobile notifications
 // ============================================
 
-const GMAIL_USER = process.env.GMAIL_USER || 'tanzanialimitedkashtec@gmail.com';
-const GMAIL_APP_PASSWORD = process.env.GMAIL_APP_PASSWORD || '';
+const RESEND_API_KEY = process.env.RESEND_API_KEY || '';
+const EMAIL_FROM = process.env.EMAIL_FROM || 'KASHTEC <onboarding@resend.dev>';
+const APP_URL = process.env.APP_URL || 'https://khashtec-construction-system-production-e7b5.up.railway.app';
 
-// We'll initialize this asynchronously to force IPv4
-let transporter = null;
-
-async function initTransporter() {
-    if (transporter) return transporter;
-
-    // Resolve smtp.gmail.com to IPv4 BEFORE creating transport
-    let smtpHost = 'smtp.gmail.com';
-    try {
-        const resolve4 = promisify(dns.resolve4);
-        const addresses = await resolve4('smtp.gmail.com');
-        if (addresses && addresses.length > 0) {
-            smtpHost = addresses[0];
-            console.log(`📧 Resolved smtp.gmail.com to IPv4: ${smtpHost}`);
-        }
-    } catch (e) {
-        console.warn('⚠️ DNS resolve4 failed, using hostname:', e.message);
-    }
-
-    transporter = nodemailer.createTransport({
-        host: smtpHost,
-        port: 587,
-        secure: false, // Use STARTTLS on port 587 (port 465 is blocked on Railway)
-        requireTLS: true,
-        auth: {
-            user: GMAIL_USER,
-            pass: GMAIL_APP_PASSWORD
-        },
-        tls: {
-            servername: 'smtp.gmail.com',
-            rejectUnauthorized: false
-        }
-    });
-
-    return transporter;
+// Verify on startup
+if (RESEND_API_KEY) {
+    console.log('✅ Employee email service configured (Resend HTTP API + WhatsApp)');
+} else {
+    console.warn('⚠️ RESEND_API_KEY not set — Employee emails will use WhatsApp only');
 }
 
-// Initialize and verify on startup
-if (GMAIL_APP_PASSWORD) {
-    initTransporter().then(t => {
-        t.verify(function(error, success) {
-            if (error) {
-                console.error('❌ Nodemailer configuration error:', error.message);
-            } else {
-                console.log('✅ Employee email service configured (Nodemailer)');
-            }
-        });
-    }).catch(e => {
-        console.error('❌ Nodemailer init failed:', e.message);
+/**
+ * Send email via Resend HTTP API (no SMTP needed)
+ */
+async function sendViaResend(to, subject, html) {
+    if (!RESEND_API_KEY) return null;
+    
+    const response = await fetch('https://api.resend.com/emails', {
+        method: 'POST',
+        headers: {
+            'Authorization': `Bearer ${RESEND_API_KEY}`,
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            from: EMAIL_FROM,
+            to: Array.isArray(to) ? to : [to],
+            subject: subject,
+            html: html
+        })
     });
-} else {
-    console.warn('⚠️ GMAIL_APP_PASSWORD not set — Employee emails will fail.');
+
+    const data = await response.json();
+    if (!response.ok) {
+        throw new Error(`Resend API error: ${data.message || JSON.stringify(data)}`);
+    }
+    return data;
 }
 
 /**
  * Build the HTML email template for assignments
  */
 function buildAssignmentEmailHTML(details) {
-    const appUrl = process.env.APP_URL || 'https://khashtec-construction-system-production-e7b5.up.railway.app';
-    const logoUrl = `${appUrl}/images/khashtec%20logo.png`;
+    const logoUrl = `${APP_URL}/images/khashtec%20logo.png`;
 
     let employeeName = '';
     let rowsHtml = '';
@@ -113,7 +91,7 @@ function buildAssignmentEmailHTML(details) {
         </table>
 
         <div style="text-align:center;margin:30px 0 15px;">
-            <a href="${appUrl}" style="background-color:#1a5276;color:#ffffff;padding:12px 25px;text-decoration:none;border-radius:4px;font-size:14px;font-weight:bold;display:inline-block;box-shadow:0 2px 4px rgba(26,82,118,0.3);">View Details in System</a>
+            <a href="${APP_URL}" style="background-color:#1a5276;color:#ffffff;padding:12px 25px;text-decoration:none;border-radius:4px;font-size:14px;font-weight:bold;display:inline-block;box-shadow:0 2px 4px rgba(26,82,118,0.3);">View Details in System</a>
         </div>
 
         <div style="text-align:center;margin-top:25px;padding-top:15px;border-top:1px solid #eee;color:#95a5a6;font-size:11px;">
@@ -126,41 +104,42 @@ function buildAssignmentEmailHTML(details) {
 }
 
 /**
- * Send an assignment notification email to an employee
+ * Send an assignment notification (email + WhatsApp)
  */
 async function sendAssignmentNotification(toEmail, details) {
-    if (!GMAIL_APP_PASSWORD) {
-        console.warn('⚠️ Skipping assignment email — GMAIL_APP_PASSWORD not configured');
-        return false;
-    }
-
     if (!toEmail) return false;
 
-    const subject = `New Assignment Notification | KASHTEC`;
-    const html = buildAssignmentEmailHTML(details);
+    let emailSent = false;
+    let whatsAppSent = false;
 
+    // Send email via Resend
     try {
-        const t = await initTransporter();
-        const info = await t.sendMail({
-            from: `"KASHTEC System" <${GMAIL_USER}>`,
-            to: toEmail,
-            subject: subject,
-            html: html
-        });
-        console.log(`✅ Assignment email sent via Nodemailer to ${toEmail} (ID: ${info.messageId})`);
-        return true;
+        const subject = `New Assignment Notification | KASHTEC`;
+        const html = buildAssignmentEmailHTML(details);
+        const result = await sendViaResend(toEmail, subject, html);
+        if (result) {
+            console.log(`✅ Assignment email sent via Resend to ${toEmail}`);
+            emailSent = true;
+        }
     } catch (error) {
-        console.error(`⚠️ Failed to send assignment email:`, error.message);
-        return false;
+        console.error(`⚠️ Assignment email failed:`, error.message);
     }
+
+    // Send WhatsApp
+    try {
+        whatsAppSent = await sendAssignmentWhatsApp(toEmail, details);
+    } catch (error) {
+        console.error(`⚠️ Assignment WhatsApp failed:`, error.message);
+    }
+
+    return emailSent || whatsAppSent;
 }
 
 /**
  * Build the HTML email template for payment notifications
  */
 function buildPaymentEmailHTML(details) {
-    const appUrl = process.env.APP_URL || 'https://khashtec-construction-system-production-e7b5.up.railway.app';
-    const logoUrl = `${appUrl}/images/khashtec%20logo.png`;
+    const logoUrl = `${APP_URL}/images/khashtec%20logo.png`;
 
     let employeeName = '';
     let rowsHtml = '';
@@ -208,7 +187,7 @@ function buildPaymentEmailHTML(details) {
         </table>
 
         <div style="text-align:center;margin:30px 0 15px;">
-            <a href="${appUrl}" style="background-color:#1a5276;color:#ffffff;padding:12px 25px;text-decoration:none;border-radius:4px;font-size:14px;font-weight:bold;display:inline-block;box-shadow:0 2px 4px rgba(26,82,118,0.3);">Log in to System</a>
+            <a href="${APP_URL}" style="background-color:#1a5276;color:#ffffff;padding:12px 25px;text-decoration:none;border-radius:4px;font-size:14px;font-weight:bold;display:inline-block;box-shadow:0 2px 4px rgba(26,82,118,0.3);">Log in to System</a>
         </div>
 
         <div style="text-align:center;margin-top:25px;padding-top:15px;border-top:1px solid #eee;color:#95a5a6;font-size:11px;">
@@ -221,33 +200,35 @@ function buildPaymentEmailHTML(details) {
 }
 
 /**
- * Send a payment notification email to an employee
+ * Send a payment notification (email + WhatsApp)
  */
 async function sendPaymentNotification(toEmail, details) {
-    if (!GMAIL_APP_PASSWORD) {
-        console.warn('⚠️ Skipping payment email — GMAIL_APP_PASSWORD not configured');
-        return false;
-    }
-
     if (!toEmail) return false;
 
-    const subject = `Payment Notification | KASHTEC`;
-    const html = buildPaymentEmailHTML(details);
+    let emailSent = false;
+    let whatsAppSent = false;
 
+    // Send email via Resend
     try {
-        const t = await initTransporter();
-        const info = await t.sendMail({
-            from: `"KASHTEC System" <${GMAIL_USER}>`,
-            to: toEmail,
-            subject: subject,
-            html: html
-        });
-        console.log(`✅ Payment email sent via Nodemailer to ${toEmail} (ID: ${info.messageId})`);
-        return true;
+        const subject = `Payment Notification | KASHTEC`;
+        const html = buildPaymentEmailHTML(details);
+        const result = await sendViaResend(toEmail, subject, html);
+        if (result) {
+            console.log(`✅ Payment email sent via Resend to ${toEmail}`);
+            emailSent = true;
+        }
     } catch (error) {
-        console.error(`⚠️ Failed to send payment email:`, error.message);
-        return false;
+        console.error(`⚠️ Payment email failed:`, error.message);
     }
+
+    // Send WhatsApp
+    try {
+        whatsAppSent = await sendPaymentWhatsApp(toEmail, details);
+    } catch (error) {
+        console.error(`⚠️ Payment WhatsApp failed:`, error.message);
+    }
+
+    return emailSent || whatsAppSent;
 }
 
 module.exports = { sendAssignmentNotification, sendPaymentNotification };
