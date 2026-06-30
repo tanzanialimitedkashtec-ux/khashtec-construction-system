@@ -1,3 +1,5 @@
+// Force IPv4 DNS resolution BEFORE any module loads (Railway lacks IPv6)
+require('dns').setDefaultResultOrder('ipv4first');
 const express = require('express');
 
 const cors = require('cors');

@@ -1,4 +1,6 @@
 // ===== MAIN SERVER =====
+// Force IPv4 DNS resolution BEFORE any module loads (Railway lacks IPv6)
+require('dns').setDefaultResultOrder('ipv4first');
 // DEPLOYMENT ID: 84003f5-FORCED-REDEPLOY-NEW-ROUTES-20260507
 const express = require('express');
 const cors = require('cors');
