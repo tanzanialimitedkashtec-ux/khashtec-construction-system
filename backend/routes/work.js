@@ -1916,13 +1916,13 @@ router.post('/operations/internal-comm', async (req, res) => {
         // Create a notification so it appears in the bell icon
         try {
             await db.execute(
-                `INSERT INTO notifications (title, message, type, priority, recipient_type, recipients, sent_by, status, is_read, created_at)
-                 VALUES (?, ?, 'info', ?, 'all', ?, ?, 'sent', 0, NOW())`,
+                `INSERT INTO notifications (title, message, type, priority, recipient_type, recipients, category, sent_by, status, is_read, created_at)
+                 VALUES (?, ?, 'info', ?, 'role', ?, 'md', ?, 'sent', 0, NOW())`,
                 [
                     'Internal Communication: ' + (subject || 'New Message'),
                     message || '',
                     priority || 'Medium',
-                    recipients || 'All Staff',
+                    recipients || 'md',
                     'Admin'
                 ]
             );
@@ -3379,12 +3379,12 @@ router.post('/approvals', async (req, res) => {
             // Create notification for the submitter about approval
             try {
                 await db.execute(`
-                    INSERT INTO notifications (title, message, type, priority, recipient_type, recipients, sent_by, status, is_read, created_at)
-                    VALUES (?, ?, 'success', 'High', 'individual', ?, ?, 'sent', 0, NOW())
+                    INSERT INTO notifications (title, message, type, priority, recipient_type, recipients, category, sent_by, status, is_read, created_at)
+                    VALUES (?, ?, 'success', 'High', 'role', ?, 'project', ?, 'sent', 0, NOW())
                 `, [
                     'Work Approved: ' + work_id,
                     `Your work item ${work_id} has been approved by ${approved_by || 'Managing Director'}. Quality: ${quality_assessment}. Comments: ${approval_comments || 'None'}`,
-                    completedBy || 'all',
+                    completedBy || 'project',
                     approved_by || 'Managing Director'
                 ]);
                 console.log(`📢 Notification sent for work approval ${work_id}`);
@@ -4657,14 +4657,14 @@ router.post('/completions/:workId/rework', async (req, res) => {
 
         // Create notification for submitter
         try {
-            await db.execute(`
-                INSERT INTO notifications (title, message, type, priority, recipient_type, recipients, sent_by, status, is_read, created_at)
-                VALUES (?, ?, 'warning', 'High', 'individual', 'all', ?, 'sent', 0, NOW())
-            `, [
-                'Rework Requested: ' + workId,
-                `Your work item ${workId} requires rework. Reason: ${reworkReason || 'Not specified'}. Requested by: ${requestedBy || 'Managing Director'}`,
-                requestedBy || 'Managing Director'
-            ]);
+                await db.execute(`
+                    INSERT INTO notifications (title, message, type, priority, recipient_type, recipients, category, sent_by, status, is_read, created_at)
+                    VALUES (?, ?, 'warning', 'High', 'role', 'project', 'project', ?, 'sent', 0, NOW())
+                `, [
+                    'Rework Requested: ' + workId,
+                    `Your work item ${workId} requires rework. Reason: ${reworkReason || 'Not specified'}. Requested by: ${requestedBy || 'Managing Director'}`,
+                    requestedBy || 'Managing Director'
+                ]);
         } catch (notifErr) { console.log('⚠️ Rework notification:', notifErr.message); }
         
         res.json({
@@ -4734,14 +4734,14 @@ router.post('/completions/:workId/reject', async (req, res) => {
 
         // Create notification for submitter
         try {
-            await db.execute(`
-                INSERT INTO notifications (title, message, type, priority, recipient_type, recipients, sent_by, status, is_read, created_at)
-                VALUES (?, ?, 'error', 'High', 'individual', 'all', ?, 'sent', 0, NOW())
-            `, [
-                'Work Rejected: ' + workId,
-                `Your work item ${workId} has been rejected. Reason: ${rejectionReason || 'Not specified'}. Rejected by: ${rejectedBy || 'Managing Director'}`,
-                rejectedBy || 'Managing Director'
-            ]);
+                await db.execute(`
+                    INSERT INTO notifications (title, message, type, priority, recipient_type, recipients, category, sent_by, status, is_read, created_at)
+                    VALUES (?, ?, 'error', 'High', 'role', 'project', 'project', ?, 'sent', 0, NOW())
+                `, [
+                    'Work Rejected: ' + workId,
+                    `Your work item ${workId} has been rejected. Reason: ${rejectionReason || 'Not specified'}. Rejected by: ${rejectedBy || 'Managing Director'}`,
+                    rejectedBy || 'Managing Director'
+                ]);
         } catch (notifErr) { console.log('⚠️ Rejection notification:', notifErr.message); }
         
         res.json({
@@ -5796,9 +5796,9 @@ router.post('/notifications', async (req, res) => {
         // Insert notification (auto-increment ID)
         const insertResult = await db.execute(`
             INSERT INTO notifications (
-                title, message, type, priority, recipient_type, recipients,
+                title, message, type, priority, recipient_type, recipients, category,
                 status, sent_date, scheduled_date, sent_by, read_rate
-            ) VALUES (?, ?, 'Info', ?, ?, ?, ?, ?, ?, ?, 0)
+            ) VALUES (?, ?, 'Info', ?, ?, ?, 'system', ?, ?, ?, ?, 0)
         `, [
             title,
             message,

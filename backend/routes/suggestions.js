@@ -152,8 +152,8 @@ router.post('/', async (req, res) => {
 
         // Create notification for MD
         await db.execute(`
-            INSERT INTO notifications (title, message, type, priority, recipient_id, created_at)
-            VALUES (?, ?, 'info', 'Medium', NULL, NOW())
+            INSERT INTO notifications (title, message, type, priority, recipient_type, recipients, category, recipient_id, created_at)
+            VALUES (?, ?, 'info', 'Medium', 'role', 'md', 'md', NULL, NOW())
         `, [
             'New Suggestion Submitted',
             `${submittedByRole} submitted a new suggestion: ${title}`
@@ -226,12 +226,13 @@ router.put('/:id/status', async (req, res) => {
         // Create notification for the submitter
         const submitterId = updatedSuggestion[0].submitted_by;
         await db.execute(`
-            INSERT INTO notifications (title, message, type, priority, recipient_id, created_at)
-            VALUES (?, ?, 'info', 'Medium', ?, NOW())
+            INSERT INTO notifications (title, message, type, priority, recipient_type, recipients, category, recipient_id, created_at)
+            VALUES (?, ?, 'info', 'Medium', 'role', 'md', 'md', ?, NOW())
         `, [
             `Suggestion ${status}`,
-            `Your suggestion "${updatedSuggestion[0].title}" has been ${status.toLowerCase()}`
-        ], [submitterId]);
+            `Your suggestion "${updatedSuggestion[0].title}" has been ${status.toLowerCase()}`,
+            submitterId
+        ]);
 
         res.json({
             success: true,
@@ -440,8 +441,8 @@ router.post('/:id/comments', async (req, res) => {
         const [suggestion] = await db.execute('SELECT submitted_by FROM suggestions WHERE id = ?', [id]);
         if (suggestion.length > 0) {
             await db.execute(`
-                INSERT INTO notifications (title, message, type, priority, recipient_id, created_at)
-                VALUES (?, ?, 'info', 'Medium', ?, NOW())
+                INSERT INTO notifications (title, message, type, priority, recipient_type, recipients, category, recipient_id, created_at)
+                VALUES (?, ?, 'info', 'Medium', 'role', 'md', 'md', ?, NOW())
             `, [
                 'New Comment on Your Suggestion',
                 `A new comment was added to your suggestion`,
