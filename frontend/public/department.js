@@ -905,7 +905,8 @@ async function markAllNotificationsRead() {
         } else {
             console.log('🔔 read-all failed, falling back to one-by-one...');
             // Fallback: mark one-by-one
-            var res = await fetch('/api/notifications');
+            var fallbackRoleParam = (typeof currentRole !== 'undefined' && currentRole) ? '?role=' + encodeURIComponent(currentRole) : '';
+            var res = await fetch('/api/notifications' + fallbackRoleParam);
             var data = await res.json();
             var notifications = data.notifications || [];
             var unreadCount = 0;

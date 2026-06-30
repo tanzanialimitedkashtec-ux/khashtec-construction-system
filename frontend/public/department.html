@@ -24994,7 +24994,8 @@ document.addEventListener('click', function(e) {
 
 async function loadNotifications() {
     try {
-        const res = await fetch('/api/notifications');
+        var roleParam = (typeof currentRole !== 'undefined' && currentRole) ? '?role=' + encodeURIComponent(currentRole) : '';
+        const res = await fetch('/api/notifications' + roleParam);
         const data = await res.json();
         const notifications = data.notifications || [];
         const listEl = document.getElementById('notificationList');
@@ -25040,7 +25041,8 @@ let lastUnreadCount = -1;
 
 async function updateNotificationBadge() {
     try {
-        const res = await fetch('/api/notifications?unread=true');
+        var roleParam = (typeof currentRole !== 'undefined' && currentRole) ? '&role=' + encodeURIComponent(currentRole) : '';
+        const res = await fetch('/api/notifications?unread=true' + roleParam);
         const data = await res.json();
         const unread = (data.notifications || []).length;
         const badge = document.getElementById('notifBadge');
@@ -25102,7 +25104,8 @@ async function markAllNotificationsRead() {
         } else {
             console.log('🔔 read-all failed, falling back to one-by-one...');
             // Fallback: mark one-by-one
-            const res = await fetch('/api/notifications');
+            var roleParam2 = (typeof currentRole !== 'undefined' && currentRole) ? '?role=' + encodeURIComponent(currentRole) : '';
+            const res = await fetch('/api/notifications' + roleParam2);
             const data = await res.json();
             const notifications = data.notifications || [];
             const unread = notifications.filter(x => !x.is_read);
