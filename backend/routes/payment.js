@@ -179,8 +179,8 @@ router.post('/', async (req, res) => {
         
         // Create notification for finance department
         try {
-            const financeUser = await db.execute("SELECT id FROM users WHERE role = 'Finance Manager' ORDER BY id ASC LIMIT 1");
-            const financeRecipientId = Array.isArray(financeUser) && financeUser.length > 0 ? financeUser[0].id : null;
+            const [financeRows] = await db.execute("SELECT id FROM users WHERE role = 'Finance Manager' ORDER BY id ASC LIMIT 1");
+            const financeRecipientId = (financeRows && financeRows.length > 0) ? financeRows[0].id : null;
 
             await createNotification({
                 title: 'New Payment Request',
@@ -190,10 +190,12 @@ router.post('/', async (req, res) => {
                 senderId: submittedByUserId,
                 relatedType: 'payment_request',
                 relatedId: result.insertId,
-                priority: mapUrgencyToPriority(urgency)
+                priority: mapUrgencyToPriority(urgency),
+                category: 'finance'
             });
+            console.log('\uD83D\uDD14 Finance notification created for payment request:', trackingNumber);
         } catch (notificationError) {
-            console.error('❌ Failed to create finance notification for payment request:', notificationError.message);
+            console.error('\u274C Failed to create finance notification for payment request:', notificationError.message);
         }
         
         res.json({
