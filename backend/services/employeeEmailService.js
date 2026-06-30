@@ -33,14 +33,14 @@ async function initTransporter() {
 
     transporter = nodemailer.createTransport({
         host: smtpHost,
-        port: 465,
-        secure: true,
+        port: 587,
+        secure: false, // Use STARTTLS on port 587 (port 465 is blocked on Railway)
+        requireTLS: true,
         auth: {
             user: GMAIL_USER,
             pass: GMAIL_APP_PASSWORD
         },
         tls: {
-            // Required when using raw IP so TLS certificate validates against the real hostname
             servername: 'smtp.gmail.com',
             rejectUnauthorized: false
         }
