@@ -23595,7 +23595,7 @@ function submitIncidentToDatabase() {
 
         
 
-        if (!incidentType || !severityLevel || !incidentDescription || !reportedBy || !incidentProject || !incidentLocation) {
+        if (!incidentType || !severityLevel || !incidentDescription || !reportedBy || !incidentProject || !incidentLocation || !incidentDate) {
 
             console.log('âŒ Validation failed - missing required fields');
 

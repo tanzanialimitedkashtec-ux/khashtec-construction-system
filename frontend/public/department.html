@@ -47498,6 +47498,7 @@ function submitIncidentToDatabase() {
         // Validate required fields
 
         const incidentType = document.getElementById('incidentType').value;
+        const incidentDate = document.getElementById('incidentDate') ? document.getElementById('incidentDate').value : new Date().toISOString();
 
         const severityLevel = document.getElementById('severityLevel').value;
 
@@ -47511,11 +47512,11 @@ function submitIncidentToDatabase() {
 
         
 
-        console.log('📝 Form values:', { incidentType, severityLevel, incidentDescription, reportedBy, incidentProject, incidentLocation });
+        console.log('📝 Form values:', { incidentType, severityLevel, incidentDescription, reportedBy, incidentProject, incidentLocation, incidentDate });
 
         
 
-        if (!incidentType || !severityLevel || !incidentDescription || !reportedBy) {
+        if (!incidentType || !severityLevel || !incidentDescription || !reportedBy || !incidentDate) {
 
             console.log('❌ Validation failed - missing required fields');
 
@@ -47529,7 +47530,9 @@ function submitIncidentToDatabase() {
 
                     incidentDescription: !incidentDescription, incidentLocation: !incidentLocation, incidentProject: !incidentProject,
 
-                    reportedBy: !reportedBy
+                    reportedBy: !reportedBy,
+                    
+                    incidentDate: !incidentDate
 
                 }
 
@@ -47562,6 +47565,8 @@ function submitIncidentToDatabase() {
             assigned_to: 'HSE Manager',
 
             submitted_by: reportedBy,
+            submitted_date: incidentDate,
+            incident_date: incidentDate,
             project: incidentProject,
             project_name: incidentProject,
             location: incidentLocation,
@@ -57612,9 +57617,9 @@ async function viewProjectSafetyDetails(projectId) {
 
         modal.innerHTML = `
 
-            <div class="modal-content" style="max-width: 900px; width: 95%; max-height: 90vh; overflow-y: auto;">
+            <div class="modal-content" style="max-width: 550px; width: 95%; max-height: 90vh; overflow-y: auto;">
 
-                <div class="modal-header" style="background: #0b3d91; color: white; padding: 15px 20px; border-radius: 8px 8px 0 0; display:flex; justify-content:space-between; align-items:center;">
+                <div class="modal-header" style="background: #0b3d91; color: white; padding: 15px 20px; border-radius: 2px 2px 0 0; display:flex; justify-content:space-between; align-items:center;">
 
                     <h3 style="margin: 0;">Safety Details - ${project.project_name || 'Project'}</h3>
 
@@ -57626,7 +57631,7 @@ async function viewProjectSafetyDetails(projectId) {
 
                     <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px;">
 
-                        <div style="padding: 12px; background: #f8f9fa; border-radius: 8px; text-align: center;">
+                        <div style="padding: 12px; background: #f8f9fa; border-radius: 2px; text-align: center;">
 
                             <div style="font-size: 12px; color: #666; margin-bottom: 5px;">Safety Score</div>
 
@@ -57634,7 +57639,7 @@ async function viewProjectSafetyDetails(projectId) {
 
                         </div>
 
-                        <div style="padding: 12px; background: #f8f9fa; border-radius: 8px; text-align: center;">
+                        <div style="padding: 12px; background: #f8f9fa; border-radius: 2px; text-align: center;">
 
                             <div style="font-size: 12px; color: #666; margin-bottom: 5px;">Risk Level</div>
 
@@ -57642,7 +57647,7 @@ async function viewProjectSafetyDetails(projectId) {
 
                         </div>
 
-                        <div style="padding: 12px; background: ${(project.total_incidents || 0) > 0 ? '#fdf2f2' : '#f0fdf4'}; border-radius: 8px; text-align: center; border: 2px solid ${(project.total_incidents || 0) > 0 ? '#e74c3c' : '#27ae60'};">
+                        <div style="padding: 12px; background: ${(project.total_incidents || 0) > 0 ? '#fdf2f2' : '#f0fdf4'}; border-radius: 2px; text-align: center; border: 2px solid ${(project.total_incidents || 0) > 0 ? '#e74c3c' : '#27ae60'};">
 
                             <div style="font-size: 12px; color: #666; margin-bottom: 5px;">Total Incidents</div>
 
@@ -57650,7 +57655,7 @@ async function viewProjectSafetyDetails(projectId) {
 
                         </div>
 
-                        <div style="padding: 12px; background: #f8f9fa; border-radius: 8px; text-align: center;">
+                        <div style="padding: 12px; background: #f8f9fa; border-radius: 2px; text-align: center;">
 
                             <div style="font-size: 12px; color: #666; margin-bottom: 5px;">Days Without Incident</div>
 
@@ -57658,7 +57663,7 @@ async function viewProjectSafetyDetails(projectId) {
 
                         </div>
 
-                        <div style="padding: 12px; background: ${(project.open_violations || 0) > 0 ? '#fff8f0' : '#f8f9fa'}; border-radius: 8px; text-align: center; border: ${(project.open_violations || 0) > 0 ? '2px solid #e67e22' : 'none'};">
+                        <div style="padding: 12px; background: ${(project.open_violations || 0) > 0 ? '#fff8f0' : '#f8f9fa'}; border-radius: 2px; text-align: center; border: ${(project.open_violations || 0) > 0 ? '2px solid #e67e22' : 'none'};">
 
                             <div style="font-size: 12px; color: #666; margin-bottom: 5px;">Open Violations</div>
 
@@ -57666,7 +57671,7 @@ async function viewProjectSafetyDetails(projectId) {
 
                         </div>
 
-                        <div style="padding: 12px; background: #f8f9fa; border-radius: 8px; text-align: center;">
+                        <div style="padding: 12px; background: #f8f9fa; border-radius: 2px; text-align: center;">
 
                             <div style="font-size: 12px; color: #666; margin-bottom: 5px;">PPE Compliance</div>
 
@@ -57676,7 +57681,7 @@ async function viewProjectSafetyDetails(projectId) {
 
                     </div>
 
-                    <div style="margin-top: 15px; padding: 12px; background: #f8f9fa; border-radius: 8px;">
+                    <div style="margin-top: 15px; padding: 12px; background: #f8f9fa; border-radius: 2px;">
 
                         <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
 
@@ -57710,7 +57715,7 @@ async function viewProjectSafetyDetails(projectId) {
                             <span style="background:${(project.total_incidents || 0) > 0 ? '#e74c3c' : '#27ae60'}; color:white; width:28px; height:28px; border-radius:50%; display:inline-flex; align-items:center; justify-content:center; font-size:14px;">${project.total_incidents || 0}</span>
                             Incident Records
                         </h4>
-                        <div style="overflow-x:auto; border:1px solid #e0e0e0; border-radius:8px;">
+                        <div style="overflow-x:auto; border:1px solid #e0e0e0; border-radius:2px;">
                             <table style="width:100%; border-collapse:collapse;">
                                 <thead>
                                     <tr style="background:#e74c3c; color:white;">
@@ -57735,7 +57740,7 @@ async function viewProjectSafetyDetails(projectId) {
                             <span style="background:${(project.open_violations || 0) > 0 ? '#e67e22' : '#27ae60'}; color:white; width:28px; height:28px; border-radius:50%; display:inline-flex; align-items:center; justify-content:center; font-size:14px;">${project.open_violations || 0}</span>
                             Violation Records
                         </h4>
-                        <div style="overflow-x:auto; border:1px solid #e0e0e0; border-radius:8px;">
+                        <div style="overflow-x:auto; border:1px solid #e0e0e0; border-radius:2px;">
                             <table style="width:100%; border-collapse:collapse;">
                                 <thead>
                                     <tr style="background:#e67e22; color:white;">
@@ -57758,9 +57763,9 @@ async function viewProjectSafetyDetails(projectId) {
 
                 <div class="modal-footer" style="padding: 15px 20px; border-top: 1px solid #eee; text-align: right;">
 
-                    <button onclick="generateSafetyReport(${projectId})" style="background: #0b3d91; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; margin-right: 8px;">Generate Report</button>
+                    <button onclick="generateSafetyReport(${projectId})" style="background: #0b3d91; color: white; border: none; padding: 8px 16px; border-radius: 2px; cursor: pointer; margin-right: 8px;">Generate Report</button>
 
-                    <button onclick="document.getElementById('safetyDetailsModal').remove()" style="background: #6c757d; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer;">Close</button>
+                    <button onclick="document.getElementById('safetyDetailsModal').remove()" style="background: #6c757d; color: white; border: none; padding: 8px 16px; border-radius: 2px; cursor: pointer;">Close</button>
 
                 </div>
 
