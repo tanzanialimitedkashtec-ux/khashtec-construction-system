@@ -177,7 +177,6 @@ router.post('/', async (req, res, next) => {
             severity,
             location,
             project_name,
-            incident_date,
             status: rawStatus = 'pending'
         } = req.body;
 
@@ -272,10 +271,6 @@ router.post('/', async (req, res, next) => {
         if (project_name) {
             additionalFields.push('project_name');
             additionalValues.push(project_name);
-        }
-        if (incident_date) {
-            additionalFields.push('incident_date');
-            additionalValues.push(incident_date);
         }
         
         // Add additional fields to query if any
