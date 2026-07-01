@@ -47656,11 +47656,11 @@ function submitIncidentToDatabase() {
 
             showRealProblemNotification('SUCCESS', {
 
-                workItem: data.workItem,
+                workItem: data.data || data,
 
                 savedData: workItem,
 
-                databaseId: data.workItem.id
+                databaseId: data.id || (data.data && data.data.id)
 
             });
 

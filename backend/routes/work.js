@@ -3462,7 +3462,7 @@ router.post('/hse', async (req, res) => {
         // Set department to hse for this route
         const department = 'hse';
         
-        const {
+        let {
             work_type,
             work_title,
             work_description,
@@ -3477,6 +3477,16 @@ router.post('/hse', async (req, res) => {
             project_name,
             status: rawStatus = 'pending'
         } = req.body;
+
+        // Normalize severity to match DB ENUM: 'Low', 'Medium', 'High', 'Critical'
+        if (severity) {
+            const lowerSeverity = String(severity).toLowerCase();
+            if (lowerSeverity === 'minor') severity = 'Low';
+            else if (lowerSeverity === 'major') severity = 'High';
+            else if (lowerSeverity === 'fatal' || lowerSeverity === 'critical') severity = 'Critical';
+            else if (lowerSeverity === 'medium') severity = 'Medium';
+            else severity = 'Medium'; // default fallback
+        }
 
         // Normalize status to match DB ENUM: 'Pending', 'In Progress', 'Completed'
         const statusMap = { 'pending': 'Pending', 'in progress': 'In Progress', 'in-progress': 'In Progress', 'completed': 'Completed', 'investigating': 'Investigating', 'resolved': 'Resolved' };
