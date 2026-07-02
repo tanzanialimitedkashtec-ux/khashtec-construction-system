@@ -61921,7 +61921,7 @@ function showEmployeeDetailsModal(employee) {
 
             <div class="employee-details-actions">
 
-                <button class="btn-secondary" onclick="goBack()">â† Back</button>
+                <button class="btn-secondary" onclick="loadEmployeeList()">â† Back</button>
 
             </div>
 

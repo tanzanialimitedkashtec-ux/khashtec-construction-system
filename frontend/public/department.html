@@ -42543,7 +42543,19 @@ function filterUpdateEmployeeTable() {
 
 function editEmployee(employeeId) {
     const employees = window.allUpdateEmployees || [];
-    const emp = employees.find(e => (e.id || e.employee_id) == employeeId);
+    const emp = employees.find(e => (e.id || e.employee_id) == employeeId || e.gmail === employeeId);
+
+    const updateForm = document.getElementById('updateForm');
+    
+    // If not on the update screen or data not loaded, navigate there and retry
+    if (!updateForm || employees.length === 0) {
+        if (typeof updateEmployeeRecords === 'function') {
+            updateEmployeeRecords();
+            // Wait for data to load and DOM to update, then retry
+            setTimeout(() => editEmployee(employeeId), 1000);
+            return;
+        }
+    }
 
     if (!emp) {
         customAlert('❌ Employee not found!', 'Error', 'error');
@@ -42551,7 +42563,6 @@ function editEmployee(employeeId) {
     }
 
     // Show the form
-    const updateForm = document.getElementById('updateForm');
     if (updateForm) {
         updateForm.classList.remove('hidden');
         updateForm.style.display = 'block';
@@ -89033,7 +89044,7 @@ function viewEmployeeDetails(employeeId) {
 
                         <p>Error: ${error.message}</p>
 
-                        <button class="action" onclick="goBack()">Go Back</button>
+                        <button class="action" onclick="loadEmployeeList()">Go Back</button>
 
                     </div>
 
@@ -89209,7 +89220,7 @@ function showEmployeeDetailsModal(employee) {
 
             <div class="employee-details-actions">
 
-                <button class="btn-secondary" onclick="goBack()">← Back</button>
+                <button class="btn-secondary" onclick="loadEmployeeList()">← Back</button>
 
             </div>
 
