@@ -53212,7 +53212,7 @@ function markSafetyViolations(){
 
                 <h3>Mark Safety Violations</h3>
 
-                <button type="button" id="toggleViolationFormBtn" onclick="toggleViolationForm()" class="action" style="background: #007bff;">
+                <button type="button" id="toggleViolationFormBtn" onclick="toggleViolationForm()" class="action" style="background: #007bff; ${(currentRole === 'MD' || currentRole === 'Managing Director') ? 'display:none;' : ''}">
 
                     ⚠️ Record New Violation
 
@@ -54668,7 +54668,7 @@ function displayViolations(violations) {
 
                 <td>
 
-                    <div class="violation-actions">
+                    <div class="violation-actions" style="${(currentRole === 'hse maneger' || currentRole === 'HSE Manager' || currentRole === 'HSE') ? 'display:none;' : ''}">
 
                         <button class="action-btn approve" onclick="approveViolation('${violation.id}')" title="Approve Violation" style="background:#28a745;color:white;">✅</button>
                         <button class="action-btn reject" onclick="rejectViolation('${violation.id}')" title="Reject Violation" style="background:#dc3545;color:white;">❌</button>
