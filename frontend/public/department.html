@@ -32240,6 +32240,15 @@ function approvePolicy(policyId) {
 
                 button.disabled = true;
 
+                // Update badge if inside a policy-item
+                const policyItem = button.closest('.policy-item');
+                if (policyItem) {
+                    const badge = policyItem.querySelector('.status-badge');
+                    if (badge) {
+                        badge.innerText = 'approved';
+                        badge.style.background = '#28a745';
+                    }
+                }
             }
 
             

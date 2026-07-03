@@ -6903,6 +6903,21 @@ async function startServer() {
 
         });
 
+        // Initialize Socket.io
+        const { Server } = require("socket.io");
+        const io = new Server(server, {
+            cors: {
+                origin: "*", 
+                methods: ["GET", "POST"]
+            }
+        });
+        app.set('io', io);
+        io.on('connection', (socket) => {
+            console.log('✅ A client connected via WebSocket');
+            socket.on('disconnect', () => {
+                console.log('❌ A client disconnected from WebSocket');
+            });
+        });
 
         server.on('error', (error) => {
 

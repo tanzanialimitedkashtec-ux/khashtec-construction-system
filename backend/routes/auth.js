@@ -386,6 +386,17 @@ router.post('/login', async (req, res) => {
             };
             
             console.log('✅ Sending login response:', response);
+            
+            // Emit Socket.IO event for user login
+            if (req.app.get('io')) {
+                req.app.get('io').emit('user_logged_in', {
+                    message: `${authUser.manager_name || authUser.email} has logged in`,
+                    user: authUser.manager_name || authUser.email,
+                    role: authUser.role,
+                    department: authUser.department_name
+                });
+            }
+            
             res.json(response);
             
         } catch (queryError) {
