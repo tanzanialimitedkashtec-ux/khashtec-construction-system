@@ -25680,7 +25680,7 @@ function loadMenu(){
             "Manage Policies", "Approve Senior Staff Hiring", "User Account Management",
             "Manage Leave & Contracts", "Approve Invoices", "Audits",
             "Document Management", "Office Portal", "Tax", "View Suggestions",
-            "Procurement Sale"
+            "Procurement Sale", "Approve Workforce Budget"
         ],
         "HSE": [
             "Compliance Management", "Manage Policies", "Record Incident Reports",
@@ -89044,7 +89044,7 @@ function viewEmployeeDetails(employeeId) {
 
                         <p>Error: ${error.message}</p>
 
-                        <button class="action" onclick="loadEmployeeList()">Go Back</button>
+                        <button class="action" onclick="viewEmployeeList()">Go Back</button>
 
                     </div>
 
@@ -89220,7 +89220,7 @@ function showEmployeeDetailsModal(employee) {
 
             <div class="employee-details-actions">
 
-                <button class="btn-secondary" onclick="loadEmployeeList()">← Back</button>
+                <button class="btn-secondary" onclick="viewEmployeeList()">← Back</button>
 
             </div>
 
