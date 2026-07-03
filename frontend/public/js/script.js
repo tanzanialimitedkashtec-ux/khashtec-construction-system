@@ -1026,6 +1026,11 @@ function handleLogin() {
                 }
 
                 showNotification('Welcome ' + (response.user.department_name || detectedRole) + '!', 'success', 3000);
+
+                // Fetch and show unread notification popups after login
+                setTimeout(function() {
+                    showUnreadNotificationPopups(currentRole);
+                }, 2500);
             }, 1500);
 
         })
@@ -1064,6 +1069,162 @@ function handleLogin() {
     }
 
     return false;
+}
+
+// ========================
+// POST-LOGIN NOTIFICATION POPUPS
+// ========================
+async function showUnreadNotificationPopups(role) {
+    try {
+        var roleParam = role ? '?role=' + encodeURIComponent(role) + '&unread=true' : '?unread=true';
+        var res = await fetch('/api/notifications' + roleParam);
+        var data = await res.json();
+        var notifications = (data.notifications || []).filter(function(n) { return !n.is_read; });
+
+        if (notifications.length === 0) return;
+
+        // Ensure popup container exists
+        var container = document.getElementById('login-notif-popup-container');
+        if (!container) {
+            container = document.createElement('div');
+            container.id = 'login-notif-popup-container';
+            container.style.cssText = 'position:fixed;top:20px;right:20px;z-index:999999;display:flex;flex-direction:column;gap:12px;pointer-events:none;max-height:90vh;overflow:hidden;';
+            document.body.appendChild(container);
+        }
+
+        // Show up to 5 most recent unread notifications
+        var toShow = notifications.slice(0, 5);
+        var remaining = notifications.length - toShow.length;
+
+        toShow.forEach(function(notif, index) {
+            setTimeout(function() {
+                createNotifPopup(container, notif, notifications.length);
+            }, index * 600);
+        });
+
+        // If more than 5, show a summary popup
+        if (remaining > 0) {
+            setTimeout(function() {
+                createNotifPopup(container, {
+                    title: '📬 More Notifications',
+                    message: 'You have ' + remaining + ' more unread notification' + (remaining > 1 ? 's' : '') + '. Click the bell 🔔 to view all.',
+                    type: 'info'
+                }, notifications.length);
+            }, toShow.length * 600);
+        }
+    } catch(e) {
+        console.error('Failed to load notification popups:', e);
+    }
+}
+
+function createNotifPopup(container, notif, totalCount) {
+    var typeIcons = { info: 'ℹ️', success: '✅', warning: '⚠️', error: '❌' };
+    var typeColors = {
+        info: { bg: 'rgba(14, 165, 233, 0.15)', border: '#0ea5e9', accent: '#38bdf8' },
+        success: { bg: 'rgba(34, 197, 94, 0.15)', border: '#22c55e', accent: '#4ade80' },
+        warning: { bg: 'rgba(234, 179, 8, 0.15)', border: '#eab308', accent: '#facc15' },
+        error: { bg: 'rgba(239, 68, 68, 0.15)', border: '#ef4444', accent: '#f87171' }
+    };
+
+    var type = (notif.type || 'info').toLowerCase();
+    var icon = typeIcons[type] || 'ℹ️';
+    var colors = typeColors[type] || typeColors.info;
+    var title = (notif.title || 'Notification').replace(/</g, '&lt;');
+    var message = (notif.message || '').replace(/</g, '&lt;');
+
+    var popup = document.createElement('div');
+    popup.style.cssText = [
+        'pointer-events:auto',
+        'background:rgba(15,23,42,0.97)',
+        'backdrop-filter:blur(16px)',
+        'border:1px solid rgba(255,255,255,0.08)',
+        'border-left:4px solid ' + colors.border,
+        'color:#f1f5f9',
+        'padding:14px 18px',
+        'border-radius:10px',
+        'box-shadow:0 12px 40px -8px rgba(0,0,0,0.5),0 0 20px ' + colors.border + '30',
+        'display:flex',
+        'align-items:flex-start',
+        'gap:14px',
+        'min-width:340px',
+        'max-width:420px',
+        'cursor:pointer',
+        'transform:translateX(120%) scale(0.95)',
+        'opacity:0',
+        'transition:all 0.5s cubic-bezier(0.34,1.56,0.64,1)',
+        'font-family:Inter,system-ui,sans-serif',
+        'position:relative',
+        'overflow:hidden'
+    ].join(';');
+
+    // Glow effect at the top
+    var glow = document.createElement('div');
+    glow.style.cssText = 'position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,' + colors.accent + ',transparent);opacity:0.6;';
+    popup.appendChild(glow);
+
+    // Icon
+    var iconEl = document.createElement('div');
+    iconEl.style.cssText = 'width:42px;height:42px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;background:' + colors.bg + ';border:1px solid ' + colors.border + '40;';
+    iconEl.textContent = icon;
+    popup.appendChild(iconEl);
+
+    // Content
+    var content = document.createElement('div');
+    content.style.cssText = 'flex:1;min-width:0;';
+
+    var titleEl = document.createElement('div');
+    titleEl.style.cssText = 'font-weight:600;font-size:13px;color:#f8fafc;margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;';
+    titleEl.innerHTML = title;
+    content.appendChild(titleEl);
+
+    var msgEl = document.createElement('div');
+    msgEl.style.cssText = 'font-size:12px;color:#94a3b8;line-height:1.45;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;';
+    msgEl.innerHTML = message;
+    content.appendChild(msgEl);
+
+    popup.appendChild(content);
+
+    // Close button
+    var closeBtn = document.createElement('div');
+    closeBtn.style.cssText = 'position:absolute;top:8px;right:10px;width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;color:#64748b;cursor:pointer;transition:all 0.2s;';
+    closeBtn.textContent = '×';
+    closeBtn.onmouseover = function() { this.style.color = '#f1f5f9'; this.style.background = 'rgba(255,255,255,0.1)'; };
+    closeBtn.onmouseout = function() { this.style.color = '#64748b'; this.style.background = 'transparent'; };
+    closeBtn.onclick = function(e) {
+        e.stopPropagation();
+        dismissPopup(popup);
+    };
+    popup.appendChild(closeBtn);
+
+    // Click to open notification panel
+    popup.onclick = function() {
+        dismissPopup(popup);
+        var bellBtn = document.getElementById('notifBell') || document.querySelector('.notification-bell');
+        if (bellBtn) bellBtn.click();
+    };
+
+    container.appendChild(popup);
+
+    // Animate in
+    setTimeout(function() {
+        popup.style.transform = 'translateX(0) scale(1)';
+        popup.style.opacity = '1';
+    }, 30);
+
+    // Auto dismiss after 8 seconds
+    setTimeout(function() {
+        dismissPopup(popup);
+    }, 8000);
+}
+
+function dismissPopup(popup) {
+    if (!popup || popup._dismissed) return;
+    popup._dismissed = true;
+    popup.style.transform = 'translateX(120%) scale(0.95)';
+    popup.style.opacity = '0';
+    setTimeout(function() {
+        if (popup.parentNode) popup.parentNode.removeChild(popup);
+    }, 500);
 }
 
 function handleLogout() {
