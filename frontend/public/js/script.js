@@ -1088,7 +1088,7 @@ async function showUnreadNotificationPopups(role) {
         if (!container) {
             container = document.createElement('div');
             container.id = 'login-notif-popup-container';
-            container.style.cssText = 'position:fixed;top:20px;right:20px;z-index:999999;display:flex;flex-direction:column;gap:12px;pointer-events:none;max-height:90vh;overflow:hidden;';
+            container.style.cssText = 'position:fixed;top:16px;right:16px;z-index:999999;display:flex;flex-direction:column;gap:8px;pointer-events:none;max-height:90vh;overflow:hidden;';
             document.body.appendChild(container);
         }
 
@@ -1135,19 +1135,19 @@ function createNotifPopup(container, notif, totalCount) {
     var popup = document.createElement('div');
     popup.style.cssText = [
         'pointer-events:auto',
-        'background:rgba(15,23,42,0.97)',
-        'backdrop-filter:blur(16px)',
-        'border:1px solid rgba(255,255,255,0.08)',
-        'border-left:4px solid ' + colors.border,
+        'background:rgba(15,23,42,0.95)',
+        'backdrop-filter:blur(12px)',
+        'border:1px solid rgba(255,255,255,0.06)',
+        'border-left:3px solid ' + colors.border,
         'color:#f1f5f9',
-        'padding:14px 18px',
-        'border-radius:10px',
-        'box-shadow:0 12px 40px -8px rgba(0,0,0,0.5),0 0 20px ' + colors.border + '30',
+        'padding:8px 12px',
+        'border-radius:8px',
+        'box-shadow:0 6px 20px -4px rgba(0,0,0,0.4),0 0 10px ' + colors.border + '20',
         'display:flex',
-        'align-items:flex-start',
-        'gap:14px',
-        'min-width:340px',
-        'max-width:420px',
+        'align-items:center',
+        'gap:10px',
+        'min-width:240px',
+        'max-width:320px',
         'cursor:pointer',
         'transform:translateX(120%) scale(0.95)',
         'opacity:0',
@@ -1164,7 +1164,7 @@ function createNotifPopup(container, notif, totalCount) {
 
     // Icon
     var iconEl = document.createElement('div');
-    iconEl.style.cssText = 'width:42px;height:42px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;background:' + colors.bg + ';border:1px solid ' + colors.border + '40;';
+    iconEl.style.cssText = 'width:28px;height:28px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;background:' + colors.bg + ';border:1px solid ' + colors.border + '30;';
     iconEl.textContent = icon;
     popup.appendChild(iconEl);
 
@@ -1173,12 +1173,12 @@ function createNotifPopup(container, notif, totalCount) {
     content.style.cssText = 'flex:1;min-width:0;';
 
     var titleEl = document.createElement('div');
-    titleEl.style.cssText = 'font-weight:600;font-size:13px;color:#f8fafc;margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;';
+    titleEl.style.cssText = 'font-weight:600;font-size:11.5px;color:#f8fafc;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;';
     titleEl.innerHTML = title;
     content.appendChild(titleEl);
 
     var msgEl = document.createElement('div');
-    msgEl.style.cssText = 'font-size:12px;color:#94a3b8;line-height:1.45;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;';
+    msgEl.style.cssText = 'font-size:10.5px;color:#94a3b8;line-height:1.35;display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical;overflow:hidden;';
     msgEl.innerHTML = message;
     content.appendChild(msgEl);
 
@@ -1186,7 +1186,7 @@ function createNotifPopup(container, notif, totalCount) {
 
     // Close button
     var closeBtn = document.createElement('div');
-    closeBtn.style.cssText = 'position:absolute;top:8px;right:10px;width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;color:#64748b;cursor:pointer;transition:all 0.2s;';
+    closeBtn.style.cssText = 'position:absolute;top:4px;right:6px;width:16px;height:16px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;color:#64748b;cursor:pointer;transition:all 0.2s;';
     closeBtn.textContent = '×';
     closeBtn.onmouseover = function() { this.style.color = '#f1f5f9'; this.style.background = 'rgba(255,255,255,0.1)'; };
     closeBtn.onmouseout = function() { this.style.color = '#64748b'; this.style.background = 'transparent'; };
