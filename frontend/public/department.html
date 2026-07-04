@@ -111709,27 +111709,27 @@ function confirmPayEmployee(e) {
 <style>
     .login-toast-container {
         position: fixed;
-        top: 20px;
-        right: 20px;
+        top: 16px;
+        right: 16px;
         z-index: 999999;
         display: flex;
         flex-direction: column;
-        gap: 10px;
+        gap: 8px;
         pointer-events: none;
     }
     .login-toast {
         background: rgba(15, 23, 42, 0.95);
-        backdrop-filter: blur(10px);
-        border-left: 4px solid #3b82f6;
+        backdrop-filter: blur(12px);
+        border-left: 3px solid #3b82f6;
         color: white;
-        padding: 16px 20px;
+        padding: 8px 12px;
         border-radius: 8px;
-        box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.2), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+        box-shadow: 0 6px 20px -4px rgba(0,0,0,0.4), 0 0 10px rgba(59,130,246,0.2);
         display: flex;
         align-items: center;
-        gap: 15px;
-        min-width: 300px;
-        max-width: 400px;
+        gap: 10px;
+        min-width: 240px;
+        max-width: 320px;
         pointer-events: auto;
         transform: translateX(120%);
         opacity: 0;
@@ -111743,13 +111743,13 @@ function confirmPayEmployee(e) {
     .login-toast-icon {
         background: rgba(59, 130, 246, 0.2);
         color: #60a5fa;
-        width: 40px;
-        height: 40px;
-        border-radius: 50%;
+        width: 28px;
+        height: 28px;
+        border-radius: 6px;
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: 20px;
+        font-size: 14px;
         flex-shrink: 0;
         animation: pulse-ring 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
     }
@@ -111758,14 +111758,14 @@ function confirmPayEmployee(e) {
     }
     .login-toast-title {
         font-weight: 600;
-        font-size: 14px;
-        margin-bottom: 4px;
+        font-size: 11.5px;
+        margin-bottom: 2px;
         color: #f8fafc;
     }
     .login-toast-desc {
-        font-size: 13px;
+        font-size: 10.5px;
         color: #94a3b8;
-        line-height: 1.4;
+        line-height: 1.35;
     }
     @keyframes pulse-ring {
         0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.7); }
@@ -111792,7 +111792,7 @@ document.addEventListener('DOMContentLoaded', () => {
         
         toast.innerHTML = `
             <div class="login-toast-icon" style="color: ${roleColor}; background: ${roleColor}20;">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
                     <circle cx="12" cy="7" r="4"></circle>
                 </svg>
