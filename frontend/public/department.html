@@ -111828,5 +111828,14 @@ document.addEventListener('DOMContentLoaded', () => {
     } else {
         console.error("Socket.io not loaded!");
     }
+
+    // Auto-update notification badge on page load if logged in
+    setTimeout(() => {
+        if (typeof startNotificationPolling === 'function') {
+            startNotificationPolling();
+        } else if (typeof updateNotificationBadge === 'function') {
+            updateNotificationBadge();
+        }
+    }, 2000);
 });
 </script>
