@@ -1081,6 +1081,13 @@ async function showUnreadNotificationPopups(role) {
         var data = await res.json();
         var notifications = (data.notifications || []).filter(function(n) { return !n.is_read; });
 
+        // Update the badge in the UI
+        if (typeof updateNotificationBadge === 'function') {
+            updateNotificationBadge();
+        } else if (typeof loadNotifications === 'function') {
+            loadNotifications();
+        }
+
         if (notifications.length === 0) return;
 
         // Ensure popup container exists
