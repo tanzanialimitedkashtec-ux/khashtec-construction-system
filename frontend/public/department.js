@@ -36592,7 +36592,7 @@ function viewProjectDetails(projectId) {
 
 
 
-function generateSafetyReport(projectId) {
+function generateSafetyReport_dup1(projectId) {
 
     customAlert(`Generating safety report for project ${projectId}...nnComprehensive safety performance report will be generated with all metrics and recommendations.`, "Safety Report", "info");
 
@@ -69040,7 +69040,7 @@ function viewProjectDetails(projectId) {
 
 
 
-function generateSafetyReport(projectId) {
+function generateSafetyReport_dup2(projectId) {
 
     customAlert(`Generating safety report for project ${projectId}...nnComprehensive safety analysis report will be generated with all metrics and recommendations.`, "Safety Report", "info");
 
@@ -69649,7 +69649,7 @@ function viewProjectDetails(projectId) {
 
 
 
-function generateSafetyReport(projectId) {
+function generateSafetyReport_dup3(projectId) {
 
     customAlert(`Generating safety report for project ${projectId}...nnComprehensive safety analysis report will be generated with all metrics and recommendations.`, "Safety Report", "info");
 
