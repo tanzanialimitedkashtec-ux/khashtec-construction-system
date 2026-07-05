@@ -676,7 +676,7 @@ function logout(){
 // ===== NOTIFICATION SYSTEM =====
 let notificationPollInterval = null;
 
-function toggleNotificationPanel() {
+window.toggleNotificationPanel = function toggleNotificationPanel() {
     const panel = document.getElementById('notificationPanel');
     if (panel.classList.contains('open')) {
         panel.classList.remove('open');

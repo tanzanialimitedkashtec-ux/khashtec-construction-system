@@ -776,7 +776,7 @@ function logout(){
 // ===== NOTIFICATION SYSTEM =====
 var notificationPollInterval = null;
 
-function toggleNotificationPanel() {
+window.toggleNotificationPanel = function toggleNotificationPanel() {
     var panel = document.getElementById('notificationPanel');
     if (panel.classList.contains('open')) {
         panel.classList.remove('open');
