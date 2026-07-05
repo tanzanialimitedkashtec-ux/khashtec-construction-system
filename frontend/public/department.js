@@ -14,7 +14,7 @@
 
 // Define toggleSidebar function first to ensure it's available when called
 
-function toggleSidebar(){
+window.toggleSidebar = function toggleSidebar(){
 
     const sidebar = document.querySelector('.sidebar');
 
