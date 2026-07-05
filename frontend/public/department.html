@@ -25139,6 +25139,10 @@ async function loadExpenseStats() {
                 document.getElementById('expStatRemainingBar').style.width = Math.min(Math.max(percentAvail, 0), 100) + '%';
                 document.getElementById('expStatAvailable').textContent = percentAvail + '% Available';
                 document.getElementById('expStatAvailable').className = usedPercent > 80 ? 'stat-change negative' : 'stat-change positive';
+                
+                if (document.getElementById('expStatPending')) {
+                    document.getElementById('expStatPending').textContent = pending;
+                }
             }
     } catch (err) {
         console.error('Failed to load expense stats:', err);
@@ -106445,6 +106449,7 @@ if (!document.getElementById('transport-cost-styles')) {
 <script src="js/financial-strategies.js"></script>
 <!-- Removed missing work-approval-functions.js include (caused 404 + syntax errors) -->
 <script src="js/new-features.js"></script>
+<script src="js/mobile-ui.js"></script>
 
 
 

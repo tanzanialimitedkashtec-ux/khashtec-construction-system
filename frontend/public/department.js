@@ -1295,53 +1295,56 @@ async function loadExpenseStats() {
         const currentMonth = monthNames[now.getMonth()] + ' ' + now.getFullYear();
 
         const authToken = (typeof sessionManager !== 'undefined' && sessionManager.getAuthToken) ? sessionManager.getAuthToken() : '';
-        const response = await fetch('/api/finance/expenses', {
+        const response = await fetch('/api/finance/expense-overview', {
             headers: {
                 'Accept': 'application/json',
                 ...(authToken ? { 'Authorization': `Bearer ${authToken}` } : {})
             }
         });
-        const data = await response.json();
-        let expenses = [];
-        if (data.success && Array.isArray(data.expenses)) {
-            expenses = data.expenses;
-        } else if (Array.isArray(data)) {
-            expenses = data;
+        
+        if (!response.ok) {
+            throw new Error('Failed to fetch expense overview');
         }
+        
+        const data = await response.json();
+        
+        const monthlyBudget = Number(data.monthlyBudget || 0);
+        const monthExpenses = Number(data.monthExpenses || 0);
+        const remaining = Number(data.remaining || 0);
+        const usedPercent = Number(data.usedPercent || 0);
+        const percentAvail = Math.max(0, 100 - usedPercent);
+        const pending = Number(data.pendingCount || 0);
 
-        const thisMonth = now.getMonth();
-        const thisYear = now.getFullYear();
-        const monthlyExpenses = expenses.filter(e => {
-            const d = new Date(e.date || e.created_at || e.expense_date);
-            return d.getMonth() === thisMonth && d.getFullYear() === thisYear;
-        });
-
-        const budget = 61500000;
-        const totalUsed = monthlyExpenses.reduce((sum, e) => sum + (parseFloat(e.amount) || 0), 0);
-        const remaining = budget - totalUsed;
-        const percentUsed = budget > 0 ? Math.round((totalUsed / budget) * 100) : 0;
-        const percentAvail = 100 - percentUsed;
-        const pending = monthlyExpenses.filter(e => (e.status || '').toLowerCase() === 'pending').length;
-
-        const fmt = (n) => Number(n).toLocaleString('en-US', { minimumFractionDigits: 0 });
+        const fmt = (n) => Number(n || 0).toLocaleString('en-US', { minimumFractionDigits: 0 });
 
         if (document.getElementById('expStatBudget')) {
-            document.getElementById('expStatBudget').textContent = fmt(budget);
+            document.getElementById('expStatBudget').textContent = fmt(monthlyBudget);
             document.getElementById('expStatMonth').textContent = currentMonth;
             
-            document.getElementById('expStatUsed').textContent = fmt(totalUsed);
+            document.getElementById('expStatUsed').textContent = fmt(monthExpenses);
             const expUsedBar = document.getElementById('expStatUsedBar');
-            if(expUsedBar) expUsedBar.style.width = Math.max(percentUsed, 2) + '%';
-            document.getElementById('expStatPercent').textContent = percentUsed + '% Used';
+            if(expUsedBar) expUsedBar.style.width = Math.min(Math.max(usedPercent, 0), 100) + '%';
+            
+            const expPercentEl = document.getElementById('expStatPercent');
+            if(expPercentEl) {
+                expPercentEl.textContent = usedPercent + '% Used';
+                expPercentEl.className = usedPercent > 80 ? 'stat-change negative' : 'stat-change';
+            }
             
             document.getElementById('expStatRemaining').textContent = fmt(remaining);
             const expRemBar = document.getElementById('expStatRemainingBar');
-            if(expRemBar) expRemBar.style.width = Math.max(percentAvail, 2) + '%';
-            document.getElementById('expStatAvailable').textContent = percentAvail + '% Available';
+            if(expRemBar) expRemBar.style.width = Math.min(Math.max(percentAvail, 0), 100) + '%';
             
-            document.getElementById('expStatPending').textContent = pending;
+            const expAvailEl = document.getElementById('expStatAvailable');
+            if(expAvailEl) {
+                expAvailEl.textContent = percentAvail + '% Available';
+                expAvailEl.className = usedPercent > 80 ? 'stat-change negative' : 'stat-change positive';
+            }
+            
+            if (document.getElementById('expStatPending')) {
+                document.getElementById('expStatPending').textContent = pending;
+            }
         }
-
     } catch (err) {
         console.error('Failed to load expense stats:', err);
     }
