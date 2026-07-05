@@ -1441,7 +1441,7 @@ function renderDashboardOverviewMetrics() {
 
 
 function loadMenu(){
-
+    window.addedMenuLabels = new Set();
     const menu = document.getElementById("menu");
 
     menu.innerHTML = "";
@@ -1467,7 +1467,16 @@ function loadMenu(){
 
 
 
-    if(currentRole === "MD"){
+    const user = typeof sessionManager !== 'undefined' ? sessionManager.getCurrentUser() : null;
+    let hasCustomNav = false;
+    if (user && user.nav_access) {
+        try {
+            const accessArr = typeof user.nav_access === 'string' ? JSON.parse(user.nav_access) : user.nav_access;
+            if (Array.isArray(accessArr) && accessArr.length > 0) hasCustomNav = true;
+        } catch(e) {}
+    }
+
+    if(currentRole === "MD" || hasCustomNav){
 
         addMenu("Dashboard Overview", showDashboardOverview);
 
@@ -1637,7 +1646,7 @@ function loadMenu(){
 
 
 
-    if(currentRole === "ADMIN"){
+    if(currentRole === "ADMIN" || hasCustomNav){
 
         addMenu("Administrative Operations", adminOperations);
 
@@ -1653,7 +1662,7 @@ function loadMenu(){
 
 
 
-    if(currentRole === "HR"){
+    if(currentRole === "HR" || hasCustomNav){
 
         addMenu("Register Employee", registerEmployee);
 
@@ -1679,7 +1688,7 @@ function loadMenu(){
 
 
 
-    if(currentRole === "HSE"){
+    if(currentRole === "HSE" || hasCustomNav){
 
         addMenu("Record Incident Reports", recordIncidentReports);
 
@@ -1698,7 +1707,7 @@ function loadMenu(){
 
 
 
-    if(currentRole === "FINANCE"){
+    if(currentRole === "FINANCE" || hasCustomNav){
 
         addMenu("Budgeting", financeBudgeting);
 
@@ -1724,7 +1733,7 @@ function loadMenu(){
 
 
 
-    if(currentRole === "PROJECT"){
+    if(currentRole === "PROJECT" || hasCustomNav){
 
         addMenu("Create New Project", createNewProject);
 
@@ -1750,7 +1759,7 @@ function loadMenu(){
 
 
 
-    if(currentRole === "REALESTATE"){
+    if(currentRole === "REALESTATE" || hasCustomNav){
 
         addMenu("Add Property", addProperty);
 
@@ -1770,7 +1779,7 @@ function loadMenu(){
 
 
 
-    if(currentRole === "ASSISTANT"){
+    if(currentRole === "ASSISTANT" || hasCustomNav){
 
         console.log('Adding Admin Assistant menu items'); // Debug line
 
@@ -1809,6 +1818,7 @@ function loadMenu(){
 
 
 function addMenu(name, func){
+    if (window.addedMenuLabels && window.addedMenuLabels.has(name)) return;
     // Check nav_access
     const user = typeof sessionManager !== 'undefined' ? sessionManager.getCurrentUser() : null;
     let hasAccess = true;
@@ -1831,6 +1841,7 @@ function addMenu(name, func){
             const categorizedBtn = addMenuItem(name, func);
             if (categorizedBtn) {
                 console.log('Added menu item:', name);
+                if (window.addedMenuLabels) window.addedMenuLabels.add(name);
                 return;
             }
         }
@@ -1842,6 +1853,7 @@ function addMenu(name, func){
         btn.onclick = func;
 
         document.getElementById("menu").appendChild(btn);
+        if (window.addedMenuLabels) window.addedMenuLabels.add(name);
 
         console.log('Added menu item:', name); // Debug line
 
