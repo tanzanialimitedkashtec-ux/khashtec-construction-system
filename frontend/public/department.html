@@ -70520,7 +70520,15 @@ function downloadReceiptInvoice(invDataStr) {
         html += '<p style="margin:2px 0;">Invoice ID: ' + inv.id + '</p>';
         html += '<p style="margin:8px 0 0;">Thank you for your business!</p>';
         html += '</div>';
-        html += '</div><script>
+        html += '</div></body></html>';
+        
+        printWindow.document.write(html);
+        printWindow.document.close();
+    } catch(e) {
+        console.error('Error generating receipt', e);
+        alert('Failed to generate receipt invoice.');
+    }
+}
 
 // ===== ACCESS MANAGEMENT =====
 window.accessManagement = async function() {
@@ -70778,17 +70786,6 @@ window.suspendAccessUser = async function(id) {
 };
 
 // End Access Management
-
-</script>
-</body></html>';
-        
-        printWindow.document.write(html);
-        printWindow.document.close();
-    } catch(e) {
-        console.error('Error generating receipt', e);
-        alert('Failed to generate receipt invoice.');
-    }
-}
 
 function showMDInvoiceApproval() {
     showContent('<div class="card">' +
@@ -106134,7 +106131,6 @@ if (!document.getElementById('transport-cost-styles')) {
 
 <script src="js/script.js"></script>
 
-<script src="department.js?v=1.2"></script>
 <script src="js/department.js?v=1.1"></script>
 <script src="js/financial-strategies.js"></script>
 <!-- Removed missing work-approval-functions.js include (caused 404 + syntax errors) -->
