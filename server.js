@@ -226,6 +226,8 @@ app.use('/api/', (req, res, next) => {
 
 const allowedOrigins = [
     config.CORS_ORIGIN,
+    'https://www.kashtec.co.tz',
+    'https://kashtec.co.tz',
     'http://localhost:8080',
     'http://127.0.0.1:8080',
     'http://localhost:3000',
@@ -238,7 +240,7 @@ app.use(cors({
         // Allow requests with no origin (like mobile apps or curl requests)
         if (!origin) return callback(null, true);
         
-        if (allowedOrigins.includes(origin)) {
+        if (allowedOrigins.includes('*') || allowedOrigins.includes(origin)) {
             callback(null, true);
         } else {
             console.log('🚫 CORS blocked origin:', origin);
