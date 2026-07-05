@@ -151,6 +151,14 @@ const PORT = config.PORT;
 
 app.set('trust proxy', 1);
 
+// Force HTTPS redirection (Railway sets x-forwarded-proto)
+app.use((req, res, next) => {
+    if (req.headers['x-forwarded-proto'] === 'http') {
+        return res.redirect(301, 'https://' + req.headers.host + req.url);
+    }
+    next();
+});
+
 
 
 // Security middleware
