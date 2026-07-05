@@ -197,9 +197,9 @@ router.post('/login', async (req, res) => {
                 const bcryptHash = await bcrypt.hash('admin123', 12);
                 if (!mdCheck || mdCheck.length === 0) {
                     await db.execute(
-                        `INSERT INTO authentication (email, password_hash, role, department_name, manager_name, status)
-                         VALUES (?, ?, ?, ?, ?, ?)`,
-                        ['md@kashtec.com', bcryptHash, 'Managing Director', 'Managing Director', 'Managing Director', 'Active']
+                        `INSERT INTO authentication (department_code, email, password_hash, role, department_name, manager_name, status)
+                         VALUES (?, ?, ?, ?, ?, ?, ?)`,
+                        ['DEPT-MD', 'md@kashtec.com', bcryptHash, 'Managing Director', 'Managing Director', 'Managing Director', 'Active']
                     );
                     console.log('✅ Default MD user seeded into authentication table');
                 } else {
@@ -605,10 +605,13 @@ router.post('/users', async (req, res) => {
 
         const hashedPassword = await bcrypt.hash(password, 12);
         
+        // Generate a unique department code
+        const deptCode = 'DEPT-' + Date.now().toString().slice(-4) + '-' + Math.random().toString(36).substring(2, 6).toUpperCase();
+        
         const result = await db.execute(
-            `INSERT INTO authentication (email, password_hash, role, department_name, manager_name, status) 
-             VALUES (?, ?, ?, ?, ?, ?)`,
-            [email, hashedPassword, role, department_name || null, manager_name || null, status || 'Active']
+            `INSERT INTO authentication (department_code, email, password_hash, role, department_name, manager_name, status) 
+             VALUES (?, ?, ?, ?, ?, ?, ?)`,
+            [deptCode, email, hashedPassword, role, department_name || null, manager_name || null, status || 'Active']
         );
         
         res.status(201).json({ message: 'User created successfully', id: result.insertId });
