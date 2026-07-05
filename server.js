@@ -179,7 +179,9 @@ app.use(helmet({
 
             scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'", "https://unpkg.com", "https://cdnjs.cloudflare.com"],
 
-            connectSrc: ["'self'"]
+            connectSrc: ["'self'"],
+            
+            upgradeInsecureRequests: []
 
         }
 
@@ -271,6 +273,8 @@ app.use(cors({
 app.use((req, res, next) => {
 
     res.setHeader('Content-Security-Policy', 
+
+        "upgrade-insecure-requests; " +
 
         "default-src 'self'; " +
 
