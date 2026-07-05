@@ -246,12 +246,12 @@ router.post('/login', async (req, res) => {
         
         try {
             console.log('🔍 Executing authentication query...');
-            console.log('📝 Query:', 'SELECT id, email, password_hash, role, department_name, manager_name, status FROM authentication WHERE email = ? AND status = ?');
+            console.log('📝 Query:', 'SELECT id, email, password_hash, role, department_name, manager_name, status, nav_access FROM authentication WHERE email = ? AND status = ?');
             console.log('📝 Parameters:', [email, 'Active']);
             
             // The database.execute() method already returns just the rows array
             const authRows = await db.execute(
-                'SELECT id, email, password_hash, role, department_name, manager_name, status FROM authentication WHERE email = ? AND status = ?',
+                'SELECT id, email, password_hash, role, department_name, manager_name, status, nav_access FROM authentication WHERE email = ? AND status = ?',
                 [email, 'Active']
             );
             
@@ -381,7 +381,8 @@ router.post('/login', async (req, res) => {
                     email: authUser.email,
                     role: authUser.role,
                     department_name: authUser.department_name,
-                    manager_name: authUser.manager_name
+                    manager_name: authUser.manager_name,
+                    nav_access: authUser.nav_access
                 }
             };
             
@@ -577,7 +578,7 @@ router.get('/users', async (req, res) => {
     try {
         const db = require('../../database/config/database');
         const users = await db.execute(
-            'SELECT id, email, role, department_name, manager_name, status, last_login, created_at FROM authentication ORDER BY id DESC'
+            'SELECT id, email, role, department_name, manager_name, status, nav_access, last_login, created_at FROM authentication ORDER BY id DESC'
         );
         res.json(users);
     } catch (error) {
@@ -589,7 +590,7 @@ router.get('/users', async (req, res) => {
 // Create new user
 router.post('/users', async (req, res) => {
     try {
-        const { email, password, role, department_name, manager_name, status } = req.body;
+        const { email, password, role, department_name, manager_name, status, nav_access } = req.body;
         
         if (!email || !password || !role) {
             return res.status(400).json({ error: 'Email, password, and role are required' });
@@ -609,9 +610,9 @@ router.post('/users', async (req, res) => {
         const deptCode = 'DEPT-' + Date.now().toString().slice(-4) + '-' + Math.random().toString(36).substring(2, 6).toUpperCase();
         
         const result = await db.execute(
-            `INSERT INTO authentication (department_code, email, password_hash, role, department_name, manager_name, status) 
-             VALUES (?, ?, ?, ?, ?, ?, ?)`,
-            [deptCode, email, hashedPassword, role, department_name || null, manager_name || null, status || 'Active']
+            `INSERT INTO authentication (department_code, email, password_hash, role, department_name, manager_name, status, nav_access) 
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+            [deptCode, email, hashedPassword, role, department_name || null, manager_name || null, status || 'Active', nav_access || null]
         );
         
         res.status(201).json({ message: 'User created successfully', id: result.insertId });
@@ -625,7 +626,7 @@ router.post('/users', async (req, res) => {
 router.put('/users/:id', async (req, res) => {
     try {
         const { id } = req.params;
-        const { email, password, role, department_name, manager_name, status } = req.body;
+        const { email, password, role, department_name, manager_name, status, nav_access } = req.body;
         
         if (!email || !role) {
             return res.status(400).json({ error: 'Email and role are required' });
@@ -639,8 +640,8 @@ router.put('/users/:id', async (req, res) => {
             return res.status(409).json({ error: 'This email is already in use by another account' });
         }
 
-        let query = `UPDATE authentication SET email = ?, role = ?, department_name = ?, manager_name = ?, status = ?`;
-        let params = [email, role, department_name || null, manager_name || null, status || 'Active'];
+        let query = `UPDATE authentication SET email = ?, role = ?, department_name = ?, manager_name = ?, status = ?, nav_access = ?`;
+        let params = [email, role, department_name || null, manager_name || null, status || 'Active', nav_access || null];
 
         if (password && password.trim() !== '') {
             const hashedPassword = await bcrypt.hash(password, 12);

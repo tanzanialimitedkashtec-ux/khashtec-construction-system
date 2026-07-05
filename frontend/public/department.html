@@ -25670,6 +25670,23 @@ function ensureMenuSection(sectionConfig) {
 
 
 function addMenuItem(label, onClick, options = {}) {
+    const user = sessionManager ? sessionManager.getCurrentUser() : null;
+    let hasAccess = true;
+    if (user && user.nav_access) {
+        try {
+            const accessArr = typeof user.nav_access === 'string' ? JSON.parse(user.nav_access) : user.nav_access;
+            if (Array.isArray(accessArr) && accessArr.length > 0) {
+                // Check if label is in access list
+                hasAccess = accessArr.includes(label);
+            }
+        } catch(e) { console.error('Error parsing nav_access', e); }
+    }
+    
+    // Always render "Dashboard Overview" or if user has access
+    if (!hasAccess && label !== 'Dashboard Overview' && label !== 'No Access') {
+        return null; // hide menu item if not authorized
+    }
+
     const sectionConfig = getMenuSectionConfig(label);
     const section = ensureMenuSection(sectionConfig);
     if (!section) return null;
@@ -70923,6 +70940,44 @@ window.accessManagement = async function() {
                             <option value="Suspended">Suspended</option>
                         </select>
                     </div>
+
+                    <div class="form-group">
+                        <label for="accessNav">Nav Access Sidebar</label>
+                        <select id="accessNav" class="form-control" multiple style="height: 120px;">
+                            <option value="Dashboard Overview">Dashboard Overview</option>
+                            <option value="Register Employee">Register Employee</option>
+                            <option value="Create Worker Account">Create Worker Account</option>
+                            <option value="Assign Project Workers">Assign Project Workers</option>
+                            <option value="Update Employee Records">Update Employee Records</option>
+                            <option value="Team Management">Team Management</option>
+                            <option value="Track Attendance">Track Attendance</option>
+                            <option value="Manage Leave & Contracts">Manage Leave & Contracts</option>
+                            <option value="Manage Policies">Manage Policies</option>
+                            <option value="Approve Senior Staff Hiring">Approve Senior Staff Hiring</option>
+                            <option value="Approve Workforce Budget">Approve Workforce Budget</option>
+                            <option value="Record Incident Reports">Record Incident Reports</option>
+                            <option value="Record Toolbox Meetings">Record Toolbox Meetings</option>
+                            <option value="Track PPE Issuance">Track PPE Issuance</option>
+                            <option value="Mark Safety Violations">Mark Safety Violations</option>
+                            <option value="Upload Inspection Reports">Upload Inspection Reports</option>
+                            <option value="View Project Safety Status">View Project Safety Status</option>
+                            <option value="NHIF Contributions">NHIF Contributions</option>
+                            <option value="Procurement Sales">Procurement Sales</option>
+                            <option value="Tax Payments">Tax Payments</option>
+                            <option value="Senior Roles Management">Senior Roles Management</option>
+                            <option value="System Audit Dashboard">System Audit Dashboard</option>
+                            <option value="Materials Management">Materials Management</option>
+                            <option value="Upload Documents">Upload Documents</option>
+                            <option value="Edit Documents">Edit Documents</option>
+                            <option value="Send Notifications">Send Notifications</option>
+                            <option value="Record Meeting Minutes">Record Meeting Minutes</option>
+                            <option value="View Employee List">View Employee List</option>
+                            <option value="Office Portal">Office Portal</option>
+                            <option value="Approve Violation">Approve Violation</option>
+                            <option value="Suggestions Management">Suggestions Management</option>
+                        </select>
+                        <small style="color:#888;">Hold Ctrl (Windows) or Cmd (Mac) to select multiple</small>
+                    </div>
                     
                     <div class="form-actions" style="margin-top: 20px; text-align: right;">
                         <button type="button" class="btn btn-secondary" onclick="closeAccessModal()">Cancel</button>
@@ -71001,11 +71056,29 @@ window.openAccessModal = function(user = null) {
         document.getElementById('accessStatus').value = user.status || 'Active';
         document.getElementById('accessPassword').required = false;
         hint.style.display = 'inline';
+        
+        // Populate nav access
+        const navSelect = document.getElementById('accessNav');
+        Array.from(navSelect.options).forEach(opt => opt.selected = false);
+        if (user.nav_access) {
+            try {
+                const accessArr = typeof user.nav_access === 'string' ? JSON.parse(user.nav_access) : user.nav_access;
+                if (Array.isArray(accessArr)) {
+                    Array.from(navSelect.options).forEach(opt => {
+                        if (accessArr.includes(opt.value)) opt.selected = true;
+                    });
+                }
+            } catch(e) { console.error('Error parsing nav_access', e); }
+        }
     } else {
         document.getElementById('accessModalTitle').textContent = 'Create New User';
         document.getElementById('accessUserId').value = '';
         document.getElementById('accessPassword').required = true;
         hint.style.display = 'none';
+        
+        // Clear nav access
+        const navSelect = document.getElementById('accessNav');
+        Array.from(navSelect.options).forEach(opt => opt.selected = false);
     }
     
     modal.style.display = 'flex';
@@ -71022,13 +71095,19 @@ window.submitAccessForm = async function(e) {
     btn.textContent = 'Saving...';
     
     const id = document.getElementById('accessUserId').value;
+    
+    // Capture multiple nav access selections
+    const navSelect = document.getElementById('accessNav');
+    const selectedNavs = Array.from(navSelect.selectedOptions).map(opt => opt.value);
+    
     const payload = {
         manager_name: document.getElementById('accessName').value,
         email: document.getElementById('accessEmail').value,
         role: document.getElementById('accessRole').value,
         department_name: document.getElementById('accessDepartment').value,
         status: document.getElementById('accessStatus').value,
-        password: document.getElementById('accessPassword').value
+        password: document.getElementById('accessPassword').value,
+        nav_access: JSON.stringify(selectedNavs) // store as JSON array string
     };
     
     try {

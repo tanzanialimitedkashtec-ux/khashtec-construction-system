@@ -1809,6 +1809,21 @@ function loadMenu(){
 
 
 function addMenu(name, func){
+    // Check nav_access
+    const user = typeof sessionManager !== 'undefined' ? sessionManager.getCurrentUser() : null;
+    let hasAccess = true;
+    if (user && user.nav_access) {
+        try {
+            const accessArr = typeof user.nav_access === 'string' ? JSON.parse(user.nav_access) : user.nav_access;
+            if (Array.isArray(accessArr) && accessArr.length > 0) {
+                hasAccess = accessArr.includes(name);
+            }
+        } catch(e) { console.error('Error parsing nav_access', e); }
+    }
+    
+    if (!hasAccess && name !== 'Dashboard Overview' && name !== 'No Access') {
+        return; // hide menu item
+    }
 
     try {
 
