@@ -2204,7 +2204,7 @@ function showRevisionModal(title, message, callback) {
         }
     });
     
-    function closeModal() {
+    function closeModal_dup1() {
         modalOverlay.remove();
         style.remove();
     }
@@ -2337,7 +2337,7 @@ function showCustomRejectionModal(title, message, callback) {
     cancelBtn.addEventListener('click', closeModal);
     
     // Handle escape key
-    document.addEventListener('keydown', function handleEscape(e) {
+    document.addEventListener('keydown', function handleEscape_dup1(e) {
         if (e.key === 'Escape') {
             closeModal();
             document.removeEventListener('keydown', handleEscape);
@@ -2351,7 +2351,7 @@ function showCustomRejectionModal(title, message, callback) {
         }
     });
     
-    function closeModal() {
+    function closeModal_dup2() {
         modalOverlay.remove();
         style.remove();
     }
@@ -2851,7 +2851,7 @@ function showInfoRequestModal(title, message, callback) {
     cancelBtn.addEventListener('click', closeModal);
     
     // Handle escape key
-    document.addEventListener('keydown', function handleEscape(e) {
+    document.addEventListener('keydown', function handleEscape_dup2(e) {
         if (e.key === 'Escape') {
             closeModal();
             document.removeEventListener('keydown', handleEscape);
@@ -2865,7 +2865,7 @@ function showInfoRequestModal(title, message, callback) {
         }
     });
     
-    function closeModal() {
+    function closeModal_dup3() {
         modalOverlay.remove();
         style.remove();
     }

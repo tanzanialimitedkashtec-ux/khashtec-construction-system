@@ -3395,7 +3395,7 @@ function approveSeniorHiring(){
 
 
 
-function loadSeniorHiringRequests() {
+function loadSeniorHiringRequests_dup1() {
 
     console.log('ðŸ”„ Loading senior hiring requests...');
 
@@ -3784,7 +3784,7 @@ function showWorkforceBudgetForm(budgets) {
 
         // Format currency
 
-        const formatCurrency = (amount) => {
+        const formatCurrency_dup1 = (amount) => {
 
             const num = parseFloat(amount) || 0;
 
@@ -3796,7 +3796,7 @@ function showWorkforceBudgetForm(budgets) {
 
         // Format dates
 
-        const formatDate = (dateStr) => {
+        const formatDate_dup1 = (dateStr) => {
 
             if (!dateStr) return 'Not specified';
 
@@ -3818,7 +3818,7 @@ function showWorkforceBudgetForm(budgets) {
 
         // Status badge styling
 
-        const getStatusClass = (status) => {
+        const getStatusClass_dup1 = (status) => {
 
             switch(status) {
 
@@ -4270,7 +4270,7 @@ function displayWorkforceBudgets(budgets) {
 
     // Format currency
 
-    const formatCurrency = (amount) => {
+    const formatCurrency_dup2 = (amount) => {
 
         const num = parseFloat(amount) || 0;
 
@@ -4282,7 +4282,7 @@ function displayWorkforceBudgets(budgets) {
 
     // Format dates
 
-    const formatDate = (dateStr) => {
+    const formatDate_dup2 = (dateStr) => {
 
         if (!dateStr) return 'Not specified';
 
@@ -4304,7 +4304,7 @@ function displayWorkforceBudgets(budgets) {
 
     // Status badge styling
 
-    const getStatusClass = (status) => {
+    const getStatusClass_dup2 = (status) => {
 
         switch(status) {
 
@@ -5370,7 +5370,7 @@ function showRejectionModal(budgetId) {
 
     // Handle escape key
 
-    document.addEventListener('keydown', function handleEscape(e) {
+    document.addEventListener('keydown', function handleEscape_dup1(e) {
 
         if (e.key === 'Escape') {
 
@@ -5398,7 +5398,7 @@ function showRejectionModal(budgetId) {
 
     
 
-    function closeModal() {
+    function closeModal_dup1() {
 
         modalOverlay.remove();
 
@@ -8852,7 +8852,7 @@ function submitRejection(policyId) {
 
 
 
-function closeModal() {
+function closeModal_dup2() {
 
     const modal = document.querySelector('.modal-overlay');
 
@@ -10992,7 +10992,7 @@ function generateWorkerList(employees, workerAccounts) {
 
 
 
-function filterAllWorkers() {
+function filterAllWorkers_dup1() {
 
     const searchInputElem = document.getElementById('taxRecordsSearchInput') || document.getElementById('mdWorkerSearch');
     const searchTerm = (searchInputElem && searchInputElem.value) ? searchInputElem.value.toLowerCase() : '';
@@ -11298,7 +11298,7 @@ function generateComplianceReport() {
 
 
 
-function showReportTab(tabName) {
+function showReportTab_dup1(tabName) {
 
     // Hide all report tabs
 
@@ -11941,7 +11941,7 @@ function updatePayrollPreview() {
             const totalGross = d.totalMonthlyPayroll || 0;
             const totalDeductions = totalGross * 0.15;
             const netPayment = totalGross - totalDeductions;
-            const el = (id, val) => { const e = document.getElementById(id); if (e) e.textContent = val; };
+            const el_dup1 = (id, val) => { const e = document.getElementById(id); if (e) e.textContent = val; };
             el('previewTotalEmployees', totalEmp);
             el('previewTotalGross', 'TZS ' + totalGross.toLocaleString());
             el('previewTotalDeductions', 'TZS ' + totalDeductions.toLocaleString());
@@ -33486,7 +33486,7 @@ function updateSafetyDashboard(data) {
 
     // Determine safety score class
 
-    function getSafetyScoreClass(score) {
+    function getSafetyScoreClass_dup1(score) {
 
         if (score >= 90) return 'good';
 
@@ -33500,7 +33500,7 @@ function updateSafetyDashboard(data) {
 
     // Format date
 
-    function formatDate(dateString) {
+    function formatDate_dup1(dateString) {
 
         if (!dateString) return 'No data';
 
@@ -36496,7 +36496,7 @@ function downloadPolicyStub_v2(policyId) {
 
 
 
-function viewMeetingDetails(meetingId) {
+function viewMeetingDetails_dup1(meetingId) {
 
     customAlert(`Opening toolbox meeting details for ${meetingId}...nnFull meeting minutes, attendance list, and action items will be displayed.`, "Meeting Details", "info");
 
@@ -36504,7 +36504,7 @@ function viewMeetingDetails(meetingId) {
 
 
 
-function downloadAttendance(meetingId) {
+function downloadAttendance_dup1(meetingId) {
 
     customAlert(`Downloading attendance sheet for meeting ${meetingId}...nnAttendance list will be downloaded as Excel file.`, "Download Attendance", "info");
 
@@ -36512,7 +36512,7 @@ function downloadAttendance(meetingId) {
 
 
 
-function viewPpeDetails(issuanceId) {
+function viewPpeDetails_dup1(issuanceId) {
 
     customAlert(`Opening PPE issuance details for ${issuanceId}...nnFull issuance record with items and return status will be displayed.`, "PPE Details", "info");
 
@@ -36536,7 +36536,7 @@ function recordReturn(issuanceId) {
 
 
 
-function viewViolationDetails(violationId) {
+function viewViolationDetails_dup1(violationId) {
 
     customAlert(`Opening violation details for ${violationId}...nnFull violation report with evidence and corrective actions will be displayed.`, "Violation Details", "info");
 
@@ -36544,7 +36544,7 @@ function viewViolationDetails(violationId) {
 
 
 
-function updateViolationStatus(violationId) {
+function updateViolationStatus_dup1(violationId) {
 
     customPrompt('Enter new status (Open/In Progress/Closed):', '', 'Update Status', function(status) {
 
@@ -36560,7 +36560,7 @@ function updateViolationStatus(violationId) {
 
 
 
-function viewInspectionReport(inspectionId) {
+function viewInspectionReport_dup1(inspectionId) {
 
     customAlert(`Opening inspection report ${inspectionId}...nnFull inspection report with findings and recommendations will be displayed.`, "Inspection Report", "info");
 
@@ -36568,7 +36568,7 @@ function viewInspectionReport(inspectionId) {
 
 
 
-function downloadInspectionReport(inspectionId) {
+function downloadInspectionReport_dup1(inspectionId) {
 
     customAlert(`Downloading inspection report ${inspectionId}...nnReport will be downloaded as PDF file.`, "Download Report", "info");
 
@@ -36576,7 +36576,7 @@ function downloadInspectionReport(inspectionId) {
 
 
 
-function filterSafetyProjects() {
+function filterSafetyProjects_dup1() {
 
     customAlert('Filtering safety projects based on selected criteria...', "Filter Projects", "info");
 
@@ -42245,7 +42245,7 @@ function getCurrentUserId() {
 
 
 
-async function viewCampaignDetails(campaignId) {
+async function viewCampaignDetails_dup1(campaignId) {
 
     try {
 
@@ -43381,7 +43381,7 @@ function displayBudgetRecords(records) {
 
         // Format individual budget items
 
-        const formatCurrency = (amount) => {
+        const formatCurrency_dup3 = (amount) => {
 
             return new Intl.NumberFormat('en-TZ', {
 
@@ -44062,7 +44062,7 @@ function showExpenseTab(tabName, evt) {
 
 
 
-function showFinanceReportTab(tabName, evt) {
+function showFinanceReportTab_dup1(tabName, evt) {
 
     // Hide all report tabs
 
@@ -44231,7 +44231,7 @@ function calculateTotalBudget() {
 
         // Helper function to parse TZS values
 
-        const parseTZSValue = (element) => {
+        const parseTZSValue_dup1 = (element) => {
 
             if (!element) return 0;
 
@@ -44474,7 +44474,7 @@ function emailPayslips() {
 
 
 
-function exportIncomeStatement() {
+function exportIncomeStatement_dup1() {
 
     customAlert('Exporting income statement...nnReport will be downloaded as PDF file.', "Export Statement", "info");
 
@@ -44482,7 +44482,7 @@ function exportIncomeStatement() {
 
 
 
-function shareReport() {
+function shareReport_dup1() {
 
     customAlert('Sharing financial report...nnReport will be shared with authorized stakeholders.', "Share Report", "info");
 
@@ -45531,7 +45531,7 @@ function displayProjects(projects) {
         const managerName = project.manager || project.manager_name || project.manager_id || 'Not assigned';
 
         // Parse dates safely to avoid Invalid Date / RangeError
-        const formatDate = (dateVal) => {
+        const formatDate_dup3 = (dateVal) => {
             if (!dateVal) return 'N/A';
             const d = new Date(dateVal);
             return isNaN(d.getTime()) ? 'N/A' : d.toLocaleDateString();
@@ -50355,7 +50355,7 @@ function getPriorityBadge(priority) {
 
 
 
-function formatDate(dateString) {
+function formatDate_dup2(dateString) {
 
     if (!dateString) return 'N/A';
 
@@ -50873,7 +50873,7 @@ function saveWorkApproval(event) {
 
 // Helper functions for Project Manager
 
-function loadProjectDetails() {
+function loadProjectDetails_dup1() {
 
     const projectId = document.getElementById('progressProject').value;
 
@@ -51190,7 +51190,7 @@ function filterAssignedWorkers() {
 
 
 
-function updateTaskStatus(taskId) {
+function updateTaskStatus_dup1(taskId) {
 
     customPrompt('Enter new status (Pending/In Progress/Completed):', '', 'Update Task Status', function(newStatus) {
 
@@ -53459,7 +53459,7 @@ function displayClientsRecords(data) {
 
         // Escape helpers for safe HTML
 
-        const esc = (v) => String(v == null ? '' : v).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c]));
+        const esc_dup1 = (v) => String(v == null ? '' : v).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c]));
 
         
 
@@ -55411,7 +55411,7 @@ function formatStatus(status) {
 
 
 
-function formatDate(dateString) {
+function formatDate_dup3(dateString) {
 
     if (!dateString) return null;
 
@@ -57512,7 +57512,7 @@ function getSelectedUtilities() {
 
 
 
-function recordPayment(saleId) {
+function recordPayment_dup1(saleId) {
 
     customPrompt('Enter payment amount:', '', 'Payment Amount', function(amount) {
 
@@ -59074,7 +59074,7 @@ function editDocuments(){
 
 // Load documents from API
 
-async function loadDocuments() {
+async function loadDocuments_dup1() {
 
     console.log('ðŸ”„ Loading documents for editing...');
 
@@ -59170,7 +59170,7 @@ async function loadDocuments() {
 
         
 
-        const formatDate = (dateStr) => {
+        const formatDate_dup4 = (dateStr) => {
 
             if (!dateStr) return 'Unknown';
 
@@ -59289,7 +59289,7 @@ async function loadDocuments() {
 
 // Format file size helper
 
-function formatFileSize(size) {
+function formatFileSize_dup1(size) {
 
     if (!size) return 'Unknown size';
 
@@ -60336,7 +60336,7 @@ function getRecipientTypeDisplayName(recipientType) {
 
 // Get priority display name
 
-function getPriorityDisplayName(priority) {
+function getPriorityDisplayName_dup1(priority) {
 
     const priorityMap = {
 
@@ -62508,7 +62508,7 @@ function scheduleMeetingSubmit() {
 
 
 
-function viewMeetingDetails(meetingId) {
+function viewMeetingDetails_dup2(meetingId) {
 
     // TODO: Load meeting details from API instead of localStorage
 
@@ -63467,7 +63467,7 @@ async function reactivateUser(userId) {
 
 
 
-async function viewDriverDetails(driverId) {
+async function viewDriverDetails_dup1(driverId) {
 
     try {
 
@@ -63513,7 +63513,7 @@ async function viewDriverDetails(driverId) {
 
 
 
-async function editDriver(driverId) {
+async function editDriver_dup1(driverId) {
 
     try {
 
@@ -64365,7 +64365,7 @@ function backToStaffOversight() {
 
 // Notification helper function
 
-function showNotification(message, type = 'info') {
+function showNotification_dup1(message, type = 'info') {
 
     const notification = document.createElement('div');
 
@@ -64784,7 +64784,7 @@ function isExpiringSoon(expiryDate) {
 
 
 
-function formatDate(dateString) {
+function formatDate_dup4(dateString) {
 
     if (!dateString) return 'N/A';
 
@@ -65133,7 +65133,7 @@ async function viewPurchaseHistory() {
 }
 
 // Helper function to format dates
-function formatDate(dateString) {
+function formatDate_dup5(dateString) {
     if (!dateString) return 'N/A';
     try {
         const date = new Date(dateString);
@@ -67772,7 +67772,7 @@ function filterByDepartment(department) {
 
 // Additional helper functions
 
-function showNotification(title, message, type = 'info') {
+function showNotification_dup2(title, message, type = 'info') {
 
     // Create notification element
 
@@ -68806,7 +68806,7 @@ function editMinutes(minutesId) {
 
 
 
-function recordPayment(saleId) {
+function recordPayment_dup2(saleId) {
 
     customAlert(`Recording payment for sale ${saleId}...nnPayment entry form will open for amount and payment method details.`, "Record Payment", "info");
 
@@ -68814,7 +68814,7 @@ function recordPayment(saleId) {
 
 
 
-function viewPaymentHistory(saleId) {
+function viewPaymentHistory_dup1(saleId) {
 
     customAlert(`Viewing payment history for sale ${saleId}...nnComplete payment history will be displayed with dates, amounts, and payment methods.`, "Payment History", "info");
 
@@ -68822,7 +68822,7 @@ function viewPaymentHistory(saleId) {
 
 
 
-function sendReminder(saleId) {
+function sendReminder_dup1(saleId) {
 
     customAlert(`Sending payment reminder for sale ${saleId}...nnAutomated reminder will be sent to the customer via email and SMS.`, "Send Reminder", "success");
 
@@ -68830,7 +68830,7 @@ function sendReminder(saleId) {
 
 
 
-function viewAuditReport(auditId) {
+function viewAuditReport_dup1(auditId) {
 
     customAlert(`Viewing audit report ${auditId}...nnDetailed audit findings and recommendations will be displayed.`, "Audit Report", "info");
 
@@ -68838,7 +68838,7 @@ function viewAuditReport(auditId) {
 
 
 
-function updateTaskStatus(taskId) {
+function updateTaskStatus_dup2(taskId) {
 
     customAlert(`Updating status for task ${taskId}...nnStatus update form will open for progress tracking.`, "Update Task", "info");
 
@@ -68846,7 +68846,7 @@ function updateTaskStatus(taskId) {
 
 
 
-function viewSiteReport(reportId) {
+function viewSiteReport_dup1(reportId) {
 
     customAlert(`Viewing site report ${reportId}...nnComplete site inspection report will be displayed with photos and findings.`, "Site Report", "info");
 
@@ -68854,7 +68854,7 @@ function viewSiteReport(reportId) {
 
 
 
-function downloadAttendance(meetingId) {
+function downloadAttendance_dup2(meetingId) {
 
     customAlert(`Downloading attendance sheet for meeting ${meetingId}...nnAttendance list will be downloaded as Excel file.`, "Download Attendance", "info");
 
@@ -69000,7 +69000,7 @@ Generated on: ${new Date().toLocaleDateString()}
 
 
 
-function viewViolationDetails(violationId) {
+function viewViolationDetails_dup2(violationId) {
 
     customAlert(`Viewing violation details for ${violationId}...nnComplete violation report with photos and corrective actions will be displayed.`, "Violation Details", "info");
 
@@ -69008,7 +69008,7 @@ function viewViolationDetails(violationId) {
 
 
 
-function updateViolationStatus(violationId) {
+function updateViolationStatus_dup2(violationId) {
 
     customAlert(`Updating status for violation ${violationId}...nnStatus update form will open for tracking corrective actions.`, "Update Violation", "info");
 
@@ -69016,7 +69016,7 @@ function updateViolationStatus(violationId) {
 
 
 
-function viewInspectionReport(inspectionId) {
+function viewInspectionReport_dup2(inspectionId) {
 
     customAlert(`Viewing inspection report ${inspectionId}...nnDetailed inspection findings and recommendations will be displayed.`, "Inspection Report", "info");
 
@@ -69024,7 +69024,7 @@ function viewInspectionReport(inspectionId) {
 
 
 
-function downloadInspectionReport(inspectionId) {
+function downloadInspectionReport_dup2(inspectionId) {
 
     customAlert(`Downloading inspection report ${inspectionId}...nnReport will be downloaded as PDF file with all attachments.`, "Download Report", "info");
 
@@ -69032,7 +69032,7 @@ function downloadInspectionReport(inspectionId) {
 
 
 
-function viewProjectDetails(projectId) {
+function viewProjectDetails_dup1(projectId) {
 
     customAlert(`Viewing full details for project ${projectId}...nnComplete project information including timeline, budget, and team details will be displayed.`, "Project Details", "info");
 
@@ -69048,7 +69048,7 @@ function generateSafetyReport_dup2(projectId) {
 
 
 
-function scheduleInspection(projectId) {
+function scheduleInspection_dup1(projectId) {
 
     customAlert(`Scheduling inspection for project ${projectId}...nnInspection scheduling form will open for date and time selection.`, "Schedule Inspection", "info");
 
@@ -69056,7 +69056,7 @@ function scheduleInspection(projectId) {
 
 
 
-function emergencyReview(projectId) {
+function emergencyReview_dup1(projectId) {
 
     customAlert(`Initiating emergency review for project ${projectId}...nnUrgent safety review process will begin with immediate site assessment.`, "Emergency Review", "warning");
 
@@ -69064,7 +69064,7 @@ function emergencyReview(projectId) {
 
 
 
-function downloadPolicy(policyId) {
+function downloadPolicy_dup1(policyId) {
 
     customAlert(`Downloading safety policy ${policyId}...nnPolicy document will be downloaded as PDF file.`, "Download Policy", "info");
 
@@ -69072,7 +69072,7 @@ function downloadPolicy(policyId) {
 
 
 
-function viewMeetingDetails(meetingId) {
+function viewMeetingDetails_dup3(meetingId) {
 
     customAlert(`Opening toolbox meeting details for ${meetingId}...nnFull meeting minutes, attendance list, and action items will be displayed.`, "Meeting Details", "info");
 
@@ -69080,7 +69080,7 @@ function viewMeetingDetails(meetingId) {
 
 
 
-function viewPpeDetails(issuanceId) {
+function viewPpeDetails_dup2(issuanceId) {
 
     customAlert(`Viewing PPE issuance details for ${issuanceId}...nnComplete issuance record with item details and condition will be displayed.`, "PPE Details", "info");
 
@@ -69090,7 +69090,7 @@ function viewPpeDetails(issuanceId) {
 
 // Additional button functions that were removed during cleanup
 
-function generateWorkforceReport() {
+function generateWorkforceReport_dup1() {
 
     customAlert(`Generating comprehensive workforce report...nnReport will include all employee statistics, department breakdowns, and workforce analytics.`, "Workforce Report", "info");
 
@@ -69098,7 +69098,7 @@ function generateWorkforceReport() {
 
 
 
-function approveHiringPlan() {
+function approveHiringPlan_dup1() {
 
     customAlert(`Approving hiring plan...nnHiring plan will be reviewed and approved based on current workforce needs and budget constraints.`, "Hiring Plan", "success");
 
@@ -69106,7 +69106,7 @@ function approveHiringPlan() {
 
 
 
-function reviewOrgStructure() {
+function reviewOrgStructure_dup1() {
 
     customAlert(`Reviewing organization structure...nnComplete organizational chart and reporting structure will be displayed with current positions and vacancies.`, "Organization Structure", "info");
 
@@ -69114,7 +69114,7 @@ function reviewOrgStructure() {
 
 
 
-function exportWorkforceReport() {
+function exportWorkforceReport_dup1() {
 
     customAlert(`Exporting workforce report...nnReport will be exported as Excel file with all workforce data and analytics.`, "Export Report", "info");
 
@@ -69122,7 +69122,7 @@ function exportWorkforceReport() {
 
 
 
-function scheduleBoardReview() {
+function scheduleBoardReview_dup1() {
 
     customAlert(`Scheduling board review...nnBoard meeting will be scheduled to review workforce reports and strategic initiatives.`, "Board Review", "info");
 
@@ -69130,7 +69130,7 @@ function scheduleBoardReview() {
 
 
 
-function generateComplianceReport() {
+function generateComplianceReport_dup1() {
 
     customAlert(`Generating compliance report...nnCompliance report will include all regulatory requirements and current compliance status.`, "Compliance Report", "info");
 
@@ -69138,7 +69138,7 @@ function generateComplianceReport() {
 
 
 
-function modifyBudget(budgetId) {
+function modifyBudget_dup1(budgetId) {
 
     customAlert(`Modifying budget ${budgetId}...nnBudget modification form will open for adjustments and reallocations.`, "Modify Budget", "info");
 
@@ -69146,7 +69146,7 @@ function modifyBudget(budgetId) {
 
 
 
-function rejectBudget(budgetId) {
+function rejectBudget_dup1(budgetId) {
 
     customAlert(`Rejecting budget ${budgetId}...nnBudget will be rejected with feedback for revision and resubmission.`, "Reject Budget", "warning");
 
@@ -69154,7 +69154,7 @@ function rejectBudget(budgetId) {
 
 
 
-function cancelEmploymentAction() {
+function cancelEmploymentAction_dup1() {
 
     customAlert(`Employment action cancelled...nnNo changes have been made to employee records.`, "Action Cancelled", "info");
 
@@ -69162,7 +69162,7 @@ function cancelEmploymentAction() {
 
 
 
-function showReportTab(tabName) {
+function showReportTab_dup2(tabName) {
 
     // Remove active class from all tabs
 
@@ -69228,7 +69228,7 @@ function closeConfirmModal(result) {
 
 
 
-function submitRevisionRequest(policyId) {
+function submitRevisionRequest_dup1(policyId) {
 
     const revisionType = document.getElementById('revisionType').value;
 
@@ -69258,7 +69258,7 @@ function submitRevisionRequest(policyId) {
 
 
 
-function submitRejection(policyId) {
+function submitRejection_dup1(policyId) {
 
     const rejectionReason = document.getElementById('rejectionReason').value;
 
@@ -69286,7 +69286,7 @@ function submitRejection(policyId) {
 
 
 
-function requestMoreInfo(hireId) {
+function requestMoreInfo_dup1(hireId) {
 
     customAlert(`Requesting more information for hire ${hireId}...nnInformation request will be sent to HR department for additional details.`, "Request More Info", "info");
 
@@ -69294,7 +69294,7 @@ function requestMoreInfo(hireId) {
 
 
 
-function rejectSeniorHire(hireId) {
+function rejectSeniorHire_dup1(hireId) {
 
     customAlert(`Rejecting senior staff hire ${hireId}...nnHiring decision will be rejected with feedback for HR department.`, "Hire Rejected", "warning");
 
@@ -69302,7 +69302,7 @@ function rejectSeniorHire(hireId) {
 
 
 
-function approveBudget(budgetId) {
+function approveBudget_dup1(budgetId) {
 
     customAlert(`Budget ${budgetId} approved!nnBudget allocation has been approved and funds will be released.`, "Budget Approved", "success");
 
@@ -69310,7 +69310,7 @@ function approveBudget(budgetId) {
 
 
 
-function editMinutes(minutesId) {
+function editMinutes_dup1(minutesId) {
 
     customAlert(`Editing meeting minutes ${minutesId}...nnMinutes editor will open for modifications and updates.`, "Edit Minutes", "info");
 
@@ -69318,7 +69318,7 @@ function editMinutes(minutesId) {
 
 
 
-function viewMinutes(minutesId) {
+function viewMinutes_dup1(minutesId) {
 
     customAlert(`Viewing meeting minutes ${minutesId}...nnFull meeting minutes will be displayed with all discussion points and decisions.`, "Meeting Minutes", "info");
 
@@ -69326,7 +69326,7 @@ function viewMinutes(minutesId) {
 
 
 
-function downloadAttendance(meetingId) {
+function downloadAttendance_dup3(meetingId) {
 
     customAlert(`Downloading attendance for meeting ${meetingId}...nnAttendance list will be downloaded as Excel file.`, "Download Attendance", "info");
 
@@ -69334,7 +69334,7 @@ function downloadAttendance(meetingId) {
 
 
 
-function viewMeetingDetails(meetingId) {
+function viewMeetingDetails_dup4(meetingId) {
 
     // TODO: Load meeting details from API instead of localStorage
 
@@ -69382,7 +69382,7 @@ Status: ${meeting.status}
 
 
 
-function editMeeting(meetingId) {
+function editMeeting_dup1(meetingId) {
 
     customAlert(`Editing meeting ${meetingId}...nnMeeting editor will open for modifications and updates.`, "Edit Meeting", "info");
 
@@ -69516,7 +69516,7 @@ async function viewPolicy(policyId, titleParam = '') {
 
 
 
-function downloadPolicy(policyId) {
+function downloadPolicy_dup2(policyId) {
     const baseUrl = window.location.origin;
     const token = sessionStorage.getItem('kashtec_token') || (typeof sessionManager !== 'undefined' ? sessionManager.getAuthToken() : '');
 
@@ -69593,7 +69593,7 @@ Generated on: ${new Date().toLocaleString('en-US')}
 
 
 
-function viewPpeDetails(issuanceId) {
+function viewPpeDetails_dup3(issuanceId) {
 
     customAlert(`Viewing PPE issuance details for ${issuanceId}...nnComplete issuance record with item details and condition will be displayed.`, "PPE Details", "info");
 
@@ -69601,7 +69601,7 @@ function viewPpeDetails(issuanceId) {
 
 
 
-function recordReturn(issuanceId) {
+function recordReturn_dup1(issuanceId) {
 
     customAlert(`Recording PPE return for ${issuanceId}...nnReturn form will open for condition assessment and restocking.`, "Record Return", "info");
 
@@ -69609,7 +69609,7 @@ function recordReturn(issuanceId) {
 
 
 
-function viewViolationDetails(violationId) {
+function viewViolationDetails_dup3(violationId) {
 
     customAlert(`Viewing violation details for ${violationId}...nnComplete violation report with photos and corrective actions will be displayed.`, "Violation Details", "info");
 
@@ -69617,7 +69617,7 @@ function viewViolationDetails(violationId) {
 
 
 
-function updateViolationStatus(violationId) {
+function updateViolationStatus_dup3(violationId) {
 
     customAlert(`Updating status for violation ${violationId}...nnStatus update form will open for tracking corrective actions.`, "Update Violation", "info");
 
@@ -69625,7 +69625,7 @@ function updateViolationStatus(violationId) {
 
 
 
-function viewInspectionReport(inspectionId) {
+function viewInspectionReport_dup3(inspectionId) {
 
     customAlert(`Viewing inspection report ${inspectionId}...nnDetailed inspection findings and recommendations will be displayed.`, "Inspection Report", "info");
 
@@ -69633,7 +69633,7 @@ function viewInspectionReport(inspectionId) {
 
 
 
-function downloadInspectionReport(inspectionId) {
+function downloadInspectionReport_dup3(inspectionId) {
 
     customAlert(`Downloading inspection report ${inspectionId}...nnReport will be downloaded as PDF file with all attachments.`, "Download Report", "info");
 
@@ -69641,7 +69641,7 @@ function downloadInspectionReport(inspectionId) {
 
 
 
-function viewProjectDetails(projectId) {
+function viewProjectDetails_dup2(projectId) {
 
     customAlert(`Viewing full details for project ${projectId}...nnComplete project information including timeline, budget, and team details will be displayed.`, "Project Details", "info");
 
@@ -69657,7 +69657,7 @@ function generateSafetyReport_dup3(projectId) {
 
 
 
-function scheduleInspection(projectId) {
+function scheduleInspection_dup2(projectId) {
 
     customAlert(`Scheduling inspection for project ${projectId}...nnInspection scheduling form will open for date and time selection.`, "Schedule Inspection", "info");
 
@@ -69665,7 +69665,7 @@ function scheduleInspection(projectId) {
 
 
 
-function emergencyReview(projectId) {
+function emergencyReview_dup2(projectId) {
 
     customAlert(`Initiating emergency review for project ${projectId}...nnUrgent safety review process will begin with immediate site assessment.`, "Emergency Review", "warning");
 
@@ -69673,7 +69673,7 @@ function emergencyReview(projectId) {
 
 
 
-function viewAuditReport(auditId) {
+function viewAuditReport_dup2(auditId) {
 
     customAlert(`Viewing audit report ${auditId}...nnDetailed audit findings and recommendations will be displayed.`, "Audit Report", "info");
 
@@ -69681,7 +69681,7 @@ function viewAuditReport(auditId) {
 
 
 
-function updateTaskStatus(taskId) {
+function updateTaskStatus_dup3(taskId) {
 
     customAlert(`Updating status for task ${taskId}...nnStatus update form will open for progress tracking.`, "Update Task", "info");
 
@@ -69689,7 +69689,7 @@ function updateTaskStatus(taskId) {
 
 
 
-function viewSiteReport(reportId) {
+function viewSiteReport_dup2(reportId) {
 
     customAlert(`Viewing site report ${reportId}...nnComplete site inspection report will be displayed with photos and findings.`, "Site Report", "info");
 
@@ -69697,7 +69697,7 @@ function viewSiteReport(reportId) {
 
 
 
-function recordPayment(saleId) {
+function recordPayment_dup3(saleId) {
 
     customAlert(`Recording payment for sale ${saleId}...nnPayment entry form will open for amount and payment method details.`, "Record Payment", "info");
 
@@ -69705,7 +69705,7 @@ function recordPayment(saleId) {
 
 
 
-function viewPaymentHistory(saleId) {
+function viewPaymentHistory_dup2(saleId) {
 
     customAlert(`Viewing payment history for sale ${saleId}...nnComplete payment history will be displayed with dates, amounts, and payment methods.`, "Payment History", "info");
 
@@ -69713,7 +69713,7 @@ function viewPaymentHistory(saleId) {
 
 
 
-function sendReminder(saleId) {
+function sendReminder_dup2(saleId) {
 
     customAlert(`Sending payment reminder for sale ${saleId}...nnAutomated reminder will be sent to the customer via email and SMS.`, "Send Reminder", "success");
 
@@ -70151,7 +70151,7 @@ function showRevisionModal(workId, workType, callback) {
 
 
 
-function closeModal() {
+function closeModal_dup3() {
 
     const modal = document.querySelector('.modal-overlay');
 
@@ -70845,7 +70845,7 @@ function handleLogout() {
 
 
 
-function cancelEmploymentAction() {
+function cancelEmploymentAction_dup2() {
 
     customAlert('Employment action cancelled.', "Action Cancelled", "info");
 
@@ -70855,7 +70855,7 @@ function cancelEmploymentAction() {
 
 
 
-function showReportTab(tabName) {
+function showReportTab_dup3(tabName) {
 
     // Update tab buttons
 
@@ -70881,7 +70881,7 @@ function showReportTab(tabName) {
 
 
 
-function exportWorkforceReport() {
+function exportWorkforceReport_dup2() {
 
     customAlert('Exporting workforce report...nnThe comprehensive workforce report will be generated and downloaded as a PDF file.', "Export Report", "info");
 
@@ -70889,7 +70889,7 @@ function exportWorkforceReport() {
 
 
 
-function scheduleBoardReview() {
+function scheduleBoardReview_dup2() {
 
     customAlert('Schedule board review...nnThis will open the scheduling interface to arrange a board review meeting.', "Schedule Board Review", "info");
 
@@ -70897,7 +70897,7 @@ function scheduleBoardReview() {
 
 
 
-function generateComplianceReport() {
+function generateComplianceReport_dup2() {
 
     customAlert('Generating compliance report...nnThe compliance report will be generated with all current compliance status and requirements.', "Generate Compliance Report", "info");
 
@@ -70905,7 +70905,7 @@ function generateComplianceReport() {
 
 
 
-function generateWorkforceReport() {
+function generateWorkforceReport_dup2() {
 
     customAlert('Generating workforce report...nnThe workforce report will be generated with current employee statistics and analysis.', "Generate Workforce Report", "info");
 
@@ -70913,7 +70913,7 @@ function generateWorkforceReport() {
 
 
 
-function approveHiringPlan() {
+function approveHiringPlan_dup2() {
 
     customAlert('Approve hiring plan...nnThis will review and approve the current hiring plan for implementation.', "Approve Hiring Plan", "info");
 
@@ -70921,7 +70921,7 @@ function approveHiringPlan() {
 
 
 
-function reviewOrgStructure() {
+function reviewOrgStructure_dup2() {
 
     customAlert('Review organization structure...nnThis will open the organization structure review interface.', "Review Organization Structure", "info");
 
@@ -75219,7 +75219,7 @@ function formatCurrency(amount, currency = 'TZS') {
 
 
 
-function formatDate(dateString) {
+function formatDate_dup6(dateString) {
 
     if (!dateString) return 'â€”';
 
@@ -76651,7 +76651,7 @@ async function loadMissionVisionRecords() {
             return;
         }
 
-        const formatDate = (value) => {
+        const formatDate_dup5 = (value) => {
             if (!value) {
                 return '';
             }
@@ -76797,7 +76797,7 @@ async function loadLongTermGrowthRecords() {
             return;
         }
 
-        const formatDate = (value) => {
+        const formatDate_dup6 = (value) => {
             if (!value) {
                 return '';
             }
@@ -76825,7 +76825,7 @@ async function loadLongTermGrowthRecords() {
             return null;
         };
 
-        const parseJsonArray = (value) => {
+        const parseJsonArray_dup1 = (value) => {
             if (Array.isArray(value)) {
                 return value;
             }
@@ -76833,7 +76833,7 @@ async function loadLongTermGrowthRecords() {
             return Array.isArray(parsed) ? parsed : [];
         };
 
-        const prettifyListItem = (value) => {
+        const prettifyListItem_dup1 = (value) => {
             if (value == null) {
                 return '';
             }
@@ -76856,7 +76856,7 @@ async function loadLongTermGrowthRecords() {
             const tr = document.createElement('tr');
             tr.style.borderBottom = '1px solid #dee2e6';
 
-            const addCell = (value) => {
+            const addCell_dup1 = (value) => {
                 const td = document.createElement('td');
                 td.style.padding = '8px';
                 td.textContent = value == null ? '' : String(value);
@@ -76954,7 +76954,7 @@ async function loadLeadershipRecords() {
             return;
         }
 
-        const formatDate = (value) => {
+        const formatDate_dup7 = (value) => {
             if (!value) {
                 return '';
             }
@@ -76965,7 +76965,7 @@ async function loadLeadershipRecords() {
             return String(value).split('T')[0];
         };
 
-        const parseJsonArray = (value) => {
+        const parseJsonArray_dup2 = (value) => {
             if (Array.isArray(value)) {
                 return value;
             }
@@ -76980,7 +76980,7 @@ async function loadLeadershipRecords() {
             return [];
         };
 
-        const prettifyListItem = (value) => {
+        const prettifyListItem_dup2 = (value) => {
             if (value == null) {
                 return '';
             }
@@ -76996,7 +76996,7 @@ async function loadLeadershipRecords() {
             const tr = document.createElement('tr');
             tr.style.borderBottom = '1px solid #dee2e6';
 
-            const addCell = (value) => {
+            const addCell_dup2 = (value) => {
                 const td = document.createElement('td');
                 td.style.padding = '8px';
                 td.textContent = value == null ? '' : String(value);
@@ -77067,7 +77067,7 @@ function updateProjectFields() {
 }
 
 // Clear project form
-function clearProjectForm() {
+function clearProjectForm_dup1() {
     document.getElementById('createProjectForm').reset();
     updateProjectFields(); // Reset field visibility
 }
@@ -77509,7 +77509,7 @@ async function loadAccountantRecords() {
             return labels[key] || key;
         };
 
-        const formatDate = (value) => {
+        const formatDate_dup8 = (value) => {
             if (!value) {
                 return '';
             }
@@ -77520,7 +77520,7 @@ async function loadAccountantRecords() {
             return String(value).split('T')[0];
         };
 
-        const parseJsonArray = (value) => {
+        const parseJsonArray_dup3 = (value) => {
             if (Array.isArray(value)) {
                 return value;
             }
@@ -77535,7 +77535,7 @@ async function loadAccountantRecords() {
             return [];
         };
 
-        const prettifyListItem = (value) => {
+        const prettifyListItem_dup3 = (value) => {
             if (value == null) {
                 return '';
             }
@@ -77551,7 +77551,7 @@ async function loadAccountantRecords() {
             const tr = document.createElement('tr');
             tr.style.borderBottom = '1px solid #dee2e6';
 
-            const addCell = (value) => {
+            const addCell_dup3 = (value) => {
                 const td = document.createElement('td');
                 td.style.padding = '8px';
                 td.textContent = value == null ? '' : String(value);
@@ -79474,7 +79474,7 @@ function displayPaymentRequests(payments) {
 }
 
 // Get status badge HTML
-function getStatusBadge(status) {
+function getStatusBadge_dup1(status) {
     const badges = {
         'pending_finance_approval': '<span class="badge badge-warning">Pending Finance</span>',
         'approved': '<span class="badge badge-success">Approved</span>',
@@ -79796,7 +79796,7 @@ async function fetchMaterialsOut() {
     } catch (e) { console.error('Error loading materials out:', e); return []; }
 }
 
-async function showMaterialsDashboard() {
+async function showMaterialsDashboard_dup1() {
     showContent(`
         <div class="card">
             <h3>Materials Management Dashboard</h3>
@@ -79884,7 +79884,7 @@ async function showMaterialsDashboard() {
     } catch (e) { console.error('Dashboard error:', e); }
 }
 
-async function showMaterialsInventory() {
+async function showMaterialsInventory_dup1() {
     const inventory = await fetchMaterialsInventory();
     let rowsHtml = '';
     if (!Array.isArray(inventory) || inventory.length === 0) {
@@ -79956,7 +79956,7 @@ function getUnitMeasureOptions(selected) {
     return units.map(u => `<option value="${u}" ${selected === u ? 'selected' : ''}>${u}</option>`).join('');
 }
 
-function showMaterialsInForm(preselectedMaterialId, preselectedMaterialName) {
+function showMaterialsInForm_dup1(preselectedMaterialId, preselectedMaterialName) {
     const today = new Date().toISOString().split('T')[0];
 
     const formHTML = `
@@ -80129,7 +80129,7 @@ async function saveMaterialsIn() {
     }
 }
 
-function showMaterialsOutForm(preselectedMaterialId, preselectedMaterialName) {
+function showMaterialsOutForm_dup1(preselectedMaterialId, preselectedMaterialName) {
     const today = new Date().toISOString().split('T')[0];
 
     const formHTML = `
