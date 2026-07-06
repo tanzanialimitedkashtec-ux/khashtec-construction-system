@@ -47554,7 +47554,8 @@ function displayWorkforceRequests(requests) {
 
                 ${currentRole !== 'PROJECT' ? `<td>
                     <div class="request-actions">
-                        <button class="action-btn approve" onclick="approveWorkforceRequest('${request.id}')" title="Approve">✅</button>
+                        ${request.status === 'pending' ? `<button class="action-btn approve" onclick="approveWorkforceRequest('${request.id}')" title="Approve">✅</button>
+                        <button class="action-btn reject" onclick="rejectWorkforceRequest('${request.id}')" title="Reject">🚫</button>` : ''}
                     </div>
                 </td>` : ''}
 
