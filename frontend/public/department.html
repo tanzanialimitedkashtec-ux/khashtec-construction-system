@@ -47124,7 +47124,6 @@ function testSimpleSave() {
 
 function submitIncidentToDatabase() {
 
-    console.log('🚀 submitIncidentToDatabase called - DIRECT DATABASE SAVE');
 
     
 
@@ -47145,13 +47144,11 @@ function submitIncidentToDatabase() {
 
         
 
-        console.log('📝 Form values:', { incidentType, severityLevel, incidentDescription, reportedBy, project, location });
 
         
 
         if (!incidentType || !severityLevel || !incidentDescription || !reportedBy || !project || !location) {
 
-            console.log('❌ Validation failed - missing required fields');
 
             showRealProblemNotification('VALIDATION_ERROR', {
 
@@ -47208,7 +47205,6 @@ function submitIncidentToDatabase() {
 
         
 
-        console.log('📝 Sending work item to database:', workItem);
 
         
 
@@ -47222,7 +47218,6 @@ function submitIncidentToDatabase() {
 
         const baseUrl = window.location.origin;
 
-        console.log('📍 Using server:', baseUrl);
 
         
 
@@ -47249,7 +47244,6 @@ function submitIncidentToDatabase() {
 
         .then(response => {
 
-            console.log('📡 Database response status:', response.status);
 
             
 
@@ -47273,7 +47267,6 @@ function submitIncidentToDatabase() {
 
         .then(data => {
 
-            console.log('📊 Database save result:', data);
 
             
 
@@ -47303,323 +47296,6 @@ function submitIncidentToDatabase() {
 
             clearIncidentForm();
 
-            
-
-            // Comprehensive API Debug Function
-
-function debugAPIConnection() {
-
-    console.log('🔍 Starting comprehensive API debug...');
-
-    
-
-    // Test 1: Check if we're on the right domain
-
-    console.log('🌐 Current URL:', window.location.href);
-
-    console.log('🌐 Origin:', window.location.origin);
-
-    
-
-    // Test 2: Try basic health check
-
-    console.log('🧪 Testing health endpoint...');
-
-    fetch('/health')
-
-        .then(response => {
-
-            console.log('📡 Health response status:', response.status);
-
-            console.log('📡 Health response headers:', [...response.headers.entries()]);
-
-            return response.json();
-
-        })
-
-        .then(data => {
-
-            console.log('✅ Health check successful:', data);
-
-            
-
-            // Test 3: Try simple GET test
-
-            console.log('🧪 Testing simple GET endpoint...');
-
-            return fetch('/test');
-
-        })
-
-        .then(response => {
-
-            console.log('📡 GET test response status:', response.status);
-
-            return response.json();
-
-        })
-
-        .then(data => {
-
-            console.log('✅ GET test successful:', data);
-
-            
-
-            // Test 4: Try simple POST test
-
-            console.log('🧪 Testing simple POST endpoint...');
-
-            return fetch('/test', {
-
-                method: 'POST',
-
-                headers: {
-
-                    'Content-Type': 'application/json',
-
-                    'Accept': 'application/json'
-
-                },
-
-                body: JSON.stringify({
-
-                    test: 'Debug data from frontend',
-
-                    timestamp: new Date().toISOString()
-
-                })
-
-            });
-
-        })
-
-        .then(response => {
-
-            console.log('📡 POST test response status:', response.status);
-
-            return response.json();
-
-        })
-
-        .then(data => {
-
-            console.log('✅ POST test successful:', data);
-
-            
-
-            // Test 5: Try work API test
-
-            console.log('🧪 Testing work API...');
-
-            return fetch('/work/test', {
-
-                method: 'POST',
-
-                headers: {
-
-                    'Content-Type': 'application/json',
-
-                    'Accept': 'application/json'
-
-                },
-
-                body: JSON.stringify({
-
-                    work_type: 'Debug Test',
-
-                    work_title: 'API Debug Test',
-
-                    work_description: 'Testing API connectivity from frontend'
-
-                })
-
-            });
-
-        })
-
-        .then(response => {
-
-            console.log('📡 Work API response status:', response.status);
-
-            return response.json();
-
-        })
-
-        .then(data => {
-
-            console.log('✅ Work API test successful:', data);
-
-            
-
-            // Test 6: Try actual HSE submission
-
-            console.log('🧪 Testing actual HSE submission...');
-
-            return fetch('/hse/work', {
-
-                method: 'POST',
-
-                headers: {
-
-                    'Content-Type': 'application/json',
-
-                    'Accept': 'application/json'
-
-                },
-
-                body: JSON.stringify({
-
-                    work_type: 'Debug Incident',
-
-                    work_title: 'Debug Incident Report',
-
-                    work_description: 'Debug test incident report',
-
-                    incident_type: 'Test',
-
-                    severity: 'Low',
-
-                    priority: 'Low',
-
-                    assigned_to: 'HSE Manager',
-
-                    submitted_by: 'HSE Manager'
-
-                })
-
-            });
-
-        })
-
-        .then(response => {
-
-            console.log('📡 HSE API response status:', response.status);
-
-            return response.json();
-
-        })
-
-        .then(data => {
-
-            console.log('✅ HSE API test successful:', data);
-
-            customAlert('✅ All API tests passed!\n\nThe API is working correctly.\nData should be saving to database.\nCheck console for detailed logs.', "API Debug Success", "success");
-
-        })
-
-        .catch(error => {
-
-            console.error('❌ API test failed:', error);
-
-            console.error('❌ Error details:', {
-
-                message: error.message,
-
-                stack: error.stack
-
-            });
-
-            customAlert(`❌ API test failed!\n\nError: ${error.message}\n\nCheck console for detailed debug information.`, "API Debug Failed", "error");
-
-        });
-
-}
-
-
-
-// Add debug button to page
-
-function addDebugButton() {
-
-    const debugBtn = document.createElement('button');
-
-    debugBtn.innerHTML = '🔧 DEBUG API';
-
-    debugBtn.style.cssText = `
-
-        position: fixed;
-
-        top: 10px;
-
-        left: 10px;
-
-        z-index: 9999;
-
-        background: #ff6b6b;
-
-        color: white;
-
-        padding: 10px 15px;
-
-        border: none;
-
-        border-radius: 5px;
-
-        cursor: pointer;
-
-        font-weight: bold;
-
-        box-shadow: 0 2px 10px rgba(0,0,0,0.3);
-
-    `;
-
-    debugBtn.onclick = debugAPIConnection;
-
-    document.body.appendChild(debugBtn);
-
-}
-
-
-
-// Auto-add debug button when page loads
-
-setTimeout(addDebugButton, 3000);
-
-
-
-// Test function to verify data was saved
-
-            setTimeout(() => {
-
-                console.log('🔍 Verifying data was saved...');
-
-                fetch(`${baseUrl}/api/hse/work`)
-
-                    .then(response => response.json())
-
-                    .then(items => {
-
-                        console.log(`✅ Verification: Found ${items.length} items in database`);
-
-                        const savedItem = items.find(item => item.id === data.workItem.id);
-
-                        if (savedItem) {
-
-                            console.log('✅ Data verification successful - item found in database');
-
-                            showRealProblemNotification('VERIFIED', { 
-
-                                totalItems: items.length, 
-
-                                savedItem: savedItem 
-
-                            });
-
-                        }
-
-                    })
-
-                    .catch(error => {
-
-                        console.log('⚠️ Could not verify data, but save appeared successful');
-
-                        showRealProblemNotification('SAVE_SUCCESS_NO_VERIFY', { error: error.message });
-
-                    });
-
-            }, 1000);
-
-            
 
         })
 
@@ -48534,7 +48210,6 @@ function testServerConnection() {
 
 function showRealProblemNotification(problemType, details) {
 
-    console.log('🔍 showRealProblemNotification called with:', problemType, details);
 
     
 
@@ -48612,11 +48287,6 @@ function showRealProblemNotification(problemType, details) {
 
             title = '💾 Saving to Database...';
 
-            console.log('🔍 SAVING case - details:', details);
-
-            console.log('🔍 SAVING case - details.workItem:', details.workItem);
-
-            console.log('🔍 SAVING case - details.employeeData:', details.employeeData);
 
             
 
