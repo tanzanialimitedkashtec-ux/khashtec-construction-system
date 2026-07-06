@@ -491,8 +491,8 @@ router.post('/', upload.fields([
 
         notify('New Worker Account', fullName + ' (' + finalEmployeeId + ') - ' + department, 'success');
 
+        notify('Worker Account', 'New worker account created for ' + (req.body.fullName || req.body.full_name || req.body.name || 'unknown') + ' in ' + (req.body.department || 'unspecified') + ' department', 'info', 'MD', 'HR Department');
         res.status(201).json({
-            notify('Worker Account', 'New worker account created for ' + (req.body.fullName || req.body.full_name || req.body.name || 'unknown') + ' in ' + (req.body.department || 'unspecified') + ' department', 'info', 'MD', 'HR Department');
             message: 'Worker account created successfully',
             worker: {
                 id: insertId,
@@ -559,6 +559,7 @@ router.post('/', upload.fields([
                     [finalEmployeeId, fullName, finalWorkEmail, finalPhoneNumber, department, jobTitle, mappedAccountType, mappedAccessLevel, finalTemporaryPassword, accountNotes || null, profilePicturePath, idDocumentPath, contractDocumentPath]
                 );
                 var retryId = Array.isArray(retryResult) ? (retryResult[0]?.insertId || retryResult.insertId) : retryResult.insertId;
+                notify('Worker Account', 'New worker account created for ' + (req.body.fullName || req.body.full_name || req.body.name || 'unknown') + ' in ' + (req.body.department || 'unspecified') + ' department', 'info', 'MD', 'HR Department');
                 return res.status(201).json({
                     message: 'Worker account created successfully',
                     worker: { id: retryId, employee_id: finalEmployeeId, full_name: fullName, status: 'active' },

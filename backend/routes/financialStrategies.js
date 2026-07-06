@@ -1,5 +1,5 @@
-const notify = require('../utils/notify');
 const express = require('express');
+const notify = require('../utils/notify');
 const router = express.Router();
 const db = require('../../database/config/database');
 
@@ -74,8 +74,8 @@ router.post('/', async (req, res) => {
 
         const result = await db.query(query, params);
         console.log('✅ Financial strategy insert result:', result);
-        res.status(201).json({ success: true, notify('Financial Strategy', 'New financial strategy: ' + (req.body.title || req.body.name || 'Strategy') + ' - ' + (req.body.description || '').substring(0, 80), 'info', 'MD', 'Director of Administration');
-        message: 'Financial strategy created successfully', id: result.insertId });
+        notify('Financial Strategy', 'New financial strategy: ' + (req.body.title || req.body.name || 'Strategy') + ' - ' + (req.body.description || '').substring(0, 80), 'info', 'MD', 'Director of Administration');
+        res.status(201).json({ success: true, message: 'Financial strategy created successfully', id: result.insertId });
     } catch (error) {
         console.error('❌ Error creating financial strategy:', error.message);
         console.error('❌ Full error:', error);

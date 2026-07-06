@@ -1,5 +1,5 @@
-const notify = require('../utils/notify');
 const express = require('express');
+const notify = require('../utils/notify');
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
@@ -1100,9 +1100,9 @@ router.post('/', function(req, res, next) {
                 const documentsResult = await db.execute(documentsQuery, documentsValues);
                 console.log('✅ Document inserted successfully:', documentsResult);
                 
+                notify('Document Update', 'New document uploaded: ' + (req.body.title || req.body.name || (req.file && req.file.originalname) || 'Document'), 'info', 'MD', 'Admin Assistant');
                 res.json({
                     success: true,
-                    notify('Document Update', 'New document uploaded: ' + (req.body.title || req.body.name || (req.file && req.file.originalname) || 'Document'), 'info', 'MD', 'Admin Assistant');
                     message: 'Document uploaded successfully',
                     id: documentsResult.insertId,
                     adminWorkId: adminWorkResult.insertId,
@@ -1186,6 +1186,7 @@ router.post('/', function(req, res, next) {
             var insertId = result ? (Array.isArray(result) ? result[0]?.insertId : result.insertId) : null;
             console.log('Document saved to database, id:', insertId);
 
+            notify('Document Update', 'New document uploaded: ' + (title || fileName || 'Document'), 'info', 'MD', 'Admin Assistant');
             res.status(201).json({
                 success: true,
                 message: 'Document uploaded successfully',
