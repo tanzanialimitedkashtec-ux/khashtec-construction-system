@@ -4242,7 +4242,7 @@ router.get('/completions/pending', async (req, res) => {
 
         // 1) Query pending items from work_completions
         try {
-            const wcRows = await db.execute(
+            const [wcRows] = await db.execute(
                 `SELECT * FROM work_completions WHERE status = 'pending' ORDER BY completed_date DESC LIMIT 50`
             );
             if (wcRows && wcRows.length > 0) {
@@ -4255,7 +4255,7 @@ router.get('/completions/pending', async (req, res) => {
 
         // 2) Also pull submitted site reports that have not been approved yet
         try {
-            const srRows = await db.execute(`
+            const [srRows] = await db.execute(`
                 SELECT sr.id, sr.work_completed AS work_details,
                        COALESCE(p.project_name, CONCAT('Project #', sr.project_id)) AS project,
                        sr.site_supervisor AS completed_by,
@@ -4299,7 +4299,7 @@ router.get('/completions/pending', async (req, res) => {
 
         // 3) Also pull from hr_work items with status submitted/pending
         try {
-            const hrRows = await db.execute(`
+            const [hrRows] = await db.execute(`
                 SELECT hw.id, hw.work_title AS work_details,
                        hw.department_code AS project,
                        hw.submitted_by AS completed_by,
@@ -4343,7 +4343,7 @@ router.get('/completions/pending', async (req, res) => {
 
         // 4) Also pull from projects_work — join with projects table for real names
         try {
-            const pwRows = await db.execute(`
+            const [pwRows] = await db.execute(`
                 SELECT pw.id, pw.work_title AS work_details,
                        COALESCE(p.name, pw.project_name) AS project,
                        COALESCE(pw.assigned_to, wa.full_name, pw.submitted_by) AS completed_by,
@@ -4391,7 +4391,7 @@ router.get('/completions/pending', async (req, res) => {
 
         // 5) Also pull from finance_work (expense/invoice items pending approval)
         try {
-            const fwRows = await db.execute(`
+            const [fwRows] = await db.execute(`
                 SELECT fw.id, fw.work_title AS work_details,
                        COALESCE(fw.work_type, fw.department_code, 'Finance') AS project,
                        COALESCE(auth.manager_name, wa.full_name, fw.submitted_by, 'Finance Manager') AS completed_by,
