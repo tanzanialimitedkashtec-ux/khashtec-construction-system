@@ -49259,9 +49259,9 @@ function loadPendingWorkCompletions() {
                 '<td>' + dateStr + '</td>' +
                 '<td><span class="quality-score ' + qClass + '">' + score + '%</span></td>' +
                 '<td>' +
-                    '<button class="action" onclick="approveWork(\'' + work.id + '\')" style="background: #28a745;">Approve</button>' +
-                    '<button class="action" onclick="requestRework(\'' + work.id + '\')" style="background: #ffc107;">Request Rework</button>' +
-                    '<button class="action" onclick="rejectWork(\'' + work.id + '\')" style="background: #dc3545;">Reject</button>' +
+                    '<button class="action" onclick="approveWork(\'' + work.id + '\', this)" style="background: #28a745;">Approve</button>' +
+                    '<button class="action" onclick="requestRework(\'' + work.id + '\', this)" style="background: #ffc107;">Request Rework</button>' +
+                    '<button class="action" onclick="rejectWork(\'' + work.id + '\', this)" style="background: #dc3545;">Reject</button>' +
                 '</td>' +
                 '</tr>';
         });
