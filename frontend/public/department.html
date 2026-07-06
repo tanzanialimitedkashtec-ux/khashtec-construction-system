@@ -58116,7 +58116,7 @@ function filterSafetyProjects() {
 
                         // Call save function
 
-                        saveIncidentReport_dup1();
+                        saveIncidentReport();
 
                         return false;
 
@@ -58351,7 +58351,7 @@ window.addEventListener('click', function(event) {
 
         // Call save function
 
-        saveIncidentReport_dup2();
+        saveIncidentReport();
 
         return false;
 
@@ -58363,7 +58363,7 @@ window.addEventListener('click', function(event) {
 
 // HSE Helper Functions
 
-function saveIncidentReport_dup3() {
+function saveIncidentReport() {
     console.log('🚀 saveIncidentReport function called');
     if (window.isSavingIncident) {
         console.log('⚠️ Save already in progress, ignoring double click');
