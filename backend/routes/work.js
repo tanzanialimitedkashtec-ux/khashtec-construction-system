@@ -4394,7 +4394,7 @@ router.get('/completions/pending', async (req, res) => {
             const fwRows = await db.execute(`
                 SELECT fw.id, fw.work_title AS work_details,
                        COALESCE(fw.work_type, fw.department_code, 'Finance') AS project,
-                       COALESCE(wa.full_name, fw.submitted_by) AS completed_by,
+                       COALESCE(auth.manager_name, wa.full_name, fw.submitted_by, 'Finance Manager') AS completed_by,
                        fw.submitted_date AS completed_date,
                        CASE fw.priority
                            WHEN 'Low' THEN 90
@@ -4408,6 +4408,7 @@ router.get('/completions/pending', async (req, res) => {
                        fw.id AS source_id
                 FROM finance_work fw
                 LEFT JOIN worker_accounts wa ON wa.full_name = fw.submitted_by
+                LEFT JOIN authentication auth ON auth.manager_name = fw.submitted_by AND auth.role = 'finance'
                 WHERE (fw.status = 'Pending' OR fw.status = 'submitted')
                   AND fw.id NOT IN (
                       SELECT COALESCE(source_id, 0) FROM work_completions WHERE source_table = 'finance_work'
@@ -4420,7 +4421,7 @@ router.get('/completions/pending', async (req, res) => {
                     id: 'FW-' + fw.id,
                     work_details: fw.work_details || 'Finance Work Item',
                     project: fw.project || 'Finance',
-                    completed_by: fw.completed_by || 'N/A',
+                    completed_by: fw.completed_by || 'Finance Manager',
                     completed_date: fw.completed_date,
                     quality_score: fw.quality_score || 85,
                     quality_level: fw.quality_score >= 90 ? 'excellent' : fw.quality_score >= 80 ? 'good' : 'acceptable',

@@ -3225,8 +3225,23 @@ async function saveSiteReport(event) {
 }
 
 // Work Approval functions
-function approveWork(workId) {
+// Helper shared with work-approval-functions.js — hide all action buttons in a row on click
+function hideActionButtons(btnEl, statusLabel, statusColor) {
+    if (!btnEl) return;
+    var td = btnEl.closest('td');
+    if (!td) return;
+    td.querySelectorAll('button.action').forEach(function(btn) { btn.style.display = 'none'; });
+    var badge = document.createElement('span');
+    badge.textContent = statusLabel;
+    badge.style.cssText = 'display:inline-block;padding:4px 10px;border-radius:12px;font-size:12px;font-weight:600;color:#fff;background:' + statusColor + ';';
+    td.appendChild(badge);
+}
+
+function approveWork(workId, btnEl) {
     console.log('Approving work:', workId);
+
+    // Immediately hide the action buttons and show badge
+    hideActionButtons(btnEl, '✔ Approved', '#28a745');
     
     // Populate the form with the work ID
     const workIdInput = document.getElementById('workId');
@@ -3280,8 +3295,11 @@ function approveWork(workId) {
     }
 }
 
-function requestRework(workId) {
+function requestRework(workId, btnEl) {
     console.log('Requesting rework for:', workId);
+
+    // Immediately hide the action buttons and show badge
+    hideActionButtons(btnEl, '↩ Rework Requested', '#ffc107');
     
     // Populate the form with the work ID
     const workIdInput = document.getElementById('workId');
@@ -3330,8 +3348,11 @@ function requestRework(workId) {
     }
 }
 
-function rejectWork(workId) {
+function rejectWork(workId, btnEl) {
     console.log('Rejecting work:', workId);
+
+    // Immediately hide the action buttons and show badge
+    hideActionButtons(btnEl, '✕ Rejected', '#dc3545');
     
     // Populate the form with the work ID
     const workIdInput = document.getElementById('workId');

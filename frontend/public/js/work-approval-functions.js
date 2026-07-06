@@ -78,9 +78,9 @@ function displayWorkCompletions(completions) {
                                     </span>
                                 </td>
                                 <td>
-                                    <button class="action" onclick="approveWork('${work.id}')" style="background: #28a745;">Approve</button>
-                                    <button class="action" onclick="requestRework('${work.id}')" style="background: #ffc107;">Request Rework</button>
-                                    <button class="action" onclick="rejectWork('${work.id}')" style="background: #dc3545;">Reject</button>
+                                    <button class="action" onclick="approveWork('${work.id}', this)" style="background: #28a745;">Approve</button>
+                                    <button class="action" onclick="requestRework('${work.id}', this)" style="background: #ffc107;">Request Rework</button>
+                                    <button class="action" onclick="rejectWork('${work.id}', this)" style="background: #dc3545;">Reject</button>
                                 </td>
                             </tr>
                         `).join('')}
@@ -94,14 +94,33 @@ function displayWorkCompletions(completions) {
     console.log('✅ Work completions displayed successfully');
 }
 
+// Helper: hide all action buttons in the same row as the clicked button and show a status badge
+function hideActionButtons(btnEl, statusLabel, statusColor) {
+    if (!btnEl) return;
+    var td = btnEl.closest('td');
+    if (!td) return;
+    // Hide every action button in this cell
+    td.querySelectorAll('button.action').forEach(function(btn) {
+        btn.style.display = 'none';
+    });
+    // Show a status badge so the user knows what happened
+    var badge = document.createElement('span');
+    badge.textContent = statusLabel;
+    badge.style.cssText = 'display:inline-block;padding:4px 10px;border-radius:12px;font-size:12px;font-weight:600;color:#fff;background:' + statusColor + ';';
+    td.appendChild(badge);
+}
+
 // Approve a work completion
-window.approveWork = function(workId) {
+window.approveWork = function(workId, btnEl) {
     console.log('✅ Approving work (populating form):', workId);
     
     if (!workId) {
         customAlert('Work ID is required', 'Error', 'error');
         return;
     }
+
+    // Immediately hide the action buttons and show badge
+    hideActionButtons(btnEl, '✔ Approved', '#28a745');
     
     // Set work ID in the approval form (supports both select and input)
     const workIdEl = document.getElementById('workId');
@@ -147,13 +166,16 @@ window.approveWork = function(workId) {
 };
 
 // Request rework for a work completion
-window.requestRework = function(workId) {
+window.requestRework = function(workId, btnEl) {
     console.log('🔄 Requesting rework for work:', workId);
     
     if (!workId) {
         customAlert('Work ID is required', 'Error', 'error');
         return;
     }
+
+    // Immediately hide the action buttons and show badge
+    hideActionButtons(btnEl, '↩ Rework Requested', '#ffc107');
     
     // Show modal for rework details
     const modal = document.createElement('div');
@@ -242,13 +264,16 @@ window.submitReworkRequest = function(workId) {
 };
 
 // Reject a work completion
-window.rejectWork = function(workId) {
+window.rejectWork = function(workId, btnEl) {
     console.log('❌ Rejecting work:', workId);
     
     if (!workId) {
         customAlert('Work ID is required', 'Error', 'error');
         return;
     }
+
+    // Immediately hide the action buttons and show badge
+    hideActionButtons(btnEl, '✕ Rejected', '#dc3545');
     
     // Show modal for rejection details
     const modal = document.createElement('div');
@@ -395,9 +420,9 @@ window.loadPendingWorkCompletions = function() {
                 '<td>' + dateStr + '</td>' +
                 '<td><span class="quality-score ' + qClass + '">' + score + '%</span></td>' +
                 '<td>' +
-                    '<button class="action" onclick="approveWork(\'' + work.id + '\')" style="background: #28a745;">Approve</button>' +
-                    '<button class="action" onclick="requestRework(\'' + work.id + '\')" style="background: #ffc107;">Request Rework</button>' +
-                    '<button class="action" onclick="rejectWork(\'' + work.id + '\')" style="background: #dc3545;">Reject</button>' +
+                    '<button class="action" onclick="approveWork(\'' + work.id + '\', this)" style="background: #28a745;">Approve</button>' +
+                    '<button class="action" onclick="requestRework(\'' + work.id + '\', this)" style="background: #ffc107;">Request Rework</button>' +
+                    '<button class="action" onclick="rejectWork(\'' + work.id + '\', this)" style="background: #dc3545;">Reject</button>' +
                 '</td>' +
                 '</tr>';
         });
