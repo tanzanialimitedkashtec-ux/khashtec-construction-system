@@ -165,6 +165,15 @@
         'div[style*="width:"][style*="px"]{width:100%!important;max-width:100%!important}',
         'span[style*="font-size"]{font-size:inherit!important}',
 
+        /* === LOGIN NOTIFICATION CARDS — compact on mobile === */
+        '#login-notif-popup-container{left:8px!important;right:8px!important;top:8px!important;max-width:none!important;gap:6px!important;}',
+        '#login-notif-popup-container > div{min-width:0!important;max-width:100%!important;width:100%!important;padding:6px 8px!important;border-radius:6px!important;}',
+        '.login-toast-container{left:8px!important;right:8px!important;top:8px!important;gap:6px!important;}',
+        '.login-toast{min-width:0!important;max-width:100%!important;width:100%!important;padding:6px 10px!important;gap:8px!important;}',
+        '.login-toast-icon{width:24px!important;height:24px!important;font-size:12px!important;}',
+        '.login-toast-title{font-size:11px!important;}',
+        '.login-toast-desc{font-size:10px!important;}',
+
         '}', /* end 768px */
 
         /* === HIDE ON DESKTOP === */
