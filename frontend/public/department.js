@@ -77539,7 +77539,7 @@ async function loadAccountantRecords() {
             return labels[key] || key;
         };
 
-        const formatDate_dup8 = (value) => {
+        const formatDate = (value) => {
             if (!value) {
                 return '';
             }
@@ -77550,7 +77550,7 @@ async function loadAccountantRecords() {
             return String(value).split('T')[0];
         };
 
-        const parseJsonArray_dup3 = (value) => {
+        const parseJsonArray = (value) => {
             if (Array.isArray(value)) {
                 return value;
             }
@@ -77565,7 +77565,7 @@ async function loadAccountantRecords() {
             return [];
         };
 
-        const prettifyListItem_dup3 = (value) => {
+        const prettifyListItem = (value) => {
             if (value == null) {
                 return '';
             }
@@ -77581,7 +77581,7 @@ async function loadAccountantRecords() {
             const tr = document.createElement('tr');
             tr.style.borderBottom = '1px solid #dee2e6';
 
-            const addCell_dup3 = (value) => {
+            const addCell = (value) => {
                 const td = document.createElement('td');
                 td.style.padding = '8px';
                 td.textContent = value == null ? '' : String(value);
