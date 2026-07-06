@@ -58395,6 +58395,7 @@ function saveIncidentReport() {
 
             customAlert('Please fill in all required fields:\n\n• Incident Type\n• Severity Level\n• Incident Description', "Validation Error", "error");
 
+            window.isSavingIncident = false;
             return false;
 
         }
@@ -58626,6 +58627,7 @@ function saveIncidentReport() {
 
         customAlert(`Unexpected error: ${error.message}\n\nPlease try again or contact support.`, "System Error", "error");
 
+        window.isSavingIncident = false;
         return false;
 
     }
