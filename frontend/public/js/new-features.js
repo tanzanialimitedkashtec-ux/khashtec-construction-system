@@ -777,11 +777,12 @@ async function loadTalentAcquisition() {
 
         const response = await window.apiService.get('/talent-acquisition');
         const requisitions = response || [];
+        var isMD = _isMDRole();
 
         let html = `
             <div class="card">
                 <h3>Talent Acquisition</h3>
-                <button onclick="showTalentForm()">+ New Requisition</button>
+                ${isMD ? '' : '<button onclick="showTalentForm()">+ New Requisition</button>'}
                 <div class="department-table-container" style="margin-top:20px;">
                     <table class="department-table">
                         <thead>
@@ -799,6 +800,14 @@ async function loadTalentAcquisition() {
         `;
 
         requisitions.forEach(req => {
+            var actionBtns = '<button onclick="viewTalent(' + req.id + ')">View</button>';
+            if (!isMD) {
+                actionBtns += ' <button onclick="editTalent(' + req.id + ')">Edit</button>';
+            }
+            if (isMD && req.status === 'Pending') {
+                actionBtns += ' <button onclick="approveTalentRequisition(' + req.id + ')" style="background:#10b981;color:#fff;border:none;padding:4px 8px;border-radius:4px;cursor:pointer;">Approve</button>';
+                actionBtns += ' <button onclick="rejectTalentRequisition(' + req.id + ')" style="background:#ef4444;color:#fff;border:none;padding:4px 8px;border-radius:4px;cursor:pointer;">Reject</button>';
+            }
             html += `
                 <tr>
                     <td>${req.requisition_number}</td>
@@ -807,10 +816,7 @@ async function loadTalentAcquisition() {
                     <td>${req.position_type}</td>
                     <td>${req.experience_level}</td>
                     <td>${req.status}</td>
-                    <td>
-                        <button onclick="viewTalent(${req.id})">View</button>
-                        <button onclick="editTalent(${req.id})">Edit</button>
-                    </td>
+                    <td>${actionBtns}</td>
                 </tr>
             `;
         });
@@ -1528,6 +1534,37 @@ function editNssf(id) { showNssfForm(id); }
 function editDiscipline(id) { showDisciplineForm(id); }
 function editResource(id) { showResourceForm(id); }
 function editTalent(id) { showTalentForm(id); }
+
+async function approveTalentRequisition(id) {
+    if (!confirm('Are you sure you want to approve this requisition?')) return;
+    try {
+        await window.apiService.request('/talent-acquisition/' + id + '/approve', {
+            method: 'PUT',
+            body: JSON.stringify({ approved_by: getCurrentUserId(), notes: 'Approved by MD' })
+        });
+        customAlert('Requisition approved successfully', 'Success', 'success');
+        loadTalentAcquisition();
+    } catch (error) {
+        console.error('Error approving requisition:', error);
+        customAlert('Error approving requisition', 'Error', 'error');
+    }
+}
+
+async function rejectTalentRequisition(id) {
+    if (!confirm('Are you sure you want to reject this requisition?')) return;
+    try {
+        await window.apiService.request('/talent-acquisition/' + id + '/reject', {
+            method: 'PUT',
+            body: JSON.stringify({ approved_by: getCurrentUserId(), notes: 'Rejected by MD' })
+        });
+        customAlert('Requisition rejected successfully', 'Success', 'success');
+        loadTalentAcquisition();
+    } catch (error) {
+        console.error('Error rejecting requisition:', error);
+        customAlert('Error rejecting requisition', 'Error', 'error');
+    }
+}
+
 function editPromotion(id) { showPromotionForm(id); }
 function editRisk(id) { showRiskForm(id); }
 
