@@ -1824,9 +1824,14 @@ function addMenu(name, func){
     let hasAccess = true;
     if (user && user.nav_access) {
         try {
-            const accessArr = typeof user.nav_access === 'string' ? JSON.parse(user.nav_access) : user.nav_access;
-            if (Array.isArray(accessArr) && accessArr.length > 0) {
-                hasAccess = accessArr.includes(name);
+            // If nav_access is a plain string like "All", treat it as full access
+            if (typeof user.nav_access === 'string' && !user.nav_access.trim().startsWith('[')) {
+                hasAccess = true; // plain string = full/all access
+            } else {
+                const accessArr = typeof user.nav_access === 'string' ? JSON.parse(user.nav_access) : user.nav_access;
+                if (Array.isArray(accessArr) && accessArr.length > 0) {
+                    hasAccess = accessArr.includes(name);
+                }
             }
         } catch(e) { console.error('Error parsing nav_access', e); }
     }
