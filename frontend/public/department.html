@@ -52029,7 +52029,7 @@ async function loadDriverRecords() {
 
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), 15000);
-        const apiUrl = (window.KashTecAPI ? window.KashTecAPI.baseUrl : window.location.origin) + '/api/drivers';
+        const apiUrl = window.location.origin + '/api/drivers';
         console.log('📡 [DEBUG] Fetching URL:', apiUrl);
 
         const fetchResponse = await fetch(apiUrl, {
@@ -56501,7 +56501,7 @@ async function loadSafetyFromAPI() {
 
                     // Try to get safety data from HSE work items first
 
-                    response = await fetch(`${KashTecAPI.baseUrl}/api/work/hse`, {
+                    response = await fetch(`${window.location.origin}/api/work/hse`, {
 
                         headers: {
 
@@ -56635,7 +56635,7 @@ async function loadSafetyFromAPI() {
 
                     try {
 
-                        response = await fetch(`${KashTecAPI.baseUrl}/api/work/site-reports`, {
+                        response = await fetch(`${window.location.origin}/api/work/site-reports`, {
 
                             headers: {
 
@@ -69450,7 +69450,7 @@ function saveSalaryStructure() {
 
     
 
-    fetch(`${window.KashTecAPI && window.KashTecAPI.baseUrl ? window.KashTecAPI.baseUrl : window.location.origin}/api/payroll/salary-structure`, {
+    fetch(`${window.location.origin}/api/payroll/salary-structure`, {
 
         method: 'POST',
 
@@ -69534,7 +69534,7 @@ function processPayroll() {
 
     
 
-    fetch(`${window.KashTecAPI && window.KashTecAPI.baseUrl ? window.KashTecAPI.baseUrl : window.location.origin}/api/payroll/process`, {
+    fetch(`${window.location.origin}/api/payroll/process`, {
 
         method: 'POST',
 
@@ -71673,7 +71673,7 @@ function generateIndividualPayslip() {
 
     console.log('📄 Generating payslip(s) for month:', month, 'employee:', employeeId || 'all');
 
-    fetch(`${window.KashTecAPI && window.KashTecAPI.baseUrl ? window.KashTecAPI.baseUrl : window.location.origin}/api/payroll/payslips/${encodeURIComponent(month)}`)
+    fetch(`${window.location.origin}/api/payroll/payslips/${encodeURIComponent(month)}`)
 
     .then(res => res.json())
 
@@ -71786,7 +71786,7 @@ function emailPayslips() {
 
     
 
-    fetch(`${window.KashTecAPI && window.KashTecAPI.baseUrl ? window.KashTecAPI.baseUrl : window.location.origin}/api/payroll/payslips/email`, {
+    fetch(`${window.location.origin}/api/payroll/payslips/email`, {
 
         method: 'POST',
 
@@ -71956,7 +71956,7 @@ function loadPayrollData() {
 }
 
 function loadEmployeePayments(baseUrl) {
-    if (!baseUrl) baseUrl = window.KashTecAPI && window.KashTecAPI.baseUrl ? window.KashTecAPI.baseUrl : window.location.origin;
+    if (!baseUrl) baseUrl = window.location.origin;
     fetch(baseUrl + '/api/payroll/employee-payments')
     .then(function(res) { return res.json(); })
     .then(function(data) {
@@ -102687,7 +102687,7 @@ async function loadMaterialsDashboardStats() {
 
     try {
 
-        const response = await fetch(`${KashTecAPI.baseUrl}/api/materials/dashboard`);
+        const response = await fetch(`${window.location.origin}/api/materials/dashboard`);
 
         const data = await response.json();
 
@@ -102801,7 +102801,7 @@ async function loadMaterialsInventoryTable() {
 
     try {
 
-        const response = await fetch(`${KashTecAPI.baseUrl}/api/materials/inventory`);
+        const response = await fetch(`${window.location.origin}/api/materials/inventory`);
 
         const data = await response.json();
 
@@ -102915,7 +102915,7 @@ async function searchMaterials() {
 
     try {
 
-        const response = await fetch(`${KashTecAPI.baseUrl}/api/materials/search?q=${encodeURIComponent(query)}`);
+        const response = await fetch(`${window.location.origin}/api/materials/search?q=${encodeURIComponent(query)}`);
 
         const data = await response.json();
 
@@ -103386,7 +103386,7 @@ function showMaterialsInForm() {
 
                     submitBtn.disabled = true;
 
-                    const response = await fetch(`${KashTecAPI.baseUrl}/api/materials/in`, {
+                    const response = await fetch(`${window.location.origin}/api/materials/in`, {
 
                         method: 'POST',
 
@@ -103836,7 +103836,7 @@ function showMaterialsOutForm() {
 
                     submitBtn.disabled = true;
 
-                    const response = await fetch(`${KashTecAPI.baseUrl}/api/materials/out`, {
+                    const response = await fetch(`${window.location.origin}/api/materials/out`, {
 
                         method: 'POST',
 
@@ -103890,7 +103890,7 @@ async function loadMaterialDropdown(selectId) {
 
     try {
 
-        const response = await fetch(`${KashTecAPI.baseUrl}/api/materials/inventory`);
+        const response = await fetch(`${window.location.origin}/api/materials/inventory`);
 
         const data = await response.json();
 
@@ -103977,7 +103977,7 @@ async function loadMaterialsInRecords() {
 
     try {
 
-        const response = await fetch(`${KashTecAPI.baseUrl}/api/materials/in`);
+        const response = await fetch(`${window.location.origin}/api/materials/in`);
 
         const data = await response.json();
 
@@ -104069,7 +104069,7 @@ async function loadMaterialsOutRecords() {
 
     try {
 
-        const response = await fetch(`${KashTecAPI.baseUrl}/api/materials/out`);
+        const response = await fetch(`${window.location.origin}/api/materials/out`);
 
         const data = await response.json();
 
@@ -104421,7 +104421,7 @@ function showAddMaterialForm() {
 
                     submitBtn.disabled = true;
 
-                    const response = await fetch(`${KashTecAPI.baseUrl}/api/materials/inventory`, {
+                    const response = await fetch(`${window.location.origin}/api/materials/inventory`, {
 
                         method: 'POST',
 
@@ -112094,7 +112094,7 @@ function confirmPayEmployee(e) {
         var btn = document.getElementById('payEmployeeBtn');
         if (btn) { btn.disabled = true; btn.textContent = 'Processing...'; }
 
-        var baseUrl = window.KashTecAPI && window.KashTecAPI.baseUrl ? window.KashTecAPI.baseUrl : window.location.origin;
+        var baseUrl = window.location.origin;
         fetch(baseUrl + '/api/payroll/employee-payments', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
