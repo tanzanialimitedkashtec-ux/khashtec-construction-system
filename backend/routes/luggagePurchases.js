@@ -1,3 +1,4 @@
+const notify = require('../utils/notify');
 const express = require('express');
 const router = express.Router();
 
@@ -391,6 +392,7 @@ router.post('/', async (req, res) => {
             const createdPurchaseResult = await db.execute('SELECT * FROM luggage_purchases WHERE id = ?', [result.insertId]);
             const createdPurchase = Array.isArray(createdPurchaseResult) ? createdPurchaseResult[0] : createdPurchaseResult;
             
+            notify('Luggage Purchase', 'Luggage purchase recorded: ' + (req.body.item_name || req.body.description || 'Item') + ' - Qty: ' + (req.body.quantity || '1') + ', Amount: ' + (req.body.amount || req.body.total_cost || '0'), 'info', 'MD', 'Real Estate Manager');
             res.status(201).json({
                 success: true,
                 message: 'Luggage purchase created successfully',

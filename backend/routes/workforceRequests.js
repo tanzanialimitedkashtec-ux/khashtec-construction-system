@@ -281,15 +281,13 @@ router.post('/', async (req, res) => {
             console.log('✅ Workforce request inserted successfully:', result);
 
             // Trigger targeted notification to HR department
-            await notify(
-                'New Workforce Request',
-                `A new workforce request (${requestId}) for project ${workforceProject} has been submitted and requires HR approval.`,
-                'info',
-                'hr', // targetRole
-                'Current User' // ideally req.session.user
-            );
+            notify('Workforce Request', 'New ' + requestType + ' workforce request for ' + (projectNames[workforceProject] || workforceProject) + ' - ' + workersNeeded + ' workers needed for ' + workDuration, 'info', 'HR', 'Project Manager');
+            // Also notify MD
+            notify('Workforce Request', 'New ' + requestType + ' workforce request for ' + (projectNames[workforceProject] || workforceProject) + ' - ' + workersNeeded + ' workers needed for ' + workDuration, 'info', 'MD', 'Project Manager');
             
             // Return success response
+            notify('Workforce Request', 'New workforce request for project #' + (req.body.project_id || req.body.projectId || 'unspecified') + ' - Role: ' + (req.body.role || req.body.position || 'Worker') + ' (' + (req.body.quantity || 1) + ' needed)', 'info', 'MD', 'Project Manager');
+        notify('Workforce Request', 'New workforce request for project #' + (req.body.project_id || req.body.projectId || 'unspecified') + ' - Role: ' + (req.body.role || req.body.position || 'Worker') + ' (' + (req.body.quantity || 1) + ' needed)', 'info', 'HR', 'Project Manager');
             res.status(201).json({
                 success: true,
                 message: 'Workforce request created successfully',
@@ -324,6 +322,8 @@ router.post('/', async (req, res) => {
                 'prj003': 'Road Infrastructure'
             };
             
+            notify('Workforce Request', 'New ' + requestType + ' workforce request for ' + (projectNames[workforceProject] || workforceProject) + ' - ' + workersNeeded + ' workers needed for ' + workDuration, 'info', 'HR', 'Project Manager');
+            notify('Workforce Request', 'New ' + requestType + ' workforce request for ' + (projectNames[workforceProject] || workforceProject) + ' - ' + workersNeeded + ' workers needed for ' + workDuration, 'info', 'MD', 'Project Manager');
             res.status(201).json({
                 success: true,
                 message: 'Workforce request created successfully (fallback mode)',
@@ -384,6 +384,8 @@ router.put('/:id', async (req, res) => {
             });
         }
         
+        notify('Workforce Request', 'Workforce request #' + requestId + ' status changed to "' + status + '"' + (approvedBy ? ' by ' + approvedBy : ''), status === 'approved' ? 'success' : 'info', 'MD', 'Project Manager');
+        notify('Workforce Request', 'Workforce request #' + requestId + ' status changed to "' + status + '"' + (approvedBy ? ' by ' + approvedBy : ''), status === 'approved' ? 'success' : 'info', 'HR', 'Project Manager');
         res.json({
             success: true,
             message: 'Workforce request updated successfully'
@@ -472,6 +474,8 @@ router.put('/:id/status', async (req, res) => {
         
         console.log(`✅ Workforce request ${id} status updated to ${status} via /workforce-requests/:id/status`);
         
+        notify('Workforce Request', 'Workforce request #' + id + ' status changed to "' + status + '"', status === 'approved' ? 'success' : status === 'rejected' ? 'warning' : 'info', 'MD', 'Project Manager');
+        notify('Workforce Request', 'Workforce request #' + id + ' status changed to "' + status + '"', status === 'approved' ? 'success' : status === 'rejected' ? 'warning' : 'info', 'HR', 'Project Manager');
         res.json({
             success: true,
             message: 'Workforce request status updated successfully',
@@ -508,6 +512,8 @@ router.delete('/:id', async (req, res) => {
             });
         }
         
+        notify('Workforce Request', 'Workforce request #' + requestId + ' has been deleted', 'warning', 'MD', 'Project Manager');
+        notify('Workforce Request', 'Workforce request #' + requestId + ' has been deleted', 'warning', 'HR', 'Project Manager');
         res.json({
             success: true,
             message: 'Workforce request deleted successfully'

@@ -1,3 +1,4 @@
+const notify = require('../utils/notify');
 const express = require('express');
 const router = express.Router();
 const db = require('../../database/config/database');
@@ -241,6 +242,7 @@ router.post('/', async (req, res) => {
 
         console.log('✅ Senior hiring request created successfully:', requestId);
 
+        notify('Senior Role Update', 'New senior hiring request: "' + candidateName + '" for ' + position + ' in ' + department + ' (Salary: ' + proposedSalary + ')', 'info', 'MD', 'HR Department');
         res.json({
             message: 'Senior hiring request created successfully',
             request_id: requestId,
@@ -288,6 +290,7 @@ router.post('/:id/approve', async (req, res) => {
         
         console.log('✅ Senior hiring approved successfully');
         
+        notify('Senior Role Update', 'Senior hiring request #' + req.params.id + ' has been APPROVED by ' + approvedBy, 'success', 'MD', 'HR Department');
         res.json({
             message: 'Senior hiring request approved successfully',
             request_id: req.params.id,
@@ -327,6 +330,7 @@ router.post('/:id/request-info', async (req, res) => {
         
         console.log('✅ Senior hiring info request created successfully');
         
+        notify('Senior Role Update', 'More info requested for senior hiring #' + req.params.id + ' by ' + requestedBy, 'info', 'MD', 'HR Department');
         res.json({
             message: 'Information requested successfully',
             request_id: req.params.id,
@@ -367,6 +371,7 @@ router.post('/:id/reject', async (req, res) => {
         
         console.log('✅ Senior hiring rejected successfully');
         
+        notify('Senior Role Update', 'Senior hiring request #' + req.params.id + ' has been REJECTED by ' + rejectedBy + '. Reason: ' + (rejectionReason || 'Not specified'), 'warning', 'MD', 'HR Department');
         res.json({
             message: 'Senior hiring request rejected successfully',
             request_id: req.params.id,

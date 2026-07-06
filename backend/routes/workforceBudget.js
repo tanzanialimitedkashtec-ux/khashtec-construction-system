@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const db = require('../../database/config/database');
+const notify = require('../utils/notify');
 
 console.log('?? Workforce budget routes loaded with database connection');
 
@@ -150,6 +151,8 @@ router.post('/', async (req, res) => {
         
         console.log(' Workforce budget created successfully:', budgetId);
         
+        notify('Workforce Budget', 'New workforce budget submitted for ' + department + ' - Total: TZS ' + total_budget + ', Period: ' + (budget_period || 'monthly') + ', By: ' + (submitted_by || 'Finance Manager'), 'info', 'MD', 'Project Manager');
+        notify('Workforce Budget', 'Workforce budget updated for project #' + (req.body.project_id || req.body.projectId || 'unspecified') + ' - Amount: TZS ' + Number(req.body.budget || req.body.amount || 0).toLocaleString(), 'info', 'MD', 'Project Manager');
         res.status(201).json({
             message: 'Workforce budget created successfully',
             budget_id: budgetId,
@@ -190,6 +193,7 @@ router.post('/:id/approve', async (req, res) => {
         
         console.log('✅ Workforce budget approved successfully');
         
+        notify('Workforce Budget', 'Workforce budget #' + req.params.id + ' has been approved by ' + approvedBy, 'success', 'MD', 'Project Manager');
         res.json({
             message: 'Workforce budget approved successfully',
             budget_id: req.params.id,
@@ -234,6 +238,7 @@ router.post('/:id/reject', async (req, res) => {
         
         console.log('✅ Workforce budget rejected successfully');
         
+        notify('Workforce Budget', 'Workforce budget #' + req.params.id + ' has been rejected by ' + rejectedBy + ' - Reason: ' + reason, 'warning', 'MD', 'Project Manager');
         res.json({
             message: 'Workforce budget rejected successfully',
             budget_id: req.params.id,
@@ -279,6 +284,7 @@ router.post('/:id/modify', async (req, res) => {
         
         console.log('✅ Workforce budget modification requested successfully');
         
+        notify('Workforce Budget', 'Modification requested for budget #' + req.params.id + ' by ' + requestedBy + ' - Request: ' + reason, 'info', 'MD', 'Project Manager');
         res.json({
             message: 'Workforce budget modification requested successfully',
             budget_id: req.params.id,
@@ -307,6 +313,7 @@ router.delete('/:id', async (req, res) => {
         }
 
         console.log('✅ Workforce budget deleted successfully');
+        notify('Workforce Budget', 'Workforce budget #' + id + ' has been deleted', 'warning', 'MD', 'Project Manager');
         res.json({ message: 'Budget record deleted successfully', id: parseInt(id) });
     } catch (error) {
         console.error('❌ Error deleting workforce budget:', error);

@@ -211,6 +211,7 @@ router.post('/', async (req, res) => {
         `, [result.insertId]);
         
         notify('New Project Created', name + ' - Client: ' + client + ', Budget: TZS ' + parseFloat(budget).toLocaleString(), 'success');
+        notify('Project Update', 'New project created: ' + (req.body.name || req.body.title || 'Project') + ' - Client: ' + (req.body.client || 'unspecified') + ', Budget: TZS ' + Number(req.body.budget || 0).toLocaleString(), 'success', 'MD', 'Project Manager');
         res.status(201).json({
             message: 'Project created successfully',
             project: {

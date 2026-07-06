@@ -141,6 +141,7 @@ router.post('/', async (req, res) => {
         console.log('✅ Client created successfully:', result);
         
         notify('New Client Registered', full_name + ' (' + safeClientType + ')' + (company_name ? ' - ' + company_name : ''), 'success');
+        notify('Client Update', 'New client registered: ' + (req.body.name || req.body.full_name || req.body.company || 'Client') + ' - Phone: ' + (req.body.phone || 'N/A'), 'info', 'MD', 'Real Estate Manager');
         res.status(201).json({
             message: 'Client registered successfully',
             clientId: client_id || `CLT${Date.now().toString().slice(-6)}`,

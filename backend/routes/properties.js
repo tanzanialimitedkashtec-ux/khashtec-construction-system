@@ -1,3 +1,4 @@
+const notify = require('../utils/notify');
 const express = require('express');
 const router = express.Router();
 
@@ -151,6 +152,7 @@ router.post('/', async (req, res) => {
             
             console.log('✅ Property inserted successfully:', result);
             
+            notify('Property Update', 'New property added: ' + (req.body.name || req.body.title || req.body.property_name || 'Property') + ' at ' + (req.body.location || req.body.address || 'unspecified'), 'info', 'MD', 'Real Estate Manager');
             res.status(201).json({
                 message: 'Property created successfully',
                 id: result.insertId,

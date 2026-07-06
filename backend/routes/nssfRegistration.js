@@ -1,3 +1,4 @@
+const notify = require('../utils/notify');
 const express = require('express');
 const router = express.Router();
 const db = require('../../database/config/database');
@@ -82,6 +83,7 @@ router.post('/', async (req, res) => {
         ]);
 
         const insertId = Array.isArray(result) ? result[0].insertId : result.insertId;
+        notify('NSSF Update', 'NSSF registration: ' + (req.body.employee_name || req.body.name || 'Employee') + ' - NSSF#: ' + (req.body.nssf_number || req.body.nssfNumber || 'N/A'), 'info', 'MD', 'Finance Manager');
         res.status(201).json({ id: insertId, registration_number, message: 'NSSF registration created successfully' });
     } catch (error) {
         console.error('Error creating NSSF registration:', error);

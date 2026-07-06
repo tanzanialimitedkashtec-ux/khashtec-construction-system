@@ -1,3 +1,4 @@
+const notify = require('../utils/notify');
 const express = require('express');
 const router = express.Router();
 
@@ -308,6 +309,7 @@ router.post('/', async (req, res) => {
             const createdYear = new Date().getFullYear();
             const saleIdStr = `SALE-${createdYear}-${String(newSaleId).padStart(3, '0')}`;
             
+            notify('Sales Update', 'New sale recorded: ' + (req.body.property_name || req.body.description || 'Sale') + ' - Amount: ' + (req.body.amount || req.body.price || '0'), 'success', 'MD', 'Real Estate Manager');
             res.status(201).json({
                 message: 'Sale recorded successfully',
                 id: newSaleId,

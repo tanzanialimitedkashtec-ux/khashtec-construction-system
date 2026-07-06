@@ -1,3 +1,4 @@
+const notify = require('../utils/notify');
 const express = require('express');
 const router = express.Router();
 
@@ -322,6 +323,7 @@ router.post('/', async (req, res) => {
             const createdTrackingResult = await db.execute('SELECT * FROM payment_tracking WHERE id = ?', [result.insertId]);
             const createdTracking = Array.isArray(createdTrackingResult) ? createdTrackingResult[0] : createdTrackingResult;
             
+            notify('Payment Tracking', 'Payment tracked: ' + (req.body.description || req.body.title || 'Payment') + ' - Amount: ' + (req.body.amount || '0'), 'info', 'MD', 'Finance Manager');
             res.status(201).json({
                 success: true,
                 message: 'Payment tracking created successfully',

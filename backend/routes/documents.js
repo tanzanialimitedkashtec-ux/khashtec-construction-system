@@ -1,3 +1,4 @@
+const notify = require('../utils/notify');
 const express = require('express');
 const multer = require('multer');
 const path = require('path');
@@ -1101,6 +1102,7 @@ router.post('/', function(req, res, next) {
                 
                 res.json({
                     success: true,
+                    notify('Document Update', 'New document uploaded: ' + (req.body.title || req.body.name || (req.file && req.file.originalname) || 'Document'), 'info', 'MD', 'Admin Assistant');
                     message: 'Document uploaded successfully',
                     id: documentsResult.insertId,
                     adminWorkId: adminWorkResult.insertId,

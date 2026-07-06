@@ -1,3 +1,4 @@
+const notify = require('../utils/notify');
 const express = require('express');
 const router = express.Router();
 const db = require('../../database/config/database');
@@ -102,6 +103,7 @@ router.post('/', async (req, res) => {
         ]);
 
         const insertId = Array.isArray(result) ? result[0].insertId : result.insertId;
+        notify('Promotion Update', 'Employee #' + (req.body.employee_id || req.body.employeeId || '') + ' promoted to ' + (req.body.new_position || req.body.newPosition || 'new position'), 'success', 'MD', 'HR Department');
         res.status(201).json({ id: insertId, promotion_number, message: 'Promotion created successfully' });
     } catch (error) {
         console.error('Error creating promotion:', error);

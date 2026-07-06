@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { sendAssignmentNotification } = require('../services/employeeEmailService');
+const notify = require('../utils/notify');
 
 console.log('📋 Tasks route file is being loaded...');
 
@@ -298,6 +299,8 @@ router.post('/', async (req, res) => {
                 console.error('Failed to lookup email or send notification:', emailErr);
             }
             
+            notify('Task Update', 'New task "' + task_name + '" assigned to ' + assigned_to + ' - Priority: ' + normalizedPriority + ', Due: ' + due_date, 'info', 'MD', 'Project Manager');
+            notify('Task Update', 'New task assigned: ' + (req.body.title || req.body.task_name || 'Task') + ' in project #' + (req.body.project_id || req.body.projectId || 'unspecified'), 'info', 'MD', 'Project Manager');
             res.status(201).json({
                 success: true,
                 message: 'Task created successfully',
@@ -422,6 +425,7 @@ router.put('/:id', async (req, res) => {
                 }
             }
             
+            notify('Task Update', 'Task #' + taskId + ' updated' + (updateData.task_status ? ' - Status: ' + updateData.task_status : '') + (updateData.assigned_to ? ' - Reassigned to: ' + updateData.assigned_to : ''), 'info', 'MD', 'Project Manager');
             res.json({
                 success: true,
                 message: 'Task updated successfully',
@@ -487,12 +491,14 @@ router.delete('/:id', async (req, res) => {
 
             console.log('✅ Task deleted successfully');
 
+            const deletedTaskName = (taskRows[0] && taskRows[0].task_name) || 'Task #' + taskId;
+            notify('Task Update', 'Task "' + deletedTaskName + '" (ID: ' + taskId + ') has been deleted', 'warning', 'MD', 'Project Manager');
             res.json({
                 success: true,
                 message: 'Task deleted successfully',
                 deleted_task: {
                     id: taskId,
-                    task_name: (taskRows[0] && taskRows[0].task_name) || `Task #${taskId}`
+                    task_name: deletedTaskName
                 }
             });
             

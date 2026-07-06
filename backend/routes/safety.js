@@ -312,7 +312,8 @@ router.post('/', async (req, res) => {
                 ]
             );
 
-            notify('Safety Record Updated', project_name + ' - Risk: ' + (risk_level || 'Medium') + ', Score: ' + (safety_score || 0), risk_level === 'High' ? 'warning' : 'info');
+            notify('Safety Update', 'Safety record for "' + project_name + '" updated - Risk: ' + (risk_level || 'Medium') + ', Score: ' + (safety_score || 0) + ', PPE Compliance: ' + (ppe_compliance || 0) + '%', risk_level === 'High' ? 'warning' : 'info', 'MD', 'HSE Department');
+            notify('Safety Update', 'New safety record: ' + (req.body.incident_type || req.body.type || req.body.title || 'Safety record') + ' at ' + (req.body.location || req.body.site || 'site'), 'warning', 'MD', 'HSE Department');
             res.status(201).json({
                 success: true,
                 message: 'Safety record saved successfully',
@@ -419,6 +420,7 @@ router.post('/initialize', async (req, res) => {
         }
 
         const count = await db.query(`SELECT COUNT(*) as count FROM project_safety`);
+        notify('Safety Update', 'Project safety table initialized with ' + count[0].count + ' records', 'info', 'MD', 'HSE Department');
         res.status(200).json({
             success: true,
             message: `project_safety table initialized with ${count[0].count} records`

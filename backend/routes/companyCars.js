@@ -1,3 +1,4 @@
+const notify = require('../utils/notify');
 const express = require('express');
 const router = express.Router();
 
@@ -308,6 +309,7 @@ router.post('/', async (req, res) => {
         // Handle different MySQL2 return formats
         const result = Array.isArray(resultResult) ? resultResult[0] : resultResult;
 
+        notify('Vehicle Update', 'New company car registered: ' + (req.body.make || '') + ' ' + (req.body.model || '') + ' - Plate: ' + (req.body.plate_number || req.body.plateNumber || 'N/A'), 'info', 'MD', 'Real Estate Manager');
         res.status(201).json({
             success: true,
             message: 'Company car registered successfully',

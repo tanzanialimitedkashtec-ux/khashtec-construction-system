@@ -1,3 +1,4 @@
+const notify = require('../utils/notify');
 const express = require('express');
 const router = express.Router();
 
@@ -340,6 +341,7 @@ router.post('/', async (req, res) => {
             WHERE tc.id = ?
         `, [result.insertId]);
 
+        notify('Transport Cost', 'New transport cost recorded: ' + (req.body.description || req.body.purpose || 'Transport') + ' - Amount: ' + (req.body.amount || req.body.cost || '0'), 'info', 'MD', 'Real Estate Manager');
         res.status(201).json({
             success: true,
             data: newRow[0],

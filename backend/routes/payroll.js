@@ -206,6 +206,7 @@ router.post('/salary-structure', async (req, res) => {
         `, [gross, employeeId, employeeId]);
 
         notify('Salary Structure Updated', 'Salary structure set for employee #' + employeeId + ' - Gross: TZS ' + gross.toLocaleString(), 'info');
+        notify('Payroll Update', 'Salary structure updated for employee #' + employeeId + ' - Gross: TZS ' + gross.toLocaleString(), 'info', 'MD', 'Finance Manager');
         res.json({ success: true, message: 'Salary structure saved successfully', grossSalary: gross });
     } catch (error) {
         console.error('❌ Error saving salary structure:', error.message);
@@ -340,6 +341,7 @@ router.post('/process', async (req, res) => {
         }
 
         notify('Payroll Processed', payrollMonth + ' payroll processed: ' + totalEmployees + ' employees, Net TZS ' + netPayment.toLocaleString(), 'success');
+        notify('Payroll Update', 'Payroll processed for ' + payrollMonth + ': ' + totalEmployees + ' employees, Net TZS ' + netPayment.toLocaleString(), 'success', 'MD', 'Finance Manager');
         res.json({
             success: true,
             message: 'Payroll processed successfully',
@@ -494,6 +496,7 @@ router.post('/employee-payments', async (req, res) => {
 
         var channelInfo = method === 'mpesa' ? ' via M-Pesa (' + mpesaPhone + ')' : method === 'nmb_bank' ? ' via NMB Bank' : ' via ' + method;
         notify('Employee Payment', (employeeName || 'Employee #' + employeeId) + ' paid TZS ' + parsedAmount.toLocaleString() + channelInfo, 'success');
+        notify('Payroll Update', 'Payment sent: ' + (employeeName || 'Employee #' + employeeId) + ' paid TZS ' + parsedAmount.toLocaleString() + channelInfo, 'success', 'MD', 'Finance Manager');
 
         // After INSERT succeeds, look up employee email and send notification
         try {

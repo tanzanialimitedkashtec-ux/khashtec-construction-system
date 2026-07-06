@@ -1,3 +1,4 @@
+const notify = require('../utils/notify');
 const express = require('express');
 const router = express.Router();
 const db = require('../../database/config/database');
@@ -198,6 +199,8 @@ router.post('/', async (req, res) => {
             console.error('\u274C Failed to create finance notification for payment request:', notificationError.message);
         }
         
+        notify('Payment Update', 'New payment request ' + trackingNumber + ' created for ' + employeeName + ' (Amount: ' + currency + ' ' + amount + ')', 'info', 'MD', 'Finance Manager');
+
         res.json({
             success: true,
             message: 'Payment request created successfully',
@@ -410,6 +413,10 @@ router.put('/:id/status', async (req, res) => {
         
         console.log(`✅ Payment ${id} status updated to:`, status);
         
+        const notifyType = (status === 'approved' || status === 'processed' || status === 'paid') ? 'success' : (status === 'rejected' || status === 'cancelled') ? 'error' : 'info';
+        notify('Payment Update', 'Payment request ' + currentPayment[0].tracking_number + ' status changed to ' + status, notifyType, 'MD', 'Finance Manager');
+        notify('Payment Update', 'Payment request ' + currentPayment[0].tracking_number + ' status changed to ' + status, notifyType, 'HR', 'Finance Manager');
+
         res.json({
             success: true,
             message: `Payment status updated to ${status}`,

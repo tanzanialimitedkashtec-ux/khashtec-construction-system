@@ -577,6 +577,13 @@ router.post('/', (req, res, next) => {
                     'hr',
                     'System'
                 );
+                await notify(
+                    'HR Update',
+                    `New employee "${fullName}" registered in ${department} department as ${finalJobCategory}`,
+                    'info',
+                    'MD',
+                    'HR Department'
+                );
             } catch (notifErr) {
                 console.warn('⚠️ Could not create notification:', notifErr.message);
             }
@@ -987,6 +994,7 @@ router.put('/:id', async (req, res) => {
         console.log('✅ Employee update completed. Returning:', returnedEmployee ? JSON.stringify(Object.keys(returnedEmployee)) : 'null');
         
         notify('Employee Updated', 'Employee #' + req.params.id + ' updated' + (fullName ? ' - ' + fullName : ''), 'info');
+        notify('HR Update', 'Employee record updated: ' + (fullName || 'Employee #' + req.params.id) + (department ? ' in ' + department : ''), 'info', 'MD', 'HR Department');
         res.json({
             message: 'Employee updated successfully',
             employee: returnedEmployee
@@ -1083,6 +1091,7 @@ router.delete('/:id', async (req, res) => {
         }
         
         notify('Employee Deleted', 'Employee #' + req.params.id + ' removed from system', 'warning');
+        notify('HR Update', 'Employee #' + req.params.id + ' has been deleted from the system', 'warning', 'MD', 'HR Department');
         res.json({ message: 'Employee deleted successfully' });
         
     } catch (error) {

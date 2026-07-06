@@ -1,3 +1,4 @@
+const notify = require('../utils/notify');
 const express = require('express');
 const router = express.Router();
 const db = require('../../database/config/database');
@@ -88,6 +89,7 @@ router.post('/', async (req, res) => {
         ]);
 
         const insertId = Array.isArray(result) ? result[0].insertId : result.insertId;
+        notify('Discipline Update', 'Discipline record created for employee #' + (req.body.employee_id || req.body.employeeId) + ': ' + (req.body.violation_type || req.body.type || 'Disciplinary action'), 'warning', 'MD', 'HR Department');
         res.status(201).json({ id: insertId, case_number, message: 'Discipline case created successfully' });
     } catch (error) {
         console.error('Error creating discipline case:', error);

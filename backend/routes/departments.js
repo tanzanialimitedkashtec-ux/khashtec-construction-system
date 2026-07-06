@@ -1,3 +1,4 @@
+const notify = require('../utils/notify');
 const express = require('express');
 const router = express.Router();
 
@@ -146,7 +147,8 @@ router.post('/', async (req, res) => {
             const result = await db.execute(insert, values);
             const rows = Array.isArray(result) ? result[0] : result;
 
-            return res.status(201).json({
+            return notify('Department Update', 'New department created: ' + (req.body.name || req.body.department_name || 'Department'), 'info', 'MD', 'Director of Administration');
+            res.status(201).json({
                 success: true,
                 message: 'Department created successfully',
                 id: rows.insertId,

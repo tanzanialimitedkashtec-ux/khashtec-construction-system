@@ -262,6 +262,7 @@ router.post('/', async (req, res) => {
         console.log('✅ Attendance record saved successfully:', result);
 
         notify('Attendance Marked', employee_name + ' - ' + attendance_status + ' on ' + attendance_date, 'info');
+        notify('Attendance Update', 'Attendance marked for employee #' + (req.body.employee_id || req.body.employeeId) + ' - ' + (req.body.status || 'present') + ' on ' + (req.body.date || new Date().toISOString().split('T')[0]), 'info', 'MD', 'HR Department');
         res.status(201).json({
             success: true,
             message: 'Attendance marked successfully',

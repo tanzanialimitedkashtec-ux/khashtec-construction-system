@@ -1,3 +1,4 @@
+const notify = require('../utils/notify');
 const express = require('express');
 
 const router = express.Router();
@@ -206,6 +207,7 @@ router.post('/teams', async (req, res) => {
 
 
 
+        notify('Team Management', 'New team "' + name + '" created in ' + (department || 'unspecified') + ' department', 'info', 'MD', 'HR Department');
         res.json({ success: true, data: createdRows[0] });
 
     } catch (error) {
@@ -280,6 +282,7 @@ router.put('/teams/:id', async (req, res) => {
 
         const [updatedRows] = await db.execute('SELECT * FROM teams WHERE id = ?', [id]);
 
+        notify('Team Management', 'Team "' + (name || 'ID:' + id) + '" updated' + (department ? ' in ' + department + ' department' : ''), 'info', 'MD', 'HR Department');
         res.json({ success: true, data: updatedRows[0] });
 
     } catch (error) {
@@ -314,6 +317,7 @@ router.delete('/teams/:id', async (req, res) => {
 
 
 
+        notify('Team Management', 'Team ID:' + id + ' has been deleted', 'warning', 'MD', 'HR Department');
         res.json({ success: true, message: 'Team deleted successfully' });
 
     } catch (error) {
@@ -432,6 +436,7 @@ router.post('/teams/:id/members', async (req, res) => {
 
         const [createdRows] = await db.execute('SELECT * FROM team_members WHERE id = ?', [result.insertId]);
 
+        notify('Team Management', 'New member (Employee #' + employeeId + ') added to team #' + id + (memberRole ? ' as ' + memberRole : ''), 'info', 'MD', 'HR Department');
         res.json({ success: true, data: createdRows[0] });
 
     } catch (error) {
@@ -488,6 +493,7 @@ router.put('/teams/:id/members/:memberId', async (req, res) => {
 
         const [updatedRows] = await db.execute('SELECT * FROM team_members WHERE id = ?', [memberId]);
 
+        notify('Team Management', 'Team member #' + memberId + ' role updated' + (memberRole ? ' to ' + memberRole : '') + ' in team #' + id, 'info', 'MD', 'HR Department');
         res.json({ success: true, data: updatedRows[0] });
 
     } catch (error) {
@@ -522,6 +528,7 @@ router.delete('/teams/:id/members/:memberId', async (req, res) => {
 
 
 
+        notify('Team Management', 'Member #' + memberId + ' removed from team #' + id, 'warning', 'MD', 'HR Department');
         res.json({ success: true, message: 'Team member removed successfully' });
 
     } catch (error) {

@@ -1,3 +1,4 @@
+const notify = require('../utils/notify');
 const express = require('express');
 const router = express.Router();
 
@@ -253,6 +254,7 @@ router.post('/', async (req, res) => {
         const createdRows = await db.execute('SELECT * FROM luggage_campaigns WHERE id = ?', [insertId]);
 
         console.log('✅ Campaign created, ID:', insertId);
+        notify('Luggage Campaign', 'New luggage campaign: ' + (req.body.name || req.body.title || req.body.campaign_name || 'Campaign'), 'info', 'MD', 'Real Estate Manager');
         res.status(201).json({
             success: true,
             message: 'Luggage campaign created successfully',

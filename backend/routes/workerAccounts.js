@@ -492,6 +492,7 @@ router.post('/', upload.fields([
         notify('New Worker Account', fullName + ' (' + finalEmployeeId + ') - ' + department, 'success');
 
         res.status(201).json({
+            notify('Worker Account', 'New worker account created for ' + (req.body.fullName || req.body.full_name || req.body.name || 'unknown') + ' in ' + (req.body.department || 'unspecified') + ' department', 'info', 'MD', 'HR Department');
             message: 'Worker account created successfully',
             worker: {
                 id: insertId,

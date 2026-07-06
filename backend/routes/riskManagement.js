@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const db = require('../../database/config/database');
+const notify = require('../utils/notify');
 
 // Get all risks
 router.get('/', async (req, res) => {
@@ -101,6 +102,8 @@ router.post('/', async (req, res) => {
         ]);
 
         const insertId = Array.isArray(result) ? result[0].insertId : result.insertId;
+        notify('Risk Management', 'New risk "' + risk_title + '" identified - Category: ' + risk_category + ', Probability: ' + probability + ', Impact: ' + impact, 'warning', 'MD', 'HSE Department');
+        notify('Risk Management', 'New risk assessment: ' + (req.body.risk_type || req.body.type || req.body.title || 'Risk assessment') + ' - Severity: ' + (req.body.severity || req.body.risk_level || 'unspecified'), 'warning', 'MD', 'HSE Department');
         res.status(201).json({ id: insertId, risk_number, message: 'Risk created successfully' });
     } catch (error) {
         console.error('Error creating risk:', error);
@@ -161,6 +164,7 @@ router.put('/:id', async (req, res) => {
             req.params.id
         ]);
 
+        notify('Risk Management', 'Risk "' + risk_title + '" updated - Status: ' + (status || 'Open') + ', Probability: ' + probability + ', Impact: ' + impact, 'info', 'MD', 'HSE Department');
         res.json({ message: 'Risk updated successfully' });
     } catch (error) {
         console.error('Error updating risk:', error);
@@ -172,6 +176,7 @@ router.put('/:id', async (req, res) => {
 router.delete('/:id', async (req, res) => {
     try {
         await db.execute('DELETE FROM risk_management WHERE id = ?', [req.params.id]);
+        notify('Risk Management', 'Risk record #' + req.params.id + ' has been deleted from the register', 'warning', 'MD', 'HSE Department');
         res.json({ message: 'Risk deleted successfully' });
     } catch (error) {
         console.error('Error deleting risk:', error);
@@ -202,6 +207,7 @@ router.put('/:id/mitigate', async (req, res) => {
             req.params.id
         ]);
 
+        notify('Risk Management', 'Mitigation started for risk #' + req.params.id + (mitigation_strategy ? ' - Strategy: ' + mitigation_strategy : ''), 'info', 'MD', 'HSE Department');
         res.json({ message: 'Risk mitigation started successfully' });
     } catch (error) {
         console.error('Error starting risk mitigation:', error);
@@ -228,6 +234,7 @@ router.put('/:id/mitigated', async (req, res) => {
             req.params.id
         ]);
 
+        notify('Risk Management', 'Risk #' + req.params.id + ' has been marked as mitigated' + (likelihood_after_mitigation ? ' - Residual likelihood: ' + likelihood_after_mitigation : ''), 'success', 'MD', 'HSE Department');
         res.json({ message: 'Risk marked as mitigated successfully' });
     } catch (error) {
         console.error('Error marking risk as mitigated:', error);
@@ -244,6 +251,7 @@ router.put('/:id/close', async (req, res) => {
             UPDATE risk_management SET status = 'Closed', notes = ? WHERE id = ?
         `, [notes || null, req.params.id]);
 
+        notify('Risk Management', 'Risk #' + req.params.id + ' has been closed', 'success', 'MD', 'HSE Department');
         res.json({ message: 'Risk closed successfully' });
     } catch (error) {
         console.error('Error closing risk:', error);
@@ -260,6 +268,7 @@ router.put('/:id/accept', async (req, res) => {
             UPDATE risk_management SET status = 'Accepted', notes = ? WHERE id = ?
         `, [notes || null, req.params.id]);
 
+        notify('Risk Management', 'Risk #' + req.params.id + ' has been accepted', 'info', 'MD', 'HSE Department');
         res.json({ message: 'Risk accepted successfully' });
     } catch (error) {
         console.error('Error accepting risk:', error);
@@ -276,6 +285,7 @@ router.put('/:id/review', async (req, res) => {
             UPDATE risk_management SET review_date = ?, notes = ? WHERE id = ?
         `, [review_date, notes || null, req.params.id]);
 
+        notify('Risk Management', 'Review scheduled for risk #' + req.params.id + ' on ' + review_date, 'info', 'MD', 'HSE Department');
         res.json({ message: 'Risk review scheduled successfully' });
     } catch (error) {
         console.error('Error scheduling risk review:', error);

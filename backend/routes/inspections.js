@@ -1,5 +1,6 @@
 const express = require('express');
 const router = express.Router();
+const notify = require('../utils/notify');
 
 console.log('🔍 Inspections route file is being loaded...');
 
@@ -410,6 +411,8 @@ router.post('/', async (req, res) => {
             
             const createdInspection = Array.isArray(createdInspectionResult) ? createdInspectionResult[0] : createdInspectionResult;
             
+            notify('HSE Inspection', 'New ' + inspection_type + ' inspection created by ' + inspector_name + ' on ' + inspection_date + ' (Risk: ' + (risk_level || 'Medium') + ')', 'info', 'MD', 'HSE Department');
+            notify('HSE Inspection', 'New inspection report: ' + (req.body.inspection_type || req.body.type || req.body.title || 'Inspection') + ' at ' + (req.body.location || req.body.site || 'site'), 'info', 'MD', 'HSE Department');
             res.status(201).json({
                 success: true,
                 message: 'Inspection created successfully',
@@ -423,6 +426,7 @@ router.post('/', async (req, res) => {
             // Fallback to mock inspection creation
             const inspectionId = `INS${Date.now().toString().slice(-6)}`;
             
+            notify('HSE Inspection', 'New ' + inspection_type + ' inspection created by ' + inspector_name + ' on ' + inspection_date + ' (Risk: ' + (risk_level || 'Medium') + ')', 'info', 'MD', 'HSE Department');
             res.status(201).json({
                 success: true,
                 message: 'Inspection created successfully (mock)',
@@ -503,6 +507,7 @@ router.put('/:id', async (req, res) => {
             
             console.log('✅ Inspection updated successfully:', result);
             
+            notify('HSE Inspection', 'Inspection #' + inspectionId + ' updated' + (updateData.inspection_status ? ' - Status: ' + updateData.inspection_status : '') + (updateData.inspection_type ? ' - Type: ' + updateData.inspection_type : ''), 'info', 'MD', 'HSE Department');
             res.json({
                 success: true,
                 message: 'Inspection updated successfully',
@@ -513,6 +518,7 @@ router.put('/:id', async (req, res) => {
             console.error('❌ Database error, using mock update:', dbError);
             
             // Fallback to mock update
+            notify('HSE Inspection', 'Inspection #' + inspectionId + ' updated' + (updateData.inspection_status ? ' - Status: ' + updateData.inspection_status : '') + (updateData.inspection_type ? ' - Type: ' + updateData.inspection_type : ''), 'info', 'MD', 'HSE Department');
             res.json({
                 success: true,
                 message: 'Inspection updated successfully (mock)',
@@ -558,6 +564,7 @@ router.delete('/:id', async (req, res) => {
             
             console.log('✅ Inspection deleted successfully');
             
+            notify('HSE Inspection', inspection_type + ' inspection #' + inspectionId + ' has been deleted', 'warning', 'MD', 'HSE Department');
             res.json({
                 success: true,
                 message: 'Inspection deleted successfully',
@@ -571,6 +578,7 @@ router.delete('/:id', async (req, res) => {
             console.error('❌ Database error, using mock delete:', dbError);
             
             // Fallback to mock delete
+            notify('HSE Inspection', 'Inspection #' + inspectionId + ' has been deleted', 'warning', 'MD', 'HSE Department');
             res.json({
                 success: true,
                 message: 'Inspection deleted successfully (mock)',

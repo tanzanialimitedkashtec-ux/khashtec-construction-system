@@ -144,6 +144,7 @@ router.post('/budget', async (req, res) => {
         );
 
         notify('Budget Created', department + ' budget for ' + period + ': TZS ' + Number(totalBudget).toLocaleString(), 'info');
+        notify('Finance Update', department + ' department budget for ' + period + ' created: TZS ' + Number(totalBudget).toLocaleString(), 'info', 'MD', 'Finance Manager');
         res.status(201).json({
             message: 'Budget created successfully',
             work_id: result.insertId,
@@ -299,6 +300,7 @@ router.post('/expense', upload.single('receipt'), async (req, res) => {
         }, 'created').catch(err => console.error('Expense email error:', err.message));
 
         notify('Expense Submitted', category + ' expense: TZS ' + Number(amount).toLocaleString() + ' - ' + description, 'info');
+        notify('Finance Update', category + ' expense submitted: TZS ' + Number(amount).toLocaleString() + ' - ' + description, 'info', 'MD', 'Finance Manager');
         res.status(201).json({
             message: 'Expense submitted successfully',
             transaction_id: txRes.insertId,
@@ -534,6 +536,7 @@ router.post('/invoice', async (req, res) => {
         }, 'created').catch(err => console.error('⚠️ Email send error:', err.message));
 
         notify('New Invoice', invoice_number + ' from ' + vendor_name + ': TZS ' + Number(amount).toLocaleString(), 'info');
+        notify('Finance Update', 'New invoice ' + invoice_number + ' from ' + vendor_name + ' for TZS ' + Number(amount).toLocaleString(), 'info', 'MD', 'Finance Manager');
         res.status(201).json({
             message: 'Invoice created successfully',
             work_id: result.insertId,

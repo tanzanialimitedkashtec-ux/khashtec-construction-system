@@ -1,3 +1,4 @@
+const notify = require('../utils/notify');
 const express = require('express');
 const router = express.Router();
 const db = require('../../database/config/database');
@@ -101,6 +102,7 @@ router.post('/', async (req, res) => {
         ]);
 
         const insertId = Array.isArray(result) ? result[0].insertId : result.insertId;
+        notify('Talent Acquisition', 'New recruitment posting: ' + (req.body.position || req.body.title || 'New position') + ' in ' + (req.body.department || 'unspecified') + ' department', 'info', 'MD', 'HR Department');
         res.status(201).json({ id: insertId, requisition_number, message: 'Talent acquisition requisition created successfully' });
     } catch (error) {
         console.error('Error creating talent acquisition requisition:', error);

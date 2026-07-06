@@ -1,3 +1,4 @@
+const notify = require('../utils/notify');
 const express = require('express');
 const router = express.Router();
 const fs = require('fs');
@@ -409,6 +410,7 @@ router.post('/', async (req, res) => {
         
         console.log('✅ Driver registered successfully:', result.insertId);
         
+        notify('Driver Update', 'New driver registered: ' + (req.body.full_name || req.body.name || req.body.fullName || 'Driver') + ' - License: ' + (req.body.license_number || req.body.licenseNumber || 'N/A'), 'info', 'MD', 'Real Estate Manager');
         res.status(201).json({
             success: true,
             message: 'Driver registered successfully',
