@@ -58100,51 +58100,7 @@ function filterSafetyProjects() {
 
                 allButtons.forEach((button, index) => {
 
-                    console.log(`🔘 Overriding button ${index + 1}`);
-
-                    button.addEventListener('click', function(clickEvent) {
-
-                        console.log('🔘 Button clicked - PREVENTING default!');
-
-                        clickEvent.preventDefault();
-
-                        clickEvent.stopPropagation();
-
-                        clickEvent.stopImmediatePropagation();
-
-                        
-
-                        // Call save function
-
-                        saveIncidentReport();
-
-                        return false;
-
-                    }, true);
-
-                    
-
-                    // Override onclick if it exists
-
-                    if (button.onclick) {
-
-                        const originalOnclick = button.onclick;
-
-                        button.onclick = function(e) {
-
-                            console.log('🔘 Button onclick overridden');
-
-                            e.preventDefault();
-
-                            e.stopPropagation();
-
-                            saveIncidentReport();
-
-                            return false;
-
-                        };
-
-                    }
+                    console.log(`🔘 Overriding button ${index + 1} - Skipped to allow native handlers`);
 
                 });
 
@@ -58252,25 +58208,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
             console.log(`🔘 Adding protection to button ${index + 1}`);
 
-            button.addEventListener('click', function(event) {
-
-                console.log('🔘 Submit button clicked - PREVENTING!');
-
-                event.preventDefault();
-
-                event.stopPropagation();
-
-                event.stopImmediatePropagation();
-
-                
-
-                // Call the save function directly
-
-                saveIncidentReport();
-
-                return false;
-
-            }, true);
+            // Removed aggressive capture listener to prevent intercepting "Clear Form" and "Close Form" buttons
 
         });
 
@@ -58288,76 +58226,11 @@ document.addEventListener('DOMContentLoaded', function() {
 
 
 
-// Also add a global form submission catcher
-
-window.addEventListener('submit', function(event) {
-
-    if (event.target && event.target.id === 'incidentForm') {
-
-        console.log('🌐 Global form submit catcher - PREVENTING!');
-
-        event.preventDefault();
-
-        event.stopPropagation();
-
-        event.stopImmediatePropagation();
-
-        return false;
-
-    }
-
-}, true); // Use capture phase
+// Global form submission catcher disabled to allow native handlers
 
 
 
-// Global click catcher for any form-related clicks
-
-window.addEventListener('click', function(event) {
-
-    const target = event.target;
-
-    const form = target.closest('#incidentForm');
-
-    
-
-    if (form && (target.tagName === 'BUTTON' || target.type === 'submit')) {
-
-        // Check if the button has its own onclick handler (like submitIncidentToDatabase)
-        const onclickAttr = target.getAttribute('onclick');
-        if (onclickAttr && (onclickAttr.includes('submitIncidentToDatabase') || onclickAttr.includes('clearIncidentForm') || onclickAttr.includes('toggleIncidentForm'))) {
-            console.log('🌐 Global click catcher - allowing button onclick handler:', onclickAttr);
-            return; // Let the button's own onclick handle it
-        }
-
-        console.log('🌐 Global click catcher - PREVENTING form submission!');
-
-        event.preventDefault();
-
-        event.stopPropagation();
-
-        event.stopImmediatePropagation();
-
-        
-
-        // Guard against double-click
-
-        if (window.isSavingIncident) {
-
-            console.log('⚠️ Global click catcher: save in progress, ignoring');
-
-            return false;
-
-        }
-
-        // Call save function
-
-        saveIncidentReport();
-
-        return false;
-
-    }
-
-}, true);
+// Global click catcher disabled to allow native handlers
 
 
 
