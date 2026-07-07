@@ -25278,7 +25278,7 @@ function loadMenu(){
             "Review Employee Count", "Approve Workforce Budget", "Create Senior Hiring Request",
             "Talent Acquisition", "Team Management", "Track Attendance", "Promotions",
             "Discipline Monitoring", "Suspend/Terminate Employment", "Manage Policies",
-            "Payment Management"
+            "Payment Management", "Upload Safety Policies"
         ],
         "PROJECT": [
             "Create New Project", "Update Project Progress", "Assign Tasks",
@@ -25303,12 +25303,12 @@ function loadMenu(){
             "Manage Leave & Contracts", "Approve Invoices", "Audits",
             "Document Management", "Office Portal", "Tax", "View Suggestions",
             "Procurement Sale", "Talent Acquisition",
-            "Approve Violation", "Approve Workforce Budget"
+            "Approve Violation", "Approve Workforce Budget", "Approve Recruitment Policies"
         ],
         "HSE": [
             "Compliance Management", "Manage Policies", "Record Incident Reports",
             "Track PPE Issuance", "PPE Inventory", "Mark Safety Violations", "Upload Inspection Reports",
-            "Risk Management", "View Project Safety Status", "Compliance"
+            "Risk Management", "View Project Safety Status", "Compliance", "Upload Safety Policies"
         ],
         "FINANCE": [
             "Financial Management", "Financial Reporting", "Budgeting", "Expense Control",
@@ -100413,6 +100413,8 @@ const roleMenus = {
 
             'Approve Workforce Budget',
 
+            'Approve Recruitment Policies',
+
             'Record Incident Reports',
 
             'Record Toolbox Meetings',
@@ -100467,6 +100469,8 @@ const roleMenus = {
 
             'Approve Workforce Budget',
 
+            'Upload Safety Policies',
+
             'Upload Documents',
 
             'Edit Documents',
@@ -100506,6 +100510,8 @@ const roleMenus = {
             'Manage Policies',
 
             'Approve Workforce Budget',
+
+            'Upload Safety Policies',
 
             'Upload Documents',
 
@@ -100553,7 +100559,9 @@ const roleMenus = {
 
             'Approve Senior Staff Hiring',
 
-            'Approve Workforce Budget'
+            'Approve Workforce Budget',
+
+            'Upload Safety Policies'
 
         ]
 
@@ -100848,6 +100856,18 @@ function handleMenuClick(menuItem) {
             case 'Approve Workforce Budget':
 
                 approveWorkforceBudget();
+
+                break;
+
+            case 'Upload Safety Policies':
+
+                uploadSafetyPolicies();
+
+                break;
+
+            case 'Approve Recruitment Policies':
+
+                approveRecruitmentPolicies();
 
                 break;
 

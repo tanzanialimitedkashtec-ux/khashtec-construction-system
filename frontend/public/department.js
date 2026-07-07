@@ -71024,6 +71024,8 @@ const roleMenus = {
 
             'Approve Workforce Budget',
 
+            'Approve Recruitment Policies',
+
             'Record Incident Reports',
 
             'Record Toolbox Meetings',
@@ -71076,6 +71078,8 @@ const roleMenus = {
 
             'Approve Workforce Budget',
 
+            'Upload Safety Policies',
+
             'Upload Documents',
 
             'Edit Documents',
@@ -71115,6 +71119,8 @@ const roleMenus = {
             'Manage Policies',
 
             'Approve Workforce Budget',
+
+            'Upload Safety Policies',
 
             'Upload Documents',
 
@@ -71162,7 +71168,9 @@ const roleMenus = {
 
             'Approve Senior Staff Hiring',
 
-            'Approve Workforce Budget'
+            'Approve Workforce Budget',
+
+            'Upload Safety Policies'
 
         ]
 
