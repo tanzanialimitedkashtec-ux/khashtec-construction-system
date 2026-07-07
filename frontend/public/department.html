@@ -36710,6 +36710,32 @@ function clearPpeForm() {
 
 // Toggle violation form visibility
 
+// ===== Role-based visibility for violation section =====
+function applyViolationRoleVisibility() {
+    const role = (typeof getCurrentUserRole === 'function') ? getCurrentUserRole() : null;
+    const isMD = role === 'MD' || role === 'Managing Director';
+    const isHSE = role === 'HSE' || role === 'hse maneger' || role === 'HSE Manager';
+
+    // MD should NOT see the Record New Violation button & form
+    const toggleBtn = document.getElementById('toggleViolationFormBtn');
+    const formContainer = document.getElementById('violationFormContainer');
+    if (isMD) {
+        if (toggleBtn) toggleBtn.style.display = 'none';
+        if (formContainer) { formContainer.style.display = 'none'; formContainer.classList.remove('show'); }
+    }
+
+    // HSE should NOT see the Actions column header (approve/reject is MD only)
+    if (isHSE) {
+        const actionsHeader = document.getElementById('violationActionsHeader');
+        if (actionsHeader) actionsHeader.style.display = 'none';
+    }
+}
+
+// Run role visibility after a short delay to ensure role is loaded
+document.addEventListener('DOMContentLoaded', function() {
+    setTimeout(applyViolationRoleVisibility, 1500);
+});
+
 function toggleViolationForm() {
 
     const formContainer = document.getElementById('violationFormContainer');
@@ -52827,6 +52853,8 @@ function markSafetyViolations(){
 
                 </button>
 
+                <!-- MD role: hide Record New Violation button via JS -->
+
             </div>
 
             
@@ -53124,7 +53152,7 @@ function markSafetyViolations(){
 
                                 <th>Reported By</th>
 
-                                <th>Actions</th>
+                                <th id="violationActionsHeader">Actions</th>
 
                             </tr>
 
@@ -54275,16 +54303,20 @@ function displayViolations(violations) {
 
                 </td>
 
-                <td>
-
-                    <div class="violation-actions">
-
-                        <button class="action-btn approve" onclick="approveViolation('${violation.id}')" title="Approve Violation" style="background:#28a745;color:white;">✅</button>
-                        <button class="action-btn reject" onclick="rejectViolation('${violation.id}')" title="Reject Violation" style="background:#dc3545;color:white;">❌</button>
-
-                    </div>
-
-                </td>
+                ${(function(){
+                    const role = (typeof getCurrentUserRole === 'function') ? getCurrentUserRole() : null;
+                    const isMD = role === 'MD' || role === 'Managing Director';
+                    if (isMD) {
+                        return `<td>
+                            <div class="violation-actions">
+                                <button class="action-btn approve" onclick="approveViolation('${violation.id}')" title="Approve Violation" style="background:#28a745;color:white;">✅</button>
+                                <button class="action-btn reject" onclick="rejectViolation('${violation.id}')" title="Reject Violation" style="background:#dc3545;color:white;">❌</button>
+                            </div>
+                        </td>`;
+                    } else {
+                        return `<td><span style="color:#999;font-style:italic;">View Only</span></td>`;
+                    }
+                })()
 
             </tr>
 
