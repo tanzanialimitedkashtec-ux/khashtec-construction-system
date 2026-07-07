@@ -25302,7 +25302,8 @@ function loadMenu(){
             "Manage Policies", "Approve Senior Staff Hiring", "User Account Management", "Access Management",
             "Manage Leave & Contracts", "Approve Invoices", "Audits",
             "Document Management", "Office Portal", "Tax", "View Suggestions",
-            "Procurement Sale", "Talent Acquisition"
+            "Procurement Sale", "Talent Acquisition",
+            "Approve Violation", "Approve Workforce Requests"
         ],
         "HSE": [
             "Compliance Management", "Manage Policies", "Record Incident Reports",
@@ -100407,6 +100408,10 @@ const roleMenus = {
 
             'Approve Senior Staff Hiring',
 
+            'Approve Violation',
+
+            'Approve Workforce Requests',
+
             'Approve Workforce Budget',
 
             'Record Incident Reports',
@@ -100832,6 +100837,18 @@ function handleMenuClick(menuItem) {
             case 'View Invoices':
 
                 showViewInvoices();
+
+                break;
+
+            case 'Approve Violation':
+
+                markSafetyViolations();
+
+                break;
+
+            case 'Approve Workforce Budget':
+
+                approveWorkforceBudget();
 
                 break;
 

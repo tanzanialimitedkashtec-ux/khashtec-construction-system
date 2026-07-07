@@ -71032,6 +71032,8 @@ const roleMenus = {
 
             'Mark Safety Violations',
 
+            'Approve Violation',
+
             'Upload Inspection Reports',
 
             'View Project Safety Status',
@@ -71433,6 +71435,18 @@ function handleMenuClick(menuItem) {
             case 'Materials Management':
 
                 showMaterialsDashboard();
+
+                break;
+
+            case 'Approve Violation':
+
+                markSafetyViolations();
+
+                break;
+
+            case 'Approve Workforce Budget':
+
+                approveWorkforceBudget();
 
                 break;
 
