@@ -25745,6 +25745,7 @@ function addMenuItem(label, onClick, options = {}) {
     return button;
 
 }
+window.addMenuItem = addMenuItem;
 
 
 function resetMenuSearch() {
@@ -54188,7 +54189,12 @@ function displayViolations(violations) {
 
         const deadline = violation.actionDeadline ? new Date(violation.actionDeadline).toLocaleDateString() : (violation.deadline ? new Date(violation.deadline).toLocaleDateString() : 'Not set');
 
-        
+        // Pre-compute actions cell HTML to avoid nested template literal issues
+        const _vRole = (typeof getCurrentUserRole === 'function') ? getCurrentUserRole() : null;
+        const _vIsMD = _vRole === 'MD' || _vRole === 'Managing Director';
+        const violationActionsHtml = _vIsMD
+            ? '<td><div class="violation-actions"><button class="action-btn approve" onclick="approveViolation(\'' + violation.id + '\')" title="Approve Violation" style="background:#28a745;color:white;">✅</button><button class="action-btn reject" onclick="rejectViolation(\'' + violation.id + '\')" title="Reject Violation" style="background:#dc3545;color:white;">❌</button></div></td>'
+            : '<td><span style="color:#999;font-style:italic;">View Only</span></td>';
 
         violationsHTML += `
 
@@ -54314,20 +54320,7 @@ function displayViolations(violations) {
 
                 </td>
 
-                ${(function(){
-                    const role = (typeof getCurrentUserRole === 'function') ? getCurrentUserRole() : null;
-                    const isMD = role === 'MD' || role === 'Managing Director';
-                    if (isMD) {
-                        return `<td>
-                            <div class="violation-actions">
-                                <button class="action-btn approve" onclick="approveViolation('${violation.id}')" title="Approve Violation" style="background:#28a745;color:white;">✅</button>
-                                <button class="action-btn reject" onclick="rejectViolation('${violation.id}')" title="Reject Violation" style="background:#dc3545;color:white;">❌</button>
-                            </div>
-                        </td>`;
-                    } else {
-                        return `<td><span style="color:#999;font-style:italic;">View Only</span></td>`;
-                    }
-                })()
+                ${violationActionsHtml}
 
             </tr>
 
