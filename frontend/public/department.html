@@ -102182,7 +102182,7 @@ function showTaxPayments() {
 
 // ===== MATERIALS MANAGEMENT FUNCTIONS =====
 
-function showMaterialsDashboard() {
+function showMaterialsDashboard_old() {
 
     const contentArea = document.getElementById('contentArea');
 
@@ -102330,7 +102330,7 @@ async function loadMaterialsDashboardStats() {
 
 
 
-async function showMaterialsInventory() {
+async function showMaterialsInventory_old() {
 
     const contentArea = document.getElementById('contentArea');
 
@@ -102580,7 +102580,7 @@ async function searchMaterials() {
 
 
 
-function showMaterialsInForm() {
+function showMaterialsInForm_old() {
 
     const formHTML = `
 
@@ -103009,7 +103009,7 @@ function showMaterialsInForm() {
 
 
 
-function showMaterialsOutForm() {
+function showMaterialsOutForm_old() {
 
     const formHTML = `
 
@@ -110109,7 +110109,7 @@ async function fetchMaterialsOut() {
     } catch (e) { console.error('Error loading materials out:', e); return []; }
 }
 
-async function showMaterialsDashboard_dup1() {
+async function showMaterialsDashboard() {
     showContent(`
         <div class="card">
             <h3>Materials Management Dashboard</h3>
@@ -110197,7 +110197,7 @@ async function showMaterialsDashboard_dup1() {
     } catch (e) { console.error('Dashboard error:', e); }
 }
 
-async function showMaterialsInventory_dup1() {
+async function showMaterialsInventory() {
     // Render UI immediately with loading state
     showContent(`
         <div class="card">
@@ -110276,7 +110276,7 @@ function getUnitMeasureOptions(selected) {
     return units.map(u => `<option value="${u}" ${selected === u ? 'selected' : ''}>${u}</option>`).join('');
 }
 
-function showMaterialsInForm_dup1(preselectedMaterialId, preselectedMaterialName) {
+function showMaterialsInForm(preselectedMaterialId, preselectedMaterialName) {
     const today = new Date().toISOString().split('T')[0];
 
     const formHTML = `
@@ -110479,7 +110479,7 @@ async function saveMaterialsIn() {
     }
 }
 
-function showMaterialsOutForm_dup1(preselectedMaterialId, preselectedMaterialName) {
+function showMaterialsOutForm(preselectedMaterialId, preselectedMaterialName) {
     const today = new Date().toISOString().split('T')[0];
 
     const formHTML = `
