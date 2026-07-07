@@ -23896,6 +23896,17 @@ font-size: 12px;
 
 
 
+<script>
+// Early definition of toggleSidebar to prevent ReferenceError
+if (typeof window.toggleSidebar !== 'function') {
+    window.toggleSidebar = function() {
+        var sidebar = document.querySelector('.sidebar');
+        if (!sidebar) { console.error('Sidebar not found'); return; }
+        sidebar.classList.toggle('collapsed');
+    };
+}
+</script>
+
 <div id="systemPage" class="container hidden">
 
     <div class="top-controls">
