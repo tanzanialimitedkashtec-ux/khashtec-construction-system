@@ -231,13 +231,13 @@ router.post('/', async (req, res) => {
             `;
             // Normalize priority to match DB Enum
             const priorityMap = {
-                'urgent': 'Critical',
-                'critical': 'Critical',
-                'high': 'High',
-                'medium': 'Medium',
-                'low': 'Low'
+                'urgent': 'urgent',
+                'critical': 'urgent',
+                'high': 'high',
+                'medium': 'medium',
+                'low': 'low'
             };
-            const normalizedPriority = priorityMap[(task_priority || '').toLowerCase()] || 'Medium';
+            const normalizedPriority = priorityMap[(task_priority || '').toLowerCase()] || 'medium';
 
             const values = [
                 project_id,
@@ -285,9 +285,9 @@ router.post('/', async (req, res) => {
                     console.log(`📧 Attempting to send task assignment email to: ${recipientEmail}`);
                     const details = [
                         { label: 'Task Name', value: task_name },
-                        { label: 'Priority', value: normalizedPriority },
+                        { label: 'Priority', value: task_priority ? (task_priority.charAt(0).toUpperCase() + task_priority.slice(1).toLowerCase()) : normalizedPriority },
                         { label: 'Due Date', value: due_date },
-                        { label: 'Project Name', value: (createdTask && createdTask[0] && createdTask[0].project_name) || 'Unknown' },
+                        { label: 'Project Name', value: (createdTask && createdTask.project_name) || (createdTask && createdTask[0] && createdTask[0].project_name) || 'Unknown' },
                         { label: 'Assigned By', value: created_by }
                     ];
                     await sendAssignmentNotification(recipientEmail, details);
