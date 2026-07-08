@@ -1,4 +1,4 @@
-// Force IPv4 DNS resolution BEFORE any module loads (Railway lacks IPv6)
+﻿// Force IPv4 DNS resolution BEFORE any module loads (Railway lacks IPv6)
 require('dns').setDefaultResultOrder('ipv4first');
 const express = require('express');
 
@@ -6643,26 +6643,6 @@ async function createWorkforceBudgetTables() {
         }
         
         // Seed default sample data only if the table is empty (SAFE: preserves existing data)
-        try {
-            const existingRows = await db.execute('SELECT COUNT(*) as cnt FROM workforce_budgets');
-            const count = existingRows[0] ? existingRows[0].cnt : 0;
-            if (count === 0) {
-                await db.execute(`
-                    INSERT IGNORE INTO workforce_budgets 
-                    (id, budget_period, total_proposed, salaries_wages, training_development, employee_benefits, recruitment_costs, submitted_by, submitted_by_role, status, submission_date, justification) 
-                    VALUES 
-                    (1, 'IT', '500000000', '300000000', '50000000', '100000000', '50000000', 'Department Head', 'IT Manager', 'pending', '2026-04-15', 'Q2 2026 IT department budget for infrastructure upgrades and team expansion'),
-                    (2, 'Construction', '1200000000', '800000000', '100000000', '200000000', '100000000', 'Department Head', 'Construction Manager', 'pending', '2026-04-16', 'Q2 2026 Construction budget for new projects and equipment'),
-                    (3, 'Operations', '800000000', '500000000', '80000000', '150000000', '70000000', 'Department Head', 'Operations Manager', 'pending', '2026-04-17', 'Q2 2026 Operations budget for process improvements and staffing')
-                `);
-                console.log('Sample workforce budget requests seeded (table was empty)');
-            } else {
-                console.log(`✅ Workforce budgets table already has ${count} records — preserved`);
-            }
-        } catch (error) {
-            console.log('Error seeding sample workforce budget data:', error.message);
-        }
-        
         console.log('All workforce budget tables created successfully');
         
     } catch (error) {
