@@ -1,4 +1,4 @@
--- Essential Tables Migration - Fix for broken 001_create_tables.sql
+﻿-- Essential Tables Migration - Fix for broken 001_create_tables.sql
 -- This creates the minimum required tables for the system to function
 
 -- Users table
@@ -219,6 +219,4 @@ INSERT IGNORE INTO senior_hiring_requests (id, candidate_name, proposed_salary, 
 ('proj-manager-001', 'John Smith', 'TZS 5,000,000', 'Projects', '10+ years in construction management', 'Manager', 'HR Manager', 'HR Manager'),
 ('senior-engineer-001', 'Jane Doe', 'TZS 4,500,000', 'Operations', '15+ years in civil engineering', 'Senior', 'HR Manager', 'HR Manager');
 
-INSERT IGNORE INTO workforce_budgets (id, budget_period, total_proposed, salaries_wages, training_development, employee_benefits, recruitment_costs, submitted_by, submitted_by_role, current_headcount, justification) VALUES
-('q2-2026-workforce', 'Q2 2026 Workforce Budget', 50000000.00, 30000000.00, 5000000.00, 10000000.00, 5000000.00, 'Finance Manager', 'Finance Manager', 25, 'Q2 workforce expansion for new projects'),
 ('q3-2026-workforce', 'Q3 2026 Workforce Budget', 55000000.00, 33000000.00, 5500000.00, 11000000.00, 5500000.00, 'Finance Manager', 'Finance Manager', 28, 'Q3 workforce expansion and training programs');
