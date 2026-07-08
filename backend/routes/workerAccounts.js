@@ -5,7 +5,7 @@ const multer = require('multer');
 const path = require('path');
 const fs = require('fs').promises;
 const fsSync = require('fs');
-const { sendAssignmentNotification } = require('../services/emailService');
+const { sendAssignmentNotification } = require('../services/employeeEmailService');
 
 // Non-BLOB columns to select (avoids returning huge binary data in JSON responses)
 const WORKER_COLS = `id, employee_id, full_name, work_email, phone_number,
