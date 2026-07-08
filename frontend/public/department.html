@@ -36750,6 +36750,10 @@ document.addEventListener('DOMContentLoaded', function() {
 
 function toggleViolationForm() {
 
+    // MD role should never be able to open the violation form
+    const _role = (typeof getCurrentUserRole === 'function') ? getCurrentUserRole() : null;
+    if (_role === 'MD' || _role === 'Managing Director') return;
+
     const formContainer = document.getElementById('violationFormContainer');
 
     const toggleBtn = document.getElementById('toggleViolationFormBtn');
@@ -53194,7 +53198,8 @@ function markSafetyViolations(){
 
     `);
 
-    
+    // Apply role-based visibility immediately after content is injected
+    applyViolationRoleVisibility();
 
     // Generate initial violation ID
 
@@ -54331,7 +54336,9 @@ function displayViolations(violations) {
     
 
     violationsList.innerHTML = violationsHTML;
-
+    
+    // Ensure role visibility rules are applied to the newly rendered table rows
+    applyViolationRoleVisibility();
 }
 
 
