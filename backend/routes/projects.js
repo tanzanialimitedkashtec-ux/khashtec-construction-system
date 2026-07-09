@@ -732,14 +732,14 @@ router.post('/:id/assign-employees', async (req, res) => {
                 INSERT INTO project_assignments (project_id, employee_id, employee_name, role, assigned_by)
                 VALUES (?, ?, ?, ?, ?)
             `, [projectId, emp.employee_id, emp.employee_name || '', emp.role || 'Team Member', assignedBy || 'System']);
-            
             results.push(emp);
             
             // Look up email and send notification
             try {
+                const numericId = parseInt(emp.employee_id) || 0;
                 const [empRows] = await db.execute(
                     'SELECT ed.gmail FROM employee_details ed LEFT JOIN employees e ON ed.employee_id = e.id WHERE e.employee_id = ? OR e.id = ? LIMIT 1',
-                    [emp.employee_id, emp.employee_id]
+                    [emp.employee_id, numericId]
                 );
                 
                 let recipientEmail = null;
