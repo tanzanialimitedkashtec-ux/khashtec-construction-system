@@ -11,9 +11,9 @@ const RESEND_API_KEY = process.env.RESEND_API_KEY || '';
 const EMAIL_FROM = process.env.EMAIL_FROM || 'KASHTEC <onboarding@resend.dev>';
 const APP_URL = process.env.APP_URL || 'https://khashtec-construction-system-production-e7b5.up.railway.app';
 
-// Verify on startup
 if (RESEND_API_KEY) {
     console.log('✅ Employee email service configured (Resend HTTP API + WhatsApp)');
+    console.log(`📧 Employee EMAIL_FROM is set to: "${EMAIL_FROM}"`);
 } else {
     console.warn('⚠️ RESEND_API_KEY not set — Employee emails will use WhatsApp only');
 }

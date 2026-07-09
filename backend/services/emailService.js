@@ -11,9 +11,9 @@ const RESEND_API_KEY = process.env.RESEND_API_KEY || '';
 const EMAIL_FROM = process.env.EMAIL_FROM || 'KASHTEC <onboarding@resend.dev>';
 const EMAIL_RECIPIENT = process.env.EMAIL_RECIPIENT || process.env.EMAIL_USER || 'tanzanialimitedkashtec@gmail.com';
 
-// Verify on startup
 if (RESEND_API_KEY) {
     console.log('✅ Email service configured (Resend HTTP API)');
+    console.log(`📧 EMAIL_FROM is set to: "${EMAIL_FROM}"`);
 } else {
     console.warn('⚠️ RESEND_API_KEY not set — Invoice emails will be skipped. Get a free key at https://resend.com');
 }
