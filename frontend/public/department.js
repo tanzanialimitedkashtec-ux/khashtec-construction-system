@@ -27783,6 +27783,45 @@ function manageTransportCosts(){
 
 
 
+async function loadVehiclesForDriverAssignment() {
+    const vehicleSelect = document.getElementById('assignedVehicle');
+    if (!vehicleSelect) return;
+
+    vehicleSelect.innerHTML = '<option value="">Select Vehicle</option><option value="unassigned">Unassigned</option>';
+
+    try {
+        const baseUrl = window.location.origin;
+        const response = await fetch(`${baseUrl}/api/company-cars`);
+
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+
+        const data = await response.json();
+        const vehicles = Array.isArray(data) ? data : Array.isArray(data.data) ? data.data : Array.isArray(data.cars) ? data.cars : [];
+
+        vehicles.forEach(vehicle => {
+            const option = document.createElement('option');
+            const vehicleValue = vehicle.track_number || vehicle.id || vehicle.registration_number || '';
+            const vehicleLabel = [vehicle.car_name, vehicle.plate_number || vehicle.registration_number]
+                .filter(Boolean)
+                .join(' - ');
+
+            if (!vehicleValue) return;
+
+            option.value = vehicleValue;
+            option.textContent = vehicleLabel || `Vehicle ${vehicleValue}`;
+            vehicleSelect.appendChild(option);
+        });
+
+        console.log(`✅ Loaded ${vehicles.length} vehicles for driver assignment`);
+    } catch (error) {
+        console.error('❌ Error loading vehicles for driver assignment:', error);
+    }
+}
+
+
+
 function registerDriver(){
 
     // Generate auto driver ID
@@ -28293,12 +28332,6 @@ function registerDriver(){
 
                             <option value="unassigned">Unassigned</option>
 
-                            <option value="car001">Toyota Hilux - T 1234 ABC</option>
-
-                            <option value="car002">Nissan Patrol - T 5678 DEF</option>
-
-                            <option value="car003">Isuzu D-Max - T 9012 GHI</option>
-
                         </select>
 
                     </div>
@@ -28356,6 +28389,8 @@ function registerDriver(){
         </div>
 
     `);
+
+    loadVehiclesForDriverAssignment();
 
 }
 
@@ -30536,303 +30571,146 @@ function displayViolations(violations) {
 
     const violationsList = document.getElementById('violationsList');
 
-    
-
     if (!violationsList) {
-
-        console.error('âŒ Violations list container not found!');
-
+        console.error('✘ Violations list container not found!');
         return;
-
     }
-
-    
 
     if (!violations || violations.length === 0) {
-
         violationsList.innerHTML = `
-
             <tr>
-
                 <td colspan="14">
-
                     <div class="no-records">No violations found</div>
-
                 </td>
-
             </tr>
-
         `;
-
         return;
-
     }
 
-    
+    const sortedViolations = [...violations].sort((a, b) => new Date(b.date) - new Date(a.date));
+    const role = (typeof getCurrentUserRole === 'function') ? getCurrentUserRole() : null;
+    const isMD = role === 'MD' || role === 'Managing Director';
 
-    // Sort violations by date (newest first)
+    const violationsHTML = sortedViolations.map(violation => {
+        const typeDisplay = violation.type === 'no-ppe' ? '🦺 No PPE Worn' :
+            violation.type === 'improper-ppe' ? '⚠️ Improper PPE' :
+            violation.type === 'unsafe-act' ? '⚡ Unsafe Act' :
+            violation.type === 'unsafe-condition' ? '🚧 Unsafe Condition' :
+            violation.type === 'procedure-violation' ? '📋 Procedure Violation' :
+            violation.type === 'equipment-misuse' ? '🔧 Equipment Misuse' :
+            violation.type === 'unauthorized-work' ? '🚫 Unauthorized Work' : violation.type;
 
-    violations.sort((a, b) => new Date(b.date) - new Date(a.date));
+        const severityDisplay = violation.severity === 'critical' ? '🔴 Critical' :
+            violation.severity === 'major' ? '🟠 Major' :
+            violation.severity === 'moderate' ? '🟡 Moderate' :
+            violation.severity === 'minor' ? '🟢 Minor' : violation.severity;
 
-    
+        const severityClass = violation.severity === 'critical' ? 'severity-critical' :
+            violation.severity === 'major' ? 'severity-major' :
+            violation.severity === 'moderate' ? 'severity-moderate' :
+            violation.severity === 'minor' ? 'severity-minor' : '';
 
-    let violationsHTML = '';
+        const statusDisplay = violation.status === 'pending' ? '⏳ Pending' :
+            violation.status === 'resolved' ? '✓ Resolved' :
+            violation.status === 'investigating' ? '🔍 Investigating' :
+            violation.status === 'rejected' ? '❌ Rejected' :
+            violation.status === 'closed' ? '🏁 Closed' : violation.status;
 
-    
-
-    violations.forEach(violation => {
-
-        // Get violation type display
-
-        const typeDisplay = violation.type === 'no-ppe' ? 'ðŸ‘· No PPE Worn' : 
-
-                           violation.type === 'improper-ppe' ? 'âš ï¸ Improper PPE' : 
-
-                           violation.type === 'unsafe-act' ? 'âš¡ Unsafe Act' : 
-
-                           violation.type === 'unsafe-condition' ? 'ðŸšï¸ Unsafe Condition' : 
-
-                           violation.type === 'procedure-violation' ? 'ðŸ“‹ Procedure Violation' : 
-
-                           violation.type === 'equipment-misuse' ? 'ðŸ”§ Equipment Misuse' : 
-
-                           violation.type === 'unauthorized-work' ? 'ðŸš« Unauthorized Work' : violation.type;
-
-        
-
-        // Get severity display
-
-        const severityDisplay = violation.severity === 'critical' ? 'ðŸ”´ Critical' : 
-
-                               violation.severity === 'major' ? 'ðŸŸ  Major' : 
-
-                               violation.severity === 'moderate' ? 'ðŸŸ¡ Moderate' : 
-
-                               violation.severity === 'minor' ? 'ðŸŸ¢ Minor' : violation.severity;
-
-        
-
-        const severityClass = violation.severity === 'critical' ? 'severity-critical' : 
-
-                            violation.severity === 'major' ? 'severity-major' : 
-
-                            violation.severity === 'moderate' ? 'severity-moderate' : 
-
-                            violation.severity === 'minor' ? 'severity-minor' : '';
-
-        
-
-        // Get status display
-
-        const statusDisplay = violation.status === 'pending' ? 'â³ Pending' : 
-
-                             violation.status === 'resolved' ? 'âœ… Resolved' : 
-
-                             violation.status === 'investigating' ? 'ðŸ” Investigating' : 
-
-                             violation.status === 'rejected' ? '❌ Rejected' : 
-
-                             violation.status === 'closed' ? 'ðŸ”’ Closed' : violation.status;
-
-        
-
-        const statusClass = violation.status === 'pending' ? 'status-pending' : 
-
-                           violation.status === 'resolved' ? 'status-resolved' : 
-
-                           violation.status === 'investigating' ? 'status-investigating' : 
-
-                           violation.status === 'rejected' ? 'status-rejected' : 
-
-                             violation.status === 'closed' ? 'status-closed' : '';
-
-        
-
-        // Format description with truncation
+        const statusClass = violation.status === 'pending' ? 'status-pending' :
+            violation.status === 'resolved' ? 'status-resolved' :
+            violation.status === 'investigating' ? 'status-investigating' :
+            violation.status === 'rejected' ? 'status-rejected' :
+            violation.status === 'closed' ? 'status-closed' : '';
 
         const description = violation.description || 'No description provided';
-
         const shortDescription = description.length > 30 ? description.substring(0, 30) + '...' : description;
 
-        
-
-        // Format immediate action with truncation
-
         const immediateAction = violation.immediateAction || 'No action recorded';
-
         const shortImmediateAction = immediateAction.length > 25 ? immediateAction.substring(0, 25) + '...' : immediateAction;
 
-        
-
-        // Get corrective action display
-
-        const correctiveActionDisplay = violation.correctiveAction === 'warning' ? 'âš ï¸ Verbal Warning' : 
-
-                                      violation.correctiveAction === 'written-warning' ? 'ðŸ“ Written Warning' : 
-
-                                      violation.correctiveAction === 'retraining' ? 'ðŸ“š Safety Retraining' : 
-
-                                      violation.correctiveAction === 'suspension' ? 'ðŸš« Suspension' : 
-
-                                      violation.correctiveAction === 'termination' ? 'âŒ Termination' : violation.correctiveAction;
-
-        
-
-        // Format deadline
+        const correctiveActionDisplay = violation.correctiveAction === 'warning' ? '⚠️ Verbal Warning' :
+            violation.correctiveAction === 'written-warning' ? '📝 Written Warning' :
+            violation.correctiveAction === 'retraining' ? '🎓 Safety Retraining' :
+            violation.correctiveAction === 'suspension' ? '🚫 Suspension' :
+            violation.correctiveAction === 'termination' ? '✖ Termination' : violation.correctiveAction;
 
         const deadline = violation.actionDeadline ? new Date(violation.actionDeadline).toLocaleDateString() : 'Not set';
-
-        
-
-        violationsHTML += `
-
-            <tr class="violation-row">
-
-                <td>
-
-                    <div class="violation-id-info">
-
-                        <div class="violation-id">${violation.violationId}</div>
-
-                    </div>
-
-                </td>
-
-                <td>
-
-                    <div class="date-info">
-
-                        <div class="violation-date">${new Date(violation.date).toLocaleDateString()}</div>
-
-                        <div class="violation-time">${new Date(violation.date).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</div>
-
-                    </div>
-
-                </td>
-
-                <td>
-
-                    <div class="project-info">
-
-                        <div class="project-name">${violation.project}</div>
-
-                    </div>
-
-                </td>
-
-                <td>
-
-                    <span class="type-badge">${typeDisplay}</span>
-
-                </td>
-
-                <td>
-
-                    <span class="severity-badge ${severityClass}">${severityDisplay}</span>
-
-                </td>
-
-                <td>
-
-                    <div class="violators-info">
-
-                        <div class="violators-names">${violation.violators}</div>
-
-                    </div>
-
-                </td>
-
-                <td>
-
-                    <div class="location-info">
-
-                        <div class="location-name">${violation.location}</div>
-
-                    </div>
-
-                </td>
-
-                <td>
-
-                    <div class="description-info">
-
-                        <div class="violation-description" title="${description}">${shortDescription}</div>
-
-                    </div>
-
-                </td>
-
-                <td>
-
-                    <div class="immediate-action-info">
-
-                        <div class="immediate-action" title="${immediateAction}">${shortImmediateAction}</div>
-
-                    </div>
-
-                </td>
-
-                <td>
-
-                    <div class="corrective-action-info">
-
-                        <span class="corrective-action-badge">${correctiveActionDisplay}</span>
-
-                    </div>
-
-                </td>
-
-                <td>
-
-                    <div class="deadline-info">
-
-                        <div class="action-deadline">${deadline}</div>
-
-                    </div>
-
-                </td>
-
-                <td>
-
-                    <span class="status-badge ${statusClass}">${statusDisplay}</span>
-
-                </td>
-
-                <td>
-
-                    <div class="reporter-info">
-
-                        <div class="reporter-name">${violation.reportedBy}</div>
-
-                    </div>
-
-                </td>
-
-                ${(function(){
-                    const role = (typeof getCurrentUserRole === 'function') ? getCurrentUserRole() : null;
-                    const isMD = role === 'MD' || role === 'Managing Director';
-                    if (isMD) {
-                        return `<td>
-                            <div class="violation-actions">
-                                <button class="action-btn approve" onclick="approveViolation('${violation.id}')" title="Approve Violation" style="background:#28a745;color:white;">✅</button>
-                                <button class="action-btn reject" onclick="rejectViolation('${violation.id}')" title="Reject Violation" style="background:#dc3545;color:white;">❌</button>
-                            </div>
-                        </td>`;
-                    } else {
-                        return `<td><span style="color:#999;font-style:italic;">View Only</span></td>`;
-                    }
-                })()
-
-            </tr>
-
-        `;
-
-    });
-
-    
+        const actionCell = isMD ? `
+            <td>
+                <div class="violation-actions">
+                    <button class="action-btn approve" onclick="approveViolation('${violation.id}')" title="Approve Violation" style="background:#28a745;color:white;">✅</button>
+                    <button class="action-btn reject" onclick="rejectViolation('${violation.id}')" title="Reject Violation" style="background:#dc3545;color:white;">❌</button>
+                </div>
+            </td>` : '<td><span style="color:#999;font-style:italic;">View Only</span></td>';
+
+        return [
+            '<tr class="violation-row">',
+            '<td>',
+            '<div class="violation-id-info">',
+            `<div class="violation-id">${violation.violationId}</div>`,
+            '</div>',
+            '</td>',
+            '<td>',
+            '<div class="date-info">',
+            `<div class="violation-date">${new Date(violation.date).toLocaleDateString()}</div>`,
+            `<div class="violation-time">${new Date(violation.date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>`,
+            '</div>',
+            '</td>',
+            '<td>',
+            '<div class="project-info">',
+            `<div class="project-name">${violation.project}</div>`,
+            '</div>',
+            '</td>',
+            '<td>',
+            `<span class="type-badge">${typeDisplay}</span>`,
+            '</td>',
+            '<td>',
+            `<span class="severity-badge ${severityClass}">${severityDisplay}</span>`,
+            '</td>',
+            '<td>',
+            '<div class="violators-info">',
+            `<div class="violators-names">${violation.violators}</div>`,
+            '</div>',
+            '</td>',
+            '<td>',
+            '<div class="location-info">',
+            `<div class="location-name">${violation.location}</div>`,
+            '</div>',
+            '</td>',
+            '<td>',
+            '<div class="description-info">',
+            `<div class="violation-description" title="${description}">${shortDescription}</div>`,
+            '</div>',
+            '</td>',
+            '<td>',
+            '<div class="immediate-action-info">',
+            `<div class="immediate-action" title="${immediateAction}">${shortImmediateAction}</div>`,
+            '</div>',
+            '</td>',
+            '<td>',
+            '<div class="corrective-action-info">',
+            `<span class="corrective-action-badge">${correctiveActionDisplay}</span>`,
+            '</div>',
+            '</td>',
+            '<td>',
+            '<div class="deadline-info">',
+            `<div class="action-deadline">${deadline}</div>`,
+            '</div>',
+            '</td>',
+            '<td>',
+            `<span class="status-badge ${statusClass}">${statusDisplay}</span>`,
+            '</td>',
+            '<td>',
+            '<div class="reporter-info">',
+            `<div class="reporter-name">${violation.reportedBy}</div>`,
+            '</div>',
+            '</td>',
+            actionCell,
+            '</tr>'
+        ].join('');
+    }).join('');
 
     violationsList.innerHTML = violationsHTML;
-
 }
 
 
@@ -30841,7 +30719,7 @@ function displayViolations(violations) {
 
 function viewViolationDetails(violationId) {
 
-    customAlert(`Viewing violation details for ID: ${violationId}nnFull violation information including description, immediate actions taken, corrective measures, witnesses, evidence photos, and follow-up requirements will be displayed.`, "Violation Details", "info");
+    customAlert(`Viewing violation details for ID: ${violationId}\n\nFull violation information including description, immediate actions taken, corrective measures, witnesses, evidence photos, and follow-up requirements will be displayed.`, "Violation Details", "info");
 
 }
 
@@ -30849,7 +30727,7 @@ function viewViolationDetails(violationId) {
 
 function updateViolationStatus(violationId) {
 
-    customAlert(`Updating violation status for ID: ${violationId}nnStatus update form will open for recording follow-up actions, corrective measures completed, and final resolution of the safety violation.`, "Update Violation", "info");
+    customAlert(`Updating violation status for ID: ${violationId}\n\nStatus update form will open for recording follow-up actions, corrective measures completed, and final resolution of the safety violation.`, "Update Violation", "info");
 
 }
 
@@ -30857,7 +30735,7 @@ function updateViolationStatus(violationId) {
 
 function downloadViolationReport(violationId) {
 
-    customAlert(`Downloading violation report for ID: ${violationId}nnComprehensive violation report will be generated including all details, actions taken, and resolution status for documentation and compliance purposes.`, "Download Report", "info");
+    customAlert(`Downloading violation report for ID: ${violationId}\n\nComprehensive violation report will be generated including all details, actions taken, and resolution status for documentation and compliance purposes.`, "Download Report", "info");
 
 }
 
@@ -45909,6 +45787,8 @@ async function deleteProject(projectId) {
     }
 }
 
+window.viewProject = viewProject;
+window.deleteProject = deleteProject;
 
 
 // Load projects for progress update from API
@@ -64325,19 +64205,7 @@ async function reviewDeptStructure(department) {
 
                 <h4>Department Actions</h4>
 
-                <button class="action" onclick="exportDeptReport('${department}')">Export Report</button>
-
-                <button class="action" onclick="requestBudgetReview('${department}')">Request Budget Review</button>
-
                 <button class="action" onclick="backToStaffOversight()">Back to Staff Oversight</button>
-
-            </div>
-
-            
-
-            <div class="disclaimer">
-
-                <p><strong>Note:</strong> This department structure report is generated in real-time from the current database.</p>
 
             </div>
 
@@ -66832,11 +66700,7 @@ function renderOfficePortal(officePortalUsers, clients, documents, policies, con
 
                 <div class="footer-actions">
 
-                    <button class="action-btn primary" onclick="exportPortalData()">ðŸ’¾ Export All Data</button>
-
                     <button class="action-btn secondary" onclick="refreshPortalData()">ðŸ”„ Refresh</button>
-
-                    <button class="action-btn info" onclick="printPortalReport()">ðŸ–¨ï¸ Print Report</button>
 
                 </div>
 

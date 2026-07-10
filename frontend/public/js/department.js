@@ -383,5 +383,127 @@
     }
   };
 
+  async function viewProject(projectId) {
+    try {
+      const baseUrl = (window.KashTecAPI && window.KashTecAPI.baseUrl) ? window.KashTecAPI.baseUrl : window.location.origin;
+      const token = (window.KashTecAPI && typeof window.KashTecAPI.getAuthToken === 'function')
+        ? window.KashTecAPI.getAuthToken()
+        : (window.sessionManager && typeof window.sessionManager.getAuthToken === 'function')
+          ? window.sessionManager.getAuthToken()
+          : localStorage.getItem('authToken') || '';
+
+      const headers = { 'Content-Type': 'application/json' };
+      if (token) headers.Authorization = `Bearer ${token}`;
+
+      const response = await fetch(`${baseUrl}/api/projects/${projectId}`, { headers });
+      const json = await response.json().catch(() => null);
+
+      if (!response.ok) {
+        throw new Error((json && (json.error || json.message)) || `HTTP ${response.status}`);
+      }
+
+      const project = (json && json.project) ? json.project : (json && json.data) ? json.data : json;
+      if (!project) {
+        throw new Error('Project not found');
+      }
+
+      const body = document.body;
+      const modal = document.createElement('div');
+      modal.className = 'modal-overlay';
+      modal.innerHTML = `
+        <div class="modal-content" style="max-width: 720px; width: 95%;">
+          <div class="modal-header" style="background: #0b3d91; color: white; padding: 16px 20px; border-radius: 8px 8px 0 0; display: flex; justify-content: space-between; align-items: center;">
+            <div>
+              <h3 style="margin:0;">Project Details</h3>
+              <small style="opacity:.85;">ID: ${project.id}</small>
+            </div>
+            <button type="button" class="modal-close" onclick="this.closest('.modal-overlay').remove()" style="background: none; border: none; color: white; font-size: 24px; cursor: pointer;">&times;</button>
+          </div>
+          <div class="modal-body" style="padding: 20px; background: #fff;">
+            <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; margin-bottom: 20px;">
+              <div><strong>Name</strong><div>${project.name || project.project_name || 'N/A'}</div></div>
+              <div><strong>Status</strong><div>${project.status || 'N/A'}</div></div>
+              <div><strong>Project Code</strong><div>${project.project_code || project.code || 'N/A'}</div></div>
+              <div><strong>Project Type</strong><div>${project.project_type || project.type || 'N/A'}</div></div>
+              <div><strong>Client</strong><div>${project.client_name || project.client || 'N/A'}</div></div>
+              <div><strong>Manager</strong><div>${project.project_manager || project.manager || 'N/A'}</div></div>
+              <div><strong>Location</strong><div>${project.location || 'N/A'}</div></div>
+              <div><strong>Priority</strong><div>${project.priority_level || project.priority || 'N/A'}</div></div>
+              <div><strong>Start Date</strong><div>${project.start_date || 'N/A'}</div></div>
+              <div><strong>End Date</strong><div>${project.end_date || 'N/A'}</div></div>
+              <div><strong>Budget</strong><div>${project.contract_value != null ? Number(project.contract_value).toLocaleString() : 'N/A'}</div></div>
+            </div>
+            <div style="margin-bottom: 16px;">
+              <strong>Description</strong>
+              <p style="margin: 8px 0 0; white-space: pre-wrap;">${project.description || 'No description provided.'}</p>
+            </div>
+          </div>
+          <div class="modal-footer" style="padding: 14px 20px; background: #f1f3f5; border-radius: 0 0 8px 8px; text-align: right;">
+            <button type="button" onclick="this.closest('.modal-overlay').remove()" style="background: #6c757d; color: white; border: none; padding: 10px 16px; border-radius: 6px; cursor: pointer;">Close</button>
+          </div>
+        </div>
+      `;
+      body.appendChild(modal);
+      modal.addEventListener('click', function (e) {
+        if (e.target === modal) modal.remove();
+      });
+    } catch (err) {
+      console.error('Error loading project details:', err);
+      if (window.customAlert) {
+        window.customAlert(`Failed to load project details. ${err.message || err}`, 'Error', 'error');
+      } else {
+        alert(`Failed to load project details. ${err.message || err}`);
+      }
+    }
+  }
+
+  async function deleteProject(projectId) {
+    if (!confirm(`Are you sure you want to delete project ${projectId}? This action cannot be undone.`)) {
+      return;
+    }
+
+    try {
+      const baseUrl = (window.KashTecAPI && window.KashTecAPI.baseUrl) ? window.KashTecAPI.baseUrl : window.location.origin;
+      const token = (window.KashTecAPI && typeof window.KashTecAPI.getAuthToken === 'function')
+        ? window.KashTecAPI.getAuthToken()
+        : (window.sessionManager && typeof window.sessionManager.getAuthToken === 'function')
+          ? window.sessionManager.getAuthToken()
+          : localStorage.getItem('authToken') || '';
+
+      const headers = { 'Content-Type': 'application/json' };
+      if (token) headers.Authorization = `Bearer ${token}`;
+
+      const response = await fetch(`${baseUrl}/api/projects/${projectId}`, {
+        method: 'DELETE',
+        headers
+      });
+      const json = await response.json().catch(() => null);
+
+      if (!response.ok) {
+        throw new Error((json && (json.error || json.message)) || `HTTP ${response.status}`);
+      }
+
+      if (window.customAlert) {
+        window.customAlert('Project deleted successfully.', 'Success', 'success');
+      } else {
+        alert('Project deleted successfully.');
+      }
+
+      if (typeof window.loadProjects === 'function') {
+        await window.loadProjects();
+      }
+    } catch (err) {
+      console.error('Error deleting project:', err);
+      if (window.customAlert) {
+        window.customAlert(`Failed to delete project. ${err.message || err}`, 'Error', 'error');
+      } else {
+        alert(`Failed to delete project. ${err.message || err}`);
+      }
+    }
+  }
+
+  window.viewProject = viewProject;
+  window.deleteProject = deleteProject;
+
   // Optional: if contentArea exists and a global flag set later, we could auto-run
 })();
