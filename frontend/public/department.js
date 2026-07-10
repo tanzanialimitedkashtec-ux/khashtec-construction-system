@@ -53154,9 +53154,11 @@ function registerClient(){
 
     
 
-    // Load clients records
+    // Load clients records after the content has rendered
 
-    loadClientsRecords();
+    setTimeout(() => {
+        loadClientsRecords();
+    }, 50);
 
 }
 
@@ -53166,9 +53168,15 @@ function registerClient(){
 
 async function loadClientsRecords() {
 
-    console.log('ðŸ”„ Loading clients records...');
+    console.log('📄 Loading clients records...');
 
-    
+    const recordsList = document.getElementById('clientsRecordsList');
+
+    if (!recordsList) {
+        console.warn('⚠️ Clients records list container not found yet, retrying...');
+        setTimeout(() => loadClientsRecords(), 100);
+        return;
+    }
 
     try {
 
@@ -53256,7 +53264,7 @@ function displayClientsRecords(data) {
 
     if (!recordsList) {
 
-        console.error('âŒ Clients records list container not found!');
+        console.warn('⚠️ Clients records list container not found; skipping render.');
 
         return;
 
