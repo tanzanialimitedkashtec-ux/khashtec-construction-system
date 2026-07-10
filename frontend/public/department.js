@@ -39953,7 +39953,6 @@ function manageLuggagePurchases() {
 
                 <button class="btn-primary" onclick="recordLuggagePurchase()">Record New Purchase</button>
 
-                <button class="btn-secondary" onclick="viewPurchaseHistory()">View Purchase History</button>
 
             </div>
 
