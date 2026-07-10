@@ -105882,7 +105882,7 @@ async function loadLongTermGrowthRecords() {
             return null;
         };
 
-        const parseJsonArray_dup1 = (value) => {
+        const parseJsonArray = (value) => {
             if (Array.isArray(value)) {
                 return value;
             }
@@ -105890,7 +105890,7 @@ async function loadLongTermGrowthRecords() {
             return Array.isArray(parsed) ? parsed : [];
         };
 
-        const prettifyListItem_dup1 = (value) => {
+        const prettifyListItem = (value) => {
             if (value == null) {
                 return '';
             }
@@ -105913,7 +105913,7 @@ async function loadLongTermGrowthRecords() {
             const tr = document.createElement('tr');
             tr.style.borderBottom = '1px solid #dee2e6';
 
-            const addCell_dup1 = (value) => {
+const addCell = (value) => {
                 const td = document.createElement('td');
                 td.style.padding = '8px';
                 td.textContent = value == null ? '' : String(value);
@@ -106026,7 +106026,7 @@ async function loadLeadershipRecords() {
             return String(value).split('T')[0];
         };
 
-        const parseJsonArray_dup2 = (value) => {
+        const parseJsonArray = (value) => {
             if (Array.isArray(value)) {
                 return value;
             }
@@ -106041,7 +106041,7 @@ async function loadLeadershipRecords() {
             return [];
         };
 
-        const prettifyListItem_dup2 = (value) => {
+        const prettifyListItem = (value) => {
             if (value == null) {
                 return '';
             }
@@ -106057,7 +106057,7 @@ async function loadLeadershipRecords() {
             const tr = document.createElement('tr');
             tr.style.borderBottom = '1px solid #dee2e6';
 
-            const addCell_dup2 = (value) => {
+const addCell = (value) => {
                 const td = document.createElement('td');
                 td.style.padding = '8px';
                 td.textContent = value == null ? '' : String(value);
