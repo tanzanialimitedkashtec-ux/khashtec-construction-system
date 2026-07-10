@@ -59083,7 +59083,27 @@ async function loadDocuments_dup1() {
 
         console.log('ðŸ“Š Documents for editing:', documents);
 
-        
+        const normalizedDocuments = documents.map(doc => {
+            const title = doc.title || doc.name || doc.document_title || doc.documentName || doc.file_name || doc.filename || 'Untitled Document';
+            const type = doc.type || doc.document_type || doc.fileType || doc.kind || 'PDF';
+            const department = doc.department || doc.category || doc.affected_department || doc.department_name || doc.departmentCode || doc.department_code || 'General';
+            const uploadedDate = doc.uploadedDate || doc.upload_date || doc.uploaded_at || doc.submitted_date || doc.created_at || doc.updated_at || null;
+            const status = doc.status || 'Pending';
+            const uploadedBy = doc.uploadedByName || doc.uploadedBy || doc.uploaded_by || 'Unknown';
+
+            return {
+                id: doc.id,
+                title,
+                type,
+                department,
+                description: doc.description || 'No description',
+                uploadedDate,
+                fileSize: doc.fileSize || doc.size || 0,
+                priority: doc.priority || 'normal',
+                status,
+                uploadedBy
+            };
+        });
 
         // Also populate the documents table if it exists
 
@@ -59091,33 +59111,7 @@ async function loadDocuments_dup1() {
 
         if (documentsList) {
 
-            // Map API fields to table display fields
-
-            const mappedDocuments = documents.map(doc => ({
-
-                id: doc.id,
-
-                title: doc.title,
-
-                type: doc.type || 'PDF',
-
-                department: doc.department || doc.category || 'Unknown',
-
-                description: doc.description || 'No description',
-
-                uploadedDate: doc.uploadedDate || doc.upload_date || new Date().toISOString(),
-
-                fileSize: doc.fileSize || doc.size || 0,
-
-                priority: doc.priority || 'normal',
-
-                status: doc.status || 'active',
-
-                uploadedBy: doc.uploadedByName || doc.uploadedBy || 'Unknown'
-
-            }));
-
-            displayDocuments(mappedDocuments);
+            displayDocuments(normalizedDocuments);
 
         }
 
@@ -59145,6 +59139,12 @@ async function loadDocuments_dup1() {
 
             const date = new Date(dateStr);
 
+            if (Number.isNaN(date.getTime())) {
+
+                return 'Unknown';
+
+            }
+
             return date.toLocaleDateString('en-US', { 
 
                 year: 'numeric', 
@@ -59161,37 +59161,39 @@ async function loadDocuments_dup1() {
 
         const getStatusBadge = (status) => {
 
-            const statusClass = status === 'Approved' ? 'approved' : 
+            const normalizedStatus = status || 'Pending';
 
-                               status === 'Pending' ? 'pending' : 
+            const statusClass = normalizedStatus === 'Approved' ? 'approved' : 
 
-                               status === 'Draft' ? 'draft' : 'active';
+                               normalizedStatus === 'Pending' ? 'pending' : 
 
-            return `<span class="status-badge ${statusClass}">${status}</span>`;
+                               normalizedStatus === 'Draft' ? 'draft' : 'active';
+
+            return `<span class="status-badge ${statusClass}">${normalizedStatus}</span>`;
 
         };
 
         
 
-        docsGrid.innerHTML = documents.map(doc => `
+        docsGrid.innerHTML = normalizedDocuments.map(doc => `
 
-            <div class="doc-item" data-id="${doc.id}" data-department="${doc.department || doc.category}" data-type="${doc.type}">
+            <div class="doc-item" data-id="${doc.id}" data-department="${doc.department}" data-type="${doc.type}">
 
                 <div class="doc-info">
 
                     <h5>${doc.title}</h5>
 
-                    <p>Type: ${doc.type || 'PDF'} | Department: ${doc.department || doc.category || 'Unknown'}</p>
+                    <p>Type: ${doc.type} | Department: ${doc.department}</p>
 
-                    <p>Last Updated: ${formatDate(doc.uploadedDate)}</p>
+                    <p>Last Updated: ${formatDate_dup4(doc.uploadedDate)}</p>
 
                     <p>Status: ${getStatusBadge(doc.status)}</p>
 
-                    ${doc.uploadedByName ? `<p>By: ${doc.uploadedByName}</p>` : ''}
+                    ${doc.uploadedBy ? `<p>By: ${doc.uploadedBy}</p>` : ''}
 
-                    ${doc.fileSize ? `<p>Size: ${formatFileSize(doc.fileSize)}</p>` : ''}
+                    ${doc.fileSize ? `<p>Size: ${formatFileSize_dup1(doc.fileSize)}</p>` : ''}
 
-                    ${doc.source ? `<p><small>Source: ${doc.source}</small></p>` : ''}
+                    ${doc.description ? `<p><small>${doc.description}</small></p>` : ''}
 
                 </div>
 
@@ -59324,7 +59326,7 @@ function filterDocsByDept() {
 
     docItems.forEach(item => {
 
-        const department = item.getAttribute('data-department').toLowerCase();
+        const department = (item.getAttribute('data-department') || '').toLowerCase();
 
         
 

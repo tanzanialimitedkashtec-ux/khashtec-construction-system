@@ -567,20 +567,28 @@ function displayDocuments(documents) {
         return;
     }
     
-    docsGrid.innerHTML = documents.map(doc => `
-        <div class="doc-item" data-id="${doc.id}" data-department="${doc.affected_department}" data-type="${doc.work_type}">
-            <div class="doc-info">
-                <h5>${doc.work_title}</h5>
-                <p>Type: ${doc.work_type} | Department: ${doc.affected_department || doc.department_code}</p>
-                <p>Last Updated: ${new Date(doc.submitted_date).toLocaleDateString()}</p>
-                <p>Status: ${doc.status || 'Active'}</p>
+    docsGrid.innerHTML = documents.map(doc => {
+        const title = doc.work_title || doc.title || doc.name || doc.document_title || doc.documentName || 'Untitled Document';
+        const type = doc.work_type || doc.type || doc.document_type || 'PDF';
+        const department = doc.affected_department || doc.department || doc.category || doc.department_code || doc.department_name || 'General';
+        const updatedDate = doc.submitted_date || doc.uploaded_date || doc.uploadedDate || doc.created_at || doc.updated_at;
+        const status = doc.status || 'Pending';
+
+        return `
+            <div class="doc-item" data-id="${doc.id}" data-department="${department}" data-type="${type}">
+                <div class="doc-info">
+                    <h5>${title}</h5>
+                    <p>Type: ${type} | Department: ${department}</p>
+                    <p>Last Updated: ${updatedDate ? formatDate(updatedDate) : 'Unknown'}</p>
+                    <p>Status: ${status}</p>
+                </div>
+                <div class="doc-actions">
+                    <button class="action edit-btn" onclick="editDoc('${doc.id}')">Edit</button>
+                    <button class="action view-btn" onclick="viewDoc('${doc.id}')">View</button>
+                </div>
             </div>
-            <div class="doc-actions">
-                <button class="action edit-btn" onclick="editDoc('${doc.id}')">Edit</button>
-                <button class="action view-btn" onclick="viewDoc('${doc.id}')">View</button>
-            </div>
-        </div>
-    `).join('');
+        `;
+    }).join('');
 }
 
 // Edit document
