@@ -27791,25 +27791,35 @@ async function loadVehiclesForDriverAssignment() {
 
     try {
         const baseUrl = window.location.origin;
-        const response = await fetch(`${baseUrl}/api/company-cars`);
+        const response = await fetch(`${baseUrl}/api/company-cars`, {
+            headers: {
+                'Accept': 'application/json'
+            }
+        });
 
         if (!response.ok) {
             throw new Error(`HTTP ${response.status}: ${response.statusText}`);
         }
 
-        const data = await response.json();
-        const vehicles = Array.isArray(data) ? data : Array.isArray(data.data) ? data.data : Array.isArray(data.cars) ? data.cars : [];
+        const payload = await response.json();
+        const vehicles = Array.isArray(payload)
+            ? payload
+            : Array.isArray(payload?.data)
+                ? payload.data
+                : Array.isArray(payload?.cars)
+                    ? payload.cars
+                    : [];
 
         vehicles.forEach(vehicle => {
             const option = document.createElement('option');
-            const vehicleValue = vehicle.track_number || vehicle.id || vehicle.registration_number || '';
-            const vehicleLabel = [vehicle.car_name, vehicle.plate_number || vehicle.registration_number]
-                .filter(Boolean)
-                .join(' - ');
+            const vehicleValue = vehicle.track_number || vehicle.trackNumber || vehicle.id || vehicle.registration_number || vehicle.registrationNumber || vehicle.plate_number || vehicle.plateNumber || '';
+            const vehicleName = vehicle.car_name || vehicle.carName || vehicle.name || vehicle.vehicle_name || vehicle.vehicleName || 'Vehicle';
+            const registration = vehicle.registration_number || vehicle.registrationNumber || vehicle.plate_number || vehicle.plateNumber || '';
+            const vehicleLabel = [vehicleName, registration].filter(Boolean).join(' - ');
 
             if (!vehicleValue) return;
 
-            option.value = vehicleValue;
+            option.value = String(vehicleValue);
             option.textContent = vehicleLabel || `Vehicle ${vehicleValue}`;
             vehicleSelect.appendChild(option);
         });
@@ -28577,9 +28587,7 @@ function manageDrivers() {
             <h3>Manage Drivers</h3>          
 
             <div class="driver-actions">
-
-                <button class="btn-primary" onclick="registerDriver()">Register New Driver</button>
-
+            
             </div>
 
             

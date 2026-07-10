@@ -51413,12 +51413,6 @@ function registerDriver(){
 
                             <option value="unassigned">Unassigned</option>
 
-                            <option value="car001">Toyota Hilux - T 1234 ABC</option>
-
-                            <option value="car002">Nissan Patrol - T 5678 DEF</option>
-
-                            <option value="car003">Isuzu D-Max - T 9012 GHI</option>
-
                         </select>
 
                     </div>
@@ -51662,8 +51656,6 @@ function manageDrivers() {
             <h3>Manage Drivers</h3>
             
             <div class="driver-actions">
-
-                <button class="btn-primary" onclick="registerDriver()">Register New Driver</button>
 
             </div>
 
@@ -91245,19 +91237,7 @@ async function reviewDeptStructure(department) {
 
                 <h4>Department Actions</h4>
 
-                <button class="action" onclick="exportDeptReport('${department}')">Export Report</button>
-
-                <button class="action" onclick="requestBudgetReview('${department}')">Request Budget Review</button>
-
                 <button class="action" onclick="backToStaffOversight()">Back to Staff Oversight</button>
-
-            </div>
-
-            
-
-            <div class="disclaimer">
-
-                <p><strong>Note:</strong> This department structure report is generated in real-time from the current database.</p>
 
             </div>
 
