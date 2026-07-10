@@ -76800,7 +76800,7 @@ async function loadLongTermGrowthRecords() {
             return null;
         };
 
-        const parseJsonArray_dup1 = (value) => {
+        const parseJsonArray = (value) => {
             if (Array.isArray(value)) {
                 return value;
             }
@@ -76808,7 +76808,7 @@ async function loadLongTermGrowthRecords() {
             return Array.isArray(parsed) ? parsed : [];
         };
 
-        const prettifyListItem_dup1 = (value) => {
+        const prettifyListItem = (value) => {
             if (value == null) {
                 return '';
             }
