@@ -784,15 +784,15 @@ document.addEventListener('DOMContentLoaded', function() {
         var expenseOverviewDiv = document.querySelector('.expense-overview');
 
         if (role === 'MD' || role === 'Managing Director') {
-            // MD: ONLY pending expenses allowed
+            // MD: Pending and All expenses allowed
             if (pendingBtn) pendingBtn.style.display = 'inline-block';
             if (confirmedBtn) confirmedBtn.style.display = 'none';
-            if (allBtn) allBtn.style.display = 'none';
+            if (allBtn) allBtn.style.display = 'inline-block';
             if (newBtn) newBtn.style.display = 'none';
             if (expenseOverviewDiv) expenseOverviewDiv.style.display = 'none';
             
-            // Force MD to the pending tab if they aren't on it
-            if (pendingBtn && !pendingBtn.classList.contains('active')) {
+            // Force MD to the pending tab if they aren't on it (or all tab if they clicked it)
+            if (pendingBtn && !pendingBtn.classList.contains('active') && allBtn && !allBtn.classList.contains('active')) {
                 pendingBtn.click();
             }
         } else if (role === 'Finance Manager' || role === 'Finance') {
