@@ -765,55 +765,67 @@ window.generatePayslipExcel = function generatePayslipExcel(payslips, month) {
     }
 };
 
-// Permission checking for Expense Management
+// Expense tab permission logic — extracted so it can be called immediately on render
+function getExpenseRole() {
+    if (typeof sessionManager !== 'undefined' && sessionManager.getUserRole) return sessionManager.getUserRole();
+    if (typeof window.sessionManager !== 'undefined' && window.sessionManager.getUserRole) return window.sessionManager.getUserRole();
+    if (typeof currentRole !== 'undefined') return currentRole;
+    return null;
+}
+
+function applyExpensePermissions() {
+    var role = getExpenseRole();
+    var pendingBtn = document.querySelector(`button[onclick="showExpenseTab('pending', event)"]`);
+    var confirmedBtn = document.querySelector(`button[onclick="showExpenseTab('confirmed', event)"]`);
+    var allBtn = document.querySelector(`button[onclick="showExpenseTab('all', event)"]`);
+    var newBtn = document.querySelector(`button[onclick="showExpenseTab('new', event)"]`);
+    var expenseOverviewDiv = document.querySelector('.expense-overview');
+
+    if (!pendingBtn) return; // Not on expense page yet
+
+    if (role === 'MD') {
+        // MD: Pending + All expenses only
+        if (pendingBtn) pendingBtn.style.display = 'inline-block';
+        if (confirmedBtn) confirmedBtn.style.display = 'none';
+        if (allBtn) allBtn.style.display = 'inline-block';
+        if (newBtn) newBtn.style.display = 'none';
+        if (expenseOverviewDiv) expenseOverviewDiv.style.display = 'none';
+
+        // Default to pending tab on first load
+        if (pendingBtn && !pendingBtn.classList.contains('active') && allBtn && !allBtn.classList.contains('active')) {
+            pendingBtn.click();
+        }
+    } else if (role === 'FINANCE' || role === 'Finance Manager' || role === 'Finance') {
+        // Finance Manager: everything EXCEPT pending
+        if (pendingBtn) pendingBtn.style.display = 'none';
+        if (confirmedBtn) confirmedBtn.style.display = 'inline-block';
+        if (allBtn) allBtn.style.display = 'inline-block';
+        if (newBtn) newBtn.style.display = 'inline-block';
+        if (expenseOverviewDiv) expenseOverviewDiv.style.display = 'block';
+
+        // If pending tab is currently active, switch to confirmed
+        if (pendingBtn && pendingBtn.classList.contains('active')) {
+            if (confirmedBtn) confirmedBtn.click();
+        }
+    } else {
+        // Admins/Others: full access
+        if (pendingBtn) pendingBtn.style.display = 'inline-block';
+        if (confirmedBtn) confirmedBtn.style.display = 'inline-block';
+        if (allBtn) allBtn.style.display = 'inline-block';
+        if (newBtn) newBtn.style.display = 'inline-block';
+        if (expenseOverviewDiv) expenseOverviewDiv.style.display = 'block';
+    }
+}
+
+// Wrap expenseControl so permissions are applied IMMEDIATELY after render (no flash)
 document.addEventListener('DOMContentLoaded', function() {
-    setInterval(function() {
-        var role = null;
-        if (typeof sessionManager !== 'undefined' && sessionManager.getUserRole) {
-            role = sessionManager.getUserRole();
-        } else if (typeof window.sessionManager !== 'undefined' && window.sessionManager.getUserRole) {
-            role = window.sessionManager.getUserRole();
-        } else if (typeof currentRole !== 'undefined') {
-            role = currentRole;
-        }
-
-        var pendingBtn = document.querySelector(`button[onclick="showExpenseTab('pending', event)"]`);
-        var confirmedBtn = document.querySelector(`button[onclick="showExpenseTab('confirmed', event)"]`);
-        var allBtn = document.querySelector(`button[onclick="showExpenseTab('all', event)"]`);
-        var newBtn = document.querySelector(`button[onclick="showExpenseTab('new', event)"]`);
-        var expenseOverviewDiv = document.querySelector('.expense-overview');
-
-        if (role === 'MD') {
-            // MD: Pending and All expenses allowed
-            if (pendingBtn) pendingBtn.style.display = 'inline-block';
-            if (confirmedBtn) confirmedBtn.style.display = 'none';
-            if (allBtn) allBtn.style.display = 'inline-block';
-            if (newBtn) newBtn.style.display = 'none';
-            if (expenseOverviewDiv) expenseOverviewDiv.style.display = 'none';
-            
-            // Force MD to the pending tab if they aren't on it (or all tab if they clicked it)
-            if (pendingBtn && !pendingBtn.classList.contains('active') && allBtn && !allBtn.classList.contains('active')) {
-                pendingBtn.click();
-            }
-        } else if (role === 'FINANCE' || role === 'Finance Manager' || role === 'Finance') {
-            // Finance Manager: EVERYTHING EXCEPT pending expenses allowed
-            if (pendingBtn) pendingBtn.style.display = 'none';
-            if (confirmedBtn) confirmedBtn.style.display = 'inline-block';
-            if (allBtn) allBtn.style.display = 'inline-block';
-            if (newBtn) newBtn.style.display = 'inline-block';
-            if (expenseOverviewDiv) expenseOverviewDiv.style.display = 'block';
-
-            // If pending is active, force switch to Confirmed Expenses
-            if (pendingBtn && pendingBtn.classList.contains('active')) {
-                if (confirmedBtn) confirmedBtn.click();
-            }
-        } else {
-            // Admins/Others
-            if (pendingBtn) pendingBtn.style.display = 'inline-block';
-            if (confirmedBtn) confirmedBtn.style.display = 'inline-block';
-            if (allBtn) allBtn.style.display = 'inline-block';
-            if (newBtn) newBtn.style.display = 'inline-block';
-            if (expenseOverviewDiv) expenseOverviewDiv.style.display = 'block';
-        }
-    }, 1000);
+    var _originalExpenseControl = window.expenseControl;
+    if (typeof _originalExpenseControl === 'function') {
+        window.expenseControl = function() {
+            _originalExpenseControl.apply(this, arguments);
+            // Apply permissions immediately after content is injected into the DOM
+            setTimeout(applyExpensePermissions, 0);
+        };
+    }
 });
+
