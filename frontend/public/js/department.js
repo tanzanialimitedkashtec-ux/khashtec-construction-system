@@ -776,14 +776,14 @@ document.addEventListener('DOMContentLoaded', function() {
             role = currentRole;
         }
 
-        var pendingBtn = document.querySelector('button[onclick="showExpenseTab(\\'pending\\', event)"]');
+        var pendingBtn = document.querySelector(`button[onclick="showExpenseTab('pending', event)"]`);
         if (pendingBtn) {
             if (role === 'Finance Manager' || role === 'Finance') {
                 pendingBtn.style.display = 'none';
                 
                 // If it's active, automatically switch to Confirmed Expenses
                 if (pendingBtn.classList.contains('active')) {
-                    var confirmedBtn = document.querySelector('button[onclick="showExpenseTab(\\'confirmed\\', event)"]');
+                    var confirmedBtn = document.querySelector(`button[onclick="showExpenseTab('confirmed', event)"]`);
                     if (confirmedBtn) {
                         confirmedBtn.click();
                     } else {
