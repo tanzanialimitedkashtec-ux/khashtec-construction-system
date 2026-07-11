@@ -12092,7 +12092,7 @@ function generatePayslipExcel(payslips, month) {
 }
 
 // Toggle Email Payslips form visibility and sync options
-function toggleEmailPayslipsForm(){
+window.toggleEmailPayslipsForm = function toggleEmailPayslipsForm(){
     const container = document.getElementById('emailPayslipsFormContainer');
     if (!container) return;
     const isHidden = container.classList.contains('hidden');
@@ -12117,7 +12117,7 @@ function toggleEmailPayslipsForm(){
 }
 
 // Submit Email Payslips form
-function submitEmailPayslipsForm(event){
+window.submitEmailPayslipsForm = function submitEmailPayslipsForm(event){
     if (event) event.preventDefault();
     // Copy selected values back to main controls that emailPayslips() uses
     const emailEmp = document.getElementById('emailPayslipsEmployee');
@@ -44385,7 +44385,7 @@ function generateBulkPayslips() {
 
 
 
-function emailPayslips() {
+window.emailPayslips = function emailPayslips() {
     const employeeId = document.getElementById('payslipEmployee').value;
     const month = document.getElementById('payslipMonth').value;
 
@@ -44398,7 +44398,7 @@ function emailPayslips() {
     const baseUrl = window.location.origin;
     console.log('ðŸ“§ Emailing payslips for month:', month, 'employee:', employeeId || 'all');
 
-    fetch(`${baseUrl}/payroll/payslips/email`, {
+    fetch(`${baseUrl}/api/payroll/payslips/email`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
