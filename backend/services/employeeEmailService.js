@@ -1,4 +1,5 @@
 require('dotenv').config();
+const nodemailer = require('nodemailer');
 const { sendAssignmentWhatsApp, sendPaymentWhatsApp } = require('./whatsappService');
 
 // ============================================
@@ -11,11 +12,38 @@ const RESEND_API_KEY = process.env.RESEND_API_KEY || '';
 const EMAIL_FROM = process.env.EMAIL_FROM || 'KASHTEC <onboarding@resend.dev>';
 const APP_URL = process.env.APP_URL || 'https://khashtec-construction-system-production-e7b5.up.railway.app';
 
+let smtpTransporter = null;
+
+function getSmtpTransporter() {
+    if (smtpTransporter) return smtpTransporter;
+
+    const smtpHost = process.env.SMTP_HOST;
+    const smtpPort = Number(process.env.SMTP_PORT || 587);
+    const smtpUser = process.env.SMTP_USER;
+    const smtpPass = process.env.SMTP_PASS;
+
+    if (!smtpHost || !smtpUser || !smtpPass) {
+        return null;
+    }
+
+    smtpTransporter = nodemailer.createTransport({
+        host: smtpHost,
+        port: smtpPort,
+        secure: process.env.SMTP_SECURE === 'true' || smtpPort === 465,
+        auth: {
+            user: smtpUser,
+            pass: smtpPass
+        }
+    });
+
+    return smtpTransporter;
+}
+
 if (RESEND_API_KEY) {
     console.log('✅ Employee email service configured (Resend HTTP API + WhatsApp)');
     console.log(`📧 Employee EMAIL_FROM is set to: "${EMAIL_FROM}"`);
 } else {
-    console.warn('⚠️ RESEND_API_KEY not set — Employee emails will use WhatsApp only');
+    console.warn('⚠️ RESEND_API_KEY not set — Employee emails will use SMTP fallback if configured, otherwise WhatsApp only');
 }
 
 /**
@@ -43,6 +71,27 @@ async function sendViaResend(to, subject, html) {
         throw new Error(`Resend API error: ${data.message || JSON.stringify(data)}`);
     }
     return data;
+}
+
+async function sendViaSmtp(to, subject, html) {
+    const transporter = getSmtpTransporter();
+    if (!transporter) return null;
+
+    const info = await transporter.sendMail({
+        from: EMAIL_FROM,
+        to: Array.isArray(to) ? to : [to],
+        subject,
+        html
+    });
+
+    return info;
+}
+
+async function sendEmail(to, subject, html) {
+    const resendResult = await sendViaResend(to, subject, html);
+    if (resendResult) return resendResult;
+
+    return sendViaSmtp(to, subject, html);
 }
 
 /**
@@ -116,7 +165,7 @@ async function sendAssignmentNotification(toEmail, details) {
     try {
         const subject = `New Assignment Notification | KASHTEC`;
         const html = buildAssignmentEmailHTML(details);
-        const result = await sendViaResend(toEmail, subject, html);
+        const result = await sendEmail(toEmail, subject, html);
         if (result) {
             console.log(`✅ Assignment email sent via Resend to ${toEmail}`);
             emailSent = true;
@@ -212,7 +261,7 @@ async function sendPaymentNotification(toEmail, details) {
     try {
         const subject = `Payment Notification | KASHTEC`;
         const html = buildPaymentEmailHTML(details);
-        const result = await sendViaResend(toEmail, subject, html);
+        const result = await sendEmail(toEmail, subject, html);
         if (result) {
             console.log(`✅ Payment email sent via Resend to ${toEmail}`);
             emailSent = true;

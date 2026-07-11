@@ -498,16 +498,30 @@ router.post('/employee-payments', async (req, res) => {
         notify('Employee Payment', (employeeName || 'Employee #' + employeeId) + ' paid TZS ' + parsedAmount.toLocaleString() + channelInfo, 'success');
         notify('Payroll Update', 'Payment sent: ' + (employeeName || 'Employee #' + employeeId) + ' paid TZS ' + parsedAmount.toLocaleString() + channelInfo, 'success', 'MD', 'Finance Manager');
 
-        // After INSERT succeeds, look up employee email and send notification
+        // After INSERT succeeds, look up the employee email and send a notification.
         try {
             const { sendPaymentNotification } = require('../services/employeeEmailService');
             const numericId = parseInt(employeeId) || 0;
             const [empRows] = await db.execute(
-                'SELECT ed.gmail FROM employee_details ed LEFT JOIN employees e ON ed.employee_id = e.id WHERE e.employee_id = ? OR e.id = ? LIMIT 1',
-                [employeeId, numericId]
+                `SELECT COALESCE(
+                    ed.gmail,
+                    ed.email,
+                    e.email,
+                    e.gmail,
+                    e.work_email,
+                    e.emp_email
+                ) AS recipient_email
+                FROM employees e
+                LEFT JOIN employee_details ed ON ed.employee_id = e.id
+                WHERE e.employee_id = ? OR e.id = ? OR e.emp_id = ?
+                LIMIT 1`,
+                [employeeId, numericId, employeeId]
             );
-            if (empRows && empRows[0] && empRows[0].gmail) {
-                await sendPaymentNotification(empRows[0].gmail, [
+
+            const recipientEmail = empRows && empRows[0] ? empRows[0].recipient_email : null;
+            if (recipientEmail) {
+                console.log(`📧 Sending payment email to ${recipientEmail}`);
+                await sendPaymentNotification(recipientEmail, [
                     { label: 'Employee Name', value: employeeName || 'Employee #' + employeeId },
                     { label: 'Amount', value: 'TZS ' + parsedAmount.toLocaleString() },
                     { label: 'Payment Method', value: method },
@@ -515,6 +529,8 @@ router.post('/employee-payments', async (req, res) => {
                     { label: 'Transaction ID', value: transactionId || 'N/A' },
                     { label: 'Status', value: paymentStatus }
                 ]);
+            } else {
+                console.warn(`⚠️ No employee email found for payment ID ${employeeId}`);
             }
         } catch (emailErr) {
             console.error('Failed to send payment email:', emailErr);
