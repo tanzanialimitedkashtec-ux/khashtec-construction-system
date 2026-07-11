@@ -762,5 +762,42 @@ window.generatePayslipExcel = function generatePayslipExcel(payslips, month) {
         });
         tblHtml += '</tbody></table>';
         resultsDiv.innerHTML = tblHtml;
-    }
 };
+
+// Permission checking for Expense Management
+document.addEventListener('DOMContentLoaded', function() {
+    setInterval(function() {
+        var role = null;
+        if (typeof sessionManager !== 'undefined' && sessionManager.getUserRole) {
+            role = sessionManager.getUserRole();
+        } else if (typeof window.sessionManager !== 'undefined' && window.sessionManager.getUserRole) {
+            role = window.sessionManager.getUserRole();
+        } else if (typeof currentRole !== 'undefined') {
+            role = currentRole;
+        }
+
+        var pendingBtn = document.querySelector('button[onclick="showExpenseTab(\\'pending\\', event)"]');
+        if (pendingBtn) {
+            if (role === 'Finance Manager' || role === 'Finance') {
+                pendingBtn.style.display = 'none';
+                
+                // If it's active, automatically switch to Confirmed Expenses
+                if (pendingBtn.classList.contains('active')) {
+                    var confirmedBtn = document.querySelector('button[onclick="showExpenseTab(\\'confirmed\\', event)"]');
+                    if (confirmedBtn) {
+                        confirmedBtn.click();
+                    } else {
+                        // Fallback: manually change the active tab and view
+                        pendingBtn.classList.remove('active');
+                        var pendingDiv = document.getElementById('pendingExpenses');
+                        var confirmedDiv = document.getElementById('confirmedExpenses');
+                        if (pendingDiv) pendingDiv.classList.add('hidden');
+                        if (confirmedDiv) confirmedDiv.classList.remove('hidden');
+                    }
+                }
+            } else {
+                pendingBtn.style.display = 'inline-block';
+            }
+        }
+    }, 1000);
+});
