@@ -778,27 +778,42 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         var pendingBtn = document.querySelector(`button[onclick="showExpenseTab('pending', event)"]`);
-        if (pendingBtn) {
-            if (role === 'Finance Manager' || role === 'Finance') {
-                pendingBtn.style.display = 'none';
-                
-                // If it's active, automatically switch to Confirmed Expenses
-                if (pendingBtn.classList.contains('active')) {
-                    var confirmedBtn = document.querySelector(`button[onclick="showExpenseTab('confirmed', event)"]`);
-                    if (confirmedBtn) {
-                        confirmedBtn.click();
-                    } else {
-                        // Fallback: manually change the active tab and view
-                        pendingBtn.classList.remove('active');
-                        var pendingDiv = document.getElementById('pendingExpenses');
-                        var confirmedDiv = document.getElementById('confirmedExpenses');
-                        if (pendingDiv) pendingDiv.classList.add('hidden');
-                        if (confirmedDiv) confirmedDiv.classList.remove('hidden');
-                    }
-                }
-            } else {
-                pendingBtn.style.display = 'inline-block';
+        var confirmedBtn = document.querySelector(`button[onclick="showExpenseTab('confirmed', event)"]`);
+        var allBtn = document.querySelector(`button[onclick="showExpenseTab('all', event)"]`);
+        var newBtn = document.querySelector(`button[onclick="showExpenseTab('new', event)"]`);
+        var expenseOverviewDiv = document.querySelector('.expense-overview');
+
+        if (role === 'MD' || role === 'Managing Director') {
+            // MD: ONLY pending expenses allowed
+            if (pendingBtn) pendingBtn.style.display = 'inline-block';
+            if (confirmedBtn) confirmedBtn.style.display = 'none';
+            if (allBtn) allBtn.style.display = 'none';
+            if (newBtn) newBtn.style.display = 'none';
+            if (expenseOverviewDiv) expenseOverviewDiv.style.display = 'none';
+            
+            // Force MD to the pending tab if they aren't on it
+            if (pendingBtn && !pendingBtn.classList.contains('active')) {
+                pendingBtn.click();
             }
+        } else if (role === 'Finance Manager' || role === 'Finance') {
+            // Finance Manager: EVERYTHING EXCEPT pending expenses allowed
+            if (pendingBtn) pendingBtn.style.display = 'none';
+            if (confirmedBtn) confirmedBtn.style.display = 'inline-block';
+            if (allBtn) allBtn.style.display = 'inline-block';
+            if (newBtn) newBtn.style.display = 'inline-block';
+            if (expenseOverviewDiv) expenseOverviewDiv.style.display = 'block';
+
+            // If pending is active, force switch to Confirmed Expenses
+            if (pendingBtn && pendingBtn.classList.contains('active')) {
+                if (confirmedBtn) confirmedBtn.click();
+            }
+        } else {
+            // Admins/Others
+            if (pendingBtn) pendingBtn.style.display = 'inline-block';
+            if (confirmedBtn) confirmedBtn.style.display = 'inline-block';
+            if (allBtn) allBtn.style.display = 'inline-block';
+            if (newBtn) newBtn.style.display = 'inline-block';
+            if (expenseOverviewDiv) expenseOverviewDiv.style.display = 'block';
         }
     }, 1000);
 });
