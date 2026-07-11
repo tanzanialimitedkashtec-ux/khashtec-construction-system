@@ -784,9 +784,9 @@ function applyExpensePermissions() {
     if (!pendingBtn) return; // Not on expense page yet
 
     if (role === 'MD') {
-        // MD: Pending + All expenses only
+        // MD: Pending, Confirmed and All expenses allowed
         if (pendingBtn) pendingBtn.style.display = 'inline-block';
-        if (confirmedBtn) confirmedBtn.style.display = 'none';
+        if (confirmedBtn) confirmedBtn.style.display = 'inline-block';
         if (allBtn) allBtn.style.display = 'inline-block';
         if (newBtn) newBtn.style.display = 'none';
         if (expenseOverviewDiv) expenseOverviewDiv.style.display = 'none';
