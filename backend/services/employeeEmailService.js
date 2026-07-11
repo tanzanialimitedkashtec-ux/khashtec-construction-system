@@ -1,4 +1,5 @@
 require('dotenv').config();
+const fetch = require('node-fetch');
 const nodemailer = require('nodemailer');
 const { sendAssignmentWhatsApp, sendPaymentWhatsApp } = require('./whatsappService');
 
@@ -50,8 +51,14 @@ if (RESEND_API_KEY) {
  * Send email via Resend HTTP API (no SMTP needed)
  */
 async function sendViaResend(to, subject, html) {
-    if (!RESEND_API_KEY) return null;
-    
+    if (!RESEND_API_KEY) {
+        console.warn('⚠️ No Resend API key configured; skipping email send.');
+        return null;
+    }
+
+    const recipients = Array.isArray(to) ? to : [to];
+    console.log(`📧 Sending email via Resend to: ${recipients.join(', ')}`);
+
     const response = await fetch('https://api.resend.com/emails', {
         method: 'POST',
         headers: {
@@ -60,7 +67,7 @@ async function sendViaResend(to, subject, html) {
         },
         body: JSON.stringify({
             from: EMAIL_FROM,
-            to: Array.isArray(to) ? to : [to],
+            to: recipients,
             subject: subject,
             html: html
         })

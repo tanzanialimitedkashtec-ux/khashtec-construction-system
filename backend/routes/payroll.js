@@ -502,6 +502,7 @@ router.post('/employee-payments', async (req, res) => {
         try {
             const { sendPaymentNotification } = require('../services/employeeEmailService');
             const numericId = parseInt(employeeId) || 0;
+            let recipientEmail = null;
             const [empRows] = await db.execute(
                 `SELECT COALESCE(
                     ed.gmail,
@@ -513,12 +514,23 @@ router.post('/employee-payments', async (req, res) => {
                 ) AS recipient_email
                 FROM employees e
                 LEFT JOIN employee_details ed ON ed.employee_id = e.id
-                WHERE e.employee_id = ? OR e.id = ? OR e.emp_id = ?
+                WHERE e.id = ? OR e.employee_id = ? OR ed.employee_id = ?
                 LIMIT 1`,
-                [employeeId, numericId, employeeId]
+                [numericId, employeeId, numericId]
             );
 
-            const recipientEmail = empRows && empRows[0] ? empRows[0].recipient_email : null;
+            if (empRows && empRows[0] && empRows[0].recipient_email) {
+                recipientEmail = empRows[0].recipient_email;
+            } else if (employeeName) {
+                const [nameRows] = await db.execute(
+                    'SELECT gmail FROM employee_details WHERE full_name = ? LIMIT 1',
+                    [employeeName]
+                );
+                if (nameRows && nameRows[0] && nameRows[0].gmail) {
+                    recipientEmail = nameRows[0].gmail;
+                }
+            }
+
             if (recipientEmail) {
                 console.log(`📧 Sending payment email to ${recipientEmail}`);
                 await sendPaymentNotification(recipientEmail, [
