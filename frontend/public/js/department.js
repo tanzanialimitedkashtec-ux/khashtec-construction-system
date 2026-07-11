@@ -818,14 +818,18 @@ function applyExpensePermissions() {
 }
 
 // Wrap expenseControl so permissions are applied IMMEDIATELY after render (no flash)
+// Uses MutationObserver which fires before the browser paints — zero flash guaranteed
 document.addEventListener('DOMContentLoaded', function() {
-    var _originalExpenseControl = window.expenseControl;
-    if (typeof _originalExpenseControl === 'function') {
-        window.expenseControl = function() {
-            _originalExpenseControl.apply(this, arguments);
-            // Apply permissions immediately after content is injected into the DOM
-            setTimeout(applyExpensePermissions, 0);
-        };
-    }
+    var contentArea = document.getElementById('contentArea');
+    if (!contentArea) return;
+
+    var observer = new MutationObserver(function() {
+        var pendingBtn = contentArea.querySelector(`button[onclick="showExpenseTab('pending', event)"]`);
+        if (pendingBtn) {
+            applyExpensePermissions();
+        }
+    });
+
+    observer.observe(contentArea, { childList: true, subtree: true });
 });
 
