@@ -503,7 +503,7 @@ router.post('/employee-payments', async (req, res) => {
             const { sendPaymentNotification } = require('../services/employeeEmailService');
             const numericId = parseInt(employeeId) || 0;
             let recipientEmail = null;
-            const [empRows] = await db.execute(
+            const empRows = await db.execute(
                 `SELECT ed.gmail AS recipient_email
                 FROM employees e
                 LEFT JOIN employee_details ed ON ed.employee_id = e.id
@@ -515,7 +515,7 @@ router.post('/employee-payments', async (req, res) => {
             if (empRows && empRows[0] && empRows[0].recipient_email) {
                 recipientEmail = empRows[0].recipient_email;
             } else if (employeeName) {
-                const [nameRows] = await db.execute(
+                const nameRows = await db.execute(
                     'SELECT gmail FROM employee_details WHERE full_name = ? LIMIT 1',
                     [employeeName]
                 );
