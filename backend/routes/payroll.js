@@ -504,14 +504,7 @@ router.post('/employee-payments', async (req, res) => {
             const numericId = parseInt(employeeId) || 0;
             let recipientEmail = null;
             const [empRows] = await db.execute(
-                `SELECT COALESCE(
-                    ed.gmail,
-                    ed.email,
-                    e.email,
-                    e.gmail,
-                    e.work_email,
-                    e.emp_email
-                ) AS recipient_email
+                `SELECT ed.gmail AS recipient_email
                 FROM employees e
                 LEFT JOIN employee_details ed ON ed.employee_id = e.id
                 WHERE e.id = ? OR e.employee_id = ? OR ed.employee_id = ?
