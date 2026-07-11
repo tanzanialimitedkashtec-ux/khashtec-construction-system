@@ -98042,19 +98042,17 @@ function sendReminder_dup2(saleId) {
 
 }
 
-/* ── Premium Compliance Card Styles ─────────────────────── */
+/* ── Compliance Card Styles ─────────────────────── */
 
 .compliance-card {
-    background: linear-gradient(145deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
-    border: 2px solid rgba(99, 102, 241, 0.35);
-    border-radius: 14px;
-    padding: 18px;
-    color: #e2e8f0;
+    background: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 2px;
+    padding: 16px;
+    color: #2c3e50;
     position: relative;
     overflow: hidden;
-    box-shadow:
-        0 3px 16px rgba(0, 0, 0, 0.30),
-        0 1px 0 rgba(99, 102, 241, 0.12) inset;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
     animation: ccFadeIn 0.4s ease-out;
 }
 
@@ -98064,20 +98062,13 @@ function sendReminder_dup2(saleId) {
     top: 0;
     left: 0;
     right: 0;
-    height: 3px;
-    background: linear-gradient(90deg, #6366f1, #8b5cf6, #a78bfa, #6366f1);
-    background-size: 200% 100%;
-    animation: ccGradientSlide 4s ease infinite;
+    height: 2px;
+    background: #0b3d91;
 }
 
 @keyframes ccFadeIn {
     from { opacity: 0; transform: translateY(8px); }
     to   { opacity: 1; transform: translateY(0); }
-}
-
-@keyframes ccGradientSlide {
-    0%, 100% { background-position: 0% 50%; }
-    50%      { background-position: 100% 50%; }
 }
 
 /* ── Header ─────────────────────── */
@@ -98126,16 +98117,16 @@ function sendReminder_dup2(saleId) {
 /* ── Upload Section ─────────────────────── */
 
 .cc-upload-section {
-    background: rgba(30, 41, 59, 0.65);
-    border: 1px solid rgba(99, 102, 241, 0.18);
-    border-radius: 12px;
-    padding: 12px;
+    background: #ffffff;
+    border: 1px solid #e9ecef;
+    border-radius: 2px;
+    padding: 10px;
     transition: border-color 0.3s ease, box-shadow 0.3s ease;
 }
 
 .cc-upload-section:hover {
-    border-color: rgba(99, 102, 241, 0.35);
-    box-shadow: 0 0 10px rgba(99, 102, 241, 0.08);
+    border-color: #cfe0ff;
+    box-shadow: 0 1px 2px rgba(11, 61, 145, 0.06);
 }
 
 .cc-section-header {
@@ -98197,10 +98188,10 @@ function sendReminder_dup2(saleId) {
     width: 100%;
     padding: 8px 10px;
     font-size: 12px;
-    color: #e2e8f0;
-    background: rgba(15, 23, 42, 0.7);
-    border: 1px solid rgba(99, 102, 241, 0.2);
-    border-radius: 8px;
+    color: #2c3e50;
+    background: #ffffff;
+    border: 1px solid #ced4da;
+    border-radius: 2px;
     box-sizing: border-box;
     transition: border-color 0.25s ease, box-shadow 0.25s ease, background 0.25s ease;
     outline: none;
@@ -98208,9 +98199,9 @@ function sendReminder_dup2(saleId) {
 }
 
 .cc-input:focus {
-    border-color: #6366f1;
-    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
-    background: rgba(15, 23, 42, 0.9);
+    border-color: #0b3d91;
+    box-shadow: 0 0 0 2px rgba(11, 61, 145, 0.1);
+    background: #ffffff;
 }
 
 .cc-input::placeholder {
@@ -98253,29 +98244,28 @@ function sendReminder_dup2(saleId) {
 
 .cc-upload-btn {
     width: 100%;
-    padding: 11px 16px;
-    font-size: 13px;
+    padding: 8px 12px;
+    font-size: 12px;
     font-weight: 600;
     color: #fff;
-    background: linear-gradient(135deg, #059669, #10b981);
+    background: #0b3d91;
     border: none;
-    border-radius: 10px;
+    border-radius: 2px;
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 8px;
-    transition: transform 0.2s ease, box-shadow 0.2s ease, opacity 0.2s ease;
-    box-shadow: 0 2px 10px rgba(16, 185, 129, 0.25);
+    gap: 6px;
+    transition: opacity 0.2s ease;
+    box-shadow: none;
 }
 
 .cc-upload-btn:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 4px 16px rgba(16, 185, 129, 0.35);
+    opacity: 0.9;
 }
 
 .cc-upload-btn:active {
-    transform: translateY(0);
+    opacity: 0.85;
 }
 
 /* ── Quick Actions ─────────────────────── */
@@ -98296,28 +98286,26 @@ function sendReminder_dup2(saleId) {
 .cc-action-btn {
     display: inline-flex;
     align-items: center;
-    gap: 8px;
-    padding: 10px 18px;
-    font-size: 13px;
+    gap: 6px;
+    padding: 8px 12px;
+    font-size: 12px;
     font-weight: 600;
-    color: #c7d2fe;
-    background: rgba(99, 102, 241, 0.12);
-    border: 1px solid rgba(99, 102, 241, 0.25);
-    border-radius: 10px;
+    color: #0b3d91;
+    background: #e9f2ff;
+    border: 1px solid #cfe0ff;
+    border-radius: 2px;
     cursor: pointer;
-    transition: all 0.25s ease;
+    transition: all 0.2s ease;
 }
 
 .cc-action-btn:hover {
-    background: rgba(99, 102, 241, 0.22);
-    border-color: rgba(99, 102, 241, 0.45);
-    color: #e0e7ff;
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.15);
+    background: #dcecff;
+    border-color: #b8d6ff;
+    color: #0b3d91;
 }
 
 .cc-action-btn svg {
-    color: #818cf8;
+    color: #0b3d91;
 }
 
 /* ── Disclaimer ─────────────────────── */
@@ -98327,10 +98315,10 @@ function sendReminder_dup2(saleId) {
     align-items: flex-start;
     gap: 8px;
     margin-top: 20px;
-    padding: 12px 14px;
-    background: rgba(99, 102, 241, 0.06);
-    border: 1px solid rgba(99, 102, 241, 0.12);
-    border-radius: 10px;
+    padding: 10px 12px;
+    background: #eef4ff;
+    border: 1px solid #d8e6ff;
+    border-radius: 2px;
 }
 
 .cc-disclaimer svg {
