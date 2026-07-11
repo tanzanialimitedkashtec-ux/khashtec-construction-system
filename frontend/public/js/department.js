@@ -762,6 +762,7 @@ window.generatePayslipExcel = function generatePayslipExcel(payslips, month) {
         });
         tblHtml += '</tbody></table>';
         resultsDiv.innerHTML = tblHtml;
+    }
 };
 
 // Permission checking for Expense Management
