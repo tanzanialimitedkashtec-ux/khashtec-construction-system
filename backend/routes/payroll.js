@@ -399,11 +399,16 @@ router.get('/payslips/employee/:employeeId/:month', async (req, res) => {
         const { employeeId, month } = req.params;
         console.log('📄 GET /api/payroll/payslips/employee/' + employeeId + '/' + month);
 
+        // Find the employee's string ID (EMP...) if they passed the numeric ID
+        const empData = await db.execute('SELECT id, employee_id FROM employees WHERE id = ? OR employee_id = ? LIMIT 1', [employeeId, employeeId]);
+        const targetEmployeeIdString = empData && empData[0] ? empData[0].employee_id : employeeId;
+        const targetEmployeeIdInt = empData && empData[0] ? empData[0].id : employeeId;
+
         const payslips = await db.execute(`
             SELECT * FROM payslip_records 
-            WHERE employee_id = ? AND payroll_month = ?
+            WHERE (employee_id = ? OR employee_id = ?) AND payroll_month = ?
             LIMIT 1
-        `, [employeeId, month]);
+        `, [targetEmployeeIdString, targetEmployeeIdInt, month]);
 
         res.json({ success: true, data: payslips && payslips[0] ? payslips[0] : null });
     } catch (error) {
@@ -427,8 +432,13 @@ router.post('/payslips/email', async (req, res) => {
         let payslipParams = [month];
 
         if (employeeId && employeeId !== 'all') {
-            payslipQuery += ` AND employee_id = ?`;
-            payslipParams.push(employeeId);
+            // Find the employee's string ID (EMP...) if they passed the numeric ID
+            const empData = await db.execute('SELECT id, employee_id FROM employees WHERE id = ? OR employee_id = ? LIMIT 1', [employeeId, employeeId]);
+            const targetEmployeeIdString = empData && empData[0] ? empData[0].employee_id : employeeId;
+            const targetEmployeeIdInt = empData && empData[0] ? empData[0].id : employeeId;
+
+            payslipQuery += ` AND (employee_id = ? OR employee_id = ?)`;
+            payslipParams.push(targetEmployeeIdString, targetEmployeeIdInt);
         }
 
         const payslips = await db.execute(payslipQuery, payslipParams);
@@ -447,13 +457,14 @@ router.post('/payslips/email', async (req, res) => {
         // 2. For each payslip, look up the employee email and send
         for (const payslip of payslips) {
             try {
-                // Look up email from employee_details
+                // Look up email from employee_details by joining employees to match the string employee_id
                 const empRows = await db.execute(
                     `SELECT ed.gmail AS recipient_email, ed.full_name
-                     FROM employee_details ed
-                     WHERE ed.employee_id = ?
+                     FROM employees e
+                     LEFT JOIN employee_details ed ON ed.employee_id = e.id
+                     WHERE e.employee_id = ? OR e.id = ?
                      LIMIT 1`,
-                    [parseInt(payslip.employee_id) || 0]
+                    [payslip.employee_id, parseInt(payslip.employee_id) || 0]
                 );
 
                 const recipientEmail = empRows && empRows[0] && empRows[0].recipient_email;
