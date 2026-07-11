@@ -507,3 +507,99 @@
 
   // Optional: if contentArea exists and a global flag set later, we could auto-run
 })();
+
+window.toggleEmailPayslipsForm = function toggleEmailPayslipsForm(){
+    const container = document.getElementById('emailPayslipsFormContainer');
+    if (!container) return;
+    const isHidden = container.classList.contains('hidden');
+
+    if (isHidden) {
+        const srcEmp = document.getElementById('payslipEmployee');
+        const dstEmp = document.getElementById('emailPayslipsEmployee');
+        const srcMon = document.getElementById('payslipMonth');
+        const dstMon = document.getElementById('emailPayslipsMonth');
+        if (srcEmp && dstEmp) {
+            dstEmp.innerHTML = srcEmp.innerHTML;
+            dstEmp.value = srcEmp.value;
+        }
+        if (srcMon && dstMon) {
+            dstMon.innerHTML = srcMon.innerHTML;
+            dstMon.value = srcMon.value;
+        }
+    }
+
+    container.classList.toggle('hidden');
+}
+
+window.submitEmailPayslipsForm = function submitEmailPayslipsForm(event){
+    if (event) event.preventDefault();
+    const emailEmp = document.getElementById('emailPayslipsEmployee');
+    const emailMon = document.getElementById('emailPayslipsMonth');
+    const mainEmp = document.getElementById('payslipEmployee');
+    const mainMon = document.getElementById('payslipMonth');
+    if (emailEmp && mainEmp) mainEmp.value = emailEmp.value;
+    if (emailMon && mainMon) mainMon.value = emailMon.value;
+
+    if (typeof window.emailPayslips === 'function') {
+        window.emailPayslips();
+    }
+    const container = document.getElementById('emailPayslipsFormContainer');
+    if (container) container.classList.add('hidden');
+    return false;
+}
+
+window.emailPayslips = function emailPayslips() {
+    const employeeId = document.getElementById('payslipEmployee').value;
+    const month = document.getElementById('payslipMonth').value;
+
+    if (!month) {
+        if(typeof customAlert === 'function') {
+            customAlert('Please select a payroll month.', 'Validation Error', 'error');
+        } else {
+            alert('Please select a payroll month.');
+        }
+        console.error('Email payslips failed: no month selected');
+        return;
+    }
+
+    const baseUrl = window.location.origin;
+    console.log('Emailing payslips for month:', month, 'employee:', employeeId || 'all');
+
+    const token = typeof sessionManager !== 'undefined' ? sessionManager.getAuthToken() : (window.sessionManager ? window.sessionManager.getAuthToken() : '');
+    
+    fetch(${baseUrl}/api/payroll/payslips/email, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + token
+        },
+        body: JSON.stringify({ month, employeeId: employeeId || 'all' })
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.success) {
+            console.log('Payslips emailed successfully:', data);
+            if(typeof customAlert === 'function') {
+                customAlert(Payslips emailed successfully!\n\nMonth: \nRecords updated: , 'Payslips Emailed', 'success');
+            } else {
+                alert(Payslips emailed successfully!\n\nMonth: \nRecords updated: );
+            }
+        } else {
+            console.error('Failed to email payslips:', data.error);
+            if(typeof customAlert === 'function') {
+                customAlert(Failed to email payslips: , 'Error', 'error');
+            } else {
+                alert(Failed to email payslips: );
+            }
+        }
+    })
+    .catch(err => {
+        console.error('Error emailing payslips:', err);
+        if(typeof customAlert === 'function') {
+            customAlert('Failed to email payslips due to a network error.', 'Error', 'error');
+        } else {
+            alert('Failed to email payslips due to a network error.');
+        }
+    });
+};
+
