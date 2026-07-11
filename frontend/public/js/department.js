@@ -602,3 +602,165 @@ window.emailPayslips = function emailPayslips() {
         }
     });
 };
+
+window.handleGeneratePayslips = function handleGeneratePayslips(event){
+    if (event) event.preventDefault();
+    if (typeof window.generateIndividualPayslip === 'function') {
+        window.generateIndividualPayslip();
+    }
+    return false;
+};
+
+window.generateIndividualPayslip = function generateIndividualPayslip() {
+    const employeeId = document.getElementById('payslipEmployee').value;
+    const month = document.getElementById('payslipMonth').value;
+
+    if (!month) {
+        if(typeof customAlert === 'function') customAlert('Please select a payroll month.', 'Validation Error', 'error');
+        else alert('Please select a payroll month.');
+        console.error('Payslip generation failed: no month selected');
+        return;
+    }
+
+    const baseUrl = window.location.origin;
+    const url = employeeId && employeeId !== 'all'
+        ? `${baseUrl}/api/payroll/payslips/employee/${employeeId}/${encodeURIComponent(month)}`
+        : `${baseUrl}/api/payroll/payslips/${encodeURIComponent(month)}`;
+
+    console.log('Generating payslip(s) for month:', month, 'employee:', employeeId || 'all');
+    
+    const token = typeof sessionManager !== 'undefined' ? sessionManager.getAuthToken() : (window.sessionManager ? window.sessionManager.getAuthToken() : '');
+
+    fetch(url, {
+        headers: { 'Authorization': `Bearer ${token}` }
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.success) {
+            let payslips = [];
+            if (Array.isArray(data.data)) {
+                payslips = data.data;
+            } else if (data.data) {
+                payslips = [data.data];
+            }
+
+            if (payslips.length === 0) {
+                console.warn('No payslip data found for', month);
+                if(typeof customAlert === 'function') customAlert('No payslip data found for the selected month. Process payroll first.', 'No Data', 'error');
+                else alert('No payslip data found for the selected month. Process payroll first.');
+                document.getElementById('payslipResults').innerHTML = '<p>No payslip data found. Please process payroll first.</p>';
+                return;
+            }
+
+            console.log('Payslip data retrieved:', payslips.length, 'record(s)');
+            if (typeof window.generatePayslipExcel === 'function') {
+                window.generatePayslipExcel(payslips, month);
+            }
+        } else {
+            console.error('Failed to fetch payslips:', data.error);
+            if(typeof customAlert === 'function') customAlert(`Failed to fetch payslip data: ${data.error}`, 'Error', 'error');
+            else alert(`Failed to fetch payslip data: ${data.error}`);
+        }
+    })
+    .catch(err => {
+        console.error('Error fetching payslips:', err);
+        if(typeof customAlert === 'function') customAlert('Network error fetching payslip data. Please try again.', 'Error', 'error');
+        else alert('Network error fetching payslip data. Please try again.');
+    });
+};
+
+window.generatePayslipExcel = function generatePayslipExcel(payslips, month) {
+    console.log('Generating Excel payslip for', payslips.length, 'employees, month:', month);
+
+    const headers = ['Employee ID', 'Employee Name', 'Payroll Month', 'Basic Salary (TZS)', 'Allowances (TZS)', 'Gross Salary (TZS)', 'NSSF Deduction (TZS)', 'PAYE Tax (TZS)', 'Other Deductions (TZS)', 'Net Salary (TZS)'];
+    const rows = payslips.map(p => [
+        p.employee_id || '',
+        p.employee_name || '',
+        p.payroll_month || month,
+        parseFloat(p.basic_salary || 0),
+        parseFloat(p.allowances || 0),
+        parseFloat(p.gross_salary || 0),
+        parseFloat(p.nssf_deduction || 0),
+        parseFloat(p.paye_tax || 0),
+        parseFloat(p.other_deductions || 0),
+        parseFloat(p.net_salary || 0)
+    ]);
+
+    const totals = ['', 'TOTALS', '', 0, 0, 0, 0, 0, 0, 0];
+    rows.forEach(r => {
+        for (let i = 3; i <= 9; i++) totals[i] += r[i];
+    });
+    rows.push(totals);
+
+    let xmlRows = '';
+    xmlRows += '<Row>';
+    headers.forEach(h => { xmlRows += `<Cell><Data ss:Type="String">${h}</Data></Cell>`; });
+    xmlRows += '</Row>';
+    rows.forEach(row => {
+        xmlRows += '<Row>';
+        row.forEach((cell, idx) => {
+            if (idx <= 2) {
+                xmlRows += `<Cell><Data ss:Type="String">${String(cell).replace(/&/g,'&amp;').replace(/</g,'&lt;')}</Data></Cell>`;
+            } else {
+                xmlRows += `<Cell><Data ss:Type="Number">${cell}</Data></Cell>`;
+            }
+        });
+        xmlRows += '</Row>';
+    });
+
+    const xml = `<?xml version="1.0"?>
+<?mso-application progid="Excel.Sheet"?>
+<Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet"
+ xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet">
+ <Styles>
+  <Style ss:ID="header"><Font ss:Bold="1"/><Interior ss:Color="#F8F9FA" ss:Pattern="Solid"/></Style>
+  <Style ss:ID="currency"><NumberFormat ss:Format="#,##0.00"/></Style>
+ </Styles>
+ <Worksheet ss:Name="Payslips">
+  <Table>
+   ${xmlRows}
+  </Table>
+ </Worksheet>
+</Workbook>`;
+
+    const blob = new Blob([xml], { type: 'application/vnd.ms-excel' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'Payslips_' + month.replace(/\s+/g, '_') + '.xls';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+
+    if(typeof customAlert === 'function') customAlert(`Payslips generated successfully!\n\nMonth: ${month}\nEmployees: ${payslips.length}\nFile: ${a.download}\n\nThe Excel file has been downloaded.`, 'Payslips Generated', 'success');
+    else alert(`Payslips generated successfully!\n\nMonth: ${month}\nEmployees: ${payslips.length}\nFile: ${a.download}\n\nThe Excel file has been downloaded.`);
+
+    const resultsDiv = document.getElementById('payslipResults');
+    if (resultsDiv) {
+        let tblHtml = `<h5>Payslip Details - ${month}</h5>
+            <table style="width:100%;border-collapse:collapse;margin-top:10px;">
+            <thead><tr style="background:#f8f9fa;">
+                <th style="padding:8px;border:1px solid #ddd;">Employee</th>
+                <th style="padding:8px;border:1px solid #ddd;text-align:right;">Basic</th>
+                <th style="padding:8px;border:1px solid #ddd;text-align:right;">Allowances</th>
+                <th style="padding:8px;border:1px solid #ddd;text-align:right;">Gross</th>
+                <th style="padding:8px;border:1px solid #ddd;text-align:right;">NSSF</th>
+                <th style="padding:8px;border:1px solid #ddd;text-align:right;">PAYE</th>
+                <th style="padding:8px;border:1px solid #ddd;text-align:right;">Net</th>
+            </tr></thead><tbody>`;
+        payslips.forEach(p => {
+            tblHtml += `<tr>
+                <td style="padding:8px;border:1px solid #ddd;">${p.employee_name || p.employee_id}</td>
+                <td style="padding:8px;border:1px solid #ddd;text-align:right;">TZS ${parseFloat(p.basic_salary || 0).toLocaleString()}</td>
+                <td style="padding:8px;border:1px solid #ddd;text-align:right;">TZS ${parseFloat(p.allowances || 0).toLocaleString()}</td>
+                <td style="padding:8px;border:1px solid #ddd;text-align:right;">TZS ${parseFloat(p.gross_salary || 0).toLocaleString()}</td>
+                <td style="padding:8px;border:1px solid #ddd;text-align:right;">TZS ${parseFloat(p.nssf_deduction || 0).toLocaleString()}</td>
+                <td style="padding:8px;border:1px solid #ddd;text-align:right;">TZS ${parseFloat(p.paye_tax || 0).toLocaleString()}</td>
+                <td style="padding:8px;border:1px solid #ddd;text-align:right;">TZS ${parseFloat(p.net_salary || 0).toLocaleString()}</td>
+            </tr>`;
+        });
+        tblHtml += '</tbody></table>';
+        resultsDiv.innerHTML = tblHtml;
+    }
+};
