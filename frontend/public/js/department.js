@@ -567,7 +567,7 @@ window.emailPayslips = function emailPayslips() {
 
     const token = typeof sessionManager !== 'undefined' ? sessionManager.getAuthToken() : (window.sessionManager ? window.sessionManager.getAuthToken() : '');
     
-    fetch(${baseUrl}/api/payroll/payslips/email, {
+    fetch(`${baseUrl}/api/payroll/payslips/email`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -580,16 +580,16 @@ window.emailPayslips = function emailPayslips() {
         if (data.success) {
             console.log('Payslips emailed successfully:', data);
             if(typeof customAlert === 'function') {
-                customAlert(Payslips emailed successfully!\n\nMonth: \nRecords updated: , 'Payslips Emailed', 'success');
+                customAlert(`Payslips emailed successfully!\n\nMonth: ${month}\nRecords updated: ${data.updated || 0}`, 'Payslips Emailed', 'success');
             } else {
-                alert(Payslips emailed successfully!\n\nMonth: \nRecords updated: );
+                alert(`Payslips emailed successfully!\n\nMonth: ${month}\nRecords updated: ${data.updated || 0}`);
             }
         } else {
             console.error('Failed to email payslips:', data.error);
             if(typeof customAlert === 'function') {
-                customAlert(Failed to email payslips: , 'Error', 'error');
+                customAlert(`Failed to email payslips: ${data.error}`, 'Error', 'error');
             } else {
-                alert(Failed to email payslips: );
+                alert(`Failed to email payslips: ${data.error}`);
             }
         }
     })
@@ -602,4 +602,3 @@ window.emailPayslips = function emailPayslips() {
         }
     });
 };
-
