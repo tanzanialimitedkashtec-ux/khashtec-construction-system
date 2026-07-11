@@ -418,17 +418,101 @@ router.post('/payslips/email', async (req, res) => {
         const { month, employeeId } = req.body;
         console.log('📧 POST /api/payroll/payslips/email', { month, employeeId });
 
-        let query = `UPDATE payslip_records SET emailed = TRUE WHERE payroll_month = ?`;
-        let params = [month];
-
-        if (employeeId && employeeId !== 'all') {
-            query += ` AND employee_id = ?`;
-            params.push(employeeId);
+        if (!month) {
+            return res.status(400).json({ success: false, error: 'Month is required' });
         }
 
-        const result = await db.execute(query, params);
+        // 1. Fetch payslip records for the selected month/employee
+        let payslipQuery = `SELECT * FROM payslip_records WHERE payroll_month = ?`;
+        let payslipParams = [month];
 
-        res.json({ success: true, message: 'Payslips marked as emailed', updated: result ? result.affectedRows : 0 });
+        if (employeeId && employeeId !== 'all') {
+            payslipQuery += ` AND employee_id = ?`;
+            payslipParams.push(employeeId);
+        }
+
+        const payslips = await db.execute(payslipQuery, payslipParams);
+
+        if (!payslips || payslips.length === 0) {
+            return res.json({ success: false, error: 'No payslip records found for ' + month });
+        }
+
+        console.log(`📧 Found ${payslips.length} payslip(s) to email for ${month}`);
+
+        const { sendPaymentNotification } = require('../services/employeeEmailService');
+        let emailsSent = 0;
+        let emailsFailed = 0;
+        const results = [];
+
+        // 2. For each payslip, look up the employee email and send
+        for (const payslip of payslips) {
+            try {
+                // Look up email from employee_details
+                const empRows = await db.execute(
+                    `SELECT ed.gmail AS recipient_email, ed.full_name
+                     FROM employee_details ed
+                     WHERE ed.employee_id = ?
+                     LIMIT 1`,
+                    [parseInt(payslip.employee_id) || 0]
+                );
+
+                const recipientEmail = empRows && empRows[0] && empRows[0].recipient_email;
+                const fullName = empRows && empRows[0] && empRows[0].full_name;
+
+                if (!recipientEmail) {
+                    console.warn(`⚠️ No email found for employee ${payslip.employee_id} (${payslip.employee_name})`);
+                    emailsFailed++;
+                    results.push({ employee: payslip.employee_name, status: 'no_email' });
+                    continue;
+                }
+
+                console.log(`📧 Sending payslip email to ${recipientEmail} for ${fullName || payslip.employee_name}`);
+
+                // Build payslip details for the email template
+                const details = [
+                    { label: 'Employee Name', value: fullName || payslip.employee_name },
+                    { label: 'Payroll Month', value: payslip.payroll_month },
+                    { label: 'Basic Salary', value: 'TZS ' + Number(payslip.basic_salary || 0).toLocaleString() },
+                    { label: 'Allowances', value: 'TZS ' + Number(payslip.allowances || 0).toLocaleString() },
+                    { label: 'Gross Salary', value: 'TZS ' + Number(payslip.gross_salary || 0).toLocaleString() },
+                    { label: 'NSSF Deduction', value: 'TZS ' + Number(payslip.nssf_deduction || 0).toLocaleString() },
+                    { label: 'PAYE Tax', value: 'TZS ' + Number(payslip.paye_tax || 0).toLocaleString() },
+                    { label: 'Other Deductions', value: 'TZS ' + Number(payslip.other_deductions || 0).toLocaleString() },
+                    { label: 'Net Salary', value: 'TZS ' + Number(payslip.net_salary || 0).toLocaleString() },
+                    { label: 'Status', value: 'Processed' }
+                ];
+
+                const sent = await sendPaymentNotification(recipientEmail, details);
+
+                if (sent) {
+                    emailsSent++;
+                    results.push({ employee: payslip.employee_name, status: 'sent', email: recipientEmail });
+
+                    // Mark as emailed in the database
+                    await db.execute(
+                        `UPDATE payslip_records SET emailed = TRUE WHERE id = ?`,
+                        [payslip.id]
+                    );
+                } else {
+                    emailsFailed++;
+                    results.push({ employee: payslip.employee_name, status: 'failed', email: recipientEmail });
+                }
+            } catch (empError) {
+                console.error(`❌ Error sending payslip email for ${payslip.employee_name}:`, empError.message);
+                emailsFailed++;
+                results.push({ employee: payslip.employee_name, status: 'error', error: empError.message });
+            }
+        }
+
+        console.log(`📧 Payslip email summary: ${emailsSent} sent, ${emailsFailed} failed out of ${payslips.length} total`);
+
+        res.json({
+            success: true,
+            message: `Payslips emailed: ${emailsSent} sent, ${emailsFailed} failed`,
+            updated: emailsSent,
+            total: payslips.length,
+            results
+        });
     } catch (error) {
         console.error('❌ Error emailing payslips:', error.message);
         res.status(500).json({ success: false, error: 'Failed to email payslips', details: error.message });
