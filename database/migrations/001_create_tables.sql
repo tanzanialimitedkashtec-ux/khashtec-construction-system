@@ -1401,6 +1401,36 @@ CREATE TABLE IF NOT EXISTS workforce_requests (
   FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE
 );
 
+-- Inspections table (HSE / quality / progress inspections)
+CREATE TABLE IF NOT EXISTS inspections (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  project_id INT NOT NULL,
+  inspection_type ENUM('Safety', 'Quality', 'Progress', 'Environmental', 'Equipment') NOT NULL,
+  inspection_date DATE NOT NULL,
+  inspector_name VARCHAR(255) NOT NULL,
+  inspector_role VARCHAR(100) NULL,
+  inspection_status ENUM('Scheduled', 'In Progress', 'Completed', 'Failed', 'Cancelled') DEFAULT 'Scheduled',
+  overall_score DECIMAL(5,2) NULL,
+  findings TEXT NULL,
+  recommendations TEXT NULL,
+  follow_up_required BOOLEAN DEFAULT FALSE,
+  follow_up_date DATE NULL,
+  next_inspection_date DATE NULL,
+  weather_conditions VARCHAR(100) NULL,
+  site_conditions VARCHAR(255) NULL,
+  compliance_level ENUM('Fully Compliant', 'Partially Compliant', 'Non-Compliant', 'Not Applicable') NULL,
+  risk_level ENUM('Low', 'Medium', 'High', 'Critical') DEFAULT 'Medium',
+  created_by VARCHAR(255) NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  INDEX idx_project_id (project_id),
+  INDEX idx_inspection_type (inspection_type),
+  INDEX idx_inspection_date (inspection_date),
+  INDEX idx_status (inspection_status),
+  INDEX idx_inspector (inspector_name),
+  INDEX idx_created_at (created_at)
+);
+
 -- Work Approvals table
 CREATE TABLE IF NOT EXISTS work_approvals (
   id INT AUTO_INCREMENT PRIMARY KEY,

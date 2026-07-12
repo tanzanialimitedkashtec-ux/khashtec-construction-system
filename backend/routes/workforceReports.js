@@ -149,52 +149,7 @@ router.get('/summary', async (req, res) => {
         
     } catch (error) {
         console.error('Error generating workforce summary:', error);
-        console.error('Error details:', error.message);
-        console.log('🔄 Falling back to mock workforce summary data...');
-        
-        // Fallback mock data when database fails
-        const fallbackSummary = {
-            headcount: {
-                current: 25,
-                active: 23,
-                new_hires_q1: 3,
-                ytd_growth: 6.7
-            },
-            departments: [
-                { department: 'projects', count: 8, percentage: 32.0 },
-                { department: 'hr', count: 5, percentage: 20.0 },
-                { department: 'hse', count: 4, percentage: 16.0 },
-                { department: 'finance', count: 3, percentage: 12.0 },
-                { department: 'it', count: 3, percentage: 12.0 },
-                { department: 'admin', count: 2, percentage: 8.0 }
-            ],
-            recruitment: {
-                new_hires_q1: 3,
-                growth_vs_last_year: 33
-            },
-            costs: {
-                annual_workforce_cost: 1500000,
-                average_salary: 50000,
-                budget_status: 'On Budget'
-            },
-            performance: {
-                attendance_rate: 94.2,
-                productivity_index: 87.3,
-                training_completion: 76.8
-            },
-            safety: {
-                incidents_last_30_days: 2,
-                compliance_rate: 95.0
-            },
-            turnover: {
-                annual_rate: 12.5,
-                voluntary: 8.3,
-                involuntary: 4.2
-            },
-            fallback: true
-        };
-        
-        res.json(fallbackSummary);
+        res.status(500).json({ error: 'Failed to generate workforce summary' });
     }
 });
 

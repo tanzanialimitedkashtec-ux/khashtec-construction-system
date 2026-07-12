@@ -311,58 +311,8 @@ router.get('/', async (req, res) => {
         console.log('📊 Returning employees array:', employeesArray.length, 'items');
         res.json(employeesArray);
     } catch (error) {
-        console.error('❌ Database error in employees endpoint:', error);
-        console.error('❌ Error message:', error.message);
-        console.error('❌ Error code:', error.code);
-        console.error('❌ Error errno:', error.errno);
-        console.error('❌ Error sqlState:', error.sqlState);
-        console.error('❌ Error sqlMessage:', error.sqlMessage);
-        console.log('🔄 Falling back to mock employee data...');
-        
-        // Fallback mock data when database fails
-        const mockEmployees = [
-            {
-                id: 1,
-                full_name: 'John Smith',
-                gmail: 'john.smith@kashtec.com',
-                phone: '+255123456789',
-                department: 'IT',
-                job_category: 'Developer',
-                status: 'active',
-                hire_date: '2024-01-15',
-                nida: '1234567890123456',
-                passport: 'P12345678',
-                contract_type: 'Permanent'
-            },
-            {
-                id: 2,
-                full_name: 'Jane Doe',
-                gmail: 'jane.doe@kashtec.com',
-                phone: '+255987654321',
-                department: 'HR',
-                job_category: 'HR Manager',
-                status: 'active',
-                hire_date: '2024-02-01',
-                nida: '9876543210987654',
-                passport: 'P87654321',
-                contract_type: 'Permanent'
-            },
-            {
-                id: 3,
-                full_name: 'Mike Johnson',
-                gmail: 'mike.johnson@kashtec.com',
-                phone: '+255555555555',
-                department: 'Construction',
-                job_category: 'Site Manager',
-                status: 'active',
-                hire_date: '2024-03-10',
-                nida: '5555555555555555',
-                passport: 'P55555555',
-                contract_type: 'Contract'
-            }
-        ];
-        
-        res.json(mockEmployees);
+        console.error('❌ Database error in employees endpoint:', error.message);
+        res.status(500).json({ error: 'Failed to fetch employees' });
     }
 });
 
@@ -607,33 +557,11 @@ router.post('/', (req, res, next) => {
             });
             
         } catch (dbError) {
-            console.error('Database error, using fallback:', dbError.message);
-            
-            // Fallback mock response
-            const mockEmployee = {
-                id: Math.floor(Math.random() * 1000) + 100,
-                employee_id: 'EMP' + Date.now(),
-                full_name: fullName,
-                gmail: gmail,
-                phone: phone,
-                department: department,
-                job_category: finalJobCategory,
-                status: status || 'active',
-                nida: nida,
-                passport: passport || '',
-                contract_type: contract,
-                fallback: true
-            };
-            
-            res.status(201).json({
-                message: 'Employee registered successfully (fallback mode)',
-                employee: mockEmployee,
-                fallback: true
-            });
+            throw dbError;
         }
         
     } catch (error) {
-        console.error('?? Error creating employee:', error);
+        console.error('❌ Error creating employee:', error);
         res.status(500).json({ 
             error: 'Failed to create employee',
             details: error.message 

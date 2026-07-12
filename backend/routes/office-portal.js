@@ -3,6 +3,7 @@ const router = express.Router();
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
+const { getRows } = require('../config/dbHelpers');
 
 console.log('🚀 Office portal route file is being loaded...');
 
@@ -665,47 +666,32 @@ router.post('/upload/passport-image', upload.single('passportImage'), async (req
             });
         }
         
-        try {
-            const db = require('../../database/config/database');
-            
-            // Update employee details with passport image path
-            const filePath = `/uploads/passports/${req.file.filename}`;
-            
-            await db.execute(
-                'UPDATE employee_details SET passport_image = ? WHERE employee_id = ?',
-                [filePath, employeeId]
-            );
-            
-            // Update passport number if provided
-            await db.execute(
-                'UPDATE employee_details SET passport = ? WHERE employee_id = ?',
-                [passportNumber, employeeId]
-            );
-            
-            console.log('✅ Passport image uploaded successfully:', filePath);
-            
-            res.json({
-                success: true,
-                message: 'Passport image uploaded successfully',
-                filePath: filePath,
-                employeeId: employeeId,
-                passportNumber: passportNumber
-            });
-            
-        } catch (dbError) {
-            console.error('❌ Database error, using mock response:', dbError);
-            
-            // Fallback to mock response
-            res.json({
-                success: true,
-                message: 'Passport image uploaded successfully (mock)',
-                filePath: `/uploads/passports/${req.file.filename}`,
-                employeeId: employeeId,
-                passportNumber: passportNumber,
-                mock: true
-            });
-        }
-        
+        const db = require('../../database/config/database');
+
+        // Update employee details with passport image path
+        const filePath = `/uploads/passports/${req.file.filename}`;
+
+        await db.execute(
+            'UPDATE employee_details SET passport_image = ? WHERE employee_id = ?',
+            [filePath, employeeId]
+        );
+
+        // Update passport number if provided
+        await db.execute(
+            'UPDATE employee_details SET passport = ? WHERE employee_id = ?',
+            [passportNumber, employeeId]
+        );
+
+        console.log('✅ Passport image uploaded successfully:', filePath);
+
+        res.json({
+            success: true,
+            message: 'Passport image uploaded successfully',
+            filePath: filePath,
+            employeeId: employeeId,
+            passportNumber: passportNumber
+        });
+
     } catch (error) {
         console.error('❌ Error uploading passport image:', error);
         res.status(500).json({ 
@@ -723,22 +709,22 @@ router.get('/users/:id', async (req, res) => {
         console.log('🔍 Fetching employee details:', employeeId);
         
         let employee = null;
-        
-        try {
-            const db = require('../../database/config/database');
-            
-            const [employees] = await db.execute(`
-                SELECT u.*, e.position, e.department as emp_department, e.salary, e.hire_date,
-                       ed.full_name, ed.gmail, ed.phone, ed.nida, ed.passport, ed.profile_image,
-                       ed.contract_type, ed.passport_image
-                FROM users u
-                LEFT JOIN employees e ON u.id = e.user_id
-                LEFT JOIN employee_details ed ON e.id = ed.employee_id
-                WHERE u.id = ? OR ed.employee_id = ?
-                ORDER BY u.created_at DESC
-                LIMIT 1
-            `, [employeeId, employeeId]);
-            
+
+        const db = require('../../database/config/database');
+
+        const employees = getRows(await db.execute(`
+            SELECT u.*, e.position, e.department as emp_department, e.salary, e.hire_date,
+                   ed.full_name, ed.gmail, ed.phone, ed.nida, ed.passport, ed.profile_image,
+                   ed.contract_type, ed.passport_image
+            FROM users u
+            LEFT JOIN employees e ON u.id = e.user_id
+            LEFT JOIN employee_details ed ON e.id = ed.employee_id
+            WHERE u.id = ? OR ed.employee_id = ?
+            ORDER BY u.created_at DESC
+            LIMIT 1
+        `, [employeeId, employeeId]));
+
+        {
             if (employees.length > 0) {
                 const emp = employees[0];
                 employee = {
@@ -763,40 +749,10 @@ router.get('/users/:id', async (req, res) => {
                     lastLogin: emp.last_login,
                     permissions: getPermissionsForRole(emp.role)
                 };
-                console.log('✅ Employee found:', employee);
-            }
-            
-        } catch (dbError) {
-            console.error('❌ Database error, using fallback employee:', dbError);
-            
-            // Fallback to mock employee
-            if (employeeId === '1') {
-                employee = {
-                    id: 1,
-                    name: 'John Doe',
-                    email: 'john.doe@kashtec.com',
-                    phone: '+255 712 345 678',
-                    role: 'Employee',
-                    department: 'HR',
-                    position: 'HR Manager',
-                    salary: 2500000,
-                    hireDate: '2024-01-15',
-                    status: 'Active',
-                    nida: '1990010112345678',
-                    passport: 'PA1234567',
-                    profileImage: '/assets/images/john-doe.jpg',
-                    passportImage: '/uploads/passports/PA1234567.jpg',
-                    contractType: 'permanent',
-                    registrationDate: '2024-01-15',
-                    type: 'employee',
-                    accessLevel: 'standard',
-                    lastLogin: '2024-04-04',
-                    permissions: ['view_documents', 'view_policies', 'manage_personnel'],
-                    mock: true
-                };
+                console.log('✅ Employee found');
             }
         }
-        
+
         if (!employee) {
             return res.status(404).json({ 
                 success: false,

@@ -165,52 +165,8 @@ router.get('/', async (req, res) => {
         console.log('📊 Returning workers array:', workers.length, 'items');
         res.json(workers);
     } catch (error) {
-        console.error('Database error, using fallback worker data:', error.message);
-        
-        // Fallback mock data when database fails
-        const mockWorkers = [
-            {
-                id: 1,
-                employee_id: 'EMP001',
-                full_name: 'John Smith',
-                department: 'projects',
-                job_title: 'Site Supervisor',
-                status: 'active',
-                hire_date: '2024-01-15',
-                phone: '+255123456789',
-                email: 'john.smith@kashtec.com',
-                created_at: '2024-01-15T10:00:00Z',
-                fallback: true
-            },
-            {
-                id: 2,
-                employee_id: 'EMP002',
-                full_name: 'Jane Doe',
-                department: 'hr',
-                job_title: 'HR Manager',
-                status: 'active',
-                hire_date: '2024-02-01',
-                phone: '+255987654321',
-                email: 'jane.doe@kashtec.com',
-                created_at: '2024-02-01T09:30:00Z',
-                fallback: true
-            },
-            {
-                id: 3,
-                employee_id: 'EMP003',
-                full_name: 'Mike Johnson',
-                department: 'hse',
-                job_title: 'Safety Officer',
-                status: 'active',
-                hire_date: '2024-03-10',
-                phone: '+255555555555',
-                email: 'mike.johnson@kashtec.com',
-                created_at: '2024-03-10T14:15:00Z',
-                fallback: true
-            }
-        ];
-        
-        res.json(mockWorkers);
+        console.error('Error fetching worker accounts:', error.message);
+        res.status(500).json({ error: 'Failed to fetch worker accounts' });
     }
 });
 
@@ -350,24 +306,8 @@ router.get('/:id', async (req, res) => {
         
         res.json(workers[0]);
     } catch (error) {
-        console.error('Database error, using fallback worker data:', error.message);
-        
-        // Fallback mock data when database fails
-        const mockWorker = {
-            id: parseInt(req.params.id) || 1,
-            employee_id: `EMP00${req.params.id || 1}`,
-            full_name: 'Sample Worker',
-            department: 'projects',
-            job_title: 'Sample Position',
-            status: 'active',
-            hire_date: '2024-01-15',
-            phone: '+255123456789',
-            email: 'sample.worker@kashtec.com',
-            created_at: '2024-01-15T10:00:00Z',
-            fallback: true
-        };
-        
-        res.json(mockWorker);
+        console.error('Error fetching worker account:', error.message);
+        res.status(500).json({ error: 'Failed to fetch worker account' });
     }
 });
 
