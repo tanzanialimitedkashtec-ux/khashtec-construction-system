@@ -6,8 +6,17 @@ const db = require('../../database/config/database');
 var notify = require('../utils/notify');
 const upload = require('../middleware/upload');
 const { sendInvoiceEmail, sendExpenseEmail } = require('../services/emailService');
+const { requireRole } = require('../middleware/authorize');
+const { getRows, getRow, getAffectedRows } = require('../config/dbHelpers');
+const { ROLES } = require('../config/roles');
 
 console.log('🚀 Finance routes loaded with database connection');
+
+// Finance policy thresholds (configurable via environment).
+// - Expenses with amount greater than RECEIPT_REQUIRED_THRESHOLD must include a receipt/invoice.
+// - Expenses at/above MD_APPROVAL_THRESHOLD require Managing Director confirmation.
+const RECEIPT_REQUIRED_THRESHOLD = Number(process.env.EXPENSE_RECEIPT_THRESHOLD || 0);
+const MD_APPROVAL_THRESHOLD = Number(process.env.EXPENSE_MD_APPROVAL_THRESHOLD || 1000000);
 
 async function resolveUserId(preferredRole) {
     try {
@@ -233,6 +242,19 @@ router.post('/expense', upload.single('receipt'), async (req, res) => {
         });
     }
 
+    const numericAmount = Number(amount) || 0;
+
+    // Receipt/invoice is mandatory for expenses above the configured threshold.
+    if (numericAmount > RECEIPT_REQUIRED_THRESHOLD && !req.file) {
+        return res.status(400).json({
+            error: 'Receipt required',
+            message: `A receipt/invoice is required for expenses over TZS ${RECEIPT_REQUIRED_THRESHOLD.toLocaleString()}.`
+        });
+    }
+
+    // Expenses at/above the approval threshold require MD confirmation before payout.
+    const requiresMdApproval = numericAmount >= MD_APPROVAL_THRESHOLD;
+
     // Get uploaded receipt file path and read content for database storage
     const receiptFile = req.file ? '/uploads/' + req.file.filename : null;
     let receiptData = null;
@@ -306,8 +328,9 @@ router.post('/expense', upload.single('receipt'), async (req, res) => {
             transaction_id: txRes.insertId,
             work_id: workRes.insertId,
             category,
-            amount: Number(amount) || 0,
+            amount: numericAmount,
             status: 'Pending',
+            requires_md_approval: requiresMdApproval,
             receipt_file: receiptFile
         });
     } catch (error) {
@@ -317,19 +340,44 @@ router.post('/expense', upload.single('receipt'), async (req, res) => {
 });
 
 // PUT - Confirm expense
-router.put('/expense/:id/confirm', async (req, res) => {
+// Segregation of Duties: only the Managing Director may confirm an expense, and
+// the confirming user must NOT be the person who created the transaction.
+router.put('/expense/:id/confirm', requireRole(ROLES.MD), async (req, res) => {
     console.log('✅ PUT /api/finance/expense/:id/confirm accessed with id:', req.params.id);
     try {
         const id = req.params.id;
-        const result = await db.execute(
-            `UPDATE financial_transactions SET status = 'Approved', updated_at = CURRENT_TIMESTAMP WHERE id = ? AND type = 'Expense'`,
+        const confirmerId = req.user && (req.user.id != null ? req.user.id : null);
+
+        // Load the transaction to enforce maker != checker and detect prior approval.
+        const txRow = getRow(await db.execute(
+            `SELECT id, created_by, status FROM financial_transactions WHERE id = ? AND type = 'Expense'`,
             [id]
+        ));
+
+        if (!txRow) {
+            return res.status(404).json({ error: 'Expense not found' });
+        }
+        if (txRow.status === 'Approved') {
+            return res.status(409).json({ error: 'Expense already confirmed' });
+        }
+        if (txRow.created_by != null && confirmerId != null && String(txRow.created_by) === String(confirmerId)) {
+            return res.status(403).json({
+                error: 'Segregation of duties violation',
+                message: 'The user who created an expense cannot confirm it.'
+            });
+        }
+
+        const result = await db.execute(
+            `UPDATE financial_transactions
+             SET status = 'Approved', approved_by = ?, approval_date = CURRENT_TIMESTAMP, updated_at = CURRENT_TIMESTAMP
+             WHERE id = ? AND type = 'Expense' AND status <> 'Approved'`,
+            [confirmerId, id]
         );
         const workRes = await db.execute(
             `UPDATE finance_work SET status = 'Completed', completion_date = CURRENT_TIMESTAMP, updated_at = CURRENT_TIMESTAMP WHERE work_type = 'Expense Control' AND amount = (SELECT amount FROM financial_transactions WHERE id = ?) AND status = 'Pending'`,
             [id]
         ).catch(() => ({ affectedRows: 0 }));
-        if (!result.affectedRows && !workRes.affectedRows) {
+        if (!getAffectedRows(result) && !getAffectedRows(workRes)) {
             return res.status(404).json({ error: 'Expense not found or already confirmed' });
         }
 
@@ -367,11 +415,12 @@ router.put('/expense/:id/confirm', async (req, res) => {
         } catch (notifErr) { console.log('⚠️ Expense approval notification:', notifErr.message); }
 
 
-        console.log('  ✅ Expense confirmed: id=' + id + ', tx_updated=' + result.affectedRows + ', work_updated=' + (workRes.affectedRows || 0));
+        console.log('  ✅ Expense confirmed: id=' + id + ', tx_updated=' + getAffectedRows(result) + ', work_updated=' + getAffectedRows(workRes));
         res.json({
             message: 'Expense confirmed successfully',
-            transaction_updated: Boolean(result.affectedRows),
-            work_updated: Boolean(workRes.affectedRows),
+            transaction_updated: Boolean(getAffectedRows(result)),
+            work_updated: Boolean(getAffectedRows(workRes)),
+            approved_by: confirmerId,
             id,
             status: 'Approved'
         });
@@ -908,35 +957,102 @@ router.get('/report/cash-flow', async (req, res) => {
     }
 });
 
+// Budget vs Actual report.
+// Budgets are currently written to two places: workforce_budgets (via
+// POST /api/workforce-budget) and finance_work (via POST /api/finance/budget).
+// This report unifies both into a single view (one row per budget), computes
+// actual spend per department from confirmed expense work items, and honors the
+// budget_period (monthly vs annual) when choosing the actuals window.
 router.get('/report/budget-vs-actual', async (req, res) => {
     try {
-        const { period } = req.query;
-        let budgets = [];
-        if (period) {
-            budgets = await db.execute(
-                `SELECT department AS budget_period, total_proposed FROM workforce_budgets WHERE department = ?`,
-                [period]
-            ).catch(() => []);
-        } else {
-            budgets = await db.execute(
-                `SELECT department AS budget_period, total_proposed FROM workforce_budgets ORDER BY submission_date DESC LIMIT 2`
-            ).catch(() => []);
+        const department = req.query.department || req.query.period || null;
+        const budgetPeriodFilter = req.query.budget_period || null;
+
+        // Source 1: workforce_budgets
+        const wfParams = [];
+        let wfWhere = '';
+        if (department) { wfWhere += ' AND department = ?'; wfParams.push(department); }
+        if (budgetPeriodFilter) { wfWhere += ' AND budget_period = ?'; wfParams.push(budgetPeriodFilter); }
+        const wfRows = getRows(await db.execute(
+            `SELECT department, budget_period, total_proposed AS total_budget, submission_date, status
+             FROM workforce_budgets WHERE 1=1${wfWhere} ORDER BY submission_date DESC`,
+            wfParams
+        ).catch(() => []));
+
+        // Source 2: finance_work budget entries
+        const fwParams = ['Budget Management', 'Budget Creation', 'Budget'];
+        let fwWhere = '';
+        if (department) { fwWhere += ' AND department_code = ?'; fwParams.push(department); }
+        const fwRows = getRows(await db.execute(
+            `SELECT department_code AS department, work_title, amount AS total_budget, submitted_date AS submission_date, status
+             FROM finance_work WHERE work_type IN (?, ?, ?)${fwWhere} ORDER BY submitted_date DESC`,
+            fwParams
+        ).catch(() => []));
+
+        let budgets = [
+            ...wfRows.map(b => ({
+                source: 'workforce_budgets',
+                department: b.department,
+                budget_period: (b.budget_period || 'annual').toLowerCase(),
+                total_budget: parseFloat(b.total_budget) || 0,
+                submission_date: b.submission_date,
+                status: b.status
+            })),
+            ...fwRows.map(b => ({
+                source: 'finance_work',
+                department: b.department,
+                budget_period: /month/i.test(b.work_title || '') ? 'monthly' : 'annual',
+                total_budget: parseFloat(b.total_budget) || 0,
+                submission_date: b.submission_date,
+                status: b.status
+            }))
+        ];
+
+        if (budgetPeriodFilter) {
+            budgets = budgets.filter(b => b.budget_period === budgetPeriodFilter.toLowerCase());
         }
-        budgets = Array.isArray(budgets) ? budgets : [];
 
         const now = new Date();
-        const start = new Date(now.getFullYear(), 0, 1).toISOString().slice(0, 10);
-        const end = new Date().toISOString().slice(0, 10);
-        const actualRows = await db.execute(
-            `SELECT SUM(amount) as sum FROM financial_transactions WHERE type='Expense' AND date BETWEEN ? AND ?`,
-            [start, end]
-        ).catch(() => []);
-        const actual = sqlSumRow(actualRows, ['sum']);
+        const yearStart = new Date(now.getFullYear(), 0, 1).toISOString().slice(0, 10);
+        const monthStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().slice(0, 10);
+        const today = new Date().toISOString().slice(0, 10);
+
+        // Actual spend for a department, windowed by the budget period.
+        const actualCache = new Map();
+        async function actualFor(dept, budgetPeriod) {
+            const start = budgetPeriod === 'monthly' ? monthStart : yearStart;
+            const key = `${dept}|${start}`;
+            if (actualCache.has(key)) return actualCache.get(key);
+            const rows = getRows(await db.execute(
+                `SELECT SUM(amount) AS sum FROM finance_work
+                 WHERE work_type = 'Expense Control' AND status IN ('Completed', 'Approved')
+                   AND department_code = ? AND submitted_date BETWEEN ? AND ?`,
+                [dept, start, today]
+            ).catch(() => []));
+            const value = sqlSumRow(rows, ['sum']);
+            actualCache.set(key, value);
+            return value;
+        }
+
+        const report = [];
+        for (const b of budgets) {
+            const actual = await actualFor(b.department, b.budget_period);
+            report.push({
+                ...b,
+                actual,
+                variance: b.total_budget - actual,
+                utilization_pct: b.total_budget > 0 ? Math.round((actual / b.total_budget) * 10000) / 100 : 0
+            });
+        }
 
         res.json({
-            period: period || `${now.getFullYear()}`,
-            budgets,
-            actual
+            filters: { department: department || null, budget_period: budgetPeriodFilter || null },
+            generated_at: new Date().toISOString(),
+            budgets: report,
+            totals: {
+                total_budget: report.reduce((s, r) => s + r.total_budget, 0),
+                total_actual: report.reduce((s, r) => s + r.actual, 0)
+            }
         });
     } catch (error) {
         console.error('❌ Error generating budget vs actual:', error);
