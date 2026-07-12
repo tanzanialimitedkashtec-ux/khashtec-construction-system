@@ -59,8 +59,9 @@ app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 app.use('/images', express.static(path.join(__dirname, '../frontend/public/images')));
 
-// JWT Secret
-const JWT_SECRET = process.env.JWT_SECRET || 'kashtec-secret-key-2024';
+// JWT Secret (single required source of truth)
+const { JWT_SECRET, JWT_EXPIRE } = require('./config/jwt');
+const { canonicalizeRole } = require('./config/roles');
 
 // Authentication middleware
 const authenticateToken = (req, res, next) => {
@@ -84,43 +85,55 @@ const authenticateToken = (req, res, next) => {
 // ===== AUTHENTICATION ROUTES =====
 app.post('/api/auth/login', async (req, res) => {
     try {
-        const { username, password, role } = req.body;
-        
-        if (!username || !password || !role) {
+        const { email, username, password } = req.body;
+        const loginId = email || username;
+
+        if (!loginId || !password) {
             return res.status(400).json({ error: 'Missing required fields' });
         }
-        
-        // For demo, create a simple user check
-        // In production, this would query the database
-        const validCredentials = [
-            { username: 'md', password: 'md123', role: 'MD' },
-            { username: 'admin', password: 'admin123', role: 'ADMIN' },
-            { username: 'hr', password: 'hr123', role: 'HR' },
-            { username: 'hse', password: 'hse123', role: 'HSE' },
-            { username: 'finance', password: 'finance123', role: 'FINANCE' },
-            { username: 'projects', password: 'projects123', role: 'PROJECT' },
-            { username: 'realestate', password: 'realestate123', role: 'REALESTATE' },
-            { username: 'assistant', password: 'assistant123', role: 'ASSISTANT' }
-        ];
-        
-        const user = validCredentials.find(u => u.username === username && u.password === password && u.role === role);
-        
-        if (!user) {
+
+        // Validate credentials against the authentication table using bcrypt.
+        const rows = await db.execute(
+            'SELECT id, email, password_hash, role, department_name, manager_name, status FROM authentication WHERE email = ? AND status = ?',
+            [loginId, 'Active']
+        );
+        const authUser = Array.isArray(rows) && rows.length > 0 ? rows[0] : null;
+
+        if (!authUser) {
             return res.status(401).json({ error: 'Invalid credentials' });
         }
-        
+
+        const isValidPassword = await bcrypt.compare(password, authUser.password_hash);
+        if (!isValidPassword) {
+            return res.status(401).json({ error: 'Invalid credentials' });
+        }
+
+        const canonicalRole = canonicalizeRole(authUser.role);
+
         const token = jwt.sign(
-            { id: user.username, role: user.role },
+            {
+                id: authUser.id,
+                email: authUser.email,
+                role: canonicalRole,
+                department_name: authUser.department_name,
+                manager_name: authUser.manager_name
+            },
             JWT_SECRET,
-            { expiresIn: '24h' }
+            { expiresIn: JWT_EXPIRE }
         );
-        
+
         res.json({
             success: true,
             token,
-            user: { id: user.username, role: user.role }
+            user: {
+                id: authUser.id,
+                email: authUser.email,
+                role: canonicalRole,
+                department_name: authUser.department_name,
+                manager_name: authUser.manager_name
+            }
         });
-        
+
     } catch (error) {
         console.error('Login error:', error);
         res.status(500).json({ error: 'Internal server error' });

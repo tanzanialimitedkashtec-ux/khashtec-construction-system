@@ -975,7 +975,8 @@ router.post('/', function(req, res, next) {
                 if (authHeader && authHeader.startsWith('Bearer ')) {
                     const token = authHeader.substring(7);
                     const jwt = require('jsonwebtoken');
-                    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key');
+                    const { JWT_SECRET } = require('../config/jwt');
+                    const decoded = jwt.verify(token, JWT_SECRET);
                     userId = decoded.id || 1;
                     console.log('🔍 Extracted user ID from JWT:', userId);
                 }

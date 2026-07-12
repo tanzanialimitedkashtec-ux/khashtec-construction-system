@@ -1,4 +1,6 @@
 const jwt = require('jsonwebtoken');
+const { JWT_SECRET } = require('../../config/jwt');
+const { rolesEqual } = require('../../config/roles');
 
 // Middleware to verify JWT token
 const authenticateToken = (req, res, next) => {
@@ -12,7 +14,7 @@ const authenticateToken = (req, res, next) => {
     });
   }
 
-  jwt.verify(token, process.env.JWT_SECRET || 'kashtec-secret-key-2024', (err, user) => {
+  jwt.verify(token, JWT_SECRET, (err, user) => {
     if (err) {
       return res.status(403).json({
         success: false,
@@ -35,7 +37,8 @@ const requireRole = (roles) => {
       });
     }
 
-    if (roles.includes(req.user.role)) {
+    const allowed = Array.isArray(roles) ? roles : [roles];
+    if (allowed.some(r => rolesEqual(r, req.user.role))) {
       next();
     } else {
       res.status(403).json({

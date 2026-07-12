@@ -95,13 +95,17 @@ class Database {
                     }
                 });
             } else {
-                // Fallback to individual environment variables
-                const dbHost = process.env.MYSQLHOST || process.env.DB_HOST || "centerbeam.proxy.rlwy.net";
+                // Fallback to individual environment variables (no hardcoded credentials)
+                const dbHost = process.env.MYSQLHOST || process.env.DB_HOST;
                 const dbPort = process.env.MYSQLPORT || process.env.DB_PORT || 3306;
-                const dbUser = process.env.MYSQLUSER || process.env.DB_USER || "root";
-                const dbPassword = process.env.MYSQLPASSWORD || process.env.DB_PASSWORD || "FpJJluFwvIzgsMTsfDZApQLznVVVIzJd";
+                const dbUser = process.env.MYSQLUSER || process.env.DB_USER;
+                const dbPassword = process.env.MYSQLPASSWORD || process.env.DB_PASSWORD;
                 const dbName = process.env.MYSQLDATABASE || process.env.DB_NAME || "railway";
-                
+
+                if (!dbHost || !dbUser || !dbPassword) {
+                    throw new Error('Database configuration missing: set DATABASE_URL or MYSQLHOST/MYSQLUSER/MYSQLPASSWORD (or DB_* equivalents).');
+                }
+
                 console.log('🔗 Using fallback database config:', `${dbUser}@${dbHost}:${dbPort}/${dbName}`);
                 
                 this.pool = mysql.createPool({
@@ -726,10 +730,22 @@ class Database {
                 notificationMessage = `<span style="white-space: pre-wrap;">${msg}</span>`;
             }
 
+            // Email delivery is only attempted when a Resend API key is configured
+            // via the environment. No key is committed to source.
+            const resendApiKey = process.env.RESEND_API_KEY;
+            if (!resendApiKey) {
+                return; // Notifications disabled without a configured key.
+            }
+            const emailFrom = process.env.EMAIL_FROM || 'Kashtec Notification <onboarding@resend.dev>';
+            const emailRecipient = process.env.EMAIL_RECIPIENT || process.env.EMAIL_USER;
+            if (!emailRecipient) {
+                return; // No recipient configured.
+            }
+
             const https = require('https');
             const data = JSON.stringify({
-                from: 'Kashtec Notification <onboarding@resend.dev>',
-                to: 'tanzanialimitedkashtec@gmail.com',
+                from: emailFrom,
+                to: emailRecipient,
                 subject: 'New System Notification: ' + title,
                 html: `<div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #e0e0e0; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
                             <div style="background-color: #1a237e; color: white; padding: 20px; text-align: center;">
@@ -754,7 +770,7 @@ class Database {
                 path: '/emails',
                 method: 'POST',
                 headers: {
-                    'Authorization': 'Bearer re_anoc42tU_MXy9ePaVpP8uHZvauksrB7Ad',
+                    'Authorization': `Bearer ${resendApiKey}`,
                     'Content-Type': 'application/json',
                     'Content-Length': Buffer.byteLength(data)
                 }

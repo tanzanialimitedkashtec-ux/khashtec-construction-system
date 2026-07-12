@@ -1,24 +1,28 @@
 // KASHTEC Construction Management System - Environment Configuration
 // This file documents all environment variables used in the project
 
-// Database Configuration
-const DATABASE_URL = process.env.DATABASE_URL || "mysql://root:LzDEYGJIiYfVRSTnBrufpsSwRIDnZRvz@centerbeam.proxy.rlwy.net:11044/railway";
-const DB_HOST = process.env.DB_HOST || "centerbeam.proxy.rlwy.net";
-const DB_USER = process.env.DB_USER || "root";
-const DB_PASSWORD = process.env.DB_PASSWORD || "LzDEYGJIiYfVRSTnBrufpsSwRIDnZRvz";
+// Database Configuration (no hardcoded credentials — must come from the environment)
+const DATABASE_URL = process.env.DATABASE_URL;
+const DB_HOST = process.env.DB_HOST;
+const DB_USER = process.env.DB_USER;
+const DB_PASSWORD = process.env.DB_PASSWORD;
 const DB_NAME = process.env.DB_NAME || "railway";
-const DB_PORT = process.env.DB_PORT || "11044";
+const DB_PORT = process.env.DB_PORT || "3306";
 
 // Application Configuration
 const NODE_ENV = process.env.NODE_ENV || "production";
 const PORT = process.env.PORT || 8080;
-const JWT_SECRET = process.env.JWT_SECRET || "kashtec-secret-key-2024";
+// JWT secret is validated in backend/config/jwt.js (fatal if missing). Never
+// expose a hardcoded fallback here.
+const JWT_SECRET = process.env.JWT_SECRET;
 const GITHUB_TOKEN = process.env.GITHUB_TOKEN; // Use environment variable only
 
 // Security Configuration
 const BCRYPT_ROUNDS = process.env.BCRYPT_ROUNDS || "12";
 const JWT_EXPIRE = process.env.JWT_EXPIRE || "7d";
-const CORS_ORIGIN = process.env.CORS_ORIGIN || "*";
+// Default to a scoped allowlist (see server.js). Open CORS ("*") is only used
+// if an operator explicitly sets CORS_ORIGIN="*".
+const CORS_ORIGIN = process.env.CORS_ORIGIN || "";
 
 // Application Metadata
 const APP_NAME = "KASHTEC Construction Management System";

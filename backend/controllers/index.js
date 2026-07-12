@@ -1,54 +1,71 @@
 // ===== API CONTROLLERS =====
-const db = require('../config/database');
+const db = require('../../database/config/database');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const { JWT_SECRET, JWT_EXPIRE } = require('../config/jwt');
+const { canonicalizeRole } = require('../config/roles');
 
 // ===== AUTHENTICATION CONTROLLER =====
 class AuthController {
     static async login(req, res) {
         try {
-            const { username, password, role } = req.body;
-            
-            if (!username || !password || !role) {
-                return res.status(400).json({ 
-                    success: false, 
-                    error: 'Missing required fields' 
+            const { email, username, password } = req.body;
+            const loginId = email || username;
+
+            if (!loginId || !password) {
+                return res.status(400).json({
+                    success: false,
+                    error: 'Missing required fields'
                 });
             }
-            
-            // For demo, check against hardcoded users
-            // In production, this would query the database
-            const validCredentials = [
-                { username: 'md', password: '$2b$10$12$MD5hash', role: 'MD' },
-                { username: 'admin', password: '$2b$10$12$ADMINhash', role: 'ADMIN' },
-                { username: 'hr', password: '$2b$10$12$HRhash', role: 'HR' },
-                { username: 'hse', password: '$2b$10$12$HSEhash', role: 'HSE' },
-                { username: 'finance', password: '$2b$10$12$FINANCEhash', role: 'FINANCE' },
-                { username: 'projects', password: '$2b$10$12$PROJECThash', role: 'PROJECT' },
-                { username: 'realestate', password: '$2b$10$12$REALESTATEhash', role: 'REALESTATE' },
-                { username: 'assistant', password: '$2b$10$12$ASSISTANThash', role: 'ASSISTANT' }
-            ];
-            
-            const user = validCredentials.find(u => u.username === username && u.password === password && u.role === role);
-            
-            if (!user) {
-                return res.status(401).json({ 
-                    success: false, 
-                    error: 'Invalid credentials' 
+
+            // Validate credentials against the authentication table using bcrypt.
+            const rows = await db.execute(
+                'SELECT id, email, password_hash, role, department_name, manager_name, status FROM authentication WHERE email = ? AND status = ?',
+                [loginId, 'Active']
+            );
+            const authUser = Array.isArray(rows) && rows.length > 0 ? rows[0] : null;
+
+            if (!authUser) {
+                return res.status(401).json({
+                    success: false,
+                    error: 'Invalid credentials'
                 });
             }
-            
+
+            const isValidPassword = await bcrypt.compare(password, authUser.password_hash);
+            if (!isValidPassword) {
+                return res.status(401).json({
+                    success: false,
+                    error: 'Invalid credentials'
+                });
+            }
+
+            const canonicalRole = canonicalizeRole(authUser.role);
+
             // Generate JWT token
             const token = jwt.sign(
-                { id: user.username, role: user.role },
-                process.env.JWT_SECRET || 'kashtec-secret-key-2024',
-                { expiresIn: '24h' }
+                {
+                    id: authUser.id,
+                    email: authUser.email,
+                    role: canonicalRole,
+                    department_name: authUser.department_name,
+                    manager_name: authUser.manager_name
+                },
+                JWT_SECRET,
+                { expiresIn: JWT_EXPIRE }
             );
-            
+
             res.json({
                 success: true,
                 token,
-                user: { id: user.username, role: user.role }
+                user: {
+                    id: authUser.id,
+                    email: authUser.email,
+                    role: canonicalRole,
+                    department_name: authUser.department_name,
+                    manager_name: authUser.manager_name
+                }
             });
             
         } catch (error) {
@@ -73,7 +90,7 @@ class AuthController {
         const token = authHeader.split(' ')[1];
         
         try {
-            const decoded = jwt.verify(token, process.env.JWT_SECRET || 'kashtec-secret-key-2024');
+            const decoded = jwt.verify(token, JWT_SECRET);
             req.user = decoded;
             next();
         } catch (error) {

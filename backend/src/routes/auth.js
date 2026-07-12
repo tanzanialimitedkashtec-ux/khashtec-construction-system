@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const User = require('../models/User');
 const jwt = require('jsonwebtoken');
+const { JWT_SECRET, JWT_EXPIRE } = require('../../config/jwt');
 
 // Register new user
 router.post('/register', async (req, res) => {
@@ -93,8 +94,8 @@ router.post('/login', async (req, res) => {
       // Generate JWT token
       const token = jwt.sign(
         { userId: result.user.id, email: result.user.email },
-        process.env.JWT_SECRET || 'kashtec-secret-key-2024',
-        { expiresIn: process.env.JWT_EXPIRES_IN || '7d' }
+        JWT_SECRET,
+        { expiresIn: JWT_EXPIRE }
       );
 
       res.json({

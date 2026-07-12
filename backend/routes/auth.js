@@ -1,6 +1,7 @@
 const express = require('express');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const { JWT_SECRET, JWT_EXPIRE } = require('../config/jwt');
 const router = express.Router();
 
 // Department-specific login credentials
@@ -111,7 +112,6 @@ router.get('/test', (req, res) => {
 // Login endpoint
 router.post('/login', async (req, res) => {
     try {
-        console.log('🔐 Login request received:', req.body);
         const { email, password, role } = req.body;
 
         // Validate input (role is now optional - auto-detected from database)
@@ -296,7 +296,6 @@ router.post('/login', async (req, res) => {
             
             // Check password
             const isValidPassword = await bcrypt.compare(password, authUser.password_hash);
-            console.log('🔐 Password comparison result:', { isValid: isValidPassword, providedPassword: password });
             
             if (!isValidPassword) {
                 console.log('❌ Password mismatch for:', email);
@@ -324,8 +323,8 @@ router.post('/login', async (req, res) => {
                     department_name: authUser.department_name,
                     manager_name: authUser.manager_name
                 },
-                process.env.JWT_SECRET || 'kashtec-secret-key-2024',
-                { expiresIn: process.env.JWT_EXPIRE || '7d' }
+                JWT_SECRET,
+                { expiresIn: JWT_EXPIRE }
             );
             
             // Update last login
@@ -386,7 +385,6 @@ router.post('/login', async (req, res) => {
                 }
             };
             
-            console.log('✅ Sending login response:', response);
             
             // Emit Socket.IO event for user login
             if (req.app.get('io')) {
@@ -483,8 +481,8 @@ router.post('/register', async (req, res) => {
                 email: newUser.email, 
                 role: newUser.role 
             },
-            process.env.JWT_SECRET || 'kashtec-secret-key-2024',
-            { expiresIn: process.env.JWT_EXPIRE || '7d' }
+            JWT_SECRET,
+            { expiresIn: JWT_EXPIRE }
         );
 
         res.status(201).json({
@@ -517,7 +515,7 @@ router.get('/verify', (req, res) => {
     }
 
     try {
-        const decoded = jwt.verify(token, process.env.JWT_SECRET || 'kashtec-secret-key-2024');
+        const decoded = jwt.verify(token, JWT_SECRET);
         
         const user = users.find(u => u.id === decoded.userId);
         
@@ -550,7 +548,7 @@ router.post('/logout', async (req, res) => {
     try {
         const token = req.headers.authorization?.split(' ')[1];
         if (token) {
-            const decoded = jwt.verify(token, process.env.JWT_SECRET || 'kashtec-secret-key-2024');
+            const decoded = jwt.verify(token, JWT_SECRET);
             const db = require('../../database/config/database');
             await db.execute(
                 `INSERT INTO login_audit_logs (user_id, email, user_name, role, department_name, action, ip_address, user_agent, status)
