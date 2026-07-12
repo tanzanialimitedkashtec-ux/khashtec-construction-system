@@ -171,22 +171,8 @@ router.get('/users', async (req, res) => {
     }
 });
 
-// Helper function to get permissions based on role
-function getPermissionsForRole(role) {
-    const permissions = {
-        'Managing Director': ['view_documents', 'view_policies', 'manage_personnel', 'approve_policies', 'approve_contracts', 'manage_budgets', 'view_analytics'],
-        'HR Manager': ['view_documents', 'view_policies', 'manage_personnel', 'approve_leave_requests', 'manage_contracts', 'view_analytics'],
-        'Finance Manager': ['view_documents', 'view_policies', 'view_analytics', 'approve_expenses', 'manage_budgets'],
-        'Project Manager': ['view_documents', 'view_policies', 'manage_projects', 'view_analytics'],
-        'Real Estate Manager': ['view_documents', 'view_policies', 'manage_properties', 'view_analytics'],
-        'HSE Manager': ['view_documents', 'view_policies', 'manage_incidents', 'view_analytics'],
-        'Office Assistant': ['view_documents', 'view_policies', 'view_analytics'],
-        'Employee': ['view_documents', 'view_policies'],
-        'Worker': ['view_documents', 'view_policies']
-    };
-    
-    return permissions[role] || ['view_documents', 'view_policies'];
-}
+// Permissions are defined in the shared canonical role model.
+const { getPermissionsForRole } = require('../config/roles');
 
 // Get documents for office portal
 router.get('/documents', async (req, res) => {

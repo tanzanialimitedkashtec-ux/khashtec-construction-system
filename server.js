@@ -38,6 +38,11 @@ process.on('unhandledRejection', err => {
 
 const config = require('./config/environment');
 
+// Authentication middleware (single source of truth) — required early so every
+// API route mount below can enforce it.
+const { authenticateToken } = require('./backend/src/middleware/auth');
+const { requireRole } = require('./backend/middleware/authorize');
+
 
 
 // Import routes
@@ -236,13 +241,15 @@ app.use('/api/', (req, res, next) => {
 
 const allowedOrigins = [
     config.CORS_ORIGIN,
+    process.env.APP_URL,
+    'https://khashtec-construction-system-production.up.railway.app',
     'https://www.kashtec.co.tz',
     'https://kashtec.co.tz',
     'http://localhost:8080',
     'http://127.0.0.1:8080',
     'http://localhost:3000',
     'http://127.0.0.1:3000'
-];
+].filter(Boolean); // drop empty/undefined entries so CORS stays scoped by default
 
 app.use(cors({
 
@@ -855,6 +862,7 @@ const asyncHandler = (fn) => (req, res, next) => {
 
 // API Routes with consistent error handling
 
+// Public: authentication routes handle their own token logic (login/register).
 app.use('/api/auth', asyncHandler(async (req, res, next) => {
 
     return authRoutes(req, res, next);
@@ -863,9 +871,9 @@ app.use('/api/auth', asyncHandler(async (req, res, next) => {
 
 
 
-app.use('/api/workflows', workflowRoutes);
+app.use('/api/workflows', authenticateToken, workflowRoutes);
 
-app.use('/api/employees', asyncHandler(async (req, res, next) => {
+app.use('/api/employees', authenticateToken, asyncHandler(async (req, res, next) => {
 
     return employeeRoutes(req, res, next);
 
@@ -873,14 +881,14 @@ app.use('/api/employees', asyncHandler(async (req, res, next) => {
 
 
 
-app.use('/api/worker-accounts', asyncHandler(async (req, res, next) => {
+app.use('/api/worker-accounts', authenticateToken, asyncHandler(async (req, res, next) => {
 
     return workerAccountRoutes(req, res, next);
 
 }));
 
 
-app.use('/api/drivers', asyncHandler(async (req, res, next) => {
+app.use('/api/drivers', authenticateToken, asyncHandler(async (req, res, next) => {
 
     return driversRoutes(req, res, next);
 
@@ -888,7 +896,7 @@ app.use('/api/drivers', asyncHandler(async (req, res, next) => {
 
 
 
-app.use('/api/projects', asyncHandler(async (req, res, next) => {
+app.use('/api/projects', authenticateToken, asyncHandler(async (req, res, next) => {
 
     return projectRoutes(req, res, next);
 
@@ -896,7 +904,7 @@ app.use('/api/projects', asyncHandler(async (req, res, next) => {
 
 
 
-app.use('/api/documents', asyncHandler(async (req, res, next) => {
+app.use('/api/documents', authenticateToken, asyncHandler(async (req, res, next) => {
 
     return documentRoutes(req, res, next);
 
@@ -904,14 +912,14 @@ app.use('/api/documents', asyncHandler(async (req, res, next) => {
 
 
 
-app.use('/api/notifications', asyncHandler(async (req, res, next) => {
+app.use('/api/notifications', authenticateToken, asyncHandler(async (req, res, next) => {
 
     return notificationRoutes(req, res, next);
 
 }));
 
 
-app.use('/api/attendance', asyncHandler(async (req, res, next) => {
+app.use('/api/attendance', authenticateToken, asyncHandler(async (req, res, next) => {
 
     return attendanceRoutes(req, res, next);
 
@@ -919,17 +927,11 @@ app.use('/api/attendance', asyncHandler(async (req, res, next) => {
 
 
 
-app.use('/api/policies', asyncHandler(async (req, res, next) => {
+app.use('/api/policies', authenticateToken, asyncHandler(async (req, res, next) => {
 
     return policyRoutes(req, res, next);
 
 }));
-
-
-
-// Import authentication middleware
-
-const { authenticateToken } = require('./backend/src/middleware/auth');
 
 
 
@@ -1031,8 +1033,8 @@ app.use('/api/admin', authenticateToken, asyncHandler(async (req, res, next) => 
 
 }));
 
-// Admin operations endpoints without auth requirement (matches /api/work pattern)
-app.use('/api/admin-operations', asyncHandler(async (req, res, next) => {
+// Admin operations endpoints (authenticated)
+app.use('/api/admin-operations', authenticateToken, asyncHandler(async (req, res, next) => {
 
     return workRoutes(req, res, next);
 
@@ -1040,7 +1042,7 @@ app.use('/api/admin-operations', asyncHandler(async (req, res, next) => {
 
 
 
-app.use('/api/senior-hiring', asyncHandler(async (req, res, next) => {
+app.use('/api/senior-hiring', authenticateToken, asyncHandler(async (req, res, next) => {
 
     return seniorHiringRoutes(req, res, next);
 
@@ -1048,7 +1050,7 @@ app.use('/api/senior-hiring', asyncHandler(async (req, res, next) => {
 
 
 
-app.use('/api/workforce-budget', asyncHandler(async (req, res, next) => {
+app.use('/api/workforce-budget', authenticateToken, asyncHandler(async (req, res, next) => {
 
     return workforceBudgetRoutes(req, res, next);
 
@@ -1056,13 +1058,13 @@ app.use('/api/workforce-budget', asyncHandler(async (req, res, next) => {
 
 
 
-app.use('/api/work', asyncHandler(async (req, res, next) => {
+app.use('/api/work', authenticateToken, asyncHandler(async (req, res, next) => {
 
     return workRoutes(req, res, next);
 
 }));
 
-app.use('/api/safety', asyncHandler(async (req, res, next) => {
+app.use('/api/safety', authenticateToken, asyncHandler(async (req, res, next) => {
 
     return safetyRoutes(req, res, next);
 
@@ -1070,7 +1072,7 @@ app.use('/api/safety', asyncHandler(async (req, res, next) => {
 
 
 
-app.use('/api/meetings', asyncHandler(async (req, res, next) => {
+app.use('/api/meetings', authenticateToken, asyncHandler(async (req, res, next) => {
 
     return scheduleMeetingsRoutes(req, res, next);
 
@@ -1078,13 +1080,13 @@ app.use('/api/meetings', asyncHandler(async (req, res, next) => {
 
 
 
-app.use('/api/company-cars', asyncHandler(async (req, res, next) => {
+app.use('/api/company-cars', authenticateToken, asyncHandler(async (req, res, next) => {
 
     return companyCarsRoutes(req, res, next);
 
 }));
 
-app.use('/api/vehicles', asyncHandler(async (req, res, next) => {
+app.use('/api/vehicles', authenticateToken, asyncHandler(async (req, res, next) => {
 
     return companyCarsRoutes(req, res, next);
 
@@ -1092,7 +1094,7 @@ app.use('/api/vehicles', asyncHandler(async (req, res, next) => {
 
 
 
-app.use('/api/luggage-campaigns', asyncHandler(async (req, res, next) => {
+app.use('/api/luggage-campaigns', authenticateToken, asyncHandler(async (req, res, next) => {
 
     return luggageCampaignsRoutes(req, res, next);
 
@@ -1100,7 +1102,7 @@ app.use('/api/luggage-campaigns', asyncHandler(async (req, res, next) => {
 
 
 
-app.use('/api/luggage-purchases', asyncHandler(async (req, res, next) => {
+app.use('/api/luggage-purchases', authenticateToken, asyncHandler(async (req, res, next) => {
 
     return luggagePurchasesRoutes(req, res, next);
 
@@ -1108,7 +1110,7 @@ app.use('/api/luggage-purchases', asyncHandler(async (req, res, next) => {
 
 
 
-app.use('/api/luggage-payment-tracking', asyncHandler(async (req, res, next) => {
+app.use('/api/luggage-payment-tracking', authenticateToken, asyncHandler(async (req, res, next) => {
 
     return luggagePaymentTrackingRoutes(req, res, next);
 
@@ -1116,7 +1118,7 @@ app.use('/api/luggage-payment-tracking', asyncHandler(async (req, res, next) => 
 
 
 
-app.use('/api/workforce-requests', asyncHandler(async (req, res, next) => {
+app.use('/api/workforce-requests', authenticateToken, asyncHandler(async (req, res, next) => {
 
     return workforceRequestsRoutes(req, res, next);
 
@@ -1124,7 +1126,7 @@ app.use('/api/workforce-requests', asyncHandler(async (req, res, next) => {
 
 
 
-app.use('/api/sales', asyncHandler(async (req, res, next) => {
+app.use('/api/sales', authenticateToken, asyncHandler(async (req, res, next) => {
 
     return salesRoutes(req, res, next);
 
@@ -1132,7 +1134,7 @@ app.use('/api/sales', asyncHandler(async (req, res, next) => {
 
 
 
-app.use('/api/payment-tracking', asyncHandler(async (req, res, next) => {
+app.use('/api/payment-tracking', authenticateToken, asyncHandler(async (req, res, next) => {
 
     return paymentTrackingRoutes(req, res, next);
 
@@ -1140,7 +1142,7 @@ app.use('/api/payment-tracking', asyncHandler(async (req, res, next) => {
 
 
 
-app.use('/api/contracts', asyncHandler(async (req, res, next) => {
+app.use('/api/contracts', authenticateToken, asyncHandler(async (req, res, next) => {
 
     return contractsRoutes(req, res, next);
 
@@ -1148,7 +1150,7 @@ app.use('/api/contracts', asyncHandler(async (req, res, next) => {
 
 
 
-app.use('/api/tasks', asyncHandler(async (req, res, next) => {
+app.use('/api/tasks', authenticateToken, asyncHandler(async (req, res, next) => {
 
     return tasksRoutes(req, res, next);
 
@@ -1156,7 +1158,7 @@ app.use('/api/tasks', asyncHandler(async (req, res, next) => {
 
 
 
-app.use('/api/inspections', asyncHandler(async (req, res, next) => {
+app.use('/api/inspections', authenticateToken, asyncHandler(async (req, res, next) => {
 
     return inspectionsRoutes(req, res, next);
 
@@ -1164,7 +1166,7 @@ app.use('/api/inspections', asyncHandler(async (req, res, next) => {
 
 
 
-app.use('/api/departments', asyncHandler(async (req, res, next) => {
+app.use('/api/departments', authenticateToken, asyncHandler(async (req, res, next) => {
 
     return departmentsRoutes(req, res, next);
 
@@ -1172,25 +1174,25 @@ app.use('/api/departments', asyncHandler(async (req, res, next) => {
 
 
 
-app.use('/api/suggestions', asyncHandler(async (req, res, next) => {
+app.use('/api/suggestions', authenticateToken, asyncHandler(async (req, res, next) => {
 
     return suggestionsRoutes(req, res, next);
 
 }));
 
-app.use('/api/suggestions-view', suggestionsViewRoutes);
+app.use('/api/suggestions-view', authenticateToken, suggestionsViewRoutes);
 
-app.use('/api/assets-equipment', assetsEquipmentRoutes);
-app.use('/api/finance', financeRoutes);
-app.use('/api/financial-strategies', financialStrategiesRoutes);
+app.use('/api/assets-equipment', authenticateToken, assetsEquipmentRoutes);
+app.use('/api/finance', authenticateToken, financeRoutes);
+app.use('/api/financial-strategies', authenticateToken, financialStrategiesRoutes);
 
-app.use('/api/tax', asyncHandler(async (req, res, next) => {
+app.use('/api/tax', authenticateToken, asyncHandler(async (req, res, next) => {
 
     return taxRoutes(req, res, next);
 
 }));
 
-app.use('/api/nhif', asyncHandler(async (req, res, next) => {
+app.use('/api/nhif', authenticateToken, asyncHandler(async (req, res, next) => {
 
     return nhifRoutes(req, res, next);
 
@@ -1198,7 +1200,7 @@ app.use('/api/nhif', asyncHandler(async (req, res, next) => {
 
 
 
-app.use('/api/nssf-registration', asyncHandler(async (req, res, next) => {
+app.use('/api/nssf-registration', authenticateToken, asyncHandler(async (req, res, next) => {
 
     return nssfRegistrationRoutes(req, res, next);
 
@@ -1206,13 +1208,13 @@ app.use('/api/nssf-registration', asyncHandler(async (req, res, next) => {
 
 
 
-app.use('/api/transport-costs', asyncHandler(async (req, res, next) => {
+app.use('/api/transport-costs', authenticateToken, asyncHandler(async (req, res, next) => {
 
     return transportCostsRoutes(req, res, next);
 
 }));
 
-app.use('/api/materials', asyncHandler(async (req, res, next) => {
+app.use('/api/materials', authenticateToken, asyncHandler(async (req, res, next) => {
 
     return materialsRoutes(req, res, next);
 
@@ -1220,7 +1222,7 @@ app.use('/api/materials', asyncHandler(async (req, res, next) => {
 
 
 
-app.use('/api/procurement-sales', asyncHandler(async (req, res, next) => {
+app.use('/api/procurement-sales', authenticateToken, asyncHandler(async (req, res, next) => {
 
     return procurementSalesRoutes(req, res, next);
 
@@ -1228,7 +1230,7 @@ app.use('/api/procurement-sales', asyncHandler(async (req, res, next) => {
 
 
 
-app.use('/api/payment', asyncHandler(async (req, res, next) => {
+app.use('/api/payment', authenticateToken, asyncHandler(async (req, res, next) => {
 
     return paymentRoutes(req, res, next);
 
@@ -1236,7 +1238,7 @@ app.use('/api/payment', asyncHandler(async (req, res, next) => {
 
 
 
-app.use('/api/accountant', asyncHandler(async (req, res, next) => {
+app.use('/api/accountant', authenticateToken, asyncHandler(async (req, res, next) => {
 
     return accountantRoutes(req, res, next);
 
@@ -1244,7 +1246,7 @@ app.use('/api/accountant', asyncHandler(async (req, res, next) => {
 
 
 
-app.use('/api/leadership', asyncHandler(async (req, res, next) => {
+app.use('/api/leadership', authenticateToken, asyncHandler(async (req, res, next) => {
 
     return leadershipRoutes(req, res, next);
 
@@ -1252,7 +1254,7 @@ app.use('/api/leadership', asyncHandler(async (req, res, next) => {
 
 
 
-app.use('/api/mission-vision', asyncHandler(async (req, res, next) => {
+app.use('/api/mission-vision', authenticateToken, asyncHandler(async (req, res, next) => {
 
     return missionVisionRoutes(req, res, next);
 
@@ -1260,7 +1262,7 @@ app.use('/api/mission-vision', asyncHandler(async (req, res, next) => {
 
 
 
-app.use('/api/long-term-growth', asyncHandler(async (req, res, next) => {
+app.use('/api/long-term-growth', authenticateToken, asyncHandler(async (req, res, next) => {
 
     return longTermGrowthRoutes(req, res, next);
 
@@ -1268,7 +1270,7 @@ app.use('/api/long-term-growth', asyncHandler(async (req, res, next) => {
 
 
 
-app.use('/api/investment-management', asyncHandler(async (req, res, next) => {
+app.use('/api/investment-management', authenticateToken, asyncHandler(async (req, res, next) => {
 
     return investmentManagementRoutes(req, res, next);
 
@@ -1276,68 +1278,68 @@ app.use('/api/investment-management', asyncHandler(async (req, res, next) => {
 
 
 
-app.use('/api/team-management', asyncHandler(async (req, res, next) => {
+app.use('/api/team-management', authenticateToken, asyncHandler(async (req, res, next) => {
 
     return teamManagementRoutes(req, res, next);
 
 }));
 
-// Payroll routes (no auth middleware for now to match local testing)
-app.use('/payroll', asyncHandler(async (req, res, next) => {
+// Payroll routes (authenticated)
+app.use('/payroll', authenticateToken, asyncHandler(async (req, res, next) => {
 
     return payrollRoutes(req, res, next);
 
 }));
 
-app.use('/api/payroll', asyncHandler(async (req, res, next) => {
+app.use('/api/payroll', authenticateToken, asyncHandler(async (req, res, next) => {
 
     return payrollRoutes(req, res, next);
 
 }));
 
-app.use('/api/workforce-reports', asyncHandler(async (req, res, next) => {
+app.use('/api/workforce-reports', authenticateToken, asyncHandler(async (req, res, next) => {
 
     return workforceReportsRoutes(req, res, next);
 
 }));
 
-app.use('/api/claims-management', asyncHandler(async (req, res, next) => {
+app.use('/api/claims-management', authenticateToken, asyncHandler(async (req, res, next) => {
 
     return claimsManagementRoutes(req, res, next);
 
 }));
 
-app.use('/api/discipline-monitoring', asyncHandler(async (req, res, next) => {
+app.use('/api/discipline-monitoring', authenticateToken, asyncHandler(async (req, res, next) => {
 
     return disciplineMonitoringRoutes(req, res, next);
 
 }));
 
-app.use('/api/office-resources', asyncHandler(async (req, res, next) => {
+app.use('/api/office-resources', authenticateToken, asyncHandler(async (req, res, next) => {
 
     return officeResourcesRoutes(req, res, next);
 
 }));
 
-app.use('/api/assets-equipment', asyncHandler(async (req, res, next) => {
+app.use('/api/assets-equipment', authenticateToken, asyncHandler(async (req, res, next) => {
 
     return assetsEquipmentRoutes(req, res, next);
 
 }));
 
-app.use('/api/talent-acquisition', asyncHandler(async (req, res, next) => {
+app.use('/api/talent-acquisition', authenticateToken, asyncHandler(async (req, res, next) => {
 
     return talentAcquisitionRoutes(req, res, next);
 
 }));
 
-app.use('/api/promotions', asyncHandler(async (req, res, next) => {
+app.use('/api/promotions', authenticateToken, asyncHandler(async (req, res, next) => {
 
     return promotionsRoutes(req, res, next);
 
 }));
 
-app.use('/api/risk-management', asyncHandler(async (req, res, next) => {
+app.use('/api/risk-management', authenticateToken, asyncHandler(async (req, res, next) => {
 
     return riskManagementRoutes(req, res, next);
 
@@ -1345,7 +1347,7 @@ app.use('/api/risk-management', asyncHandler(async (req, res, next) => {
 
 
 
-app.use('/api/audit', asyncHandler(async (req, res, next) => {
+app.use('/api/audit', authenticateToken, asyncHandler(async (req, res, next) => {
 
     return auditRoutes(req, res, next);
 
