@@ -257,10 +257,11 @@ router.get('/assignments', async (req, res) => {
         
         query += ` ORDER BY wa.created_at DESC`;
         
-        const [assignments] = await db.execute(query, params);
-        
-        console.log('Worker assignments from database:', assignments.length);
-        res.json(assignments);
+        const assignments = await db.execute(query, params);
+        const rows = Array.isArray(assignments) ? assignments : [];
+
+        console.log('Worker assignments from database:', rows.length);
+        res.json(rows);
         
     } catch (error) {
         console.error('Database error fetching worker assignments:', error.message);
