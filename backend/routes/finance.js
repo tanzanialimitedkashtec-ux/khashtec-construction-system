@@ -6,8 +6,34 @@ const db = require('../../database/config/database');
 var notify = require('../utils/notify');
 const upload = require('../middleware/upload');
 const { sendInvoiceEmail, sendExpenseEmail } = require('../services/emailService');
+const { authenticateToken, requireRole } = require('../src/middleware/auth');
+const mpesa = require('../services/mpesa');
+const nmb = require('../services/nmb');
 
 console.log('🚀 Finance routes loaded with database connection');
+
+// Ensure invoice payment/destination columns exist (guarded, runs once lazily).
+let _invoicePaymentColumnsEnsured = false;
+async function ensureInvoicePaymentColumns() {
+    if (_invoicePaymentColumnsEnsured) return;
+    const cols = [
+        'payment_method VARCHAR(30) DEFAULT NULL',
+        'recipient_phone VARCHAR(30) DEFAULT NULL',
+        'bank_account VARCHAR(100) DEFAULT NULL',
+        'bank_name VARCHAR(100) DEFAULT NULL',
+        'payment_status VARCHAR(30) DEFAULT NULL',
+        'payment_transaction_id VARCHAR(100) DEFAULT NULL',
+        'payment_simulated TINYINT(1) DEFAULT 0',
+        'paid_amount DECIMAL(15,2) DEFAULT NULL',
+        'paid_at TIMESTAMP NULL DEFAULT NULL',
+        'approved_by VARCHAR(255) DEFAULT NULL'
+    ];
+    for (const c of cols) {
+        try { await db.execute('ALTER TABLE finance_work ADD COLUMN ' + c); }
+        catch (e) { /* column already exists */ }
+    }
+    _invoicePaymentColumnsEnsured = true;
+}
 
 async function resolveUserId(preferredRole) {
     try {
@@ -316,8 +342,8 @@ router.post('/expense', upload.single('receipt'), async (req, res) => {
     }
 });
 
-// PUT - Confirm expense
-router.put('/expense/:id/confirm', async (req, res) => {
+// PUT - Confirm expense (MD only)
+router.put('/expense/:id/confirm', authenticateToken, requireRole(['Managing Director']), async (req, res) => {
     console.log('✅ PUT /api/finance/expense/:id/confirm accessed with id:', req.params.id);
     try {
         const id = req.params.id;
@@ -487,7 +513,11 @@ router.post('/invoice', async (req, res) => {
         category,
         due_date,
         priority = 'Medium',
-        submittedBy = 'Finance Manager'
+        submittedBy = 'Finance Manager',
+        payment_method = null,
+        recipient_phone = null,
+        bank_account = null,
+        bank_name = null
     } = req.body;
 
     if (!vendor_name || !invoice_number || !amount || !description || !due_date) {
@@ -498,11 +528,12 @@ router.post('/invoice', async (req, res) => {
     }
 
     try {
+        await ensureInvoicePaymentColumns();
         const workTitle = `Invoice ${invoice_number} - ${category || 'General'}`;
         const result = await db.execute(
             `INSERT INTO finance_work 
-             (department_code, work_type, work_title, work_description, amount, vendor_name, invoice_number, status, priority, submitted_by, submitted_date, assigned_to, due_date)
-             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+             (department_code, work_type, work_title, work_description, amount, vendor_name, invoice_number, status, priority, submitted_by, submitted_date, assigned_to, due_date, payment_method, recipient_phone, bank_account, bank_name)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
             [
                 'FINANCE',
                 'Invoice Processing',
@@ -516,7 +547,11 @@ router.post('/invoice', async (req, res) => {
                 submittedBy,
                 new Date().toISOString().slice(0, 10),
                 'Finance Manager',
-                due_date
+                due_date,
+                payment_method || null,
+                recipient_phone || null,
+                bank_account || null,
+                bank_name || null
             ]
         );
 
@@ -570,29 +605,96 @@ router.get('/invoices', async (req, res) => {
     }
 });
 
-// PUT - Approve invoice (MD only)
-router.put('/invoice/:id/approve', async (req, res) => {
+// PUT - Approve invoice (MD only). On approval, the invoice amount is
+// automatically disbursed to the invoice payee via the configured payment
+// channel (M-Pesa or NMB bank).
+router.put('/invoice/:id/approve', authenticateToken, requireRole(['Managing Director']), async (req, res) => {
     const { id } = req.params;
     console.log('📝 PUT /api/finance/invoice/' + id + '/approve accessed');
     try {
-        // Fetch invoice details before updating for the email
-        const invoiceRows = await db.execute(
-            `SELECT invoice_number, vendor_name, amount, work_description, priority, due_date FROM finance_work WHERE id = ? AND work_type = 'Invoice Processing'`,
-            [id]
-        ).catch(() => []);
-        const inv = Array.isArray(invoiceRows) && invoiceRows.length > 0 ? invoiceRows[0] : {};
+        await ensureInvoicePaymentColumns();
 
-        await db.execute(
-            `UPDATE finance_work SET status = 'Completed', completion_date = NOW() WHERE id = ? AND work_type = 'Invoice Processing'`,
+        // Fetch invoice details before updating (email + payment routing)
+        const invoiceRows = await db.execute(
+            `SELECT invoice_number, vendor_name, amount, work_description, priority, due_date, status,
+                    payment_method, recipient_phone, bank_account, bank_name, payment_status
+             FROM finance_work WHERE id = ? AND work_type = 'Invoice Processing'`,
             [id]
         );
-        console.log('✅ Invoice ' + id + ' approved');
+        const inv = Array.isArray(invoiceRows) && invoiceRows.length > 0 ? invoiceRows[0] : null;
+
+        if (!inv) {
+            return res.status(404).json({ error: 'Invoice not found' });
+        }
+
+        // Idempotency guard: never disburse twice for the same invoice.
+        if (inv.payment_status === 'Paid') {
+            return res.status(409).json({ error: 'Invoice already paid', id, status: inv.status, payment_status: 'Paid' });
+        }
+
+        // Payment destination: prefer values sent with the approval, else the
+        // ones captured when the invoice was created.
+        const paymentMethod = (req.body && req.body.payment_method) || inv.payment_method || null;
+        const recipientPhone = (req.body && req.body.recipient_phone) || inv.recipient_phone || null;
+        const bankAccount = (req.body && req.body.bank_account) || inv.bank_account || null;
+        const bankName = (req.body && req.body.bank_name) || inv.bank_name || null;
+        const amount = Number(inv.amount) || 0;
+        const approver = (req.user && (req.user.manager_name || req.user.email)) || 'Managing Director';
+
+        // Disburse payment based on the chosen channel.
+        const reference = 'INV-' + (inv.invoice_number || id) + '-' + Date.now();
+        let txResult = null;
+        if (paymentMethod === 'mpesa' && recipientPhone) {
+            txResult = await mpesa.sendPayment(recipientPhone, amount, reference);
+        } else if (paymentMethod === 'nmb_bank' && bankAccount) {
+            txResult = await nmb.sendPayment(bankAccount, bankName || 'NMB', amount, inv.vendor_name, reference);
+        } else {
+            return res.status(400).json({
+                error: 'Missing payment destination',
+                message: 'Set payment_method to "mpesa" (with recipient_phone) or "nmb_bank" (with bank_account) to auto-disburse this invoice.'
+            });
+        }
+
+        // Payment attempted but failed: do NOT mark the invoice approved/paid.
+        if (txResult && txResult.success === false) {
+            await db.execute(
+                `UPDATE finance_work SET payment_status = 'Failed', payment_method = ? WHERE id = ? AND work_type = 'Invoice Processing'`,
+                [paymentMethod, id]
+            ).catch(() => {});
+            console.error('❌ Invoice ' + id + ' payment failed:', txResult.error);
+            return res.status(502).json({
+                error: 'Payment failed',
+                message: txResult.error || 'Payment provider rejected the transfer',
+                id,
+                payment_status: 'Failed'
+            });
+        }
+
+        const transactionId = txResult ? txResult.transactionId : null;
+        const simulated = txResult && txResult.simulated ? 1 : 0;
+
+        // Payment succeeded (or simulated): mark approved + paid atomically.
+        await db.execute(
+            `UPDATE finance_work
+             SET status = 'Completed', completion_date = NOW(), approved_by = ?,
+                 payment_status = 'Paid', payment_method = ?, payment_transaction_id = ?,
+                 payment_simulated = ?, paid_amount = ?, paid_at = NOW()
+             WHERE id = ? AND work_type = 'Invoice Processing'`,
+            [approver, paymentMethod, transactionId, simulated, amount, id]
+        );
+        console.log('✅ Invoice ' + id + ' approved and paid (tx=' + transactionId + ', simulated=' + simulated + ')');
+
+        const channelInfo = paymentMethod === 'mpesa'
+            ? ' via M-Pesa (' + recipientPhone + ')'
+            : ' via NMB Bank (' + bankAccount + ')';
+        notify('Invoice Paid', (inv.vendor_name || 'Vendor') + ' paid TZS ' + amount.toLocaleString() + channelInfo + (simulated ? ' [simulated]' : ''), 'success');
+        notify('Finance Update', 'Invoice ' + (inv.invoice_number || id) + ' approved by ' + approver + ' and disbursed TZS ' + amount.toLocaleString() + channelInfo, 'success', 'MD', 'Finance Manager');
 
         // Send approval email notification (fire-and-forget)
         sendInvoiceEmail({
             invoice_number: inv.invoice_number || 'N/A',
             vendor_name: inv.vendor_name || 'N/A',
-            amount: Number(inv.amount) || 0,
+            amount: amount,
             description: inv.work_description || '',
             priority: inv.priority || 'Medium',
             due_date: inv.due_date || 'N/A',
@@ -600,7 +702,18 @@ router.put('/invoice/:id/approve', async (req, res) => {
             work_id: id
         }, 'approved').catch(err => console.error('⚠️ Email send error:', err.message));
 
-        res.json({ message: 'Invoice approved successfully', id, status: 'Completed' });
+        res.json({
+            message: 'Invoice approved and payment disbursed successfully',
+            id,
+            status: 'Completed',
+            payment: {
+                status: 'Paid',
+                method: paymentMethod,
+                amount: amount,
+                transactionId: transactionId,
+                simulated: !!simulated
+            }
+        });
     } catch (error) {
         console.error('❌ Error approving invoice:', error);
         res.status(500).json({ error: 'Failed to approve invoice' });
@@ -608,7 +721,7 @@ router.put('/invoice/:id/approve', async (req, res) => {
 });
 
 // PUT - Reject invoice (MD only)
-router.put('/invoice/:id/reject', async (req, res) => {
+router.put('/invoice/:id/reject', authenticateToken, requireRole(['Managing Director']), async (req, res) => {
     const { id } = req.params;
     const { reason } = req.body || {};
     console.log('📝 PUT /api/finance/invoice/' + id + '/reject accessed');

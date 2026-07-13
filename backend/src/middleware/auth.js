@@ -1,5 +1,28 @@
 const jwt = require('jsonwebtoken');
 
+// Canonical role aliases so role checks are reliable regardless of the
+// exact string stored (e.g. "MD" vs "Managing Director" vs "md").
+const ROLE_ALIASES = {
+  'md': 'Managing Director',
+  'managing director': 'Managing Director',
+  'hr': 'HR Manager',
+  'hr manager': 'HR Manager',
+  'finance': 'Finance Manager',
+  'finance manager': 'Finance Manager',
+  'project': 'Project Manager',
+  'project manager': 'Project Manager',
+  'real estate': 'Real Estate Manager',
+  'real estate manager': 'Real Estate Manager',
+  'hse': 'HSE Manager',
+  'hse manager': 'HSE Manager'
+};
+
+const canonicalizeRole = (role) => {
+  if (!role || typeof role !== 'string') return null;
+  const key = role.trim().toLowerCase();
+  return ROLE_ALIASES[key] || role.trim();
+};
+
 // Middleware to verify JWT token
 const authenticateToken = (req, res, next) => {
   const authHeader = req.headers['authorization'];
@@ -35,7 +58,8 @@ const requireRole = (roles) => {
       });
     }
 
-    if (roles.includes(req.user.role)) {
+    const allowed = (Array.isArray(roles) ? roles : [roles]).map(canonicalizeRole);
+    if (allowed.includes(canonicalizeRole(req.user.role))) {
       next();
     } else {
       res.status(403).json({

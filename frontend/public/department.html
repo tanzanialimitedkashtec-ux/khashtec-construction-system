@@ -69610,6 +69610,30 @@ function processInvoices() {
                             </select>
                         </div>
                     </div>
+                    <div style="display:flex;gap:10px;flex-wrap:wrap;">
+                        <div style="flex:1;min-width:150px;">
+                            <label style="font-weight:600;display:block;margin-bottom:4px;">Payment Method</label>
+                            <select id="invoicePaymentMethod" onchange="toggleInvoicePaymentFields()" style="width:100%;padding:8px;border:1px solid #ccc;border-radius:6px;">
+                                <option value="">Manual / None (no auto-payment)</option>
+                                <option value="mpesa">M-Pesa (mobile money)</option>
+                                <option value="nmb_bank">NMB Bank transfer</option>
+                            </select>
+                        </div>
+                        <div id="invoiceMpesaField" style="flex:1;min-width:150px;display:none;">
+                            <label style="font-weight:600;display:block;margin-bottom:4px;">Recipient M-Pesa Phone</label>
+                            <input type="text" id="invoiceRecipientPhone" style="width:100%;padding:8px;border:1px solid #ccc;border-radius:6px;" placeholder="e.g. 0712345678">
+                        </div>
+                    </div>
+                    <div id="invoiceBankFields" style="display:none;gap:10px;flex-wrap:wrap;">
+                        <div style="flex:1;min-width:150px;">
+                            <label style="font-weight:600;display:block;margin-bottom:4px;">Bank Account Number</label>
+                            <input type="text" id="invoiceBankAccount" style="width:100%;padding:8px;border:1px solid #ccc;border-radius:6px;" placeholder="Destination account number">
+                        </div>
+                        <div style="flex:1;min-width:150px;">
+                            <label style="font-weight:600;display:block;margin-bottom:4px;">Bank Name</label>
+                            <input type="text" id="invoiceBankName" style="width:100%;padding:8px;border:1px solid #ccc;border-radius:6px;" placeholder="e.g. NMB" value="NMB">
+                        </div>
+                    </div>
                     <button type="submit" class="action" style="padding:10px 20px;font-size:15px;">Create Invoice</button>
                 </form>
             </div>
@@ -69633,6 +69657,14 @@ function processInvoices() {
     loadInvoicesList();
 }
 
+function toggleInvoicePaymentFields() {
+    var method = document.getElementById('invoicePaymentMethod').value;
+    var mpesaField = document.getElementById('invoiceMpesaField');
+    var bankFields = document.getElementById('invoiceBankFields');
+    if (mpesaField) mpesaField.style.display = (method === 'mpesa') ? 'block' : 'none';
+    if (bankFields) bankFields.style.display = (method === 'nmb_bank') ? 'flex' : 'none';
+}
+
 function submitInvoice(e) {
     e.preventDefault();
     var vendor = document.getElementById('invoiceVendor').value.trim();
@@ -69642,9 +69674,23 @@ function submitInvoice(e) {
     var description = document.getElementById('invoiceDescription').value.trim();
     var category = document.getElementById('invoiceCategory').value;
     var priority = document.getElementById('invoicePriority').value;
+    var paymentMethodEl = document.getElementById('invoicePaymentMethod');
+    var paymentMethod = paymentMethodEl ? paymentMethodEl.value : '';
+    var recipientPhoneEl = document.getElementById('invoiceRecipientPhone');
+    var bankAccountEl = document.getElementById('invoiceBankAccount');
+    var bankNameEl = document.getElementById('invoiceBankName');
 
     if (!vendor || !invoiceNum || !amount || !dueDate || !description) {
         customAlert('Please fill in all required fields.', 'Validation Error', 'error');
+        return;
+    }
+
+    if (paymentMethod === 'mpesa' && (!recipientPhoneEl || !recipientPhoneEl.value.trim())) {
+        customAlert('Enter the recipient M-Pesa phone number for auto-payment.', 'Validation Error', 'error');
+        return;
+    }
+    if (paymentMethod === 'nmb_bank' && (!bankAccountEl || !bankAccountEl.value.trim())) {
+        customAlert('Enter the recipient bank account number for auto-payment.', 'Validation Error', 'error');
         return;
     }
 
@@ -69657,7 +69703,11 @@ function submitInvoice(e) {
         vendor_name: vendor,
         invoice_number: invoiceNum,
         due_date: dueDate,
-        priority: priority
+        priority: priority,
+        payment_method: paymentMethod || null,
+        recipient_phone: recipientPhoneEl ? recipientPhoneEl.value.trim() : null,
+        bank_account: bankAccountEl ? bankAccountEl.value.trim() : null,
+        bank_name: bankNameEl ? bankNameEl.value.trim() : null
     };
 
     console.log('📝 Submitting invoice:', payload);
@@ -69807,30 +69857,67 @@ function loadInvoicesList() {
 
 
 
-function approveInvoice(invoiceId) {
-    if (!confirm('Are you sure you want to approve this invoice?')) return;
-    fetch('/api/finance/invoice/' + invoiceId + '/approve', {
+// Prompt the MD for a payment destination when an invoice has none stored
+// (e.g. older invoices created before auto-payment). Returns a body object to
+// send with the approval, or null if the MD cancelled.
+function promptInvoicePaymentDestination() {
+    var method = prompt('This invoice has no saved payment destination.\nHow should it be paid?\n  1 = M-Pesa (mobile money)\n  2 = NMB Bank transfer\nEnter 1 or 2 (or Cancel to abort):');
+    if (method === null) return null;
+    method = method.trim();
+    if (method === '1' || method.toLowerCase() === 'mpesa') {
+        var phone = prompt('Enter the recipient M-Pesa phone number (e.g. 0712345678):');
+        if (phone === null || !phone.trim()) return null;
+        return { payment_method: 'mpesa', recipient_phone: phone.trim() };
+    }
+    if (method === '2' || method.toLowerCase() === 'nmb' || method.toLowerCase() === 'nmb_bank') {
+        var account = prompt('Enter the recipient bank account number:');
+        if (account === null || !account.trim()) return null;
+        var bank = prompt('Enter the bank name:', 'NMB');
+        return { payment_method: 'nmb_bank', bank_account: account.trim(), bank_name: (bank && bank.trim()) || 'NMB' };
+    }
+    customAlert('Invalid choice. Enter 1 for M-Pesa or 2 for bank transfer.', 'Error', 'error');
+    return null;
+}
+
+// Sends the approval request; on a "Missing payment destination" 400 it prompts
+// the MD for the destination and retries once with that destination in the body.
+function sendInvoiceApproval(invoiceId, body, onSuccess) {
+    return fetch('/api/finance/invoice/' + invoiceId + '/approve', {
         method: 'PUT',
         headers: {
             'Content-Type': 'application/json',
             'Authorization': 'Bearer ' + (typeof sessionManager !== 'undefined' && sessionManager.getAuthToken ? sessionManager.getAuthToken() : '')
-        }
+        },
+        body: JSON.stringify(body || {})
     })
     .then(function(res) { return res.json(); })
     .then(function(data) {
+        if (data.error === 'Missing payment destination' && !(body && body.payment_method)) {
+            var dest = promptInvoicePaymentDestination();
+            if (!dest) return;
+            return sendInvoiceApproval(invoiceId, dest, onSuccess);
+        }
         if (data.error) {
             console.error('❌ Invoice approval failed:', data.error);
-            customAlert('Failed to approve invoice: ' + data.error, 'Error', 'error');
+            customAlert('Failed to approve invoice: ' + (data.message || data.error), 'Error', 'error');
             return;
         }
-        console.log('✅ Invoice ' + invoiceId + ' approved by Managing Director');
-        customAlert('Invoice approved successfully!', 'Invoice Approved', 'success');
-        loadInvoicesList();
+        console.log('✅ Invoice ' + invoiceId + ' approved', data);
+        var payMsg = (data.payment && data.payment.status === 'Paid')
+            ? ('Invoice approved and TZS ' + Number(data.payment.amount || 0).toLocaleString() + ' disbursed' + (data.payment.simulated ? ' (simulated - payment API not configured)' : '') + '.')
+            : 'Invoice approved successfully!';
+        customAlert(payMsg, 'Invoice Approved', 'success');
+        if (typeof onSuccess === 'function') onSuccess();
     })
     .catch(function(err) {
         console.error('❌ Error approving invoice:', err);
         customAlert('Failed to approve invoice. Please try again.', 'Error', 'error');
     });
+}
+
+function approveInvoice(invoiceId) {
+    if (!confirm('Are you sure you want to approve this invoice?')) return;
+    sendInvoiceApproval(invoiceId, {}, loadInvoicesList);
 }
 
 function rejectInvoice(invoiceId) {
@@ -70383,27 +70470,7 @@ function buildMDInvoiceTable(invoices, showActions) {
 
 function mdApproveInvoice(invoiceId) {
     if (!confirm('Are you sure you want to approve this invoice?')) return;
-    fetch('/api/finance/invoice/' + invoiceId + '/approve', {
-        method: 'PUT',
-        headers: {
-            'Content-Type': 'application/json',
-            'Authorization': 'Bearer ' + (typeof sessionManager !== 'undefined' && sessionManager.getAuthToken ? sessionManager.getAuthToken() : '')
-        }
-    })
-    .then(function(res) { return res.json(); })
-    .then(function(data) {
-        if (data.error) {
-            customAlert('Failed to approve invoice: ' + data.error, 'Error', 'error');
-            return;
-        }
-        console.log('✅ Invoice ' + invoiceId + ' approved by MD');
-        customAlert('Invoice approved successfully!', 'Invoice Approved', 'success');
-        showMDInvoiceApproval();
-    })
-    .catch(function(err) {
-        console.error('❌ Error approving invoice:', err);
-        customAlert('Failed to approve invoice.', 'Error', 'error');
-    });
+    sendInvoiceApproval(invoiceId, {}, showMDInvoiceApproval);
 }
 
 function mdRejectInvoice(invoiceId) {

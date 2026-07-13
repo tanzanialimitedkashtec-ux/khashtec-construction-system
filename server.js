@@ -935,7 +935,7 @@ const { authenticateToken } = require('./backend/src/middleware/auth');
 
 // Mount department-specific routes to their correct handlers
 
-app.use('/api/hr', authenticateToken, asyncHandler(async (req, res, next) => {
+app.use('/api/hr', asyncHandler(async (req, res, next) => {
 
     return employeeRoutes(req, res, next); // Use employeeRoutes for HR department
 
@@ -943,7 +943,7 @@ app.use('/api/hr', authenticateToken, asyncHandler(async (req, res, next) => {
 
 
 
-app.use('/api/hr/work', authenticateToken, asyncHandler(async (req, res, next) => {
+app.use('/api/hr/work', asyncHandler(async (req, res, next) => {
 
     return workRoutes(req, res, next); // Use workRoutes for HR work items
 
@@ -985,7 +985,7 @@ app.get('/api/finance/receipt/:id', async (req, res) => {
     }
 });
 
-app.use('/api/finance', authenticateToken, asyncHandler(async (req, res, next) => {
+app.use('/api/finance', asyncHandler(async (req, res, next) => {
 
     return financeRoutes(req, res, next);
 
@@ -993,7 +993,7 @@ app.use('/api/finance', authenticateToken, asyncHandler(async (req, res, next) =
 
 
 
-app.use('/api/hse', authenticateToken, asyncHandler(async (req, res, next) => {
+app.use('/api/hse', asyncHandler(async (req, res, next) => {
 
     return workRoutes(req, res, next); // Use workRoutes for HSE department
 
@@ -1001,7 +1001,7 @@ app.use('/api/hse', authenticateToken, asyncHandler(async (req, res, next) => {
 
 
 
-app.use('/api/project/work', authenticateToken, asyncHandler(async (req, res, next) => {
+app.use('/api/project/work', asyncHandler(async (req, res, next) => {
 
     return workRoutes(req, res, next); // Use workRoutes for Project department
 
@@ -1009,7 +1009,7 @@ app.use('/api/project/work', authenticateToken, asyncHandler(async (req, res, ne
 
 
 
-app.use('/api/project', authenticateToken, asyncHandler(async (req, res, next) => {
+app.use('/api/project', asyncHandler(async (req, res, next) => {
 
     return workRoutes(req, res, next); // Use workRoutes for Project department
 
@@ -1017,7 +1017,7 @@ app.use('/api/project', authenticateToken, asyncHandler(async (req, res, next) =
 
 
 
-app.use('/api/realestate', authenticateToken, asyncHandler(async (req, res, next) => {
+app.use('/api/realestate', asyncHandler(async (req, res, next) => {
 
     return workRoutes(req, res, next); // Use workRoutes for Real Estate department
 
@@ -1025,7 +1025,7 @@ app.use('/api/realestate', authenticateToken, asyncHandler(async (req, res, next
 
 
 
-app.use('/api/admin', authenticateToken, asyncHandler(async (req, res, next) => {
+app.use('/api/admin', asyncHandler(async (req, res, next) => {
 
     return workRoutes(req, res, next); // Use workRoutes for Admin department
 
