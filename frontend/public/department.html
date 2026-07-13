@@ -69277,31 +69277,45 @@ function loadBudgetVsActualData() {
         if (!container) return;
 
         var budgets = Array.isArray(data.budgets) ? data.budgets : [];
-        var actual = data.actual || 0;
+        var totalActual = (data.totalActual != null) ? data.totalActual : (data.actual || 0);
+        var totalBudget = (data.totalBudget != null) ? data.totalBudget : 0;
+        var totalRemaining = (data.totalRemaining != null) ? data.totalRemaining : (totalBudget - totalActual);
         var period = data.period || '';
 
         var html = '';
         if (budgets.length === 0) {
             html += '<div class="analysis-item"><span>No budget records found for period: ' + period + '</span></div>';
-            html += '<div class="analysis-item"><span>Total Actual Spending</span><span>TZS ' + formatTZS(actual) + '</span></div>';
+            html += '<div class="analysis-item"><span>Total Actual Spending</span><span>TZS ' + formatTZS(totalActual) + '</span></div>';
         } else {
             for (var i = 0; i < budgets.length; i++) {
                 var budget = budgets[i];
                 var budgetAmount = parseFloat(budget.total_proposed) || 0;
-                var variance = budgetAmount > 0 ? ((actual - budgetAmount) / budgetAmount * 100).toFixed(2) : 0;
+                var actual = parseFloat(budget.actual) || 0;
+                var remaining = (budget.remaining != null) ? parseFloat(budget.remaining) : (budgetAmount - actual);
+                var variance = (budget.variance_pct != null)
+                    ? Number(budget.variance_pct)
+                    : (budgetAmount > 0 ? Number(((actual - budgetAmount) / budgetAmount * 100).toFixed(2)) : 0);
                 var varianceClass = variance <= 0 ? 'positive' : 'negative';
                 var varianceSign = variance > 0 ? '+' : '';
 
                 html += '<div class="analysis-item">';
-                html += '<span>' + (budget.budget_period || 'Period') + '</span>';
+                html += '<span>' + (budget.department || budget.budget_period || 'Department') + '</span>';
                 html += '<span>Budget: TZS ' + formatTZS(budgetAmount) + '</span>';
                 html += '<span>Actual: TZS ' + formatTZS(actual) + '</span>';
+                html += '<span>Remaining: TZS ' + formatTZS(remaining) + '</span>';
                 html += '<span class="variance ' + varianceClass + '">Variance: ' + varianceSign + variance + '%</span>';
                 html += '</div>';
             }
+            html += '<div class="analysis-item" style="font-weight:bold;border-top:2px solid #ccc;">';
+            html += '<span>TOTAL</span>';
+            html += '<span>Budget: TZS ' + formatTZS(totalBudget) + '</span>';
+            html += '<span>Actual: TZS ' + formatTZS(totalActual) + '</span>';
+            html += '<span>Remaining: TZS ' + formatTZS(totalRemaining) + '</span>';
+            html += '<span></span>';
+            html += '</div>';
         }
 
-        console.log('✅ Budget vs Actual loaded successfully from database — Budgets found: ' + budgets.length + ', Total Actual Spending: TZS ' + formatTZS(actual));
+        console.log('✅ Budget vs Actual loaded successfully from database — Budgets found: ' + budgets.length + ', Total Actual Spending: TZS ' + formatTZS(totalActual));
         container.innerHTML = html;
     })
     .catch(function(err) {

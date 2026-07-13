@@ -1024,32 +1024,89 @@ router.get('/report/cash-flow', async (req, res) => {
 router.get('/report/budget-vs-actual', async (req, res) => {
     try {
         const { period } = req.query;
-        let budgets = [];
-        if (period) {
-            budgets = await db.execute(
-                `SELECT department AS budget_period, total_proposed FROM workforce_budgets WHERE department = ?`,
-                [period]
-            ).catch(() => []);
-        } else {
-            budgets = await db.execute(
-                `SELECT department AS budget_period, total_proposed FROM workforce_budgets ORDER BY submission_date DESC LIMIT 2`
-            ).catch(() => []);
-        }
-        budgets = Array.isArray(budgets) ? budgets : [];
 
-        const now = new Date();
-        const start = new Date(now.getFullYear(), 0, 1).toISOString().slice(0, 10);
-        const end = new Date().toISOString().slice(0, 10);
-        const actualRows = await db.execute(
-            `SELECT SUM(amount) as sum FROM financial_transactions WHERE type='Expense' AND date BETWEEN ? AND ?`,
-            [start, end]
+        // Source A: department budgets recorded via POST /api/finance/budget (finance_work).
+        const financeBudgetRows = await db.execute(
+            `SELECT department_code AS department, SUM(amount) AS total_proposed
+             FROM finance_work
+             WHERE work_type IN ('Budget Management','Budget Creation','Budget')
+               AND amount IS NOT NULL
+             GROUP BY department_code`
         ).catch(() => []);
-        const actual = sqlSumRow(actualRows, ['sum']);
+
+        // Source B: approved workforce/HR planning budgets (workforce_budgets).
+        const workforceRows = await db.execute(
+            `SELECT SUM(total_proposed) AS total_proposed
+             FROM workforce_budgets
+             WHERE status = 'Approved'`
+        ).catch(() => []);
+
+        // Actual spend per department, from recorded expenses (finance_work).
+        const expenseRows = await db.execute(
+            `SELECT department_code AS department, SUM(amount) AS actual
+             FROM finance_work
+             WHERE work_type = 'Expense Control'
+               AND amount IS NOT NULL
+             GROUP BY department_code`
+        ).catch(() => []);
+
+        const budgetByDept = new Map();
+        (Array.isArray(financeBudgetRows) ? financeBudgetRows : []).forEach((r) => {
+            const dept = r.department || 'Unspecified';
+            budgetByDept.set(dept, (budgetByDept.get(dept) || 0) + (Number(r.total_proposed) || 0));
+        });
+
+        // Unify the two budget sources: fold approved workforce planning budget into HR.
+        const workforceTotal = Number(
+            (Array.isArray(workforceRows) && workforceRows[0] && workforceRows[0].total_proposed) || 0
+        );
+        if (workforceTotal > 0) {
+            budgetByDept.set('HR', (budgetByDept.get('HR') || 0) + workforceTotal);
+        }
+
+        const actualByDept = new Map();
+        (Array.isArray(expenseRows) ? expenseRows : []).forEach((r) => {
+            const dept = r.department || 'Unspecified';
+            actualByDept.set(dept, (actualByDept.get(dept) || 0) + (Number(r.actual) || 0));
+        });
+
+        // Every department that has a budget and/or actual spend (no LIMIT).
+        const departments = new Set([...budgetByDept.keys(), ...actualByDept.keys()]);
+        let budgets = [];
+        departments.forEach((dept) => {
+            const budgetAmount = budgetByDept.get(dept) || 0;
+            const actual = actualByDept.get(dept) || 0;
+            const remaining = budgetAmount - actual;
+            const variance_pct = budgetAmount > 0
+                ? Number(((actual - budgetAmount) / budgetAmount * 100).toFixed(2))
+                : (actual > 0 ? 100 : 0);
+            budgets.push({
+                department: dept,
+                budget_period: dept,
+                total_proposed: budgetAmount,
+                actual,
+                remaining,
+                variance_pct
+            });
+        });
+
+        if (period) {
+            const p = String(period).trim().toLowerCase();
+            budgets = budgets.filter((b) => String(b.department).toLowerCase() === p);
+        }
+
+        budgets.sort((a, b) => b.total_proposed - a.total_proposed);
+
+        const totalBudget = budgets.reduce((s, b) => s + b.total_proposed, 0);
+        const totalActual = budgets.reduce((s, b) => s + b.actual, 0);
 
         res.json({
-            period: period || `${now.getFullYear()}`,
+            period: period || `${new Date().getFullYear()}`,
             budgets,
-            actual
+            totalBudget,
+            totalActual,
+            totalRemaining: totalBudget - totalActual,
+            actual: totalActual
         });
     } catch (error) {
         console.error('❌ Error generating budget vs actual:', error);
