@@ -69610,6 +69610,30 @@ function processInvoices() {
                             </select>
                         </div>
                     </div>
+                    <div style="display:flex;gap:10px;flex-wrap:wrap;">
+                        <div style="flex:1;min-width:150px;">
+                            <label style="font-weight:600;display:block;margin-bottom:4px;">Payment Method</label>
+                            <select id="invoicePaymentMethod" onchange="toggleInvoicePaymentFields()" style="width:100%;padding:8px;border:1px solid #ccc;border-radius:6px;">
+                                <option value="">Manual / None (no auto-payment)</option>
+                                <option value="mpesa">M-Pesa (mobile money)</option>
+                                <option value="nmb_bank">NMB Bank transfer</option>
+                            </select>
+                        </div>
+                        <div id="invoiceMpesaField" style="flex:1;min-width:150px;display:none;">
+                            <label style="font-weight:600;display:block;margin-bottom:4px;">Recipient M-Pesa Phone</label>
+                            <input type="text" id="invoiceRecipientPhone" style="width:100%;padding:8px;border:1px solid #ccc;border-radius:6px;" placeholder="e.g. 0712345678">
+                        </div>
+                    </div>
+                    <div id="invoiceBankFields" style="display:none;gap:10px;flex-wrap:wrap;">
+                        <div style="flex:1;min-width:150px;">
+                            <label style="font-weight:600;display:block;margin-bottom:4px;">Bank Account Number</label>
+                            <input type="text" id="invoiceBankAccount" style="width:100%;padding:8px;border:1px solid #ccc;border-radius:6px;" placeholder="Destination account number">
+                        </div>
+                        <div style="flex:1;min-width:150px;">
+                            <label style="font-weight:600;display:block;margin-bottom:4px;">Bank Name</label>
+                            <input type="text" id="invoiceBankName" style="width:100%;padding:8px;border:1px solid #ccc;border-radius:6px;" placeholder="e.g. NMB" value="NMB">
+                        </div>
+                    </div>
                     <button type="submit" class="action" style="padding:10px 20px;font-size:15px;">Create Invoice</button>
                 </form>
             </div>
@@ -69633,6 +69657,14 @@ function processInvoices() {
     loadInvoicesList();
 }
 
+function toggleInvoicePaymentFields() {
+    var method = document.getElementById('invoicePaymentMethod').value;
+    var mpesaField = document.getElementById('invoiceMpesaField');
+    var bankFields = document.getElementById('invoiceBankFields');
+    if (mpesaField) mpesaField.style.display = (method === 'mpesa') ? 'block' : 'none';
+    if (bankFields) bankFields.style.display = (method === 'nmb_bank') ? 'flex' : 'none';
+}
+
 function submitInvoice(e) {
     e.preventDefault();
     var vendor = document.getElementById('invoiceVendor').value.trim();
@@ -69642,9 +69674,23 @@ function submitInvoice(e) {
     var description = document.getElementById('invoiceDescription').value.trim();
     var category = document.getElementById('invoiceCategory').value;
     var priority = document.getElementById('invoicePriority').value;
+    var paymentMethodEl = document.getElementById('invoicePaymentMethod');
+    var paymentMethod = paymentMethodEl ? paymentMethodEl.value : '';
+    var recipientPhoneEl = document.getElementById('invoiceRecipientPhone');
+    var bankAccountEl = document.getElementById('invoiceBankAccount');
+    var bankNameEl = document.getElementById('invoiceBankName');
 
     if (!vendor || !invoiceNum || !amount || !dueDate || !description) {
         customAlert('Please fill in all required fields.', 'Validation Error', 'error');
+        return;
+    }
+
+    if (paymentMethod === 'mpesa' && (!recipientPhoneEl || !recipientPhoneEl.value.trim())) {
+        customAlert('Enter the recipient M-Pesa phone number for auto-payment.', 'Validation Error', 'error');
+        return;
+    }
+    if (paymentMethod === 'nmb_bank' && (!bankAccountEl || !bankAccountEl.value.trim())) {
+        customAlert('Enter the recipient bank account number for auto-payment.', 'Validation Error', 'error');
         return;
     }
 
@@ -69657,7 +69703,11 @@ function submitInvoice(e) {
         vendor_name: vendor,
         invoice_number: invoiceNum,
         due_date: dueDate,
-        priority: priority
+        priority: priority,
+        payment_method: paymentMethod || null,
+        recipient_phone: recipientPhoneEl ? recipientPhoneEl.value.trim() : null,
+        bank_account: bankAccountEl ? bankAccountEl.value.trim() : null,
+        bank_name: bankNameEl ? bankNameEl.value.trim() : null
     };
 
     console.log('📝 Submitting invoice:', payload);
@@ -69823,8 +69873,11 @@ function approveInvoice(invoiceId) {
             customAlert('Failed to approve invoice: ' + data.error, 'Error', 'error');
             return;
         }
-        console.log('✅ Invoice ' + invoiceId + ' approved by Managing Director');
-        customAlert('Invoice approved successfully!', 'Invoice Approved', 'success');
+        console.log('✅ Invoice ' + invoiceId + ' approved by Managing Director', data);
+        var payMsg = (data.payment && data.payment.status === 'Paid')
+            ? ('Invoice approved and TZS ' + Number(data.payment.amount || 0).toLocaleString() + ' disbursed' + (data.payment.simulated ? ' (simulated - payment API not configured)' : '') + '.')
+            : 'Invoice approved successfully!';
+        customAlert(payMsg, 'Invoice Approved', 'success');
         loadInvoicesList();
     })
     .catch(function(err) {
@@ -70396,8 +70449,11 @@ function mdApproveInvoice(invoiceId) {
             customAlert('Failed to approve invoice: ' + data.error, 'Error', 'error');
             return;
         }
-        console.log('✅ Invoice ' + invoiceId + ' approved by MD');
-        customAlert('Invoice approved successfully!', 'Invoice Approved', 'success');
+        console.log('✅ Invoice ' + invoiceId + ' approved by MD', data);
+        var payMsg = (data.payment && data.payment.status === 'Paid')
+            ? ('Invoice approved and TZS ' + Number(data.payment.amount || 0).toLocaleString() + ' disbursed' + (data.payment.simulated ? ' (simulated - payment API not configured)' : '') + '.')
+            : 'Invoice approved successfully!';
+        customAlert(payMsg, 'Invoice Approved', 'success');
         showMDInvoiceApproval();
     })
     .catch(function(err) {
