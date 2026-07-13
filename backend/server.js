@@ -2631,6 +2631,16 @@ try {
     console.error('Error loading worker accounts routes:', error);
 }
 
+// ===== TEAM MANAGEMENT ROUTES =====
+console.log('Loading team management routes...');
+try {
+    const teamManagementRoutes = require('./routes/team-management');
+    app.use('/api/team-management', teamManagementRoutes);
+    console.log('Team management routes mounted successfully');
+} catch (error) {
+    console.error('Error loading team management routes:', error);
+}
+
 // Load suggestions routes
 try {
     const suggestionsRoutes = require('./routes/suggestions');

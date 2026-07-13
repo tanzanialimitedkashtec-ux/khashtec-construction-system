@@ -257,7 +257,7 @@ router.get('/assignments', async (req, res) => {
         
         query += ` ORDER BY wa.created_at DESC`;
         
-        const assignments = await db.execute(query, params);
+        const [assignments] = await db.execute(query, params);
         const rows = Array.isArray(assignments) ? assignments : [];
 
         console.log('Worker assignments from database:', rows.length);
@@ -302,7 +302,7 @@ router.post('/assignments', async (req, res) => {
             if (employee_name && employee_name.includes('@')) {
                 recipientEmail = employee_name;
             } else {
-                const empRows = await db.execute('SELECT gmail FROM employee_details WHERE full_name = ? OR gmail = ?', [employee_name, employee_name]);
+                const [empRows] = await db.execute('SELECT gmail FROM employee_details WHERE full_name = ? OR gmail = ?', [employee_name, employee_name]);
                 if (empRows && empRows.length > 0 && empRows[0].gmail) {
                     recipientEmail = empRows[0].gmail;
                 }
