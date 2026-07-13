@@ -343,7 +343,7 @@ router.post('/assignments', async (req, res) => {
 // Get worker account by ID
 router.get('/:id', async (req, res) => {
     try {
-        const [workers] = await db.execute(`SELECT ${WORKER_COLS} FROM worker_accounts WHERE id = ?`, [req.params.id]);
+        const workers = await db.execute(`SELECT ${WORKER_COLS} FROM worker_accounts WHERE id = ?`, [req.params.id]);
         
         if (workers.length === 0) {
             return res.status(404).json({ error: 'Worker account not found' });
@@ -399,7 +399,7 @@ router.get('/check-availability', async (req, res) => {
         
         query += conditions.join(' OR ');
         
-        const [existingWorkers] = await db.execute(query, params);
+        const existingWorkers = await db.execute(query, params);
         
         const availability = {
             employee_id: { 
@@ -580,7 +580,7 @@ router.post('/', upload.fields([
 router.put('/:id', async (req, res) => {
     try {
         // Check if worker account exists
-        const [existingWorkers] = await db.execute('SELECT id FROM worker_accounts WHERE id = ?', [req.params.id]);
+        const existingWorkers = await db.execute('SELECT id FROM worker_accounts WHERE id = ?', [req.params.id]);
         
         if (existingWorkers.length === 0) {
             return res.status(404).json({ error: 'Worker account not found' });
@@ -658,7 +658,7 @@ router.put('/:id', async (req, res) => {
         );
         
         // Return updated worker account
-        const [updatedWorker] = await db.execute(`SELECT ${WORKER_COLS} FROM worker_accounts WHERE id = ?`, [req.params.id]);
+        const updatedWorker = await db.execute(`SELECT ${WORKER_COLS} FROM worker_accounts WHERE id = ?`, [req.params.id]);
         
         res.json({
             message: 'Worker account updated successfully',
@@ -674,7 +674,7 @@ router.put('/:id', async (req, res) => {
 // Delete worker account
 router.delete('/:id', async (req, res) => {
     try {
-        const [result] = await db.execute('DELETE FROM worker_accounts WHERE id = ?', [req.params.id]);
+        const result = await db.execute('DELETE FROM worker_accounts WHERE id = ?', [req.params.id]);
         
         if (result.affectedRows === 0) {
             return res.status(404).json({ error: 'Worker account not found' });
@@ -691,7 +691,7 @@ router.delete('/:id', async (req, res) => {
 // Get worker accounts by department
 router.get('/department/:department', async (req, res) => {
     try {
-        const [workers] = await db.execute(
+        const workers = await db.execute(
             `SELECT ${WORKER_COLS} FROM worker_accounts WHERE department = ? ORDER BY full_name ASC`,
             [req.params.department]
         );
@@ -705,21 +705,21 @@ router.get('/department/:department', async (req, res) => {
 // Get worker account statistics
 router.get('/stats/overview', async (req, res) => {
     try {
-        const [totalWorkers] = await db.execute('SELECT COUNT(*) as total FROM worker_accounts');
-        const [activeWorkers] = await db.execute('SELECT COUNT(*) as active FROM worker_accounts WHERE status = "active"');
-        const [inactiveWorkers] = await db.execute('SELECT COUNT(*) as inactive FROM worker_accounts WHERE status = "inactive"');
+        const totalWorkers = await db.execute('SELECT COUNT(*) as total FROM worker_accounts');
+        const activeWorkers = await db.execute('SELECT COUNT(*) as active FROM worker_accounts WHERE status = "active"');
+        const inactiveWorkers = await db.execute('SELECT COUNT(*) as inactive FROM worker_accounts WHERE status = "inactive"');
         
         // Department breakdown
-        const [departmentStats] = await db.execute('SELECT department, COUNT(*) as count FROM worker_accounts GROUP BY department');
+        const departmentStats = await db.execute('SELECT department, COUNT(*) as count FROM worker_accounts GROUP BY department');
         
         // Account type breakdown
-        const [accountTypeStats] = await db.execute('SELECT account_type, COUNT(*) as count FROM worker_accounts GROUP BY account_type');
+        const accountTypeStats = await db.execute('SELECT account_type, COUNT(*) as count FROM worker_accounts GROUP BY account_type');
         
         // Access level breakdown
-        const [accessLevelStats] = await db.execute('SELECT access_level, COUNT(*) as count FROM worker_accounts GROUP BY access_level');
+        const accessLevelStats = await db.execute('SELECT access_level, COUNT(*) as count FROM worker_accounts GROUP BY access_level');
         
         // Recent registrations
-        const [recentRegistrations] = await db.execute(`SELECT ${WORKER_COLS} FROM worker_accounts ORDER BY created_at DESC LIMIT 5`);
+        const recentRegistrations = await db.execute(`SELECT ${WORKER_COLS} FROM worker_accounts ORDER BY created_at DESC LIMIT 5`);
         
         res.json({
             total: totalWorkers[0].total,
@@ -742,7 +742,7 @@ router.get('/stats/overview', async (req, res) => {
 // Serve profile picture
 router.get('/:id/profile-picture', async (req, res) => {
     try {
-        const [rows] = await db.execute(
+        const rows = await db.execute(
             'SELECT profile_picture_data, profile_picture_mime, profile_picture FROM worker_accounts WHERE id = ?',
             [req.params.id]
         );
@@ -772,7 +772,7 @@ router.get('/:id/profile-picture', async (req, res) => {
 // Serve ID document
 router.get('/:id/id-document', async (req, res) => {
     try {
-        const [rows] = await db.execute(
+        const rows = await db.execute(
             'SELECT id_document_data, id_document_mime, id_document FROM worker_accounts WHERE id = ?',
             [req.params.id]
         );
@@ -800,7 +800,7 @@ router.get('/:id/id-document', async (req, res) => {
 // Serve contract document
 router.get('/:id/contract-document', async (req, res) => {
     try {
-        const [rows] = await db.execute(
+        const rows = await db.execute(
             'SELECT contract_document_data, contract_document_mime, contract_document FROM worker_accounts WHERE id = ?',
             [req.params.id]
         );
