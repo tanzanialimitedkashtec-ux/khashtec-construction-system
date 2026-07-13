@@ -285,7 +285,7 @@ router.post('/assignments', async (req, res) => {
             });
         }
 
-        const [result] = await db.execute(`
+        const result = await db.execute(`
             INSERT INTO worker_assignments (
                 employee_id, employee_name, project_id, project_name,
                 role_in_project, start_date, end_date,
@@ -302,7 +302,7 @@ router.post('/assignments', async (req, res) => {
             if (employee_name && employee_name.includes('@')) {
                 recipientEmail = employee_name;
             } else {
-                const [empRows] = await db.execute('SELECT gmail FROM employee_details WHERE full_name = ? OR gmail = ?', [employee_name, employee_name]);
+                const empRows = await db.execute('SELECT gmail FROM employee_details WHERE full_name = ? OR gmail = ?', [employee_name, employee_name]);
                 if (empRows && empRows.length > 0 && empRows[0].gmail) {
                     recipientEmail = empRows[0].gmail;
                 }
@@ -328,7 +328,7 @@ router.post('/assignments', async (req, res) => {
         res.status(201).json({
             success: true,
             message: 'Worker assignment created successfully',
-            assignmentId: result.insertId
+            assignmentId: result && result.insertId
         });
     } catch (error) {
         console.error('Error creating worker assignment:', error.message);
