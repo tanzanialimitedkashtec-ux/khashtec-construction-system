@@ -1041,11 +1041,12 @@ router.get('/report/budget-vs-actual', async (req, res) => {
              WHERE status = 'Approved'`
         ).catch(() => []);
 
-        // Actual spend per department, from recorded expenses (finance_work).
+        // Actual spend per department, from confirmed/paid expenses only (finance_work).
         const expenseRows = await db.execute(
             `SELECT department_code AS department, SUM(amount) AS actual
              FROM finance_work
              WHERE work_type = 'Expense Control'
+               AND status = 'Completed'
                AND amount IS NOT NULL
              GROUP BY department_code`
         ).catch(() => []);
@@ -1055,14 +1056,6 @@ router.get('/report/budget-vs-actual', async (req, res) => {
             const dept = r.department || 'Unspecified';
             budgetByDept.set(dept, (budgetByDept.get(dept) || 0) + (Number(r.total_proposed) || 0));
         });
-
-        // Unify the two budget sources: fold approved workforce planning budget into HR.
-        const workforceTotal = Number(
-            (Array.isArray(workforceRows) && workforceRows[0] && workforceRows[0].total_proposed) || 0
-        );
-        if (workforceTotal > 0) {
-            budgetByDept.set('HR', (budgetByDept.get('HR') || 0) + workforceTotal);
-        }
 
         const actualByDept = new Map();
         (Array.isArray(expenseRows) ? expenseRows : []).forEach((r) => {
@@ -1089,6 +1082,21 @@ router.get('/report/budget-vs-actual', async (req, res) => {
                 variance_pct
             });
         });
+
+        // Approved workforce/HR planning budgets shown as their own separate line.
+        const workforceTotal = Number(
+            (Array.isArray(workforceRows) && workforceRows[0] && workforceRows[0].total_proposed) || 0
+        );
+        if (workforceTotal > 0) {
+            budgets.push({
+                department: 'Workforce',
+                budget_period: 'Workforce',
+                total_proposed: workforceTotal,
+                actual: 0,
+                remaining: workforceTotal,
+                variance_pct: 0
+            });
+        }
 
         if (period) {
             const p = String(period).trim().toLowerCase();
