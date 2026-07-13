@@ -69857,33 +69857,67 @@ function loadInvoicesList() {
 
 
 
-function approveInvoice(invoiceId) {
-    if (!confirm('Are you sure you want to approve this invoice?')) return;
-    fetch('/api/finance/invoice/' + invoiceId + '/approve', {
+// Prompt the MD for a payment destination when an invoice has none stored
+// (e.g. older invoices created before auto-payment). Returns a body object to
+// send with the approval, or null if the MD cancelled.
+function promptInvoicePaymentDestination() {
+    var method = prompt('This invoice has no saved payment destination.\nHow should it be paid?\n  1 = M-Pesa (mobile money)\n  2 = NMB Bank transfer\nEnter 1 or 2 (or Cancel to abort):');
+    if (method === null) return null;
+    method = method.trim();
+    if (method === '1' || method.toLowerCase() === 'mpesa') {
+        var phone = prompt('Enter the recipient M-Pesa phone number (e.g. 0712345678):');
+        if (phone === null || !phone.trim()) return null;
+        return { payment_method: 'mpesa', recipient_phone: phone.trim() };
+    }
+    if (method === '2' || method.toLowerCase() === 'nmb' || method.toLowerCase() === 'nmb_bank') {
+        var account = prompt('Enter the recipient bank account number:');
+        if (account === null || !account.trim()) return null;
+        var bank = prompt('Enter the bank name:', 'NMB');
+        return { payment_method: 'nmb_bank', bank_account: account.trim(), bank_name: (bank && bank.trim()) || 'NMB' };
+    }
+    customAlert('Invalid choice. Enter 1 for M-Pesa or 2 for bank transfer.', 'Error', 'error');
+    return null;
+}
+
+// Sends the approval request; on a "Missing payment destination" 400 it prompts
+// the MD for the destination and retries once with that destination in the body.
+function sendInvoiceApproval(invoiceId, body, onSuccess) {
+    return fetch('/api/finance/invoice/' + invoiceId + '/approve', {
         method: 'PUT',
         headers: {
             'Content-Type': 'application/json',
             'Authorization': 'Bearer ' + (typeof sessionManager !== 'undefined' && sessionManager.getAuthToken ? sessionManager.getAuthToken() : '')
-        }
+        },
+        body: JSON.stringify(body || {})
     })
     .then(function(res) { return res.json(); })
     .then(function(data) {
+        if (data.error === 'Missing payment destination' && !(body && body.payment_method)) {
+            var dest = promptInvoicePaymentDestination();
+            if (!dest) return;
+            return sendInvoiceApproval(invoiceId, dest, onSuccess);
+        }
         if (data.error) {
             console.error('❌ Invoice approval failed:', data.error);
-            customAlert('Failed to approve invoice: ' + data.error, 'Error', 'error');
+            customAlert('Failed to approve invoice: ' + (data.message || data.error), 'Error', 'error');
             return;
         }
-        console.log('✅ Invoice ' + invoiceId + ' approved by Managing Director', data);
+        console.log('✅ Invoice ' + invoiceId + ' approved', data);
         var payMsg = (data.payment && data.payment.status === 'Paid')
             ? ('Invoice approved and TZS ' + Number(data.payment.amount || 0).toLocaleString() + ' disbursed' + (data.payment.simulated ? ' (simulated - payment API not configured)' : '') + '.')
             : 'Invoice approved successfully!';
         customAlert(payMsg, 'Invoice Approved', 'success');
-        loadInvoicesList();
+        if (typeof onSuccess === 'function') onSuccess();
     })
     .catch(function(err) {
         console.error('❌ Error approving invoice:', err);
         customAlert('Failed to approve invoice. Please try again.', 'Error', 'error');
     });
+}
+
+function approveInvoice(invoiceId) {
+    if (!confirm('Are you sure you want to approve this invoice?')) return;
+    sendInvoiceApproval(invoiceId, {}, loadInvoicesList);
 }
 
 function rejectInvoice(invoiceId) {
@@ -70436,30 +70470,7 @@ function buildMDInvoiceTable(invoices, showActions) {
 
 function mdApproveInvoice(invoiceId) {
     if (!confirm('Are you sure you want to approve this invoice?')) return;
-    fetch('/api/finance/invoice/' + invoiceId + '/approve', {
-        method: 'PUT',
-        headers: {
-            'Content-Type': 'application/json',
-            'Authorization': 'Bearer ' + (typeof sessionManager !== 'undefined' && sessionManager.getAuthToken ? sessionManager.getAuthToken() : '')
-        }
-    })
-    .then(function(res) { return res.json(); })
-    .then(function(data) {
-        if (data.error) {
-            customAlert('Failed to approve invoice: ' + data.error, 'Error', 'error');
-            return;
-        }
-        console.log('✅ Invoice ' + invoiceId + ' approved by MD', data);
-        var payMsg = (data.payment && data.payment.status === 'Paid')
-            ? ('Invoice approved and TZS ' + Number(data.payment.amount || 0).toLocaleString() + ' disbursed' + (data.payment.simulated ? ' (simulated - payment API not configured)' : '') + '.')
-            : 'Invoice approved successfully!';
-        customAlert(payMsg, 'Invoice Approved', 'success');
-        showMDInvoiceApproval();
-    })
-    .catch(function(err) {
-        console.error('❌ Error approving invoice:', err);
-        customAlert('Failed to approve invoice.', 'Error', 'error');
-    });
+    sendInvoiceApproval(invoiceId, {}, showMDInvoiceApproval);
 }
 
 function mdRejectInvoice(invoiceId) {
