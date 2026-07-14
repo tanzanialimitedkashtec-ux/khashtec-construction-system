@@ -70248,7 +70248,7 @@ window.fetchAccessUsers = async function() {
                     ${u.status === 'Active' 
                         ? `<button class="btn btn-small btn-danger" onclick="suspendAccessUser(${u.id})" style="padding: 4px 8px; border-radius: 4px; font-size: 12px; margin-right: 5px;">Disable</button>`
                         : ''}
-                    <button class="btn btn-small" onclick="deleteAccessUser(${u.id}, '${(u.manager_name || u.email).replace(/'/g, "\\'")}")" style="background: #dc2626; color: #fff; padding: 4px 8px; border-radius: 4px; font-size: 12px; border: none; cursor: pointer;" title="Permanently delete this user"><i class="fas fa-trash"></i> Delete</button>
+                    <button class="btn btn-small" onclick="deleteAccessUser(${u.id}, decodeURIComponent('${encodeURIComponent(u.manager_name || u.email)}'))" style="background: #dc2626; color: #fff; padding: 4px 8px; border-radius: 4px; font-size: 12px; border: none; cursor: pointer;" title="Permanently delete this user"><i class="fas fa-trash"></i> Delete</button>
                 </td>
             </tr>
         `).join('');
