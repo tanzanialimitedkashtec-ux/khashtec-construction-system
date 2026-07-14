@@ -69,7 +69,7 @@ router.post('/', async (req, res) => {
             cost_of_mitigation,
             potential_loss,
             notes
-        } = req.body;
+        } = req.body || {};
 
         // Generate risk number
         const risk_number = `RISK-${Date.now().toString().slice(-6)}`;
@@ -83,31 +83,30 @@ router.post('/', async (req, res) => {
             ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         `, [
             risk_number,
-            risk_title,
-            risk_category,
-            risk_description,
-            probability,
-            impact,
-            project_id || null,
-            department || null,
-            identified_by,
-            identified_date,
-            mitigation_strategy || null,
-            contingency_plan || null,
-            owner || null,
-            review_date || null,
-            cost_of_mitigation || null,
-            potential_loss || null,
-            notes || null
+            risk_title != null ? risk_title : null,
+            risk_category != null ? risk_category : null,
+            risk_description != null ? risk_description : null,
+            probability != null ? probability : null,
+            impact != null ? impact : null,
+            project_id != null ? project_id : null,
+            department != null ? department : null,
+            identified_by != null ? identified_by : null,
+            identified_date != null ? identified_date : null,
+            mitigation_strategy != null ? mitigation_strategy : null,
+            contingency_plan != null ? contingency_plan : null,
+            owner != null ? owner : null,
+            review_date != null ? review_date : null,
+            cost_of_mitigation != null ? cost_of_mitigation : null,
+            potential_loss != null ? potential_loss : null,
+            notes != null ? notes : null
         ]);
 
         const insertId = Array.isArray(result) ? result[0].insertId : result.insertId;
-        notify('Risk Management', 'New risk "' + risk_title + '" identified - Category: ' + risk_category + ', Probability: ' + probability + ', Impact: ' + impact, 'warning', 'MD', 'HSE Department');
-        notify('Risk Management', 'New risk assessment: ' + (req.body.risk_type || req.body.type || req.body.title || 'Risk assessment') + ' - Severity: ' + (req.body.severity || req.body.risk_level || 'unspecified'), 'warning', 'MD', 'HSE Department');
+        notify('Risk Management', 'New risk "' + (risk_title || 'Unknown') + '" identified - Category: ' + (risk_category || 'N/A') + ', Probability: ' + (probability || 'N/A') + ', Impact: ' + (impact || 'N/A'), 'warning', 'MD', 'HSE Department');
         res.status(201).json({ id: insertId, risk_number, message: 'Risk created successfully' });
     } catch (error) {
         console.error('Error creating risk:', error);
-        res.status(500).json({ error: 'Failed to create risk' });
+        res.status(500).json({ error: 'Failed to create risk', details: error.message });
     }
 });
 
@@ -132,7 +131,7 @@ router.put('/:id', async (req, res) => {
             cost_of_mitigation,
             potential_loss,
             notes
-        } = req.body;
+        } = req.body || {};
 
         await db.execute(`
             UPDATE risk_management SET
@@ -144,31 +143,31 @@ router.put('/:id', async (req, res) => {
                 potential_loss = ?, notes = ?
             WHERE id = ?
         `, [
-            risk_title,
-            risk_category,
-            risk_description,
-            probability,
-            impact,
-            project_id || null,
-            department || null,
-            mitigation_strategy || null,
-            contingency_plan || null,
-            owner || null,
-            review_date || null,
-            status,
-            likelihood_after_mitigation || null,
-            impact_after_mitigation || null,
-            cost_of_mitigation || null,
-            potential_loss || null,
-            notes || null,
+            risk_title != null ? risk_title : null,
+            risk_category != null ? risk_category : null,
+            risk_description != null ? risk_description : null,
+            probability != null ? probability : null,
+            impact != null ? impact : null,
+            project_id != null ? project_id : null,
+            department != null ? department : null,
+            mitigation_strategy != null ? mitigation_strategy : null,
+            contingency_plan != null ? contingency_plan : null,
+            owner != null ? owner : null,
+            review_date != null ? review_date : null,
+            status != null ? status : null,
+            likelihood_after_mitigation != null ? likelihood_after_mitigation : null,
+            impact_after_mitigation != null ? impact_after_mitigation : null,
+            cost_of_mitigation != null ? cost_of_mitigation : null,
+            potential_loss != null ? potential_loss : null,
+            notes != null ? notes : null,
             req.params.id
         ]);
 
-        notify('Risk Management', 'Risk "' + risk_title + '" updated - Status: ' + (status || 'Open') + ', Probability: ' + probability + ', Impact: ' + impact, 'info', 'MD', 'HSE Department');
+        notify('Risk Management', 'Risk "' + (risk_title || 'Unknown') + '" updated - Status: ' + (status || 'Open'), 'info', 'MD', 'HSE Department');
         res.json({ message: 'Risk updated successfully' });
     } catch (error) {
         console.error('Error updating risk:', error);
-        res.status(500).json({ error: 'Failed to update risk' });
+        res.status(500).json({ error: 'Failed to update risk', details: error.message });
     }
 });
 
@@ -187,7 +186,7 @@ router.delete('/:id', async (req, res) => {
 // Start risk mitigation
 router.put('/:id/mitigate', async (req, res) => {
     try {
-        const { mitigation_strategy, contingency_plan, owner, cost_of_mitigation, notes } = req.body;
+        const { mitigation_strategy, contingency_plan, owner, cost_of_mitigation, notes } = req.body || {};
 
         await db.execute(`
             UPDATE risk_management SET
@@ -199,11 +198,11 @@ router.put('/:id/mitigate', async (req, res) => {
                 notes = ?
             WHERE id = ?
         `, [
-            mitigation_strategy || null,
-            contingency_plan || null,
-            owner || null,
-            cost_of_mitigation || null,
-            notes || null,
+            mitigation_strategy != null ? mitigation_strategy : null,
+            contingency_plan != null ? contingency_plan : null,
+            owner != null ? owner : null,
+            cost_of_mitigation != null ? cost_of_mitigation : null,
+            notes != null ? notes : null,
             req.params.id
         ]);
 
@@ -218,7 +217,7 @@ router.put('/:id/mitigate', async (req, res) => {
 // Mark risk as mitigated
 router.put('/:id/mitigated', async (req, res) => {
     try {
-        const { likelihood_after_mitigation, impact_after_mitigation, notes } = req.body;
+        const { likelihood_after_mitigation, impact_after_mitigation, notes } = req.body || {};
 
         await db.execute(`
             UPDATE risk_management SET
@@ -228,13 +227,13 @@ router.put('/:id/mitigated', async (req, res) => {
                 notes = ?
             WHERE id = ?
         `, [
-            likelihood_after_mitigation || null,
-            impact_after_mitigation || null,
-            notes || null,
+            likelihood_after_mitigation != null ? likelihood_after_mitigation : null,
+            impact_after_mitigation != null ? impact_after_mitigation : null,
+            notes != null ? notes : null,
             req.params.id
         ]);
 
-        notify('Risk Management', 'Risk #' + req.params.id + ' has been marked as mitigated' + (likelihood_after_mitigation ? ' - Residual likelihood: ' + likelihood_after_mitigation : ''), 'success', 'MD', 'HSE Department');
+        notify('Risk Management', 'Risk #' + req.params.id + ' has been marked as mitigated', 'success', 'MD', 'HSE Department');
         res.json({ message: 'Risk marked as mitigated successfully' });
     } catch (error) {
         console.error('Error marking risk as mitigated:', error);
@@ -245,11 +244,11 @@ router.put('/:id/mitigated', async (req, res) => {
 // Close risk
 router.put('/:id/close', async (req, res) => {
     try {
-        const { notes } = req.body;
+        const { notes } = req.body || {};
 
         await db.execute(`
             UPDATE risk_management SET status = 'Closed', notes = ? WHERE id = ?
-        `, [notes || null, req.params.id]);
+        `, [notes != null ? notes : null, req.params.id]);
 
         notify('Risk Management', 'Risk #' + req.params.id + ' has been closed', 'success', 'MD', 'HSE Department');
         res.json({ message: 'Risk closed successfully' });
@@ -262,11 +261,11 @@ router.put('/:id/close', async (req, res) => {
 // Accept risk
 router.put('/:id/accept', async (req, res) => {
     try {
-        const { notes } = req.body;
+        const { notes } = req.body || {};
 
         await db.execute(`
             UPDATE risk_management SET status = 'Accepted', notes = ? WHERE id = ?
-        `, [notes || null, req.params.id]);
+        `, [notes != null ? notes : null, req.params.id]);
 
         notify('Risk Management', 'Risk #' + req.params.id + ' has been accepted', 'info', 'MD', 'HSE Department');
         res.json({ message: 'Risk accepted successfully' });
@@ -279,13 +278,13 @@ router.put('/:id/accept', async (req, res) => {
 // Schedule risk review
 router.put('/:id/review', async (req, res) => {
     try {
-        const { review_date, notes } = req.body;
+        const { review_date, notes } = req.body || {};
 
         await db.execute(`
             UPDATE risk_management SET review_date = ?, notes = ? WHERE id = ?
-        `, [review_date, notes || null, req.params.id]);
+        `, [review_date != null ? review_date : null, notes != null ? notes : null, req.params.id]);
 
-        notify('Risk Management', 'Review scheduled for risk #' + req.params.id + ' on ' + review_date, 'info', 'MD', 'HSE Department');
+        notify('Risk Management', 'Review scheduled for risk #' + req.params.id + (review_date ? ' on ' + review_date : ''), 'info', 'MD', 'HSE Department');
         res.json({ message: 'Risk review scheduled successfully' });
     } catch (error) {
         console.error('Error scheduling risk review:', error);
