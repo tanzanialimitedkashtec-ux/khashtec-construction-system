@@ -24697,7 +24697,8 @@ document.addEventListener('click', function(e) {
 
 async function loadNotifications() {
     try {
-        const res = await fetch('/api/notifications');
+        const roleParam = (typeof currentRole !== 'undefined' && currentRole) ? '?role=' + encodeURIComponent(currentRole) : '';
+        const res = await fetch('/api/notifications' + roleParam);
         const data = await res.json();
         const notifications = data.notifications || [];
         const listEl = document.getElementById('notificationList');
@@ -24743,7 +24744,8 @@ let lastUnreadCount = -1;
 
 async function updateNotificationBadge() {
     try {
-        const res = await fetch('/api/notifications?unread=true');
+        const roleParam = (typeof currentRole !== 'undefined' && currentRole) ? '&role=' + encodeURIComponent(currentRole) : '';
+        const res = await fetch('/api/notifications?unread=true' + roleParam);
         const data = await res.json();
         const unread = (data.notifications || []).length;
         const badge = document.getElementById('notifBadge');
@@ -24805,7 +24807,8 @@ async function markAllNotificationsRead() {
         } else {
             console.log('🔔 read-all failed, falling back to one-by-one...');
             // Fallback: mark one-by-one
-            const res = await fetch('/api/notifications');
+            const fallbackRoleParam = (typeof currentRole !== 'undefined' && currentRole) ? '?role=' + encodeURIComponent(currentRole) : '';
+            const res = await fetch('/api/notifications' + fallbackRoleParam);
             const data = await res.json();
             const notifications = data.notifications || [];
             const unread = notifications.filter(x => !x.is_read);
@@ -70272,29 +70275,11 @@ window.openAccessModal = function(user = null) {
         document.getElementById('accessStatus').value = user.status || 'Active';
         document.getElementById('accessPassword').required = false;
         hint.style.display = 'inline';
-        
-        // Populate nav access
-        const navSelect = document.getElementById('accessNav');
-        Array.from(navSelect.options).forEach(opt => opt.selected = false);
-        if (user.nav_access) {
-            try {
-                const accessArr = typeof user.nav_access === 'string' ? JSON.parse(user.nav_access) : user.nav_access;
-                if (Array.isArray(accessArr)) {
-                    Array.from(navSelect.options).forEach(opt => {
-                        if (accessArr.includes(opt.value)) opt.selected = true;
-                    });
-                }
-            } catch(e) { console.error('Error parsing nav_access', e); }
-        }
     } else {
         document.getElementById('accessModalTitle').textContent = 'Create New User';
         document.getElementById('accessUserId').value = '';
         document.getElementById('accessPassword').required = true;
         hint.style.display = 'none';
-        
-        // Clear nav access
-        const navSelect = document.getElementById('accessNav');
-        Array.from(navSelect.options).forEach(opt => opt.selected = false);
     }
     
     modal.style.display = 'flex';
@@ -70312,18 +70297,13 @@ window.submitAccessForm = async function(e) {
     
     const id = document.getElementById('accessUserId').value;
     
-    // Capture multiple nav access selections
-    const navSelect = document.getElementById('accessNav');
-    const selectedNavs = Array.from(navSelect.selectedOptions).map(opt => opt.value);
-    
     const payload = {
         manager_name: document.getElementById('accessName').value,
         email: document.getElementById('accessEmail').value,
         role: document.getElementById('accessRole').value,
         department_name: document.getElementById('accessDepartment').value,
         status: document.getElementById('accessStatus').value,
-        password: document.getElementById('accessPassword').value,
-        nav_access: JSON.stringify(selectedNavs) // store as JSON array string
+        password: document.getElementById('accessPassword').value
     };
     
     try {

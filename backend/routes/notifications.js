@@ -54,12 +54,12 @@ router.get('/', async (req, res) => {
         const params = [];
         
         // Role-based filtering:
-        // MD/admin see everything.
+        // MD/managing director see everything.
         // All other roles see ONLY notifications that match their department:
         //   - category column matches their slug (new notifications)
         //   - recipients contains their role (new notifications)
         //   - OR title/message contains role-specific keywords (legacy notifications)
-        const rolesWithFullAccess = ['md', 'admin', 'managing director'];
+        const rolesWithFullAccess = ['md', 'managing director'];
         if (role) {
             const roleLower = role.toLowerCase();
             if (!rolesWithFullAccess.includes(roleLower)) {
