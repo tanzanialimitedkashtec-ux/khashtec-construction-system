@@ -55178,17 +55178,17 @@ async function viewHseInspectionReport(reportId) {
                 const m = desc.match(regex);
                 return m ? m[1].trim() : null;
             };
-            p.date = extract('Date', 'Project');
-            p.project = extract('Project', 'Type');
-            p.type = extract('Type', 'Inspector');
-            p.inspector = extract('Inspector', 'Areas Inspected');
-            p.areas = extract('Areas Inspected', 'Findings');
-            p.findings = extract('Findings', 'Compliance Status');
-            p.compliance = extract('Compliance Status', 'Risk Level');
-            p.riskLevel = extract('Risk Level', 'Recommendations');
-            p.recommendations = extract('Recommendations', 'Follow-up Date');
-            p.followUp = extract('Follow-up Date', 'Next Inspection');
-            p.nextInspection = extract('Next Inspection', 'Documents');
+            p.date = extract_dup1('Date', 'Project');
+            p.project = extract_dup1('Project', 'Type');
+            p.type = extract_dup1('Type', 'Inspector');
+            p.inspector = extract_dup1('Inspector', 'Areas Inspected');
+            p.areas = extract_dup1('Areas Inspected', 'Findings');
+            p.findings = extract_dup1('Findings', 'Compliance Status');
+            p.compliance = extract_dup1('Compliance Status', 'Risk Level');
+            p.riskLevel = extract_dup1('Risk Level', 'Recommendations');
+            p.recommendations = extract_dup1('Recommendations', 'Follow-up Date');
+            p.followUp = extract_dup1('Follow-up Date', 'Next Inspection');
+            p.nextInspection = extract_dup1('Next Inspection', 'Documents');
         }
 
         const complianceBadgeMap = {
