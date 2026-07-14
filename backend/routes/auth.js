@@ -676,5 +676,25 @@ router.delete('/users/:id', async (req, res) => {
     }
 });
 
+router.delete('/users/:id/permanent', async (req, res) => {
+    try {
+        const { id } = req.params;
+        const db = require('../../database/config/database');
+
+        // Prevent deleting core system accounts (id <= 8)
+        if (parseInt(id) <= 8) {
+            return res.status(403).json({ error: 'Cannot delete core system accounts' });
+        }
+
+        await db.execute('DELETE FROM authentication WHERE id = ?', [id]);
+
+        res.json({ success: true, message: 'User deleted permanently' });
+    } catch (error) {
+        console.error('Error deleting user:', error);
+        res.status(500).json({ error: 'Failed to delete user', details: error.message });
+    }
+});
+
 module.exports = router;
+
 

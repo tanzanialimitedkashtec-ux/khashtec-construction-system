@@ -25281,7 +25281,7 @@ function loadMenu(){
 
     const rolePermissions = {
         "ADMIN": [
-            "Mission & Vision", "Long-Term Growth Strategy", "Staff Oversight",
+            "Mission & Vision", "Leadership Management", "Long-Term Growth Strategy", "Staff Oversight",
             "Financial Strategies", "View Workforce Reports", "Compliance Management",
             "Risk Management", "Department Management", "Office Resources", "Audits",
             "Administrative Operations"
@@ -25296,7 +25296,7 @@ function loadMenu(){
         ],
         "PROJECT": [
             "Create New Project", "Update Project Progress", "Assign Tasks",
-            "Record Site Reports", "Approve Completed Work", "View Project Safety Status",
+            "Record Site Reports", "View Project Safety Status",
             "View Assigned Workers", "Office Portal", "Request Workforce", "Assign Project Workers"
         ],
         "REALESTATE": [
@@ -70246,8 +70246,9 @@ window.fetchAccessUsers = async function() {
                         <i class="fas fa-edit"></i> Edit
                     </button>
                     ${u.status === 'Active' 
-                        ? `<button class="btn btn-small btn-danger" onclick="suspendAccessUser(${u.id})" style="padding: 4px 8px; border-radius: 4px; font-size: 12px;">Disable</button>`
+                        ? `<button class="btn btn-small btn-danger" onclick="suspendAccessUser(${u.id})" style="padding: 4px 8px; border-radius: 4px; font-size: 12px; margin-right: 5px;">Disable</button>`
                         : ''}
+                    <button class="btn btn-small" onclick="deleteAccessUser(${u.id}, '${(u.manager_name || u.email).replace(/'/g, "\\'")}")" style="background: #dc2626; color: #fff; padding: 4px 8px; border-radius: 4px; font-size: 12px; border: none; cursor: pointer;" title="Permanently delete this user"><i class="fas fa-trash"></i> Delete</button>
                 </td>
             </tr>
         `).join('');
@@ -70352,6 +70353,29 @@ window.suspendAccessUser = async function(id) {
         await fetchAccessUsers();
     } catch (err) {
         alert(err.message);
+    }
+};
+
+window.deleteAccessUser = async function(id, name) {
+    if (!confirm(`⚠️ PERMANENT DELETE\n\nAre you sure you want to permanently delete "${name}"?\n\nThis action CANNOT be undone. The user will lose all access immediately.`)) return;
+
+    try {
+        const token = sessionManager.getAuthToken();
+        const res = await fetch(`/api/auth/users/${id}/permanent`, {
+            method: 'DELETE',
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+
+        const data = await res.json();
+
+        if (!res.ok) {
+            throw new Error(data.error || 'Failed to delete user');
+        }
+
+        customAlert(`User "${name}" has been permanently deleted.`, 'Deleted', 'success');
+        await fetchAccessUsers();
+    } catch (err) {
+        customAlert(err.message, 'Error', 'error');
     }
 };
 
