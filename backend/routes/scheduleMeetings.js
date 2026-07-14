@@ -477,7 +477,7 @@ router.post('/', async (req, res) => {
         // MySQL2 returns [rows, fields] array - we need the first element (rows)
         const createdMeeting = createdMeetingResult[0] || [];
         
-        notify('Meeting Scheduled', 'New meeting: ' + (req.body.title || req.body.subject || 'Meeting') + ' on ' + (req.body.date || req.body.meeting_date || 'TBD') + ' at ' + (req.body.time || req.body.start_time || 'TBD'), 'info', 'all', 'Admin Assistant');
+        notify('Meeting Scheduled', 'New meeting: ' + (req.body.title || req.body.subject || 'Meeting') + ' on ' + (req.body.date || req.body.meeting_date || 'TBD') + ' at ' + (req.body.time || req.body.start_time || 'TBD'), 'info', organizing_department || 'all', 'Admin Assistant');
         res.status(201).json({
             success: true,
             message: 'Meeting scheduled successfully',
