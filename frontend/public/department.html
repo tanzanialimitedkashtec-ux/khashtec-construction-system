@@ -35324,13 +35324,35 @@ async function loadTerminatedEmployeesTable() {
 // Toggle employment action form visibility
 function toggleEmploymentActionForm() {
     const container = document.getElementById('employmentActionFormContainer');
-    if (container) {
-        container.style.display = container.style.display === 'none' ? 'block' : 'none';
-    }
+    const toggleBtn = document.getElementById('toggleEmploymentActionFormBtn');
     
-    // Load table when form is toggled
-    if (container && container.style.display === 'block') {
-        loadTerminatedEmployeesTable();
+    if (container) {
+        if (container.style.display === 'none' || !container.classList.contains('show')) {
+            container.style.display = 'block';
+            // Use timeout to allow display:block to apply before adding class for transition
+            setTimeout(() => container.classList.add('show'), 10);
+            
+            if (toggleBtn) {
+                toggleBtn.innerHTML = '❌ Close Employment Actions';
+                toggleBtn.style.background = '#dc3545';
+            }
+            
+            // Load table when form is toggled
+            loadTerminatedEmployeesTable();
+            
+            // Smooth scroll to form
+            setTimeout(() => {
+                container.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }, 100);
+        } else {
+            container.classList.remove('show');
+            setTimeout(() => container.style.display = 'none', 400);
+            
+            if (toggleBtn) {
+                toggleBtn.innerHTML = '⚖️ Manage Employment Actions';
+                toggleBtn.style.background = '#007bff';
+            }
+        }
     }
 }
 
