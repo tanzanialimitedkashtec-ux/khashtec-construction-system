@@ -54911,7 +54911,7 @@ function displayInspectionRecords(data) {
         if (record.work_description && record.work_description.includes('Inspection Report')) {
             const desc = record.work_description;
             const extract = (key, nextKey) => {
-                const regex = new RegExp(`${key}:\\s*([\\s\\S]*?)(?:\\n${nextKey}:|$)`);
+                const regex = new RegExp(`${key}:[\\t ]*((?:.|[\\r\\n])*?)(?:[\\r\\n]+${nextKey}:|$)`);
                 const match = desc.match(regex);
                 return match ? match[1].trim() : null;
             };
@@ -55174,7 +55174,7 @@ async function viewHseInspectionReport(reportId) {
         const desc = record.work_description || '';
         if (desc.includes('Inspection Report')) {
             const extract_dup1 = (key, nextKey) => {
-                const regex = new RegExp(`${key}:\\s*([\\s\\S]*?)(?:\\n${nextKey}:|$)`);
+                const regex = new RegExp(`${key}:[\\t ]*((?:.|[\\r\\n])*?)(?:[\\r\\n]+${nextKey}:|$)`);
                 const m = desc.match(regex);
                 return m ? m[1].trim() : null;
             };
