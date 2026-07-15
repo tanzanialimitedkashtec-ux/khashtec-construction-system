@@ -19,6 +19,7 @@
   "author": "KASHTEC Tanzania Limited",
   "license": "MIT",
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.1087.0",
     "bcryptjs": "^2.4.3",
     "cors": "^2.8.5",
     "dotenv": "^16.3.1",

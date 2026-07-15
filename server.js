@@ -6634,6 +6634,20 @@ async function startServer() {
 
             }
 
+            // ===== AUTOMATED DATABASE BACKUPS =====
+            if (process.env.BACKUP_ENABLED === 'true' || process.env.AWS_S3_BUCKET) {
+                const { runBackup } = require('./scripts/backup-db.js');
+                console.log('🕒 Scheduling automated database backups every 24 hours.');
+                setInterval(async () => {
+                    try {
+                        console.log('🕒 Running scheduled database backup...');
+                        await runBackup();
+                    } catch (error) {
+                        console.error('❌ Scheduled backup failed:', error.message);
+                    }
+                }, 24 * 60 * 60 * 1000);
+            }
+
         });
 
         
@@ -6658,18 +6672,7 @@ async function startServer() {
 
 
 
-// ===== AUTOMATED DATABASE BACKUPS =====
-const { runBackup } = require('./scripts/backup-db.js');
 
-// Schedule backup to run every 24 hours
-setInterval(async () => {
-    try {
-        console.log('🕒 Running scheduled database backup...');
-        await runBackup();
-    } catch (error) {
-        console.error('❌ Scheduled backup failed:', error.message);
-    }
-}, 24 * 60 * 60 * 1000);
 
 // Start the server
 

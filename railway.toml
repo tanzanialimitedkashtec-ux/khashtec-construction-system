@@ -91,7 +91,7 @@ DB_PORT = "${MySQL.MYSQLPORT}"
 
 # Security Configuration
 
-JWT_SECRET = "${JWT_SECRET:-kashtec-secret-key-2024}"
+JWT_SECRET = "${JWT_SECRET}"
 
 GITHUB_TOKEN = "${GITHUB_TOKEN}"
 
@@ -99,7 +99,7 @@ BCRYPT_ROUNDS = "12"
 
 JWT_EXPIRE = "7d"
 
-CORS_ORIGIN = "${CORS_ORIGIN:-*}"
+CORS_ORIGIN = "${CORS_ORIGIN}"
 
 
 
