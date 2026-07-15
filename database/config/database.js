@@ -734,8 +734,8 @@ class Database {
             }
             
             const data = JSON.stringify({
-                from: 'Kashtec Notification <onboarding@resend.dev>',
-                to: 'tanzanialimitedkashtec@gmail.com',
+                from: process.env.EMAIL_FROM || 'KASHTEC Notification <kashtec@kashtec.co.tz>',
+                to: process.env.EMAIL_RECIPIENT || 'admin@kashtec.co.tz',
                 subject: 'New System Notification: ' + title,
                 html: `<div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #e0e0e0; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
                             <div style="background-color: #1a237e; color: white; padding: 20px; text-align: center;">
@@ -786,9 +786,6 @@ class Database {
                 
                 const [rows] = await this.pool.execute(query, params);
 
-                // Intercept data changes to send an email via Resend
-                this.sendSystemNotificationEmail(query, params);
-
                 return rows;
             } catch (error) {
                 // Handle connection-specific errors
@@ -831,9 +828,6 @@ class Database {
                 
                 const [rows] = await this.pool.query(sql, params);
                 
-                // Intercept data changes to send an email via Resend
-                this.sendSystemNotificationEmail(sql, params);
-
                 return rows;
             } catch (error) {
                 if (this.isConnectionError(error) && attempt < 3) {

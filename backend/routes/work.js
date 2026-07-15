@@ -1,4 +1,4 @@
-﻿const express = require('express');
+const express = require('express');
 const router = express.Router();
 const db = require('../../database/config/database');
 
@@ -5691,37 +5691,6 @@ router.post('/notifications', async (req, res) => {
             });
         }
         
-        // Ensure notifications table has all required columns
-        const missingColumns = [
-            { name: 'sent_date', definition: 'DATE' },
-            { name: 'scheduled_date', definition: 'DATETIME' },
-            { name: 'sent_by', definition: "VARCHAR(255) DEFAULT 'System'" },
-            { name: 'read_rate', definition: 'DECIMAL(5,2) DEFAULT 0' },
-            { name: 'recipient_type', definition: "VARCHAR(50) DEFAULT 'all'" },
-            { name: 'recipients', definition: "VARCHAR(255) DEFAULT 'All Staff'" },
-            { name: 'status', definition: "VARCHAR(50) DEFAULT 'draft'" }
-        ];
-        for (const col of missingColumns) {
-            try {
-                await db.execute(`ALTER TABLE notifications ADD COLUMN ${col.name} ${col.definition}`);
-                console.log(`✅ Added missing column: ${col.name}`);
-            } catch (alterErr) {
-                // Column already exists - ignore
-            }
-        }
-        
-        // Convert ENUM columns to VARCHAR to accept all values
-        const columnsToModify = [
-            { name: 'priority', definition: "VARCHAR(50) DEFAULT 'Medium'" },
-            { name: 'type', definition: "VARCHAR(50) DEFAULT 'Info'" }
-        ];
-        for (const col of columnsToModify) {
-            try {
-                await db.execute(`ALTER TABLE notifications MODIFY COLUMN ${col.name} ${col.definition}`);
-            } catch (modifyErr) {
-                // Ignore if already modified or column doesn't exist
-            }
-        }
         
         // Map frontend priority values to DB-compatible values
         const priorityMap = {

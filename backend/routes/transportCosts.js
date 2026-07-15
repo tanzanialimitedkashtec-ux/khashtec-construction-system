@@ -2,40 +2,16 @@ const notify = require('../utils/notify');
 const express = require('express');
 const router = express.Router();
 
+// Use the shared database pool (central connection management)
+const dbModule = require('../../database/config/database');
 
-
-// Database connection helper
+// Returns the raw mysql2 pool for compatibility with existing [rows] destructuring
 async function getDatabase() {
-    try {
-        if (global.dbConnection) {
-            return global.dbConnection;
-        }
-        
-        const mysql = require('mysql2/promise');
-        const db = await mysql.createConnection({
-            host: process.env.MYSQLHOST || 'localhost',
-            user: process.env.MYSQLUSER || 'root',
-            password: process.env.MYSQLPASSWORD || '',
-            database: process.env.MYSQLDATABASE || 'construction_system',
-            port: process.env.MYSQLPORT || 3306
-        });
-        
-        global.dbConnection = db;
-        return db;
-    } catch (error) {
-        console.error('Database connection error:', error);
-        return null;
+    if (!dbModule.isConnected) {
+        await dbModule.connect();
     }
+    return dbModule.pool;
 }
-
-// Test endpoint
-router.get('/test', (req, res) => {
-    res.status(200).json({
-        success: true,
-        message: 'Transport costs API working',
-        data: mockTransportCosts.slice(0, 2)
-    });
-});
 
 // Get all transport costs
 router.get('/', async (req, res) => {
