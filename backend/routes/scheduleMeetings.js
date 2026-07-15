@@ -328,19 +328,24 @@ router.post('/', async (req, res) => {
         } = req.body;
         
         // Extract user ID from JWT token
-        let userId = null;
+        let userId;
         try {
             const authHeader = req.headers.authorization;
             if (authHeader && authHeader.startsWith('Bearer ')) {
                 const token = authHeader.substring(7);
                 const jwt = require('jsonwebtoken');
-                const decoded = jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key');
-                userId = decoded.id || 1;
+                const decoded = jwt.verify(token, process.env.JWT_SECRET);
+                userId = decoded.id;
                 console.log('🔍 Extracted user ID from JWT:', userId);
+                if (!userId) {
+                    return res.status(401).json({ success: false, error: 'Invalid token payload' });
+                }
+            } else {
+                return res.status(401).json({ success: false, error: 'No token provided' });
             }
         } catch (tokenError) {
-            console.warn('⚠️ Could not extract user ID from token, using fallback:', tokenError.message);
-            userId = 1; // Default fallback
+            console.warn('⚠️ Could not extract user ID from token:', tokenError.message);
+            return res.status(401).json({ success: false, error: 'Invalid token' });
         }
         
         // Log all received parameters for debugging

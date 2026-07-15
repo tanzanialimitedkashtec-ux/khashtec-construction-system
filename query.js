@@ -1,0 +1,1 @@
+const db = require('./database/config/database'); db.query('UPDATE hse_work SET project_name = \'CONSTRUCT\' WHERE work_type = \'Safety Violation\' AND project_name IS NULL').then(r => { console.log(r); process.exit(0); }).catch(e => { console.error(e); process.exit(1); });

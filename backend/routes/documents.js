@@ -968,19 +968,25 @@ router.post('/', function(req, res, next) {
                 }
             }
             
-            // Get user ID from JWT token or fallback to submitted_by
-            let userId = 1; // Default fallback
+            // Get user ID from JWT token
+            let userId;
             try {
                 const authHeader = req.headers.authorization;
                 if (authHeader && authHeader.startsWith('Bearer ')) {
                     const token = authHeader.substring(7);
                     const jwt = require('jsonwebtoken');
-                    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key');
-                    userId = decoded.id || 1;
+                    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+                    userId = decoded.id;
                     console.log('🔍 Extracted user ID from JWT:', userId);
+                    if (!userId) {
+                        return res.status(401).json({ error: 'Invalid token payload' });
+                    }
+                } else {
+                    return res.status(401).json({ error: 'No token provided' });
                 }
             } catch (tokenError) {
-                console.warn('⚠️ Could not extract user ID from token, using fallback:', tokenError.message);
+                console.warn('⚠️ Could not extract user ID from token:', tokenError.message);
+                return res.status(401).json({ error: 'Invalid token' });
             }
             
             console.log('🔍 Final user ID for upload:', userId);
