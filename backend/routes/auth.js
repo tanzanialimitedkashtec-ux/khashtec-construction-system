@@ -1,5 +1,14 @@
 const express = require('express');
 const bcrypt = require('bcryptjs');
+const rateLimit = require('express-rate-limit');
+
+const loginLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 5, // Limit each IP to 5 login requests per windowMs
+    message: { error: 'Too many login attempts from this IP, please try again after 15 minutes' },
+    standardHeaders: true,
+    legacyHeaders: false
+});
 const jwt = require('jsonwebtoken');
 const router = express.Router();
 
@@ -20,7 +29,7 @@ router.get('/test', (req, res) => {
 });
 
 // Login endpoint
-router.post('/login', async (req, res) => {
+router.post('/login', loginLimiter, async (req, res) => {
     try {
         console.log('🔐 Login request received:', { email: req.body.email, role: req.body.role });
         const { email, password, role } = req.body;
@@ -99,6 +108,16 @@ router.post('/login', async (req, res) => {
             
             console.log('✅ Authentication table exists');
             
+            // Ensure lockout columns exist
+            try {
+                await db.execute('ALTER TABLE authentication ADD COLUMN failed_attempts INT DEFAULT 0');
+                console.log('✅ Added failed_attempts column');
+            } catch (e) { /* column exists */ }
+            try {
+                await db.execute('ALTER TABLE authentication ADD COLUMN lockout_until TIMESTAMP NULL');
+                console.log('✅ Added lockout_until column');
+            } catch (e) { /* column exists */ }
+            
             // Ensure default MD user exists with correct credentials
             try {
                 const mdCheck = await db.execute(
@@ -157,12 +176,12 @@ router.post('/login', async (req, res) => {
         
         try {
             console.log('🔍 Executing authentication query...');
-            console.log('📝 Query:', 'SELECT id, email, password_hash, role, department_name, manager_name, status, nav_access FROM authentication WHERE email = ? AND status = ?');
+            console.log('📝 Query:', 'SELECT id, email, password_hash, role, department_name, manager_name, status, nav_access, failed_attempts, lockout_until FROM authentication WHERE email = ? AND status = ?');
             console.log('📝 Parameters:', [email, 'Active']);
             
             // The database.execute() method already returns just the rows array
             const authRows = await db.execute(
-                'SELECT id, email, password_hash, role, department_name, manager_name, status, nav_access FROM authentication WHERE email = ? AND status = ?',
+                'SELECT id, email, password_hash, role, department_name, manager_name, status, nav_access, failed_attempts, lockout_until FROM authentication WHERE email = ? AND status = ?',
                 [email, 'Active']
             );
             
@@ -205,12 +224,38 @@ router.post('/login', async (req, res) => {
             const authUser = authRows[0];
             console.log('👤 Found authentication record:', { id: authUser.id, email: authUser.email, role: authUser.role });
             
+            // Check lockout status
+            if (authUser.lockout_until && new Date(authUser.lockout_until) > new Date()) {
+                console.log('❌ Account locked for:', email);
+                return res.status(403).json({
+                    error: 'Account locked',
+                    message: 'Account temporarily locked due to multiple failed login attempts. Please try again later.'
+                });
+            }
+            
             // Check password
             const isValidPassword = await bcrypt.compare(password, authUser.password_hash);
             console.log('🔐 Password comparison result:', { isValid: isValidPassword });
             
             if (!isValidPassword) {
                 console.log('❌ Password mismatch for:', email);
+                
+                // Increment failed attempts and handle lockout
+                let newAttempts = (authUser.failed_attempts || 0) + 1;
+                let lockQuery = 'UPDATE authentication SET failed_attempts = ? WHERE email = ?';
+                let lockParams = [newAttempts, email];
+                
+                if (newAttempts >= 5) {
+                    lockQuery = 'UPDATE authentication SET failed_attempts = ?, lockout_until = DATE_ADD(NOW(), INTERVAL 15 MINUTE) WHERE email = ?';
+                    console.log('🔒 Account locked due to 5 failed attempts:', email);
+                }
+                
+                try {
+                    await db.execute(lockQuery, lockParams);
+                } catch (updateErr) {
+                    console.error('Failed to update lockout status:', updateErr.message);
+                }
+                
                 // Record failed login attempt
                 try {
                     await db.execute(
@@ -222,10 +267,19 @@ router.post('/login', async (req, res) => {
                 } catch (auditErr) { console.error('Login audit log error:', auditErr.message); }
                 return res.status(401).json({
                     error: 'Invalid credentials',
-                    message: 'Incorrect password'
+                    message: newAttempts >= 5 ? 'Account locked due to multiple failed login attempts. Please try again later.' : 'Incorrect password'
                 });
             }
             
+            // Reset failed attempts if necessary
+            if (authUser.failed_attempts > 0 || authUser.lockout_until) {
+                try {
+                    await db.execute('UPDATE authentication SET failed_attempts = 0, lockout_until = NULL WHERE email = ?', [email]);
+                } catch (updateErr) {
+                    console.error('Failed to reset lockout status:', updateErr.message);
+                }
+            }
+
             // Generate JWT token
             const token = jwt.sign(
                 { 
