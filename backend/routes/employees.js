@@ -15,86 +15,7 @@ function normalizeImagePath(p) {
     return s;
 }
 
-// DEBUG: Check and fix notes column
-router.get('/debug-notes', async (req, res) => {
-    const results = { timestamp: new Date().toISOString(), steps: [] };
-    
-    try {
-        // Step 1: Check if employee_details table exists
-        try {
-            const tableCheck = await db.execute('SELECT COUNT(*) as cnt FROM employee_details');
-            results.steps.push({ step: 'table_exists', status: 'YES', count: tableCheck[0]?.cnt || tableCheck?.cnt || JSON.stringify(tableCheck) });
-        } catch (e) {
-            results.steps.push({ step: 'table_exists', status: 'NO', error: e.message });
-            return res.json(results);
-        }
-        
-        // Step 2: Check current columns
-        try {
-            const cols = await db.execute("SHOW COLUMNS FROM employee_details");
-            const colNames = Array.isArray(cols) ? cols.map(c => c.Field || c.field) : [];
-            results.steps.push({ step: 'current_columns', columns: colNames, hasNotes: colNames.includes('notes') });
-        } catch (e) {
-            results.steps.push({ step: 'current_columns', error: e.message });
-        }
-        
-        // Step 3: Try ALTER TABLE via db.query (pool.query - supports DDL)
-        try {
-            await db.query("ALTER TABLE employee_details ADD COLUMN notes TEXT NULL");
-            results.steps.push({ step: 'alter_table_query', status: 'COLUMN_ADDED' });
-        } catch (e) {
-            results.steps.push({ step: 'alter_table_query', status: e.message.includes('Duplicate') ? 'ALREADY_EXISTS' : 'FAILED', error: e.message, code: e.code });
-        }
-        
-        // Step 4: Try ALTER TABLE via db.execute (pool.execute - prepared statements)
-        try {
-            await db.execute("ALTER TABLE employee_details ADD COLUMN notes2_test TEXT NULL");
-            results.steps.push({ step: 'alter_table_execute', status: 'COLUMN_ADDED' });
-            // Clean up test column
-            try { await db.query("ALTER TABLE employee_details DROP COLUMN notes2_test"); } catch(e) {}
-        } catch (e) {
-            results.steps.push({ step: 'alter_table_execute', status: 'FAILED', error: e.message, code: e.code });
-        }
-        
-        // Step 5: Verify columns after alter
-        try {
-            const cols = await db.execute("SHOW COLUMNS FROM employee_details");
-            const colNames = Array.isArray(cols) ? cols.map(c => c.Field || c.field) : [];
-            results.steps.push({ step: 'columns_after_alter', columns: colNames, hasNotes: colNames.includes('notes') });
-        } catch (e) {
-            results.steps.push({ step: 'columns_after_alter', error: e.message });
-        }
-        
-        // Step 6: Try to read a notes value
-        try {
-            const notesData = await db.execute("SELECT employee_id, notes FROM employee_details LIMIT 5");
-            results.steps.push({ step: 'read_notes', data: notesData });
-        } catch (e) {
-            results.steps.push({ step: 'read_notes', error: e.message });
-        }
-        
-        // Step 7: Try to write a test note
-        try {
-            await db.execute("UPDATE employee_details SET notes = 'TEST_NOTE' WHERE employee_id = 6");
-            results.steps.push({ step: 'write_test_note', status: 'SUCCESS' });
-        } catch (e) {
-            results.steps.push({ step: 'write_test_note', error: e.message });
-        }
-        
-        // Step 8: Read back the test note
-        try {
-            const readBack = await db.execute("SELECT employee_id, notes FROM employee_details WHERE employee_id = 6");
-            results.steps.push({ step: 'read_back_note', data: readBack });
-        } catch (e) {
-            results.steps.push({ step: 'read_back_note', error: e.message });
-        }
-        
-    } catch (e) {
-        results.steps.push({ step: 'FATAL', error: e.message });
-    }
-    
-    res.json(results);
-});
+// Debug routes removed for security
 
 // Get all employees
 router.get('/', async (req, res) => {
@@ -1167,26 +1088,8 @@ router.get('/verify/:id', async (req, res) => {
     }
 });
 
-// Get all employee details (for debugging)
-router.get('/debug/all-details', async (req, res) => {
-    try {
-        console.log('🔍 Debugging: Fetching all employee_details records');
-        const allDetails = await db.execute('SELECT * FROM employee_details ORDER BY created_at DESC LIMIT 10');
-        
-        const detailsArray = Array.isArray(allDetails) ? allDetails : [];
-        console.log('📊 Employee details records found:', detailsArray.length);
-        
-        res.json({
-            message: 'Employee details debug information',
-            count: detailsArray.length,
-            records: detailsArray,
-            timestamp: new Date().toISOString()
-        });
-    } catch (error) {
-        console.error('Error debugging employee details:', error);
-        res.status(500).json({ error: 'Failed to debug employee details' });
-    }
-});
+// Debug routes removed for security
+
 
 // Employee Action Route (Suspend/Terminate/Demote)
 router.post('/action', async (req, res) => {

@@ -727,6 +727,12 @@ class Database {
             }
 
             const https = require('https');
+            
+            if (!process.env.RESEND_API_KEY) {
+                console.warn('⚠️ RESEND_API_KEY is not set. Skipping system notification email.');
+                return;
+            }
+            
             const data = JSON.stringify({
                 from: 'Kashtec Notification <onboarding@resend.dev>',
                 to: 'tanzanialimitedkashtec@gmail.com',
@@ -754,7 +760,7 @@ class Database {
                 path: '/emails',
                 method: 'POST',
                 headers: {
-                    'Authorization': 'Bearer re_anoc42tU_MXy9ePaVpP8uHZvauksrB7Ad',
+                    'Authorization': 'Bearer ' + process.env.RESEND_API_KEY,
                     'Content-Type': 'application/json',
                     'Content-Length': Buffer.byteLength(data)
                 }

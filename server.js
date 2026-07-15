@@ -1,4 +1,4 @@
-﻿// Force IPv4 DNS resolution BEFORE any module loads (Railway lacks IPv6)
+// Force IPv4 DNS resolution BEFORE any module loads (Railway lacks IPv6)
 require('dns').setDefaultResultOrder('ipv4first');
 const express = require('express');
 
@@ -234,14 +234,10 @@ app.use('/api/', (req, res, next) => {
 
 // CORS configuration with CSP headers
 
-const allowedOrigins = [
-    config.CORS_ORIGIN,
+const envOrigins = process.env.ALLOWED_ORIGINS ? process.env.ALLOWED_ORIGINS.split(',').map(o => o.trim()) : [];
+const allowedOrigins = envOrigins.length > 0 ? envOrigins : [
     'https://www.kashtec.co.tz',
-    'https://kashtec.co.tz',
-    'http://localhost:8080',
-    'http://127.0.0.1:8080',
-    'http://localhost:3000',
-    'http://127.0.0.1:3000'
+    'https://kashtec.co.tz'
 ];
 
 app.use(cors({
@@ -561,67 +557,7 @@ app.get('/health', (req, res) => {
 
 
 
-// Debug route to check database tables
-
-app.get('/debug/db', async (req, res) => {
-
-  try {
-
-    const db = require('./database/config/database');
-
-    const [rows] = await db.execute('SHOW TABLES');
-
-    console.log('🔍 DEBUG - Tables found:', rows);
-
-    console.log('🔍 DEBUG - Type:', typeof rows);
-
-    console.log('🔍 DEBUG - Is array?', Array.isArray(rows));
-
-    res.json({
-
-      success: true,
-
-      tableCount: rows.length,
-
-      tables: Array.isArray(rows) ? rows.map(table => Object.values(table)[0]) : [],
-
-      raw: rows
-
-    });
-
-  } catch (err) {
-
-    console.error('🔥 DEBUG ERROR:', err);
-
-    res.status(500).json({ error: err.message });
-
-  }
-
-});
-
-
-
-// Safe debug route
-
-app.get('/debug/tables', async (req, res) => {
-
-  try {
-
-    const db = require('./database/config/database');
-
-    const [rows] = await db.execute('SHOW TABLES');
-
-    console.log("📊 Tables:", rows);
-
-    res.json(rows);
-
-  } catch (err) {
-
-    res.status(500).json({ error: err.message });
-
-  }
-
-});
+// Debug routes removed for security
 
 
 

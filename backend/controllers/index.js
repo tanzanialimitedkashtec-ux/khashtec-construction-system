@@ -6,58 +6,7 @@ const jwt = require('jsonwebtoken');
 // ===== AUTHENTICATION CONTROLLER =====
 class AuthController {
     static async login(req, res) {
-        try {
-            const { username, password, role } = req.body;
-            
-            if (!username || !password || !role) {
-                return res.status(400).json({ 
-                    success: false, 
-                    error: 'Missing required fields' 
-                });
-            }
-            
-            // For demo, check against hardcoded users
-            // In production, this would query the database
-            const validCredentials = [
-                { username: 'md', password: '$2b$10$12$MD5hash', role: 'MD' },
-                { username: 'admin', password: '$2b$10$12$ADMINhash', role: 'ADMIN' },
-                { username: 'hr', password: '$2b$10$12$HRhash', role: 'HR' },
-                { username: 'hse', password: '$2b$10$12$HSEhash', role: 'HSE' },
-                { username: 'finance', password: '$2b$10$12$FINANCEhash', role: 'FINANCE' },
-                { username: 'projects', password: '$2b$10$12$PROJECThash', role: 'PROJECT' },
-                { username: 'realestate', password: '$2b$10$12$REALESTATEhash', role: 'REALESTATE' },
-                { username: 'assistant', password: '$2b$10$12$ASSISTANThash', role: 'ASSISTANT' }
-            ];
-            
-            const user = validCredentials.find(u => u.username === username && u.password === password && u.role === role);
-            
-            if (!user) {
-                return res.status(401).json({ 
-                    success: false, 
-                    error: 'Invalid credentials' 
-                });
-            }
-            
-            // Generate JWT token
-            const token = jwt.sign(
-                { id: user.username, role: user.role },
-                process.env.JWT_SECRET || 'kashtec-secret-key-2024',
-                { expiresIn: '24h' }
-            );
-            
-            res.json({
-                success: true,
-                token,
-                user: { id: user.username, role: user.role }
-            });
-            
-        } catch (error) {
-            console.error('Login error:', error);
-            res.status(500).json({ 
-                success: false, 
-                error: 'Internal server error' 
-            });
-        }
+        return res.status(401).json({ success: false, error: 'Legacy login controller disabled. Use /api/auth/login' });
     }
 
     static async verifyToken(req, res, next) {

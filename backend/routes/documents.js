@@ -158,16 +158,7 @@ let documents = [
     }
 ];
 
-router.get('/debug', async (req, res) => {
-    try {
-        const db = require('../../database/config/database');
-        const [rows] = await db.execute('SELECT id, title, file_name, file_size, LENGTH(file_data) as blob_length FROM documents ORDER BY id DESC LIMIT 10');
-        const [adminRows] = await db.execute('SELECT id, work_title FROM admin_work ORDER BY id DESC LIMIT 10');
-        res.json({ documents: rows, admin_work: adminRows });
-    } catch (e) {
-        res.status(500).json({ error: e.message });
-    }
-});
+// Debug route removed for security
 
 // Get all documents
 router.get('/', async (req, res) => {
