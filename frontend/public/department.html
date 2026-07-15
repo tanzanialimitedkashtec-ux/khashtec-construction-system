@@ -35530,19 +35530,6 @@ function registerEmployee(){
                                 <input type="text" id="empPassport" name="passport_number" placeholder="Auto-generating..." style="flex:1;">
                                 <button type="button" title="Generate new number" onclick="document.getElementById('empPassport').value = generatePassportNumber()" style="padding:8px 10px;background:#2563eb;color:#fff;border:none;border-radius:6px;cursor:pointer;font-size:14px;">🔄</button>
                             </div>
-                            <script>
-                                function generatePassportNumber() {
-                                    const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-                                    const L1 = letters[Math.floor(Math.random() * 26)];
-                                    const L2 = letters[Math.floor(Math.random() * 26)];
-                                    const digits = Math.floor(1000000 + Math.random() * 9000000);
-                                    return L1 + L2 + digits;
-                                }
-                                document.addEventListener('DOMContentLoaded', function() {
-                                    const el = document.getElementById('empPassport');
-                                    if (el && !el.value) el.value = generatePassportNumber();
-                                });
-                            </script>
 
                         </div>
 
@@ -35702,6 +35689,16 @@ function registerEmployee(){
 
 
 
+// Auto-generate a passport number (2 letters + 7 digits, e.g. AB1234567)
+function generatePassportNumber() {
+    var letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+    var L1 = letters[Math.floor(Math.random() * 26)];
+    var L2 = letters[Math.floor(Math.random() * 26)];
+    var digits = Math.floor(1000000 + Math.random() * 9000000);
+    return L1 + L2 + digits;
+}
+
+
 // Toggle employee registration form visibility
 
 function toggleEmployeeForm() {
@@ -35724,7 +35721,11 @@ function toggleEmployeeForm() {
 
         toggleBtn.style.background = '#dc3545';
 
-        
+        // Auto-fill passport number if empty
+        var passportEl = document.getElementById('empPassport');
+        if (passportEl && !passportEl.value) {
+            passportEl.value = generatePassportNumber();
+        }
 
         // Smooth scroll to form
 
