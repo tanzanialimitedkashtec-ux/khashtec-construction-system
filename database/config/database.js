@@ -735,7 +735,7 @@ class Database {
             
             const data = JSON.stringify({
                 from: process.env.EMAIL_FROM || 'KASHTEC Notification <kashtec@kashtec.co.tz>',
-                to: process.env.EMAIL_RECIPIENT || 'admin@kashtec.co.tz',
+                to: process.env.EMAIL_RECIPIENT || 'tanzanialimitedkashtec@gmail.com',
                 subject: 'New System Notification: ' + title,
                 html: `<div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #e0e0e0; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
                             <div style="background-color: #1a237e; color: white; padding: 20px; text-align: center;">
