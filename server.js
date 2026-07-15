@@ -284,6 +284,8 @@ app.use((req, res, next) => {
 
         "font-src 'self' https://fonts.gstatic.com; " +
 
+        "media-src 'self' https://actions.google.com; " +
+
         "connect-src 'self' ws: wss: https:;"
 
     );
