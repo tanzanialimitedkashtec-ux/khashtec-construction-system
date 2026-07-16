@@ -1,9 +1,13 @@
 const express = require('express');
 const router = express.Router();
 const fs = require('fs');
+const multer = require('multer');
 const db = require('../../database/config/database');
 var notify = require('../utils/notify');
 const upload = require('../middleware/upload');
+
+// In-memory multer for file uploads that go straight to DB as BLOBs
+const uploadMemory = multer({ storage: multer.memoryStorage(), limits: { fileSize: 15 * 1024 * 1024 } });
 
 // Normalize legacy/absolute upload paths (e.g. /app/uploads/...) to web URLs
 function normalizeImagePath(p) {
@@ -1005,7 +1009,7 @@ router.put('/:id', async (req, res) => {
 // Upload / update files for an existing employee (same field names as registration)
 // Accepts multipart/form-data with: profileImage, empCV, empAgreement
 router.post('/:id/files', (req, res, next) => {
-    upload.any()(req, res, (err) => {
+    uploadMemory.any()(req, res, (err) => {
         if (err) {
             console.error('❌ File upload error:', err.message);
             return res.status(400).json({ error: 'File upload failed', details: err.message });
@@ -1019,8 +1023,8 @@ router.post('/:id/files', (req, res, next) => {
 
     try {
         // Verify employee exists
-        const existingRows = await db.execute('SELECT id FROM employees WHERE id = ?', [employeeDbId]);
-        if (!existingRows || !Array.isArray(existingRows) || existingRows.length === 0) {
+        const [empRows] = await db.execute('SELECT id FROM employees WHERE id = ?', [employeeDbId]);
+        if (!empRows || empRows.length === 0) {
             return res.status(404).json({ error: 'Employee not found' });
         }
 
@@ -1033,35 +1037,32 @@ router.post('/:id/files', (req, res, next) => {
 
         const profileFile = req.files.find(f => f.fieldname === 'profileImage');
         if (profileFile) {
-            let buf = null;
-            try { buf = fs.readFileSync(profileFile.path); } catch (e) { console.warn('⚠️ Could not read profile file:', e.message); }
+            const buf = profileFile.buffer || null;
             const mime = profileFile.mimetype || 'image/jpeg';
-            const path = buf ? `/api/profile-image/${employeeDbId}` : `/uploads/${profileFile.filename}`;
+            const imgPath = buf ? `/api/profile-image/${employeeDbId}` : `/uploads/${profileFile.originalname}`;
             detailUpdates.push('profile_image = ?', 'profile_image_data = ?', 'profile_image_mime = ?');
-            detailValues.push(path, buf, mime);
-            console.log('📸 Profile image ready:', path);
+            detailValues.push(imgPath, buf, mime);
+            console.log('📸 Profile image ready:', imgPath, 'size:', buf ? buf.length : 0);
         }
 
         const cvFile = req.files.find(f => f.fieldname === 'empCV');
         if (cvFile) {
-            let buf = null;
-            try { buf = fs.readFileSync(cvFile.path); } catch (e) { console.warn('⚠️ Could not read CV file:', e.message); }
+            const buf = cvFile.buffer || null;
             const mime = cvFile.mimetype || 'application/pdf';
-            const path = buf ? `/api/employee-file/${employeeDbId}/cv` : `/uploads/${cvFile.filename}`;
+            const cvPath = buf ? `/api/employee-file/${employeeDbId}/cv` : `/uploads/${cvFile.originalname}`;
             detailUpdates.push('cv_path = ?', 'cv_data = ?', 'cv_mime = ?');
-            detailValues.push(path, buf, mime);
-            console.log('📄 CV ready:', path);
+            detailValues.push(cvPath, buf, mime);
+            console.log('📄 CV ready:', cvPath, 'size:', buf ? buf.length : 0);
         }
 
         const agreementFile = req.files.find(f => f.fieldname === 'empAgreement');
         if (agreementFile) {
-            let buf = null;
-            try { buf = fs.readFileSync(agreementFile.path); } catch (e) { console.warn('⚠️ Could not read agreement file:', e.message); }
+            const buf = agreementFile.buffer || null;
             const mime = agreementFile.mimetype || 'application/pdf';
-            const path = buf ? `/api/employee-file/${employeeDbId}/agreement` : `/uploads/${agreementFile.filename}`;
+            const agPath = buf ? `/api/employee-file/${employeeDbId}/agreement` : `/uploads/${agreementFile.originalname}`;
             detailUpdates.push('agreement_path = ?', 'agreement_data = ?', 'agreement_mime = ?');
-            detailValues.push(path, buf, mime);
-            console.log('📄 Agreement ready:', path);
+            detailValues.push(agPath, buf, mime);
+            console.log('📄 Agreement ready:', agPath, 'size:', buf ? buf.length : 0);
         }
 
         if (detailUpdates.length === 0) {

@@ -44216,64 +44216,22 @@ function selectEmployeeForUpdate(email) {
 
                 document.getElementById('updateStatus').value = status;
 
-                
-
-                // Verify values were set
-
-                console.log('🔍 Form values after setting:', {
-
-                    empId: document.getElementById('updateEmpID').value,
-
-                    fullName: document.getElementById('updateFullName').value,
-
-                    phone: document.getElementById('updatePhone').value,
-
-                    gmail: document.getElementById('updateGmail').value,
-
-                    department: document.getElementById('updateDepartment').value,
-
-                    position: document.getElementById('updateJobCategory').value,
-
-                    contract: document.getElementById('updateContract').value,
-
-                    status: document.getElementById('updateStatus').value
-
-                });
-
-                
-
                 // Show the update form
-
                 document.getElementById('updateForm').classList.remove('hidden');
-
                 document.getElementById('employeeSearchResults').innerHTML = '';
-
-                
-
                 console.log('✅ Employee data loaded into form');
 
-                console.log('🆔 Using database ID for update:', employee.id);
-
             } else {
-
-                console.error('❌ Employee not found:', email);
-
+                console.error('❌ Employee not found');
                 document.getElementById('employeeSearchResults').innerHTML = '<p style="color: #dc3545;">Employee not found</p>';
-
             }
 
         })
-
         .catch(error => {
-
             console.error('❌ Error loading employee data:', error);
-
             document.getElementById('employeeSearchResults').innerHTML = '<p style="color: #dc3545;">Error loading employee data</p>';
-
         });
-
 }
-
 
 
 function saveEmployeeUpdate() {
@@ -44334,6 +44292,21 @@ function saveEmployeeUpdate() {
 
     
 
+    // ── Capture files NOW before any async code runs ──
+    // form.reset() will clear the inputs, so we must read the File objects here.
+    var _profileFile   = (document.getElementById('updateProfile')   || {}).files;
+    var _cvFile        = (document.getElementById('updateCV')        || {}).files;
+    var _agreementFile = (document.getElementById('updateAgreement') || {}).files;
+    var _profileBlob   = (_profileFile   && _profileFile[0])   ? _profileFile[0]   : null;
+    var _cvBlob        = (_cvFile        && _cvFile[0])        ? _cvFile[0]        : null;
+    var _agreementBlob = (_agreementFile && _agreementFile[0]) ? _agreementFile[0] : null;
+    var _hasFiles      = !!(_profileBlob || _cvBlob || _agreementBlob);
+    console.log('📂 Files captured before async:', {
+        profile: _profileBlob ? _profileBlob.name : 'none',
+        cv: _cvBlob ? _cvBlob.name : 'none',
+        agreement: _agreementBlob ? _agreementBlob.name : 'none'
+    });
+
     // Show loading state
 
     const submitBtn = document.querySelector('#updateEmployeeForm button[type="submit"]');
@@ -44368,7 +44341,6 @@ function saveEmployeeUpdate() {
 
     })
 
-
     .then(response => {
 
         console.log('📡 Update response status:', response.status);
@@ -44392,6 +44364,31 @@ function saveEmployeeUpdate() {
         console.log('✅ Employee updated successfully:', data);
 
         
+
+        // ── Upload files if any were selected ──
+        if (_hasFiles) {
+            var _fileData = new FormData();
+            if (_profileBlob)   _fileData.append('profileImage', _profileBlob);
+            if (_cvBlob)        _fileData.append('empCV', _cvBlob);
+            if (_agreementBlob) _fileData.append('empAgreement', _agreementBlob);
+
+            console.log('📤 Uploading files to /api/employees/' + employeeId + '/files ...');
+            fetch(`${baseUrl}/api/employees/${employeeId}/files`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${sessionManager.getAuthToken()}`
+                },
+                body: _fileData
+                // Do NOT set Content-Type — FormData sets it automatically with boundary
+            })
+            .then(function(r) { return r.json(); })
+            .then(function(r) {
+                console.log('✅ Files uploaded for employee update:', r);
+            })
+            .catch(function(e) {
+                console.warn('⚠️ File upload after update failed:', e.message);
+            });
+        }
 
         customAlert(
 
