@@ -24643,45 +24643,31 @@ function saveEmployeeManual() {
 
             
 
-            if (response.status === 404) {
-
-                throw new Error('Employee registration endpoint not found (404)');
-
-            }
-
-            if (response.status === 400) {
-
-                throw new Error('Invalid employee data (400) - Check all required fields');
-
-            }
-
-            if (response.status === 409) {
-
-                throw new Error('Employee with this email or NIDA already exists (409)');
-
-            }
-
-            if (response.status >= 500) {
-
-                throw new Error('Server error during employee registration (500+)');
-
-            }
-
-            
-
             // Check content type before parsing JSON
 
             const contentType = response.headers.get('content-type');
 
-            console.log('ðŸ“¡ POST Response content type:', contentType);
+            console.log('📡 POST Response content type:', contentType);
 
             
 
             if (!contentType || !contentType.includes('application/json')) {
 
+                if (response.status === 404) {
+
+                    throw new Error('Employee registration endpoint not found (404)');
+
+                }
+
+                if (response.status >= 500) {
+
+                    throw new Error('Server error during employee registration (500+)');
+
+                }
+
                 return response.text().then(text => {
 
-                    console.log('ðŸ“¡ POST Non-JSON response:', text);
+                    console.log('📡 POST Non-JSON response:', text);
 
                     throw new Error(`Expected JSON but got ${contentType || 'unknown'}: ${text.substring(0, 100)}`);
 
@@ -24691,7 +24677,37 @@ function saveEmployeeManual() {
 
             
 
-            return response.json();
+            return response.json().then(data => ({ status: response.status, data }));
+
+        })
+
+        .then(({ status, data }) => {
+
+            if (status === 409) {
+
+                if (data.details && data.details.existing_name) {
+
+                    throw new Error(`Employee already exists: ${data.details.existing_name} (ID: ${data.details.existing_id}) - ${data.error}`);
+
+                }
+
+                throw new Error(data.error || 'Employee with this email or NIDA already exists (409)');
+
+            }
+
+            if (status === 400) {
+
+                throw new Error(data.error || 'Invalid employee data (400) - Check all required fields');
+
+            }
+
+            if (status >= 400) {
+
+                throw new Error(data.error || `Server error during employee registration (${status})`);
+
+            }
+
+            return data;
 
         })
 
@@ -24777,11 +24793,11 @@ function saveEmployeeManual() {
 
                 troubleshooting = 'â€¢ Fill all required fields correctlynâ€¢ Check email formatnâ€¢ Verify phone number formatnâ€¢ Ensure NIDA is valid';
 
-            } else if (error.message.includes('409')) {
+            } else if (error.message.includes('409') || error.message.includes('already exists')) {
 
                 errorCause = 'Employee already exists';
 
-                troubleshooting = 'â€¢ Email or NIDA already registerednâ€¢ Use different email or NIDAnâ€¢ Check if employee already exists';
+                troubleshooting = `• Email or NIDA already registered\n• Use different email or NIDA\n• Details: ${error.message}`;
 
             } else if (error.message.includes('404')) {
 
