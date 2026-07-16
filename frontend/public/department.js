@@ -20540,7 +20540,7 @@ function selectEmployeeForUpdate(email) {
 
             } else {
 
-                console.error('âŒ Employee not found:', email);
+                console.error('â Œ Employee not found:', email);
 
                 document.getElementById('employeeSearchResults').innerHTML = '<p style="color: #dc3545;">Employee not found</p>';
 
@@ -20673,6 +20673,39 @@ function saveEmployeeUpdate() {
         );
 
         
+
+        // Upload optional documents if provided — same FormData chain as registration
+        var _profileInput = document.getElementById('updateProfile');
+        var _cvInput = document.getElementById('updateCV');
+        var _agreementInput = document.getElementById('updateAgreement');
+        var _hasFiles = (_profileInput && _profileInput.files.length > 0)
+                     || (_cvInput && _cvInput.files.length > 0)
+                     || (_agreementInput && _agreementInput.files.length > 0);
+
+        if (_hasFiles) {
+            var _fileData = new FormData();
+            if (_profileInput && _profileInput.files[0]) {
+                _fileData.append('profileImage', _profileInput.files[0]);
+            }
+            if (_cvInput && _cvInput.files[0]) {
+                _fileData.append('empCV', _cvInput.files[0]);
+            }
+            if (_agreementInput && _agreementInput.files[0]) {
+                _fileData.append('empAgreement', _agreementInput.files[0]);
+            }
+            fetch('/api/employees/' + employeeId + '/files', {
+                method: 'POST',
+                body: _fileData
+                // Do NOT set Content-Type — FormData sets it automatically with boundary
+            })
+            .then(function(r) { return r.json(); })
+            .then(function(r) {
+                console.log('Files uploaded for employee update:', r);
+            })
+            .catch(function(e) {
+                console.warn('File upload after update failed (non-critical):', e.message);
+            });
+        }
 
         // Reset form and hide it
 

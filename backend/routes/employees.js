@@ -1002,6 +1002,103 @@ router.put('/:id', async (req, res) => {
     }
 });
 
+// Upload / update files for an existing employee (same field names as registration)
+// Accepts multipart/form-data with: profileImage, empCV, empAgreement
+router.post('/:id/files', (req, res, next) => {
+    upload.any()(req, res, (err) => {
+        if (err) {
+            console.error('❌ File upload error:', err.message);
+            return res.status(400).json({ error: 'File upload failed', details: err.message });
+        }
+        next();
+    });
+}, async (req, res) => {
+    const employeeDbId = req.params.id;
+    console.log('📤 POST /:id/files called for employee ID:', employeeDbId);
+    console.log('📋 Uploaded files:', req.files ? req.files.map(f => ({ fieldname: f.fieldname, originalname: f.originalname, size: f.size })) : 'none');
+
+    try {
+        // Verify employee exists
+        const existingRows = await db.execute('SELECT id FROM employees WHERE id = ?', [employeeDbId]);
+        if (!existingRows || !Array.isArray(existingRows) || existingRows.length === 0) {
+            return res.status(404).json({ error: 'Employee not found' });
+        }
+
+        if (!req.files || req.files.length === 0) {
+            return res.status(400).json({ error: 'No files provided' });
+        }
+
+        const detailUpdates = [];
+        const detailValues = [];
+
+        const profileFile = req.files.find(f => f.fieldname === 'profileImage');
+        if (profileFile) {
+            let buf = null;
+            try { buf = fs.readFileSync(profileFile.path); } catch (e) { console.warn('⚠️ Could not read profile file:', e.message); }
+            const mime = profileFile.mimetype || 'image/jpeg';
+            const path = buf ? `/api/profile-image/${employeeDbId}` : `/uploads/${profileFile.filename}`;
+            detailUpdates.push('profile_image = ?', 'profile_image_data = ?', 'profile_image_mime = ?');
+            detailValues.push(path, buf, mime);
+            console.log('📸 Profile image ready:', path);
+        }
+
+        const cvFile = req.files.find(f => f.fieldname === 'empCV');
+        if (cvFile) {
+            let buf = null;
+            try { buf = fs.readFileSync(cvFile.path); } catch (e) { console.warn('⚠️ Could not read CV file:', e.message); }
+            const mime = cvFile.mimetype || 'application/pdf';
+            const path = buf ? `/api/employee-file/${employeeDbId}/cv` : `/uploads/${cvFile.filename}`;
+            detailUpdates.push('cv_path = ?', 'cv_data = ?', 'cv_mime = ?');
+            detailValues.push(path, buf, mime);
+            console.log('📄 CV ready:', path);
+        }
+
+        const agreementFile = req.files.find(f => f.fieldname === 'empAgreement');
+        if (agreementFile) {
+            let buf = null;
+            try { buf = fs.readFileSync(agreementFile.path); } catch (e) { console.warn('⚠️ Could not read agreement file:', e.message); }
+            const mime = agreementFile.mimetype || 'application/pdf';
+            const path = buf ? `/api/employee-file/${employeeDbId}/agreement` : `/uploads/${agreementFile.filename}`;
+            detailUpdates.push('agreement_path = ?', 'agreement_data = ?', 'agreement_mime = ?');
+            detailValues.push(path, buf, mime);
+            console.log('📄 Agreement ready:', path);
+        }
+
+        if (detailUpdates.length === 0) {
+            return res.status(400).json({ error: 'No recognised file fields (profileImage, empCV, empAgreement)' });
+        }
+
+        // Check if employee_details row exists
+        const existingDetails = await db.execute('SELECT employee_id FROM employee_details WHERE employee_id = ?', [employeeDbId]);
+
+        if (existingDetails && Array.isArray(existingDetails) && existingDetails.length > 0) {
+            detailValues.push(employeeDbId);
+            await db.execute(
+                `UPDATE employee_details SET ${detailUpdates.join(', ')} WHERE employee_id = ?`,
+                detailValues
+            );
+            console.log('✅ employee_details updated with new files');
+        } else {
+            // No details row yet — insert a minimal one
+            await db.execute(
+                `INSERT INTO employee_details (employee_id, ${detailUpdates.map((u, i) => u.split(' = ')[0]).join(', ')}) VALUES (?, ${detailUpdates.map(() => '?').join(', ')})`,
+                [employeeDbId, ...detailValues]
+            );
+            console.log('✅ employee_details inserted with new files');
+        }
+
+        res.json({
+            message: 'Employee files updated successfully',
+            employeeId: employeeDbId,
+            filesUploaded: req.files.map(f => f.fieldname)
+        });
+
+    } catch (error) {
+        console.error('❌ Error uploading employee files:', error.message);
+        res.status(500).json({ error: 'Failed to upload employee files', details: error.message });
+    }
+});
+
 // Delete employee
 router.delete('/:id', async (req, res) => {
     try {
