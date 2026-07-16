@@ -1023,7 +1023,7 @@ router.post('/:id/files', (req, res, next) => {
 
     try {
         // Verify employee exists
-        const [empRows] = await db.execute('SELECT id FROM employees WHERE id = ?', [employeeDbId]);
+        const empRows = await db.execute('SELECT id FROM employees WHERE id = ?', [employeeDbId]);
         if (!empRows || empRows.length === 0) {
             return res.status(404).json({ error: 'Employee not found' });
         }
@@ -1069,10 +1069,14 @@ router.post('/:id/files', (req, res, next) => {
             return res.status(400).json({ error: 'No recognised file fields (profileImage, empCV, empAgreement)' });
         }
 
-        // Check if employee_details row exists
-        const [existingDetails] = await db.execute('SELECT employee_id FROM employee_details WHERE employee_id = ?', [employeeDbId]);
+        // Use UPDATE if a details row exists, INSERT (with required fields) otherwise.
+        const existingDetails = await db.execute(
+            'SELECT employee_id FROM employee_details WHERE employee_id = ?',
+            [employeeDbId]
+        );
 
         if (existingDetails && existingDetails.length > 0) {
+            // Row exists — plain UPDATE
             detailValues.push(employeeDbId);
             await db.execute(
                 `UPDATE employee_details SET ${detailUpdates.join(', ')} WHERE employee_id = ?`,
@@ -1080,12 +1084,21 @@ router.post('/:id/files', (req, res, next) => {
             );
             console.log('✅ employee_details updated with new files');
         } else {
-            // No details row yet — insert a minimal one
-            await db.execute(
-                `INSERT INTO employee_details (employee_id, ${detailUpdates.map((u, i) => u.split(' = ')[0]).join(', ')}) VALUES (?, ${detailUpdates.map(() => '?').join(', ')})`,
-                [employeeDbId, ...detailValues]
+            // No details row — must provide full_name and gmail (NOT NULL, no default)
+            // Pull them from employee_details itself won't work, so get them from the
+            // employees table linked via user_id, or fall back to empty strings.
+            const empDetail = await db.execute(
+                'SELECT full_name, gmail FROM employee_details WHERE employee_id = ? LIMIT 1',
+                [employeeDbId]
             );
-            console.log('✅ employee_details inserted with new files');
+            const seed = (empDetail && empDetail[0]) ? empDetail[0] : {};
+            const colNames = detailUpdates.map(u => u.split(' = ')[0]);
+            await db.execute(
+                `INSERT INTO employee_details (employee_id, full_name, gmail, ${colNames.join(', ')})
+                 VALUES (?, ?, ?, ${colNames.map(() => '?').join(', ')})`,
+                [employeeDbId, seed.full_name || 'Unknown', seed.gmail || '', ...detailValues]
+            );
+            console.log('✅ employee_details inserted with seed data + new files');
         }
 
         res.json({
