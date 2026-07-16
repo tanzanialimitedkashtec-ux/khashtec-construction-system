@@ -850,12 +850,12 @@ router.put('/:id', async (req, res) => {
                 
                 if (detailUpdates.length > 0) {
                     // Check if employee_details record exists
-                    const existingDetails = await db.execute(
+                    const [existingDetails] = await db.execute(
                         'SELECT employee_id FROM employee_details WHERE employee_id = ?',
                         [req.params.id]
                     );
                     
-                    if (existingDetails && Array.isArray(existingDetails) && existingDetails.length > 0) {
+                    if (existingDetails && existingDetails.length > 0) {
                         // Update existing record
                         detailValues.push(req.params.id);
                         await db.execute(
@@ -1069,9 +1069,9 @@ router.post('/:id/files', (req, res, next) => {
         }
 
         // Check if employee_details row exists
-        const existingDetails = await db.execute('SELECT employee_id FROM employee_details WHERE employee_id = ?', [employeeDbId]);
+        const [existingDetails] = await db.execute('SELECT employee_id FROM employee_details WHERE employee_id = ?', [employeeDbId]);
 
-        if (existingDetails && Array.isArray(existingDetails) && existingDetails.length > 0) {
+        if (existingDetails && existingDetails.length > 0) {
             detailValues.push(employeeDbId);
             await db.execute(
                 `UPDATE employee_details SET ${detailUpdates.join(', ')} WHERE employee_id = ?`,
