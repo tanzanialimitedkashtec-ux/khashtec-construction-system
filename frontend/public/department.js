@@ -14,17 +14,6 @@
 
 // Define toggleSidebar function first to ensure it's available when called
 
-// Auto-generate a passport number in the format: 2 letters + 7 digits (e.g. AB1234567)
-function generatePassportNumber() {
-    const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-    const L1 = letters[Math.floor(Math.random() * 26)];
-    const L2 = letters[Math.floor(Math.random() * 26)];
-    const digits = Math.floor(1000000 + Math.random() * 9000000);
-    return L1 + L2 + digits;
-}
-
-
-
 window.toggleSidebar = function toggleSidebar(){
 
     const sidebar = document.querySelector('.sidebar');
@@ -11476,10 +11465,7 @@ function registerEmployee(){
 
                             <label for="empPassport">Passport Number</label>
 
-                            <div style="display:flex;gap:6px;align-items:center;">
-                                <input type="text" id="empPassport" name="passport_number" placeholder="Auto-generating..." style="flex:1;" />
-                                <button type="button" title="Generate new number" onclick="document.getElementById('empPassport').value = generatePassportNumber()" style="padding:8px 10px;background:#2563eb;color:#fff;border:none;border-radius:6px;cursor:pointer;font-size:14px;">🔄</button>
-                            </div>
+                            <input type="text" id="empPassport" name="passport_number" placeholder="Passport Number (if applicable)" />
 
                         </div>
 
@@ -12172,12 +12158,6 @@ function toggleEmployeeForm() {
         toggleBtn.innerHTML = 'âŒ Close Registration Form';
 
         if (toggleBtn) toggleBtn.style.background = '#dc3545';
-
-        // Auto-fill passport number if empty
-        const passportEl = document.getElementById('empPassport');
-        if (passportEl && !passportEl.value) {
-            passportEl.value = generatePassportNumber();
-        }
 
         // Smooth scroll to form
 
