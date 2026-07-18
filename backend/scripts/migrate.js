@@ -472,70 +472,19 @@ async function runMigration() {
         console.log('📝 Checking if leave_requests table needs sample data...');
         const [leaveCheck] = await db.execute('SELECT COUNT(*) as count FROM leave_requests');
         
-        if (leaveCheck[0].count === 0) {
-            console.log('📝 Inserting sample leave request data...');
-            const sampleLeaveSQL = `
-                INSERT IGNORE INTO leave_requests (
-                    employee_id, employee_name, leave_type, start_date, end_date, days_requested, 
-                    reason_for_leave, approval_status, approved_by
-                ) VALUES
-                ('emp001', 'John Doe', 'annual', '2026-04-15', '2026-04-19', 5, 'Family vacation planned for Easter holiday', 'pending', NULL),
-                ('emp002', 'Jane Smith', 'sick', '2026-03-25', '2026-03-26', 2, 'Medical appointment and recovery', 'approved', 'HR Manager'),
-                ('emp003', 'Mike Johnson', 'compassionate', '2026-04-01', '2026-04-02', 2, 'Family emergency - attending funeral', 'approved', 'HR Manager'),
-                ('emp004', 'Sarah Wilson', 'study', '2026-05-10', '2026-05-12', 3, 'Professional development course attendance', 'pending', NULL)
-            `;
-            
-            await db.execute(sampleLeaveSQL);
-            console.log('✅ Sample leave request data inserted successfully');
-        } else {
-            console.log('📋 Leave requests table already has data');
-        }
+        console.log('📋 Skipping sample leave request data (seed data removed)');
 
         // Insert sample contracts if table is empty
         console.log('📝 Checking if contracts table needs sample data...');
         const [contractCheck] = await db.execute('SELECT COUNT(*) as count FROM contracts');
         
-        if (contractCheck[0].count === 0) {
-            console.log('📝 Inserting sample contract data...');
-            const sampleContractSQL = `
-                INSERT IGNORE INTO contracts (
-                    employee_id, employee_name, contract_type, start_date, end_date, salary, 
-                    contract_status, contract_terms, created_by
-                ) VALUES
-                ('emp001', 'John Doe', 'permanent', '2025-01-15', NULL, 2500000.00, 'active', 'Full-time permanent employment with standard benefits including health insurance, annual leave, and pension contributions', 'HR Manager'),
-                ('emp002', 'Jane Smith', 'contract', '2025-03-01', '2025-12-31', 2200000.00, 'active', 'Fixed-term contract for project duration with possibility of extension based on performance', 'HR Manager'),
-                ('emp003', 'Mike Johnson', 'probation', '2025-02-01', '2025-05-01', 1800000.00, 'renewed', 'Probation period successfully completed and converted to permanent contract', 'HR Manager'),
-                ('emp004', 'Sarah Wilson', 'temporary', '2025-04-01', '2025-06-30', 2000000.00, 'active', 'Temporary contract for special project with competitive hourly rate and overtime benefits', 'HR Manager')
-            `;
-            
-            await db.execute(sampleContractSQL);
-            console.log('✅ Sample contract data inserted successfully');
-        } else {
-            console.log('📋 Contracts table already has data');
-        }
+        console.log('📋 Skipping sample contract data (seed data removed)');
 
         // Insert sample attendance if table is empty
         console.log('📝 Checking if attendance table needs sample data...');
         const [attendanceCheck] = await db.execute('SELECT COUNT(*) as count FROM attendance');
         
-        if (attendanceCheck[0].count === 0) {
-            console.log('📝 Inserting sample attendance data...');
-            const sampleAttendanceSQL = `
-                INSERT IGNORE INTO attendance (
-                    employee_id, employee_name, attendance_date, check_in_time, check_out_time, 
-                    attendance_status, notes, marked_by, marked_by_role
-                ) VALUES
-                ('emp001', 'John Doe', CURDATE(), '08:00:00', '17:00:00', 'present', 'Regular work day', 'HR Manager', 'HR Manager'),
-                ('emp002', 'Jane Smith', CURDATE(), '08:30:00', '17:00:00', 'late', 'Traffic delay', 'HR Manager', 'HR Manager'),
-                ('emp003', 'Mike Johnson', CURDATE(), NULL, NULL, 'sick', 'Fever and headache', 'HR Manager', 'HR Manager'),
-                ('emp004', 'Sarah Wilson', CURDATE(), '08:00:00', '16:00:00', 'permission', 'Left early for personal appointment', 'HR Manager', 'HR Manager')
-            `;
-            
-            await db.execute(sampleAttendanceSQL);
-            console.log('✅ Sample attendance data inserted successfully');
-        } else {
-            console.log('📋 Attendance table already has data');
-        }
+        console.log('📋 Skipping sample attendance data (seed data removed)');
 
         // Verify table creation
         const [verification] = await db.execute(`

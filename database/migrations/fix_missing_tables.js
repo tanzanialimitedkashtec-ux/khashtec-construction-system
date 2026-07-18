@@ -78,31 +78,7 @@ async function createMissingTables() {
     `);
     console.log('✅ Leave requests table created');
     
-    // Insert sample data
-    console.log('📝 Inserting sample data...');
-    await db.execute(`
-      INSERT IGNORE INTO attendance (
-        employee_id, employee_name, attendance_date, check_in_time, check_out_time, 
-        attendance_status, notes, marked_by, marked_by_role
-      ) VALUES
-      ('emp001', 'John Doe', CURDATE(), '08:00:00', '17:00:00', 'present', 'Regular work day', 'HR Manager', 'HR Manager'),
-      ('emp002', 'Jane Smith', CURDATE(), '08:30:00', '17:00:00', 'late', 'Traffic delay', 'HR Manager', 'HR Manager'),
-      ('emp003', 'Mike Johnson', CURDATE(), NULL, NULL, 'sick', 'Fever and headache', 'HR Manager', 'HR Manager'),
-      ('emp004', 'Sarah Wilson', CURDATE(), '08:00:00', '16:00:00', 'permission', 'Left early for personal appointment', 'HR Manager', 'HR Manager')
-    `);
-    
-    await db.execute(`
-      INSERT IGNORE INTO leave_requests (
-        employee_id, employee_name, leave_type, start_date, end_date, days_requested, 
-        reason_for_leave, approval_status, approved_by
-      ) VALUES
-      ('emp001', 'John Doe', 'annual', '2026-04-15', '2026-04-19', 5, 'Family vacation planned for Easter holiday', 'pending', NULL),
-      ('emp002', 'Jane Smith', 'sick', '2026-03-25', '2026-03-26', 2, 'Medical appointment and recovery', 'approved', 'HR Manager'),
-      ('emp003', 'Mike Johnson', 'compassionate', '2026-04-01', '2026-04-02', 2, 'Family emergency - attending funeral', 'approved', 'HR Manager'),
-      ('emp004', 'Sarah Wilson', 'study', '2026-05-10', '2026-05-12', 3, 'Professional development course attendance', 'pending', NULL)
-    `);
-    
-    console.log('✅ Sample data inserted');
+    console.log('📋 Skipping sample data insertion (seed data removed)');
     
     // Verify tables
     const [tables] = await db.execute('SHOW TABLES');
