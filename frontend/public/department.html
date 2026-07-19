@@ -25312,7 +25312,7 @@ function loadMenu(){
             "Document Management"
         ],
         "MD": [
-            "Dashboard Overview",
+            "Dashboard Overview", "Department Analytics",
             "Manage Policies", "Approve Senior Staff Hiring", "User Account Management", "Access Management",
             "Manage Leave & Contracts", "Approve Invoices", "Audits",
             "Document Management", "Office Portal", "Tax", "View Suggestions",
@@ -25364,6 +25364,7 @@ function loadMenu(){
 
         const allMenusConfig = [
         { name: "Dashboard Overview", func: showDashboardOverview },
+        { name: "Department Analytics", func: showDepartmentAnalytics },
         { name: "Approve Workforce Requests", func: showWorkforceApprovals },
         { name: "Approve Payment Requests", func: showPaymentApprovals },
         { name: "Approve Recruitment Policies", func: approveRecruitmentPolicies },
@@ -105691,7 +105692,7 @@ if (!document.getElementById('transport-cost-styles')) {
 
 <script src="js/script.js"></script>
 
-<script src="js/department.js?v=1.1"></script>
+<script src="js/department.js?v=1.2"></script>
 <script src="js/financial-strategies.js"></script>
 <!-- Removed missing work-approval-functions.js include (caused 404 + syntax errors) -->
 <script src="js/new-features.js"></script>
