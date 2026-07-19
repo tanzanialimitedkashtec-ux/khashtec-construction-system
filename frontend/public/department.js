@@ -1440,6 +1440,359 @@ function renderDashboardOverviewMetrics() {
 
 
 
+/* ===== MD DEPARTMENT ANALYTICS (cross-department bar-graph reports) ===== */
+
+window.deptAnalyticsCharts = window.deptAnalyticsCharts || {};
+window.deptAnalyticsTimer = window.deptAnalyticsTimer || null;
+
+function deptAnalyticsFmtTZS(n) {
+    const v = Number(n) || 0;
+    if (Math.abs(v) >= 1e9) return 'TZS ' + (v / 1e9).toFixed(1) + 'B';
+    if (Math.abs(v) >= 1e6) return 'TZS ' + (v / 1e6).toFixed(1) + 'M';
+    if (Math.abs(v) >= 1e3) return 'TZS ' + (v / 1e3).toFixed(1) + 'K';
+    return 'TZS ' + v.toLocaleString('en-US');
+}
+
+async function deptAnalyticsFetch(endpoint) {
+    const authToken = (typeof sessionManager !== 'undefined' && sessionManager.getAuthToken) ? sessionManager.getAuthToken() : (localStorage.getItem('authToken') || '');
+    const response = await fetch(endpoint, {
+        headers: {
+            'Accept': 'application/json',
+            ...(authToken ? { 'Authorization': `Bearer ${authToken}` } : {})
+        }
+    });
+    if (!response.ok) throw new Error(`HTTP ${response.status} for ${endpoint}`);
+    return response.json();
+}
+
+function showDepartmentAnalytics() {
+    window.deptAnalyticsAutoRefresh = window.deptAnalyticsAutoRefresh !== false;
+    showContent(`
+        <style>
+            .dept-analytics-page { padding: 20px; background: #f6f8fb; min-height: calc(100vh - 80px); }
+            .dept-analytics-header { display: flex; justify-content: space-between; gap: 16px; align-items: flex-start; flex-wrap: wrap; margin-bottom: 16px; }
+            .dept-analytics-header h2 { margin: 0; color: #172033; font-size: 26px; }
+            .dept-analytics-header p { margin: 6px 0 0; color: #667085; max-width: 720px; }
+            .dept-analytics-controls { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+            .dept-analytics-controls button { border: 1px solid #0f766e; background: #0f766e; color: #fff; border-radius: 8px; padding: 9px 14px; cursor: pointer; font-weight: 600; }
+            .dept-analytics-controls button:disabled { opacity: 0.6; cursor: default; }
+            .dept-analytics-controls label { display: flex; align-items: center; gap: 6px; color: #344054; font-weight: 600; font-size: 13px; }
+            .dept-analytics-updated { color: #667085; font-size: 12px; }
+            .dept-analytics-kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; margin-bottom: 18px; }
+            .dept-analytics-kpi { background: #fff; border: 1px solid #e5e7eb; border-left: 4px solid #0f766e; border-radius: 8px; padding: 12px 14px; box-shadow: 0 8px 20px rgba(15,23,42,0.05); }
+            .dept-analytics-kpi span { display: block; color: #475467; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; }
+            .dept-analytics-kpi strong { display: block; color: #111827; font-size: 22px; font-weight: 800; margin-top: 6px; word-break: break-word; }
+            .dept-analytics-kpi.safety { border-left-color: #dc2626; }
+            .dept-analytics-kpi.finance { border-left-color: #7c3aed; }
+            .dept-analytics-kpi.projects { border-left-color: #2563eb; }
+            .dept-analytics-kpi.people { border-left-color: #ca8a04; }
+            .dept-analytics-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(360px, 1fr)); gap: 16px; }
+            .dept-analytics-card { background: #fff; border: 1px solid #e5e7eb; border-radius: 10px; padding: 16px; box-shadow: 0 8px 20px rgba(15,23,42,0.06); display: flex; flex-direction: column; }
+            .dept-analytics-card h3 { margin: 0 0 4px; color: #172033; font-size: 16px; }
+            .dept-analytics-card .sub { color: #667085; font-size: 12px; margin: 0 0 12px; }
+            .dept-analytics-canvas-wrap { position: relative; height: 260px; width: 100%; }
+            .dept-analytics-empty { display: flex; align-items: center; justify-content: center; height: 260px; color: #98a2b3; font-size: 14px; text-align: center; }
+            .dept-analytics-banner { grid-column: 1 / -1; background: #fff5f5; border: 1px solid #fecaca; color: #b91c1c; border-radius: 8px; padding: 14px; }
+            @media (max-width: 640px) { .dept-analytics-grid { grid-template-columns: 1fr; } }
+        </style>
+        <div class="dept-analytics-page">
+            <div class="dept-analytics-header">
+                <div>
+                    <h2>Department Analytics</h2>
+                    <p>Cross-department performance analysis for the Managing Director. Live bar-graph breakdowns of incidents, violations, tax, budget, expenses, transport costs, projects, workers and safety across the company.</p>
+                </div>
+                <div class="dept-analytics-controls">
+                    <span class="dept-analytics-updated" id="deptAnalyticsUpdated">Loading...</span>
+                    <label><input type="checkbox" id="deptAnalyticsAuto" ${window.deptAnalyticsAutoRefresh ? 'checked' : ''} onchange="toggleDeptAnalyticsAutoRefresh(this.checked)"> Auto-refresh (30s)</label>
+                    <button type="button" id="deptAnalyticsRefreshBtn" onclick="loadDepartmentAnalytics(true)">Refresh now</button>
+                </div>
+            </div>
+
+            <div class="dept-analytics-kpis" id="deptAnalyticsKpis"></div>
+
+            <div class="dept-analytics-grid" id="deptAnalyticsGrid">
+                <div class="dept-analytics-card">
+                    <h3>Incidents &amp; Violations by Project</h3>
+                    <p class="sub">Reported incidents vs open safety violations per project.</p>
+                    <div class="dept-analytics-canvas-wrap"><canvas id="chartSafetyIncidents"></canvas></div>
+                </div>
+                <div class="dept-analytics-card">
+                    <h3>Safety Score by Project</h3>
+                    <p class="sub">Overall safety score (0-100). Red below 60, amber below 80.</p>
+                    <div class="dept-analytics-canvas-wrap"><canvas id="chartSafetyScore"></canvas></div>
+                </div>
+                <div class="dept-analytics-card">
+                    <h3>Tax by Status (TZS)</h3>
+                    <p class="sub">Amounts paid, pending and overdue plus penalties.</p>
+                    <div class="dept-analytics-canvas-wrap"><canvas id="chartTax"></canvas></div>
+                </div>
+                <div class="dept-analytics-card">
+                    <h3>Budget vs Expenses (TZS)</h3>
+                    <p class="sub">Approved budget against total, approved and pending expenses.</p>
+                    <div class="dept-analytics-canvas-wrap"><canvas id="chartBudget"></canvas></div>
+                </div>
+                <div class="dept-analytics-card">
+                    <h3>Transport Costs (TZS)</h3>
+                    <p class="sub">Maintenance vs extra costs and paid vs pending amounts.</p>
+                    <div class="dept-analytics-canvas-wrap"><canvas id="chartTransport"></canvas></div>
+                </div>
+                <div class="dept-analytics-card">
+                    <h3>Projects by Status</h3>
+                    <p class="sub">Number of projects in each lifecycle stage.</p>
+                    <div class="dept-analytics-canvas-wrap"><canvas id="chartProjects"></canvas></div>
+                </div>
+                <div class="dept-analytics-card">
+                    <h3>Workforce by Department</h3>
+                    <p class="sub">Active workers distributed across departments.</p>
+                    <div class="dept-analytics-canvas-wrap"><canvas id="chartWorkers"></canvas></div>
+                </div>
+            </div>
+        </div>
+    `);
+
+    if (typeof Chart === 'undefined') {
+        const existing = document.querySelector('script[data-chartjs]');
+        if (existing) {
+            existing.addEventListener('load', () => loadDepartmentAnalytics(false));
+        } else {
+            const script = document.createElement('script');
+            script.src = 'https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js';
+            script.setAttribute('data-chartjs', 'true');
+            script.onload = () => loadDepartmentAnalytics(false);
+            document.head.appendChild(script);
+        }
+    } else {
+        loadDepartmentAnalytics(false);
+    }
+
+    setupDeptAnalyticsAutoRefresh();
+}
+
+function toggleDeptAnalyticsAutoRefresh(enabled) {
+    window.deptAnalyticsAutoRefresh = !!enabled;
+    setupDeptAnalyticsAutoRefresh();
+}
+
+function setupDeptAnalyticsAutoRefresh() {
+    if (window.deptAnalyticsTimer) {
+        clearInterval(window.deptAnalyticsTimer);
+        window.deptAnalyticsTimer = null;
+    }
+    if (!window.deptAnalyticsAutoRefresh) return;
+    window.deptAnalyticsTimer = setInterval(() => {
+        if (!document.getElementById('deptAnalyticsGrid')) {
+            clearInterval(window.deptAnalyticsTimer);
+            window.deptAnalyticsTimer = null;
+            return;
+        }
+        loadDepartmentAnalytics(false);
+    }, 30000);
+}
+
+function renderDeptAnalyticsBarChart(canvasId, config) {
+    const canvas = document.getElementById(canvasId);
+    if (!canvas || typeof Chart === 'undefined') return;
+    const wrap = canvas.parentElement;
+
+    if (!config.labels || config.labels.length === 0) {
+        if (window.deptAnalyticsCharts[canvasId]) {
+            window.deptAnalyticsCharts[canvasId].destroy();
+            delete window.deptAnalyticsCharts[canvasId];
+        }
+        if (wrap) wrap.innerHTML = '<div class="dept-analytics-empty">No data available yet</div>';
+        return;
+    }
+
+    if (wrap && !document.getElementById(canvasId)) {
+        wrap.innerHTML = `<canvas id="${canvasId}"></canvas>`;
+    }
+    const activeCanvas = document.getElementById(canvasId);
+
+    const existing = window.deptAnalyticsCharts[canvasId];
+    if (existing) {
+        existing.data.labels = config.labels;
+        existing.data.datasets = config.datasets;
+        existing.update();
+        return;
+    }
+
+    window.deptAnalyticsCharts[canvasId] = new Chart(activeCanvas.getContext('2d'), {
+        type: 'bar',
+        data: { labels: config.labels, datasets: config.datasets },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            animation: { duration: 500 },
+            plugins: {
+                legend: { display: config.datasets.length > 1, position: 'bottom' },
+                tooltip: {
+                    callbacks: config.currency ? {
+                        label: (ctx) => `${ctx.dataset.label ? ctx.dataset.label + ': ' : ''}${deptAnalyticsFmtTZS(ctx.parsed.y)}`
+                    } : {}
+                }
+            },
+            scales: {
+                x: { ticks: { autoSkip: false, maxRotation: 45, minRotation: 0 }, grid: { display: false } },
+                y: {
+                    beginAtZero: true,
+                    suggestedMax: config.max,
+                    ticks: config.currency ? { callback: (v) => deptAnalyticsFmtTZS(v) } : { precision: 0 }
+                }
+            }
+        }
+    });
+}
+
+async function loadDepartmentAnalytics(manual) {
+    const refreshBtn = document.getElementById('deptAnalyticsRefreshBtn');
+    const updatedEl = document.getElementById('deptAnalyticsUpdated');
+    if (!document.getElementById('deptAnalyticsGrid')) return;
+    if (manual && refreshBtn) { refreshBtn.disabled = true; refreshBtn.textContent = 'Refreshing...'; }
+    if (updatedEl) updatedEl.textContent = 'Updating...';
+
+    const settle = (r) => (r.status === 'fulfilled' ? r.value : null);
+    const [safetyR, taxR, expenseR, transportR, projectsR, employeesR] = await Promise.allSettled([
+        deptAnalyticsFetch('/api/safety'),
+        deptAnalyticsFetch('/api/tax/summary'),
+        deptAnalyticsFetch('/api/finance/expense-overview'),
+        deptAnalyticsFetch('/api/transport-costs/summary'),
+        deptAnalyticsFetch('/api/projects'),
+        deptAnalyticsFetch('/api/employees')
+    ]);
+
+    const safety = settle(safetyR);
+    const tax = settle(taxR);
+    const expense = settle(expenseR);
+    const transport = settle(transportR);
+    const projects = settle(projectsR);
+    const employees = settle(employeesR);
+
+    // ---- Safety: incidents & violations by project ----
+    const safetyRecords = (safety && Array.isArray(safety.data)) ? safety.data : [];
+    renderDeptAnalyticsBarChart('chartSafetyIncidents', {
+        labels: safetyRecords.map(r => r.project_name || 'Project'),
+        datasets: [
+            { label: 'Incidents', data: safetyRecords.map(r => Number(r.total_incidents) || 0), backgroundColor: '#dc2626' },
+            { label: 'Open Violations', data: safetyRecords.map(r => Number(r.open_violations) || 0), backgroundColor: '#f59e0b' }
+        ]
+    });
+    renderDeptAnalyticsBarChart('chartSafetyScore', {
+        labels: safetyRecords.map(r => r.project_name || 'Project'),
+        max: 100,
+        datasets: [{
+            label: 'Safety Score',
+            data: safetyRecords.map(r => Number(r.safety_score) || 0),
+            backgroundColor: safetyRecords.map(r => {
+                const s = Number(r.safety_score) || 0;
+                return s < 60 ? '#dc2626' : (s < 80 ? '#f59e0b' : '#16a34a');
+            })
+        }]
+    });
+
+    // ---- Tax by status ----
+    const taxData = (tax && tax.data) ? tax.data : {};
+    renderDeptAnalyticsBarChart('chartTax', {
+        labels: ['Paid', 'Pending', 'Overdue', 'Penalties', 'Interest'],
+        currency: true,
+        datasets: [{
+            label: 'Amount',
+            data: [taxData.paid_amount, taxData.pending_amount, taxData.overdue_amount, taxData.total_penalties, taxData.total_interest].map(v => Number(v) || 0),
+            backgroundColor: ['#16a34a', '#f59e0b', '#dc2626', '#7c3aed', '#2563eb']
+        }]
+    });
+
+    // ---- Budget vs expenses ----
+    const exp = expense || {};
+    renderDeptAnalyticsBarChart('chartBudget', {
+        labels: ['Approved Budget', 'Total Expenses', 'Approved Exp.', 'Pending Exp.', 'This Month'],
+        currency: true,
+        datasets: [{
+            label: 'Amount',
+            data: [exp.monthlyBudget, exp.totalExpenses, exp.approvedExpenses, exp.pendingAmount, exp.monthExpenses].map(v => Number(v) || 0),
+            backgroundColor: ['#0f766e', '#dc2626', '#16a34a', '#f59e0b', '#2563eb']
+        }]
+    });
+
+    // ---- Transport costs ----
+    const tr = (transport && transport.data) ? transport.data : {};
+    renderDeptAnalyticsBarChart('chartTransport', {
+        labels: ['Total', 'Maintenance', 'Extra', 'Paid', 'Pending'],
+        currency: true,
+        datasets: [{
+            label: 'Amount',
+            data: [tr.total_costs, tr.maintenance_costs, tr.extra_costs, tr.paid_amount, tr.pending_amount].map(v => Number(v) || 0),
+            backgroundColor: ['#0f766e', '#2563eb', '#7c3aed', '#16a34a', '#f59e0b']
+        }]
+    });
+
+    // ---- Projects by status ----
+    let projectList = [];
+    if (projects && Array.isArray(projects.projects)) projectList = projects.projects;
+    else if (Array.isArray(projects)) projectList = projects;
+    const projectStatusCounts = {};
+    projectList.forEach(p => {
+        const s = p.status || 'Unknown';
+        projectStatusCounts[s] = (projectStatusCounts[s] || 0) + 1;
+    });
+    renderDeptAnalyticsBarChart('chartProjects', {
+        labels: Object.keys(projectStatusCounts),
+        datasets: [{
+            label: 'Projects',
+            data: Object.values(projectStatusCounts),
+            backgroundColor: '#2563eb'
+        }]
+    });
+
+    // ---- Workforce by department ----
+    let employeeList = [];
+    if (employees && Array.isArray(employees.employees)) employeeList = employees.employees;
+    else if (Array.isArray(employees)) employeeList = employees;
+    const deptCounts = {};
+    employeeList.forEach(e => {
+        const d = e.department || 'Unassigned';
+        deptCounts[d] = (deptCounts[d] || 0) + 1;
+    });
+    renderDeptAnalyticsBarChart('chartWorkers', {
+        labels: Object.keys(deptCounts),
+        datasets: [{
+            label: 'Workers',
+            data: Object.values(deptCounts),
+            backgroundColor: '#ca8a04'
+        }]
+    });
+
+    // ---- KPI summary ----
+    const metrics = (safety && safety.metrics) ? safety.metrics : {};
+    const kpis = [
+        { cls: 'projects', label: 'Projects', value: projectList.length },
+        { cls: 'people', label: 'Workers', value: employeeList.length },
+        { cls: 'safety', label: 'Total Incidents', value: Number(metrics.total_incidents) || 0 },
+        { cls: 'safety', label: 'Open Violations', value: Number(metrics.open_violations) || 0 },
+        { cls: 'safety', label: 'Avg Safety Score', value: (Number(metrics.avg_safety_score) || 0) + '%' },
+        { cls: 'finance', label: 'Total Expenses', value: deptAnalyticsFmtTZS(exp.totalExpenses) },
+        { cls: 'finance', label: 'Tax Paid', value: deptAnalyticsFmtTZS(taxData.paid_amount) },
+        { cls: 'finance', label: 'Transport Costs', value: deptAnalyticsFmtTZS(tr.total_costs) }
+    ];
+    const kpiEl = document.getElementById('deptAnalyticsKpis');
+    if (kpiEl) {
+        kpiEl.innerHTML = kpis.map(k => `
+            <div class="dept-analytics-kpi ${k.cls}">
+                <span>${k.label}</span>
+                <strong>${k.value}</strong>
+            </div>
+        `).join('');
+    }
+
+    const failed = [safetyR, taxR, expenseR, transportR, projectsR, employeesR].filter(r => r.status === 'rejected').length;
+    if (updatedEl) {
+        const time = new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+        updatedEl.textContent = `Last updated ${time}${failed ? ` (${failed} source(s) unavailable)` : ''}`;
+    }
+    if (manual && refreshBtn) { refreshBtn.disabled = false; refreshBtn.textContent = 'Refresh now'; }
+}
+
+
+
 function loadMenu(){
     window.addedMenuLabels = new Set();
     const menu = document.getElementById("menu");
@@ -1479,6 +1832,8 @@ function loadMenu(){
     if(currentRole === "MD" || hasCustomNav){
 
         addMenu("Dashboard Overview", showDashboardOverview);
+
+        addMenu("Department Analytics", showDepartmentAnalytics);
 
         addMenu("Approve Recruitment Policies", approveRecruitmentPolicies);
 
@@ -1836,7 +2191,7 @@ function addMenu(name, func){
         } catch(e) { console.error('Error parsing nav_access', e); }
     }
     
-    if (!hasAccess && name !== 'Dashboard Overview' && name !== 'No Access') {
+    if (!hasAccess && name !== 'Dashboard Overview' && name !== 'Department Analytics' && name !== 'No Access') {
         return; // hide menu item
     }
 

@@ -25496,7 +25496,7 @@ const menuSections = [
 
         title: 'Overview',
 
-        keywords: ['dashboard overview', 'dashboard', 'overview', 'metric', 'metrics', 'summary']
+        keywords: ['dashboard overview', 'dashboard', 'overview', 'metric', 'metrics', 'summary', 'department analytics', 'analytics']
 
     },
 
@@ -25714,7 +25714,7 @@ function addMenuItem(label, onClick, options = {}) {
     }
     
     // Always render "Dashboard Overview" or if user has access
-    if (!hasAccess && label !== 'Dashboard Overview' && label !== 'No Access') {
+    if (!hasAccess && label !== 'Dashboard Overview' && label !== 'Department Analytics' && label !== 'No Access') {
         return null; // hide menu item if not authorized
     }
 
