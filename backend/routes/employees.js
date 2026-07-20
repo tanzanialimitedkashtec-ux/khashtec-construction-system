@@ -356,11 +356,10 @@ router.post('/', (req, res, next) => {
     });
     
     // More flexible validation - only require truly essential fields
-    if (!fullName || !gmail || !phone || !department || !nida) {
+    if (!fullName || !phone || !department || !nida) {
         console.log('❌ Validation failed - missing essential fields');
         const missingFields = [
             !fullName ? 'fullName' : null,
-            !gmail ? 'gmail' : null,
             !phone ? 'phone' : null,
             !department ? 'department' : null,
             !nida ? 'nida' : null
@@ -370,7 +369,7 @@ router.post('/', (req, res, next) => {
         
         return res.status(400).json({
             error: 'Missing required fields',
-            required: ['fullName', 'gmail', 'phone', 'department', 'nida'],
+            required: ['fullName', 'phone', 'department', 'nida'],
             received: { fullName, gmail, phone, department, jobCategory, job_category, nida, contract },
             missing: missingFields,
             note: 'jobCategory and contract are optional'
@@ -384,8 +383,8 @@ router.post('/', (req, res, next) => {
         try {
             console.log('?? Checking if employee already exists...');
             const existingResult = await db.execute(
-                'SELECT id, full_name FROM employee_details WHERE gmail = ? OR nida = ?',
-                [gmail, nida]
+                'SELECT id, full_name FROM employee_details WHERE (gmail = ? AND gmail != "") OR nida = ?',
+                [gmail || '', nida]
             );
             
             // Handle different MySQL2 return formats
