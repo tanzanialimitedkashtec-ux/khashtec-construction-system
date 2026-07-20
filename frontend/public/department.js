@@ -11796,9 +11796,9 @@ function registerEmployee(){
 
                         <div class="form-group">
 
-                            <label for="empGmail">Gmail Address *</label>
+                            <label for="empGmail">Gmail Address</label>
 
-                            <input type="email" id="empGmail" name="gmail_address" placeholder="employee@gmail.com" required />
+                            <input type="email" id="empGmail" name="gmail_address" placeholder="employee@gmail.com" />
 
                         </div>
 
@@ -24774,7 +24774,7 @@ function saveEmployeeManual() {
 
         // Validate required fields
 
-        if (!fullName || !phone || !gmail || !nida || !contract || !jobCategory || !department) {
+        if (!fullName || !phone || !nida || !contract || !jobCategory || !department) {
 
             showRealProblemNotification('VALIDATION_ERROR', {
 
