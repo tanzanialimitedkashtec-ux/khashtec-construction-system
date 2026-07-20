@@ -9300,7 +9300,7 @@ function showNotification(title, message, type = 'info') {
 
         }
 
-    }, 15000);
+    }, 60000);
 
 };
 
@@ -68128,7 +68128,7 @@ function showNotification_dup2(title, message, type = 'info') {
 
         }
 
-    }, 15000);
+    }, 60000);
 
 }
 
