@@ -64721,7 +64721,7 @@ function showNotification_dup1(message, type = 'info') {
 
         }
 
-    }, 5000);
+    }, 60000);
 
 }
 

@@ -2959,7 +2959,7 @@ function showForgotPassword() {
 }
 
 // Custom Notification System
-function showNotification(message, type = 'info', duration = 5000) {
+function showNotification(message, type = 'info', duration = 60000) {
     // Remove any existing notifications
     const existingNotification = document.querySelector('.custom-notification');
     if (existingNotification) {
