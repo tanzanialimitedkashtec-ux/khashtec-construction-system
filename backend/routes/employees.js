@@ -481,14 +481,14 @@ router.post('/', (req, res, next) => {
                 detailsResult = await db.execute(
                     `INSERT INTO employee_details (employee_id, full_name, gmail, phone, nida, passport, contract_type, profile_image, profile_image_data, profile_image_mime, cv_path, cv_data, cv_mime, agreement_path, agreement_data, agreement_mime)
                      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-                    [employeeDbId, fullName, gmail, phone, nida, passport || '', contract, profileImagePath, profileImageBuffer, profileImageMime, cvPath, cvBuffer, cvMime, agreementPath, agreementBuffer, agreementMime]
+                    [employeeDbId, fullName, gmail || null, phone, nida, passport || '', contract || null, profileImagePath, profileImageBuffer, profileImageMime, cvPath, cvBuffer, cvMime, agreementPath, agreementBuffer, agreementMime]
                 );
             } catch (blobErr) {
                 console.warn('⚠️ BLOB insert failed, retrying without BLOB columns:', blobErr.message);
                 detailsResult = await db.execute(
                     `INSERT INTO employee_details (employee_id, full_name, gmail, phone, nida, passport, contract_type, profile_image)
                      VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-                    [employeeDbId, fullName, gmail, phone, nida, passport || '', contract, profileImagePath]
+                    [employeeDbId, fullName, gmail || null, phone, nida, passport || '', contract || null, profileImagePath]
                 );
             }
             
