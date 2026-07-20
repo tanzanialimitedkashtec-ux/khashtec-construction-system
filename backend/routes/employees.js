@@ -232,6 +232,7 @@ router.get('/', async (req, res) => {
         // This eliminates 404s for legacy rows whose files were lost on Railway redeploy.
         for (const e of employeesArray) {
             if (e && e.id) e.profile_image = `/api/profile-image/${e.id}`;
+            if (e.gmail && e.gmail.startsWith('no-email-')) e.gmail = '';
         }
         console.log('📊 Returning employees array:', employeesArray.length, 'items');
         res.json(employeesArray);
@@ -481,14 +482,14 @@ router.post('/', (req, res, next) => {
                 detailsResult = await db.execute(
                     `INSERT INTO employee_details (employee_id, full_name, gmail, phone, nida, passport, contract_type, profile_image, profile_image_data, profile_image_mime, cv_path, cv_data, cv_mime, agreement_path, agreement_data, agreement_mime)
                      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-                    [employeeDbId, fullName, gmail || '', phone, nida, passport || '', contract || '', profileImagePath, profileImageBuffer, profileImageMime, cvPath, cvBuffer, cvMime, agreementPath, agreementBuffer, agreementMime]
+                    [employeeDbId, fullName, gmail || `no-email-${employeeId}@kashtec.local`, phone, nida, passport || '', contract || '', profileImagePath, profileImageBuffer, profileImageMime, cvPath, cvBuffer, cvMime, agreementPath, agreementBuffer, agreementMime]
                 );
             } catch (blobErr) {
                 console.warn('⚠️ BLOB insert failed, retrying without BLOB columns:', blobErr.message);
                 detailsResult = await db.execute(
                     `INSERT INTO employee_details (employee_id, full_name, gmail, phone, nida, passport, contract_type, profile_image)
                      VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-                    [employeeDbId, fullName, gmail || '', phone, nida, passport || '', contract || '', profileImagePath]
+                    [employeeDbId, fullName, gmail || `no-email-${employeeId}@kashtec.local`, phone, nida, passport || '', contract || '', profileImagePath]
                 );
             }
             
@@ -727,6 +728,7 @@ router.get('/:id', async (req, res) => {
         }
         
         if (employee && employee.id) employee.profile_image = `/api/profile-image/${employee.id}`;
+        if (employee && employee.gmail && employee.gmail.startsWith('no-email-')) employee.gmail = '';
         res.json(employee);
     } catch (error) {
         console.error('❌ Error fetching single employee:', error.message);
