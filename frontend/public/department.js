@@ -9257,6 +9257,9 @@ function closeModal_dup2() {
 
 
 function showNotification(title, message, type = 'info') {
+    // Remove existing notifications to prevent overlapping/flashing
+    const existingNotifications = document.querySelectorAll('.notification');
+    existingNotifications.forEach(n => n.remove());
 
     // Create notification element
 
@@ -64682,9 +64685,11 @@ function backToStaffOversight() {
 // Notification helper function
 
 function showNotification_dup1(message, type = 'info') {
+    // Remove existing notifications to prevent overlapping/flashing
+    const existingNotifications = document.querySelectorAll('.notification');
+    existingNotifications.forEach(n => n.remove());
 
     const notification = document.createElement('div');
-
     notification.className = `notification ${type}`;
 
     notification.innerHTML = `
@@ -64693,7 +64698,7 @@ function showNotification_dup1(message, type = 'info') {
 
             <h4>${type.charAt(0).toUpperCase() + type.slice(1)}</h4>
 
-            <button class="notification-close" onclick="this.parentElement.parentElement.remove()">Ã—</button>
+            <button class="notification-close" onclick="this.parentElement.parentElement.remove()">×</button>
 
         </div>
 
@@ -68085,11 +68090,12 @@ function filterByDepartment(department) {
 // Additional helper functions
 
 function showNotification_dup2(title, message, type = 'info') {
+    // Remove existing notifications to prevent overlapping/flashing
+    const existingNotifications = document.querySelectorAll('.notification');
+    existingNotifications.forEach(n => n.remove());
 
     // Create notification element
-
     const notification = document.createElement('div');
-
     notification.className = `notification ${type}`;
 
     notification.innerHTML = `
