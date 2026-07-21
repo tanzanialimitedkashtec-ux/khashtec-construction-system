@@ -2959,7 +2959,7 @@ function showForgotPassword() {
 }
 
 // Custom Notification System
-function showNotification(arg1, arg2 = 'info', arg3 = 60000) {
+function showNotification(arg1, arg2 = 'info', arg3 = 2000) {
     let message, type, duration;
 
     // Detect if called with (title, message, type) signature from department.js/customAlert
@@ -2967,7 +2967,7 @@ function showNotification(arg1, arg2 = 'info', arg3 = 60000) {
         // arg1 is title, arg2 is message, arg3 is type
         message = `<strong>${arg1}</strong><br>${arg2}`;
         type = arg3;
-        duration = 60000;
+        duration = 2000;
     } else {
         // Standard (message, type, duration) signature
         message = arg1;
@@ -2992,6 +2992,16 @@ function showNotification(arg1, arg2 = 'info', arg3 = 60000) {
         </div>
     `;
 
+    // Gradient colors based on type
+    const gradients = {
+        success: { bg: 'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)', text: '#fff' },
+        error:   { bg: 'linear-gradient(135deg, #f85032 0%, #e73827 100%)', text: '#fff' },
+        warning: { bg: 'linear-gradient(135deg, #f7971e 0%, #ffd200 100%)', text: '#333' },
+        info:    { bg: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', text: '#fff' }
+    };
+
+    const gradient = gradients[type] || gradients.info;
+
     // Add styles
     notification.style.cssText = `
         position: fixed;
@@ -3001,24 +3011,13 @@ function showNotification(arg1, arg2 = 'info', arg3 = 60000) {
         min-width: 300px;
         max-width: 500px;
         padding: 15px;
-        border-radius: 8px;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        border-radius: 2px;
+        background: ${gradient.bg};
+        color: ${gradient.text};
+        box-shadow: 0 4px 15px rgba(0,0,0,0.25);
         animation: slideIn 0.3s ease-out;
         font-family: Arial, sans-serif;
     `;
-
-    // Set colors based on type
-    const colors = {
-        success: { bg: '#d4edda', border: '#c3e6cb', text: '#155724', icon: '✅' },
-        error: { bg: '#f8d7da', border: '#f5c6cb', text: '#721c24', icon: '❌' },
-        warning: { bg: '#fff3cd', border: '#ffeaa7', text: '#856404', icon: '⚠️' },
-        info: { bg: '#d1ecf1', border: '#bee5eb', text: '#0c5460', icon: 'ℹ️' }
-    };
-
-    const color = colors[type] || colors.info;
-    notification.style.backgroundColor = color.bg;
-    notification.style.border = `1px solid ${color.border}`;
-    notification.style.color = color.text;
 
     // Add CSS animation if not already added
     if (!document.querySelector('#notification-styles')) {
@@ -3033,10 +3032,6 @@ function showNotification(arg1, arg2 = 'info', arg3 = 60000) {
                 from { transform: translateX(0); opacity: 1; }
                 to { transform: translateX(100%); opacity: 0; }
             }
-            .custom-notification.success { border-left: 4px solid #28a745; }
-            .custom-notification.error { border-left: 4px solid #dc3545; }
-            .custom-notification.warning { border-left: 4px solid #ffc107; }
-            .custom-notification.info { border-left: 4px solid #17a2b8; }
             .notification-content {
                 display: flex;
                 align-items: center;
@@ -3048,14 +3043,15 @@ function showNotification(arg1, arg2 = 'info', arg3 = 60000) {
             }
             .notification-message {
                 flex: 1;
-                font-weight: 500;
+                font-weight: 600;
             }
             .notification-close {
                 background: none;
                 border: none;
                 font-size: 20px;
                 cursor: pointer;
-                opacity: 0.7;
+                opacity: 0.8;
+                color: inherit;
                 padding: 0;
                 margin-left: 10px;
             }
@@ -3069,7 +3065,7 @@ function showNotification(arg1, arg2 = 'info', arg3 = 60000) {
     // Add to page
     document.body.appendChild(notification);
 
-    // Auto remove after duration
+    // Auto remove after 2 seconds
     setTimeout(() => {
         if (notification.parentElement) {
             notification.style.animation = 'slideOut 0.3s ease-out';
