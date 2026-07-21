@@ -43836,11 +43836,11 @@ function saveWorkerAccount() {
 
                 errorMessage = error.message;
 
-            } else if (error.message.includes('409')) {
+            } else if (error.message.includes('409') || error.message.includes('already exists') || error.message.includes('duplicate')) {
+                if (typeof showNotification === 'function') { showNotification('This email or NIDA already exists. Please use a different one.', 'warning'); } else { alert('This email or NIDA already exists.'); }
+                return;
+            }
 
-                errorMessage = 'Worker with this email already exists. Please use a different email.';
-
-            } else if (error.message.includes('404')) {
 
                 errorMessage = 'Worker account API endpoint not found. Please contact system administrator.';
 
@@ -48322,11 +48322,11 @@ function saveEmployeeManual() {
 
                 troubleshooting = '• Fill all required fields correctly\n• Check email format\n• Verify phone number format\n• Ensure NIDA is valid';
 
-            } else if (error.message.includes('409')) {
+            } else if (error.message.includes('409') || error.message.includes('already exists') || error.message.includes('duplicate')) {
+                if (typeof showNotification === 'function') { showNotification('This email or NIDA already exists. Please use a different one.', 'warning'); } else { alert('This email or NIDA already exists.'); }
+                return;
+            }
 
-                errorCause = 'Employee already exists';
-
-                troubleshooting = '• Email or NIDA already registered\n• Use different email or NIDA\n• Check if employee already exists';
 
             } else if (error.message.includes('404')) {
 

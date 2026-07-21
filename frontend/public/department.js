@@ -25151,11 +25151,11 @@ function saveEmployeeManual() {
 
                 troubleshooting = 'â€¢ Fill all required fields correctlynâ€¢ Check email formatnâ€¢ Verify phone number formatnâ€¢ Ensure NIDA is valid';
 
-            } else if (error.message.includes('409') || error.message.includes('already exists')) {
+            } else if (error.message.includes('409') || error.message.includes('already exists') || error.message.includes('duplicate')) {
+                if (typeof showNotification === 'function') { showNotification('This email or NIDA already exists. Please use a different one.', 'warning'); } else { alert('This email or NIDA already exists.'); }
+                return;
+            }
 
-                errorCause = 'Employee already exists';
-
-                troubleshooting = `• Email or NIDA already registered\n• Use different email or NIDA\n• Details: ${error.message}`;
 
             } else if (error.message.includes('404')) {
 
