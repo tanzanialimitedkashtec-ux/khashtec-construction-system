@@ -1478,10 +1478,10 @@ function showDepartmentAnalytics() {
             .dept-analytics-controls button:disabled { opacity: 0.6; cursor: default; }
             .dept-analytics-controls label { display: flex; align-items: center; gap: 6px; color: #344054; font-weight: 600; font-size: 13px; }
             .dept-analytics-updated { color: #667085; font-size: 12px; }
-            .dept-analytics-kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; margin-bottom: 18px; }
-            .dept-analytics-kpi { background: #fff; border: 1px solid #e5e7eb; border-left: 4px solid #0f766e; border-radius: 8px; padding: 12px 14px; box-shadow: 0 8px 20px rgba(15,23,42,0.05); }
-            .dept-analytics-kpi span { display: block; color: #475467; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; }
-            .dept-analytics-kpi strong { display: block; color: #111827; font-size: 22px; font-weight: 800; margin-top: 6px; word-break: break-word; }
+            .dept-analytics-kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 8px; margin-bottom: 12px; }
+            .dept-analytics-kpi { background: #fff; border: 1px solid #e5e7eb; border-left: 3px solid #0f766e; border-radius: 2px; padding: 8px 10px; box-shadow: 0 4px 10px rgba(15,23,42,0.04); }
+            .dept-analytics-kpi span { display: block; color: #475467; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; }
+            .dept-analytics-kpi strong { display: block; color: #111827; font-size: 16px; font-weight: 800; margin-top: 4px; word-break: break-word; }
             .dept-analytics-kpi.safety { border-left-color: #dc2626; }
             .dept-analytics-kpi.finance { border-left-color: #7c3aed; }
             .dept-analytics-kpi.projects { border-left-color: #2563eb; }
