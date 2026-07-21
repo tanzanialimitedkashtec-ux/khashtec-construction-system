@@ -1650,13 +1650,16 @@ async function loadDepartmentAnalytics(manual) {
     if (updatedEl) updatedEl.textContent = 'Updating...';
 
     const settle = (r) => (r.status === 'fulfilled' ? r.value : null);
-    const [safetyR, taxR, expenseR, transportR, projectsR, employeesR] = await Promise.allSettled([
+    const [safetyR, taxR, expenseR, transportR, projectsR, employeesR, materialsInventoryR, materialsInR, materialsOutR] = await Promise.allSettled([
         deptAnalyticsFetch('/api/safety'),
         deptAnalyticsFetch('/api/tax/summary'),
         deptAnalyticsFetch('/api/finance/expense-overview'),
         deptAnalyticsFetch('/api/transport-costs/summary'),
         deptAnalyticsFetch('/api/projects'),
-        deptAnalyticsFetch('/api/employees')
+        deptAnalyticsFetch('/api/employees'),
+        deptAnalyticsFetch('/api/materials/inventory'),
+        deptAnalyticsFetch('/api/materials/in'),
+        deptAnalyticsFetch('/api/materials/out')
     ]);
 
     const safety = settle(safetyR);
@@ -1665,6 +1668,9 @@ async function loadDepartmentAnalytics(manual) {
     const transport = settle(transportR);
     const projects = settle(projectsR);
     const employees = settle(employeesR);
+    const materialsInventory = settle(materialsInventoryR);
+    const materialsIn = settle(materialsInR);
+    const materialsOut = settle(materialsOutR);
 
     // ---- Safety: incidents & violations by project ----
     const safetyRecords = (safety && Array.isArray(safety.data)) ? safety.data : [];
@@ -1760,6 +1766,61 @@ async function loadDepartmentAnalytics(manual) {
         }]
     });
 
+    // ---- Materials Inventory ----
+    const invList = (materialsInventory && Array.isArray(materialsInventory.data)) ? materialsInventory.data : [];
+    const inList = (materialsIn && Array.isArray(materialsIn.data)) ? materialsIn.data : [];
+    const outList = (materialsOut && Array.isArray(materialsOut.data)) ? materialsOut.data : [];
+
+    const materialMap = {};
+    invList.forEach(m => {
+        materialMap[m.id] = {
+            name: m.material_name || 'Material',
+            stock: Number(m.current_stock) || 0,
+            totalIn: 0,
+            totalOut: 0
+        };
+    });
+
+    inList.forEach(item => {
+        const matId = item.material_id;
+        const qty = Number(item.quantity_received) || 0;
+        if (materialMap[matId]) {
+            materialMap[matId].totalIn += qty;
+        } else if (matId) {
+            materialMap[matId] = {
+                name: item.material_name || 'Material #' + matId,
+                stock: 0,
+                totalIn: qty,
+                totalOut: 0
+            };
+        }
+    });
+
+    outList.forEach(item => {
+        const matId = item.material_id;
+        const qty = Number(item.quantity_out) || 0;
+        if (materialMap[matId]) {
+            materialMap[matId].totalOut += qty;
+        } else if (matId) {
+            materialMap[matId] = {
+                name: item.material_name || 'Material #' + matId,
+                stock: 0,
+                totalIn: 0,
+                totalOut: qty
+            };
+        }
+    });
+
+    const materialsForChart = Object.values(materialMap);
+    renderDeptAnalyticsBarChart('chartMaterials', {
+        labels: materialsForChart.map(m => m.name),
+        datasets: [
+            { label: 'Material In', data: materialsForChart.map(m => m.totalIn), backgroundColor: '#16a34a' },
+            { label: 'Material Out', data: materialsForChart.map(m => m.totalOut), backgroundColor: '#dc2626' },
+            { label: 'Stock Level', data: materialsForChart.map(m => m.stock), backgroundColor: '#2563eb' }
+        ]
+    });
+
     // ---- KPI summary ----
     const metrics = (safety && safety.metrics) ? safety.metrics : {};
     const kpis = [
@@ -1782,7 +1843,7 @@ async function loadDepartmentAnalytics(manual) {
         `).join('');
     }
 
-    const failed = [safetyR, taxR, expenseR, transportR, projectsR, employeesR].filter(r => r.status === 'rejected').length;
+    const failed = [safetyR, taxR, expenseR, transportR, projectsR, employeesR, materialsInventoryR, materialsInR, materialsOutR].filter(r => r.status === 'rejected').length;
     if (updatedEl) {
         const time = new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
         updatedEl.textContent = `Last updated ${time}${failed ? ` (${failed} source(s) unavailable)` : ''}`;
