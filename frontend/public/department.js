@@ -9303,7 +9303,7 @@ function showNotification(title, message, type = 'info') {
 
         }
 
-    }, 60000);
+    }, 3000);
 
 };
 
@@ -64613,7 +64613,7 @@ function showNotification_dup1(message, type = 'info') {
 
         }
 
-    }, 60000);
+    }, 3000);
 
 }
 
@@ -68021,7 +68021,7 @@ function showNotification_dup2(title, message, type = 'info') {
 
         }
 
-    }, 60000);
+    }, 3000);
 
 }
 
