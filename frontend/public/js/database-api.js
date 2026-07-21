@@ -548,7 +548,7 @@ window.DatabaseUI = {
             successDiv.style.display = 'block';
             setTimeout(() => {
                 successDiv.style.display = 'none';
-            }, 3000);
+            }, 60000);
         } else {
             console.log('Success:', message);
         }

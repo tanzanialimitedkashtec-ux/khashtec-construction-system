@@ -28920,7 +28920,7 @@ async function saveDriverRegistration(){
                 showNotification('âŒ Session Expired', 'Please login again.', 'error');
                 setTimeout(() => {
                     window.location.href = '/login.html';
-                }, 2000);
+                }, 5000);
                 return;
             } else if (response.status === 400) {
                 showNotification(`âŒ Validation Error: ${errorData.error || 'Invalid data provided'}`, 'Validation Error', 'error');
@@ -28946,7 +28946,7 @@ async function saveDriverRegistration(){
         // Reset form after successful registration
         setTimeout(() => {
             registerDriver(); // Reload the form for new registration
-        }, 2000);
+        }, 5000);
     })
     .catch(error => {
         console.error('âŒ Error registering driver:', error);
@@ -78031,7 +78031,7 @@ async function submitAccountantForm(event) {
                 // Redirect to login after a short delay
                 setTimeout(() => {
                     window.location.href = '/login.html';
-                }, 2000);
+                }, 5000);
                 return false;
             } else if (response.status === 400) {
                 customAlert(`Validation Error: ${errorData.error || 'Invalid data provided'}`, 'Validation Error', 'error');
@@ -79066,7 +79066,7 @@ async function submitLeadershipForm(event) {
                 // Redirect to login after a short delay
                 setTimeout(() => {
                     window.location.href = '/login.html';
-                }, 2000);
+                }, 5000);
                 return false;
             } else if (response.status === 400) {
                 customAlert(`Validation Error: ${errorData.error || 'Invalid data provided'}`, 'Validation Error', 'error');
@@ -79196,7 +79196,7 @@ async function submitMissionVisionForm(event) {
                 // Redirect to login after a short delay
                 setTimeout(() => {
                     window.location.href = '/login.html';
-                }, 2000);
+                }, 5000);
                 return false;
             } else if (response.status === 400) {
                 customAlert(`Validation Error: ${errorData.error || 'Invalid data provided'}`, 'Validation Error', 'error');
@@ -79405,7 +79405,7 @@ async function submitLongTermGrowthForm(event) {
                 customAlert('Session expired. Please login again.', 'Authentication Error', 'error');
                 setTimeout(() => {
                     window.location.href = '/login.html';
-                }, 2000);
+                }, 5000);
                 return false;
             } else if (response.status === 400) {
                 customAlert(`Validation Error: ${errorData.error || 'Invalid data provided'}`, 'Validation Error', 'error');
