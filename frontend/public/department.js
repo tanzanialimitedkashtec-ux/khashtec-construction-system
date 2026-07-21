@@ -25347,7 +25347,7 @@ function runStartupDiagnostic() {
 
         .catch(error => {
 
-            console.error('âŒ Startup diagnostic failed:', error);
+            console.error('â Œ Startup diagnostic failed:', error);
 
             
 
@@ -25387,7 +25387,7 @@ function testServerConnection() {
 
     const baseUrl = window.location.origin;
 
-    console.log('ðŸ“ Testing server:', baseUrl);
+    console.log('ðŸ“  Testing server:', baseUrl);
 
     
 
@@ -25395,7 +25395,7 @@ function testServerConnection() {
 
     showRealProblemNotification('TESTING_CONNECTION', {
 
-        message: 'ðŸ”— Testing server connection...nnðŸ“¡ Testing endpoints:nâ€¢ API Health Checknâ€¢ Work API Testnâ€¢ Database Connectionnnâ³ Please wait...'
+        message: 'ðŸ”— Testing server connection...nnðŸ“¡ Testing endpoints:nâ€¢ API Health Checknâ€¢ Work API Testnâ€¢ Database Connectionnnâ ³ Please wait...'
 
     });
 
@@ -25493,7 +25493,7 @@ function testServerConnection() {
 
         .catch(error => {
 
-            console.error('âŒ Connection test failed:', error);
+            console.error('â Œ Connection test failed:', error);
 
             
 
@@ -25521,7 +25521,7 @@ function testServerConnection() {
 
 function showRealProblemNotification(problemType, details) {
 
-    console.log('ðŸ” showRealProblemNotification called with:', problemType, details);
+    console.log('ðŸ”  showRealProblemNotification called with:', problemType, details);
 
     
 
@@ -25537,7 +25537,7 @@ function showRealProblemNotification(problemType, details) {
 
         case 'TESTING_CONNECTION':
 
-            title = 'ðŸ”— Testing Connection';
+            title = 'Testing Connection';
 
             message = details.message;
 
@@ -25549,7 +25549,7 @@ function showRealProblemNotification(problemType, details) {
 
         case 'CONNECTION_SUCCESS':
 
-            title = 'ðŸŽ‰ Connection Successful!';
+            title = 'Connection Successful';
 
             message = details.message;
 
@@ -25561,9 +25561,9 @@ function showRealProblemNotification(problemType, details) {
 
         case 'NO_HANDLER':
 
-            title = 'âš ï¸ Button Not Configured';
+            title = 'Feature Not Available';
 
-            message = `âŒ This button has no action handler!nnðŸ” Real Problem:nâ€¢ Button: "${details.buttonText}"nâ€¢ No onclick function assignednâ€¢ This is a system configuration issuennðŸ› ï¸ Solutions:nâ€¢ Contact developer to add handlernâ€¢ Use a different buttonnâ€¢ Check if this feature is implementednnðŸ“ Button text: ${details.buttonText}`;
+            message = 'This feature is currently under development.';
 
             type = 'warning';
 
@@ -25573,23 +25573,13 @@ function showRealProblemNotification(problemType, details) {
 
         case 'FREEZE_SUCCESS':
 
-            title = 'ðŸ›¡ï¸ Page Freeze Working!';
-
-            message = `âœ… Page freeze is active and working!nnðŸ” Navigation Test Results:nâ€¢ Navigation methods are blocked: âœ…nâ€¢ Error: ${details.error}nâ€¢ Page is completely frozennnðŸ›¡ï¸ Your data is protected from page refresh!`;
-
-            type = 'success';
-
-            break;
-
-            
-
         case 'FREEZE_TEST':
 
-            title = 'ðŸ§ª Page Freeze Test Complete';
+            title = 'System Locked';
 
-            message = `${details.message}nnðŸ›¡ï¸ The page is now completely frozen.nNo navigation or refresh can occur while this is active.`;
+            message = 'The system is temporarily locked to prevent data loss.';
 
-            type = 'success';
+            type = 'info';
 
             break;
 
@@ -25597,35 +25587,9 @@ function showRealProblemNotification(problemType, details) {
 
         case 'SAVING':
 
-            title = 'ðŸ’¾ Saving to Database...';
+            title = 'Saving Data';
 
-            console.log('ðŸ” SAVING case - details:', details);
-
-            console.log('ðŸ” SAVING case - details.workItem:', details.workItem);
-
-            console.log('ðŸ” SAVING case - details.employeeData:', details.employeeData);
-
-            
-
-            if (details && details.workItem) {
-
-                // HSE incident saving
-
-                message = `ðŸ“ Sending incident report to database...nnâ€¢ Type: ${details.workItem.incident_type}nâ€¢ Severity: ${details.workItem.severity}nâ€¢ Description: ${details.workItem.work_description.substring(0, 50)}...nnâ³ Please wait...`;
-
-            } else if (details && details.employeeData) {
-
-                // Employee registration
-
-                message = `ðŸ“ Registering employee to database...nnâ€¢ Name: ${details.employeeData.fullName}nâ€¢ Department: ${details.employeeData.department}nâ€¢ Email: ${details.employeeData.gmail}nnâ³ Please wait...`;
-
-            } else {
-
-                // Generic saving
-
-                message = `ðŸ“ Saving data to database...nn${details ? details.message || 'Processing your request...' : 'Processing your request...'}nnâ³ Please wait...`;
-
-            }
+            message = 'Please wait while we save your information...';
 
             type = 'info';
 
@@ -25635,27 +25599,9 @@ function showRealProblemNotification(problemType, details) {
 
         case 'SUCCESS':
 
-            title = 'âœ… Data Saved Successfully!';
+            title = 'Success';
 
-            if (details.savedData && details.savedData.incident_type) {
-
-                // HSE incident success
-
-                message = `ðŸŽ‰ Incident report saved to database!nnðŸ“‹ Details:nâ€¢ Database ID: ${details.databaseId}nâ€¢ Type: ${details.savedData.incident_type}nâ€¢ Severity: ${details.savedData.severity}nâ€¢ Priority: ${details.savedData.priority}nâ€¢ Assigned to: ${details.savedData.assigned_to}nâ€¢ Submitted by: ${details.savedData.submitted_by}nâ€¢ Date: ${new Date().toLocaleString()}nnðŸ’¾ Stored in: hse_work tablenðŸš« NO PAGE REFRESH - DATA SAVED SUCCESSFULLY!`;
-
-            } else if (details.employeeData) {
-
-                // Employee registration success
-
-                message = `ðŸŽ‰ Employee registered successfully!nnðŸ“‹ Details:nâ€¢ Name: ${details.employeeData.fullName}nâ€¢ Department: ${details.employeeData.department}nâ€¢ Email: ${details.employeeData.gmail}nâ€¢ Database ID: ${details.databaseId}nâ€¢ Date: ${new Date().toLocaleString()}nnðŸ’¾ Stored in: employees tablenðŸš« NO PAGE REFRESH - DATA SAVED SUCCESSFULLY!`;
-
-            } else {
-
-                // Generic success
-
-                message = `ðŸŽ‰ Data saved successfully!nnðŸ“‹ Details:nâ€¢ Database ID: ${details.databaseId}nâ€¢ Date: ${new Date().toLocaleString()}nnðŸ’¾ Data saved to databasenðŸš« NO PAGE REFRESH - DATA SAVED SUCCESSFULLY!`;
-
-            }
+            message = 'Your data has been saved successfully.';
 
             type = 'success';
 
@@ -25665,9 +25611,9 @@ function showRealProblemNotification(problemType, details) {
 
         case 'VERIFIED':
 
-            title = 'ðŸ” Data Verified!';
+            title = 'Data Verified';
 
-            message = `âœ… Database save verified!nnðŸ“Š Verification Results:nâ€¢ Total items in database: ${details.totalItems}nâ€¢ Your item confirmed in database: âœ…nâ€¢ Item ID: ${details.savedItem.id}nâ€¢ Timestamp: ${details.savedItem.submitted_date}nnðŸŽ‰ Complete success - Data is permanently stored!`;
+            message = 'Your data has been saved and verified.';
 
             type = 'success';
 
@@ -25677,9 +25623,9 @@ function showRealProblemNotification(problemType, details) {
 
         case 'SAVE_SUCCESS_NO_VERIFY':
 
-            title = 'âš ï¸ Save Successful';
+            title = 'Save Complete';
 
-            message = `âœ… Data saved to database!nnâš ï¸ Could not verify due to: ${details.error}nnBut the save operation completed successfully.nYour data should be in the database.`;
+            message = 'Your data has been saved, but we could not verify it immediately.';
 
             type = 'warning';
 
@@ -25688,109 +25634,53 @@ function showRealProblemNotification(problemType, details) {
             
 
         case 'NETWORK_ERROR':
-
-            title = 'ðŸŒ Network Connection Problem';
-
-            message = `âŒ Network connectivity issue detected!nnðŸ” Real Problem:nâ€¢ Cannot reach the servernâ€¢ Internet connection may be unstablenâ€¢ Server may be downnnðŸ› ï¸ Solutions:nâ€¢ Check your internet connectionnâ€¢ Try again in a few momentsnâ€¢ Contact IT if problem persistsnnðŸ“¡ Error: ${details.error}`;
-
+            title = 'Connection Error';
+            message = 'Unable to reach the server. Please check your internet connection and try again.';
             type = 'error';
-
             break;
-
-            
 
         case 'API_ENDPOINT_NOT_FOUND':
-
-            title = 'ðŸ” API Route Not Found';
-
-            message = `âŒ Server API endpoint missing!nnðŸ” Real Problem:nâ€¢ The API route /api/hse/work doesn't existnâ€¢ Server may not be properly configurednâ€¢ Routes may not be loadednnðŸ› ï¸ Solutions:nâ€¢ Check server configurationnâ€¢ Verify routes are properly mountednâ€¢ Contact developer to fix API routesnnðŸŒ Missing endpoint: /api/hse/work`;
-
+            title = 'Service Unavailable';
+            message = 'The requested service is currently unavailable. Please try again later.';
             type = 'error';
-
             break;
-
-            
 
         case 'SERVER_ERROR':
-
-            title = 'ðŸ–¥ï¸ Server Internal Error';
-
-            message = `âŒ Server encountered an error!nnðŸ” Real Problem:nâ€¢ Database connection may be downnâ€¢ Server code has an errornâ€¢ Database table may not existnnðŸ› ï¸ Solutions:nâ€¢ Check server logs for detailsnâ€¢ Verify database is runningnâ€¢ Contact system administratornnðŸ’¥ Server error: ${details.error}`;
-
+            title = 'Server Error';
+            message = 'An unexpected error occurred on our end. Please try again later.';
             type = 'error';
-
             break;
-
-            
 
         case 'DATABASE_CONNECTION_ERROR':
-
-            title = 'ðŸ’¾ Database Connection Failed';
-
-            message = `âŒ Cannot connect to database!nnðŸ” Real Problem:nâ€¢ Database server is downnâ€¢ Connection credentials are wrongnâ€¢ Network cannot reach databasennðŸ› ï¸ Solutions:nâ€¢ Check database server statusnâ€¢ Verify connection settingsnâ€¢ Contact database administratornnðŸ”Œ Database error: ${details.error}`;
-
+            title = 'System Offline';
+            message = 'We are currently performing maintenance. Please try again later.';
             type = 'error';
-
             break;
-
-            
 
         case 'TIMEOUT_ERROR':
-
-            title = 'â° Request Timeout';
-
-            message = `âŒ Server took too long to respond!nnðŸ” Real Problem:nâ€¢ Server is overloadednâ€¢ Network is very slownâ€¢ Database query is too complexnnðŸ› ï¸ Solutions:nâ€¢ Try again with simpler datanâ€¢ Check if server is respondingnâ€¢ Contact support if continuesnnâ±ï¸ Timeout error: ${details.error}`;
-
+            title = 'Request Timeout';
+            message = 'The request took too long. Please try again.';
             type = 'error';
-
             break;
-
-            
 
         case 'CORS_ERROR':
-
-            title = 'ðŸš« CORS Policy Blocked';
-
-            message = `âŒ Browser blocked the request!nnðŸ” Real Problem:nâ€¢ Server CORS policy is restrictivenâ€¢ Frontend and backend domains don't matchnâ€¢ Server doesn't allow this originnnðŸ› ï¸ Solutions:nâ€¢ Configure server CORS settingsnâ€¢ Check allowed origins in servernâ€¢ Contact developer to fix CORSnnðŸš« CORS error: ${details.error}`;
-
+            title = 'Access Denied';
+            message = 'You do not have permission to perform this action.';
             type = 'error';
-
             break;
-
-            
 
         case 'VALIDATION_ERROR':
-
-            title = 'ðŸ“ Form Validation Error';
-
-            message = `âŒ Server rejected the data!nnðŸ” Real Problem:nâ€¢ Required fields are missingnâ€¢ Data format is incorrectnâ€¢ Server validation rules not metnnðŸ› ï¸ Solutions:nâ€¢ Fill all required fieldsnâ€¢ Check data formatnâ€¢ Ensure all data is validnnâŒ Validation error: ${details.error}`;
-
+            title = 'Invalid Input';
+            message = 'Please check your form and ensure all required fields are filled.';
             type = 'error';
-
             break;
-
-            
 
         case 'SYSTEM_ERROR':
-
-            title = 'ðŸ’» System Error';
-
-            message = `âŒ Unexpected system error occurred!nnðŸ” Real Problem:nâ€¢ JavaScript code has a bugnâ€¢ Browser compatibility issuenâ€¢ Memory or resource problemnnðŸ› ï¸ Solutions:nâ€¢ Refresh the page and try againnâ€¢ Try a different browsernâ€¢ Contact technical supportnnðŸ’» System error: ${details.error}`;
-
-            type = 'error';
-
-            break;
-
-            
-
         default:
-
-            title = 'âŒ Unknown Error';
-
-            message = `âŒ An unknown error occurred!nnðŸ” Real Problem:nâ€¢ Error type could not be identifiednâ€¢ May be a combination of issuesnnðŸ› ï¸ Solutions:nâ€¢ Try againnâ€¢ Check all steps abovenâ€¢ Contact support with detailsnnâ“ Unknown error: ${details.error}`;
-
+            title = 'Error';
+            message = 'An unexpected error occurred. Please try again.';
             type = 'error';
-
+            break;
     }
 
     
