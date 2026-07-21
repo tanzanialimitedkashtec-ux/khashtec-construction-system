@@ -68908,28 +68908,25 @@ function editBudget(recordId) {
 
 
 
-function deleteBudget(recordId) {
-
-    if (confirm('Are you sure you want to delete this budget? This action cannot be undone.')) {
-
-        // TODO: Implement actual API call to delete budget record
-
-        console.log('Deleting budget record with ID:', recordId);
-
+async function deleteBudget(recordId) {
+    if (!confirm('Are you sure you want to delete this budget? This action cannot be undone.')) return;
+    try {
+        const baseUrl = window.location.origin;
+        const token = (typeof sessionManager !== 'undefined' && sessionManager.getAuthToken) ? sessionManager.getAuthToken() : '';
+        const response = await fetch(`${baseUrl}/api/workforce-budget/${recordId}`, {
+            method: 'DELETE',
+            headers: { 'Content-Type': 'application/json', ...(token && { 'Authorization': `Bearer ${token}` }) }
+        });
+        if (!response.ok) {
+            const errData = await response.json().catch(() => ({}));
+            throw new Error(errData.error || `HTTP ${response.status}`);
+        }
         customAlert(`Budget record ${recordId} has been deleted.\n\nThe budget has been removed from the system.`, "Record Deleted", "success");
-
-        
-
-        // Refresh the budget records
-
-        setTimeout(() => {
-
-            loadBudgetRecords();
-
-        }, 1000);
-
+        setTimeout(() => { loadBudgetRecords(); }, 500);
+    } catch (error) {
+        console.error('Error deleting budget:', error);
+        customAlert(`Failed to delete budget: ${error.message}`, "Error", "error");
     }
-
 }
 
 

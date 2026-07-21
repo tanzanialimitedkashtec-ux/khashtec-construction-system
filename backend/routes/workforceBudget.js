@@ -306,7 +306,7 @@ router.delete('/:id', async (req, res) => {
         const { id } = req.params;
         console.log('🗑️ Deleting workforce budget:', id);
 
-        const [result] = await db.execute('DELETE FROM workforce_budgets WHERE id = ?', [id]);
+        const result = await db.execute('DELETE FROM workforce_budgets WHERE id = ?', [id]);
 
         if (result.affectedRows === 0) {
             return res.status(404).json({ error: 'Budget record not found' });
@@ -314,7 +314,7 @@ router.delete('/:id', async (req, res) => {
 
         console.log('✅ Workforce budget deleted successfully');
         notify('Workforce Budget', 'Workforce budget #' + id + ' has been deleted', 'warning', 'MD', 'Project Manager');
-        res.json({ message: 'Budget record deleted successfully', id: parseInt(id) });
+        res.json({ message: 'Budget record deleted successfully', id });
     } catch (error) {
         console.error('❌ Error deleting workforce budget:', error);
         res.status(500).json({ error: 'Failed to delete budget record' });
