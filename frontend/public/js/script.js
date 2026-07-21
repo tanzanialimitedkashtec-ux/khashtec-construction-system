@@ -2959,7 +2959,22 @@ function showForgotPassword() {
 }
 
 // Custom Notification System
-function showNotification(message, type = 'info', duration = 60000) {
+function showNotification(arg1, arg2 = 'info', arg3 = 60000) {
+    let message, type, duration;
+
+    // Detect if called with (title, message, type) signature from department.js/customAlert
+    if (typeof arg3 === 'string') {
+        // arg1 is title, arg2 is message, arg3 is type
+        message = `<strong>${arg1}</strong><br>${arg2}`;
+        type = arg3;
+        duration = 60000;
+    } else {
+        // Standard (message, type, duration) signature
+        message = arg1;
+        type = arg2;
+        duration = arg3;
+    }
+
     // Remove any existing notifications
     const existingNotification = document.querySelector('.custom-notification');
     if (existingNotification) {
