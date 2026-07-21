@@ -25154,9 +25154,6 @@ function saveEmployeeManual() {
             } else if (error.message.includes('409') || error.message.includes('already exists') || error.message.includes('duplicate')) {
                 if (typeof showNotification === 'function') { showNotification('This email or NIDA already exists. Please use a different one.', 'warning'); } else { alert('This email or NIDA already exists.'); }
                 return;
-            }
-
-
             } else if (error.message.includes('404')) {
 
                 errorCause = 'Employee API endpoint not found';
