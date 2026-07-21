@@ -1545,6 +1545,16 @@ function showDepartmentAnalytics() {
                     <p class="sub">Active workers distributed across departments.</p>
                     <div class="dept-analytics-canvas-wrap"><canvas id="chartWorkers"></canvas></div>
                 </div>
+                <div class="dept-analytics-card">
+                    <h3>Materials Inventory</h3>
+                    <p class="sub">Material In, Material Out and Current Stock Level per material.</p>
+                    <div class="dept-analytics-canvas-wrap"><canvas id="chartMaterials"></canvas></div>
+                </div>
+                <div class="dept-analytics-card">
+                    <h3>Workforce Budgets Overview</h3>
+                    <p class="sub">Total pending vs approved budgets, and breakdown of allocation uses.</p>
+                    <div class="dept-analytics-canvas-wrap"><canvas id="chartWorkforceBudgets"></canvas></div>
+                </div>
             </div>
         </div>
     `);
@@ -1650,7 +1660,7 @@ async function loadDepartmentAnalytics(manual) {
     if (updatedEl) updatedEl.textContent = 'Updating...';
 
     const settle = (r) => (r.status === 'fulfilled' ? r.value : null);
-    const [safetyR, taxR, expenseR, transportR, projectsR, employeesR, materialsInventoryR, materialsInR, materialsOutR] = await Promise.allSettled([
+    const [safetyR, taxR, expenseR, transportR, projectsR, employeesR, materialsInventoryR, materialsInR, materialsOutR, workforceBudgetR] = await Promise.allSettled([
         deptAnalyticsFetch('/api/safety'),
         deptAnalyticsFetch('/api/tax/summary'),
         deptAnalyticsFetch('/api/finance/expense-overview'),
@@ -1659,7 +1669,8 @@ async function loadDepartmentAnalytics(manual) {
         deptAnalyticsFetch('/api/employees'),
         deptAnalyticsFetch('/api/materials/inventory'),
         deptAnalyticsFetch('/api/materials/in'),
-        deptAnalyticsFetch('/api/materials/out')
+        deptAnalyticsFetch('/api/materials/out'),
+        deptAnalyticsFetch('/api/workforce-budget')
     ]);
 
     const safety = settle(safetyR);
@@ -1671,6 +1682,7 @@ async function loadDepartmentAnalytics(manual) {
     const materialsInventory = settle(materialsInventoryR);
     const materialsIn = settle(materialsInR);
     const materialsOut = settle(materialsOutR);
+    const workforceBudget = settle(workforceBudgetR);
 
     // ---- Safety: incidents & violations by project ----
     const safetyRecords = (safety && Array.isArray(safety.data)) ? safety.data : [];
@@ -1821,6 +1833,50 @@ async function loadDepartmentAnalytics(manual) {
         ]
     });
 
+    // ---- Workforce Budgets Overview ----
+    const budgets = Array.isArray(workforceBudget) ? workforceBudget : [];
+    let approvedTotal = 0;
+    let pendingTotal = 0;
+    let salaries = 0;
+    let benefits = 0;
+    let recruitment = 0;
+    let training = 0;
+    let travel = 0;
+    let misc = 0;
+
+    budgets.forEach(b => {
+        const total = Number(b.total_proposed) || Number(b.total_budget) || 0;
+        const status = (b.status || '').toLowerCase();
+        if (status === 'approved') {
+            approvedTotal += total;
+        } else if (status === 'pending' || status === 'under review') {
+            pendingTotal += total;
+        }
+        salaries += Number(b.salaries_wages) || 0;
+        benefits += Number(b.employee_benefits) || 0;
+        recruitment += Number(b.recruitment_costs) || 0;
+        training += Number(b.training_development) || 0;
+        travel += Number(b.travel_transport) || 0;
+        misc += Number(b.miscellaneous) || 0;
+    });
+
+    if (budgets.length === 0) {
+        renderDeptAnalyticsBarChart('chartWorkforceBudgets', {
+            labels: [],
+            datasets: []
+        });
+    } else {
+        renderDeptAnalyticsBarChart('chartWorkforceBudgets', {
+            labels: ['Approved Total', 'Pending Total', 'Salaries', 'Benefits', 'Recruitment', 'Training', 'Travel/Transport', 'Misc'],
+            currency: true,
+            datasets: [{
+                label: 'Amount',
+                data: [approvedTotal, pendingTotal, salaries, benefits, recruitment, training, travel, misc],
+                backgroundColor: ['#16a34a', '#f59e0b', '#2563eb', '#7c3aed', '#db2777', '#0f766e', '#ca8a04', '#4b5563']
+            }]
+        });
+    }
+
     // ---- KPI summary ----
     const metrics = (safety && safety.metrics) ? safety.metrics : {};
     const kpis = [
@@ -1831,7 +1887,8 @@ async function loadDepartmentAnalytics(manual) {
         { cls: 'safety', label: 'Avg Safety Score', value: (Number(metrics.avg_safety_score) || 0) + '%' },
         { cls: 'finance', label: 'Total Expenses', value: deptAnalyticsFmtTZS(exp.totalExpenses) },
         { cls: 'finance', label: 'Tax Paid', value: deptAnalyticsFmtTZS(taxData.paid_amount) },
-        { cls: 'finance', label: 'Transport Costs', value: deptAnalyticsFmtTZS(tr.total_costs) }
+        { cls: 'finance', label: 'Transport Costs', value: deptAnalyticsFmtTZS(tr.total_costs) },
+        { cls: 'finance', label: 'Workforce Budgets', value: deptAnalyticsFmtTZS(approvedTotal) }
     ];
     const kpiEl = document.getElementById('deptAnalyticsKpis');
     if (kpiEl) {
@@ -1843,7 +1900,7 @@ async function loadDepartmentAnalytics(manual) {
         `).join('');
     }
 
-    const failed = [safetyR, taxR, expenseR, transportR, projectsR, employeesR, materialsInventoryR, materialsInR, materialsOutR].filter(r => r.status === 'rejected').length;
+    const failed = [safetyR, taxR, expenseR, transportR, projectsR, employeesR, materialsInventoryR, materialsInR, materialsOutR, workforceBudgetR].filter(r => r.status === 'rejected').length;
     if (updatedEl) {
         const time = new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
         updatedEl.textContent = `Last updated ${time}${failed ? ` (${failed} source(s) unavailable)` : ''}`;
