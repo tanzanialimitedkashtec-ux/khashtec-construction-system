@@ -3038,7 +3038,7 @@ function showNotification(arg1, arg2 = 'info', arg3 = 2000) {
                 gap: 10px;
             }
             .notification-icon {
-                font-size: 18px;
+                font-size: 12px;
                 flex-shrink: 0;
             }
             .notification-message {
