@@ -1,4 +1,4 @@
-﻿-- Essential Tables Migration - Fix for broken 001_create_tables.sql
+-- Essential Tables Migration - Fix for broken 001_create_tables.sql
 -- This creates the minimum required tables for the system to function
 
 -- Users table
@@ -215,8 +215,6 @@ INSERT IGNORE INTO users (name, email, password, role, status) VALUES
 ('HR Manager', 'hr@manager0501', '$2a$12$AFEzay0Y3Bk8j1VTLuHVjOIf/zVCfj0S9jlJkKQuBX7wFViBPe8Mm', 'hr', 'active'),
 ('Admin', 'admin@kashtec.com', '$2a$12$AFEzay0Y3Bk8j1VTLuHVjOIf/zVCfj0S9jlJkKQuBX7wFViBPe8Mm', 'admin', 'active');
 
-INSERT IGNORE INTO senior_hiring_requests (id, candidate_name, proposed_salary, department, experience, position_level, requested_by, requested_by_role) VALUES
-('proj-manager-001', 'John Smith', 'TZS 5,000,000', 'Projects', '10+ years in construction management', 'Manager', 'HR Manager', 'HR Manager'),
-('senior-engineer-001', 'Jane Doe', 'TZS 4,500,000', 'Operations', '15+ years in civil engineering', 'Senior', 'HR Manager', 'HR Manager');
+
 
 ('q3-2026-workforce', 'Q3 2026 Workforce Budget', 55000000.00, 33000000.00, 5500000.00, 11000000.00, 5500000.00, 'Finance Manager', 'Finance Manager', 28, 'Q3 workforce expansion and training programs');

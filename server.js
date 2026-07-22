@@ -6202,27 +6202,7 @@ async function createSeniorHiringTables() {
 
         
 
-        // Seed default sample data only if the table is empty (SAFE: preserves existing data)
-        try {
-            const existingRows = await db.execute('SELECT COUNT(*) as cnt FROM senior_hiring_approval');
-            const count = existingRows[0] ? existingRows[0].cnt : 0;
-            if (count === 0) {
-                await db.execute(`
-                    INSERT IGNORE INTO senior_hiring_approval 
-                    (id, candidate_name, position, department, proposed_salary, experience, hr_recommendation, status, request_date) 
-                    VALUES 
-                    (1, 'John Smith', 'Project Manager', 'Projects', '150000', '10 years in construction management', 'Highly recommended for leadership role', 'pending', '2026-04-15'),
-                    (2, 'Sarah Johnson', 'Senior Engineer', 'Operations', '120000', '8 years in structural engineering', 'Excellent technical skills and project experience', 'pending', '2026-04-16'),
-                    (3, 'Michael Chen', 'Finance Director', 'Finance', '180000', '12 years in financial management', 'Strong leadership background in construction finance', 'pending', '2026-04-17')
-                `);
-                console.log('Sample senior hiring requests seeded (table was empty)');
-            } else {
-                console.log(`✅ Senior hiring approval table already has ${count} records — preserved`);
-            }
-        } catch (error) {
-            console.log('Error seeding sample senior hiring data:', error.message);
-        }
-
+        // Sample data seeding has been removed
         
 
         console.log('All senior hiring tables created successfully');

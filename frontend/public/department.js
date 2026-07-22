@@ -64480,13 +64480,7 @@ async function reviewDeptStructure(department) {
 
                     </div>
 
-                    <div class="stat-item">
 
-                        <span>Budget Status:</span>
-
-                        <span class="stat-value">Approved</span>
-
-                    </div>
 
                     <div class="stat-item">
 
