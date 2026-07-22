@@ -98083,15 +98083,43 @@ function sendReminder_dup2(saleId) {
 
 
 .dept-stats {
-
     display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+    gap: 10px;
+    margin-bottom: 15px;
+}
 
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+.dept-stats .stat-item {
+    background: linear-gradient(135deg, #0b3d91 0%, #1a5ec7 100%);
+    color: white;
+    padding: 6px 10px;
+    border-radius: 2px;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
 
-    gap: 15px;
+.dept-stats .stat-item:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
+}
 
-    margin-bottom: 20px;
+.dept-stats .stat-item span:first-child {
+    font-size: 8px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    opacity: 0.85;
+    margin-bottom: 2px;
+}
 
+.dept-stats .stat-item .stat-value {
+    font-size: 13px;
+    font-weight: 700;
+    color: #ffffff;
 }
 
 
