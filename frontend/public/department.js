@@ -67734,29 +67734,43 @@ function editPersonnel(personId, name) {
 
 function exportPortalData() {
 
-    const dataStr = JSON.stringify(window.currentPortalData, null, 2);
+    if (!window.currentPortalData) {
+        alert("No data available to export");
+        return;
+    }
 
-    const blob = new Blob([dataStr], {type: 'application/json'});
+    let csvContent = "Kashtec Office Portal Data Export\n\n";
 
+    for (const [sectionName, dataArray] of Object.entries(window.currentPortalData)) {
+        if (!Array.isArray(dataArray) || dataArray.length === 0) continue;
+
+        csvContent += `--- ${sectionName.toUpperCase()} ---\n`;
+        const keys = Object.keys(dataArray[0]);
+        csvContent += keys.join(",") + "\n";
+
+        dataArray.forEach(item => {
+            const row = keys.map(k => {
+                let val = item[k];
+                if (val === null || val === undefined) val = "";
+                if (typeof val === 'object') val = JSON.stringify(val);
+                val = String(val).replace(/"/g, '""');
+                return `"${val}"`; 
+            });
+            csvContent += row.join(",") + "\n";
+        });
+        csvContent += "\n\n";
+    }
+
+    const blob = new Blob([csvContent], {type: 'text/csv;charset=utf-8;'});
     const url = URL.createObjectURL(blob);
-
     const a = document.createElement('a');
-
     a.href = url;
-
-    a.download = 'kashtec-office-portal-' + new Date().toISOString().split('T')[0] + '.json';
-
+    a.download = 'kashtec-office-portal-' + new Date().toISOString().split('T')[0] + '.csv';
     document.body.appendChild(a);
-
     a.click();
-
     document.body.removeChild(a);
-
     URL.revokeObjectURL(url);
-
-    
-
-    showNotification('Data Exported', 'Office portal data exported successfully', 'success');
+    showNotification('Data Exported', 'Office portal data exported to CSV successfully', 'success');
 
 }
 
