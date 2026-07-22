@@ -23825,6 +23825,103 @@ if (typeof window.toggleSidebar !== 'function') {
         <button type="button" class="menu-toggle" onclick="toggleSidebar()">☰</button>
 
         <div class="top-controls-right">
+            <style>
+                .server-status-widget {
+                    position: relative;
+                    display: inline-flex;
+                    align-items: center;
+                    justify-content: center;
+                    margin-right: 15px;
+                    cursor: pointer;
+                }
+                .server-status-widget .status-icon {
+                    width: 16px;
+                    height: 16px;
+                    border-radius: 50%;
+                    background-color: #28a745; /* Green by default */
+                    position: relative;
+                    box-shadow: 0 0 5px rgba(40, 167, 69, 0.5);
+                }
+                .server-status-widget .status-icon.warning {
+                    background-color: #dc3545; /* Red warning */
+                    animation: pulse-rays 1.2s infinite;
+                }
+                @keyframes pulse-rays {
+                    0% { box-shadow: 0 0 0 0 rgba(220, 53, 69, 0.8); }
+                    70% { box-shadow: 0 0 0 12px rgba(220, 53, 69, 0); }
+                    100% { box-shadow: 0 0 0 0 rgba(220, 53, 69, 0); }
+                }
+                .server-status-widget .status-tooltip {
+                    visibility: hidden;
+                    background-color: #333;
+                    color: #fff;
+                    text-align: center;
+                    border-radius: 6px;
+                    padding: 8px 12px;
+                    position: absolute;
+                    z-index: 1000;
+                    top: 150%;
+                    right: 0;
+                    width: 250px;
+                    opacity: 0;
+                    transition: opacity 0.3s;
+                    font-size: 13px;
+                    line-height: 1.4;
+                    pointer-events: none;
+                    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+                }
+                .server-status-widget .status-tooltip::after {
+                    content: "";
+                    position: absolute;
+                    bottom: 100%;
+                    right: 10px;
+                    margin-left: -5px;
+                    border-width: 5px;
+                    border-style: solid;
+                    border-color: transparent transparent #333 transparent;
+                }
+                .server-status-widget:hover .status-tooltip {
+                    visibility: visible;
+                    opacity: 1;
+                }
+            </style>
+            
+            <div class="server-status-widget" id="serverStatusWidget">
+                <div class="status-icon" id="serverStatusIcon"></div>
+                <div class="status-tooltip" id="serverStatusTooltip">System Normal: All services operational</div>
+            </div>
+
+            <script>
+                document.addEventListener('DOMContentLoaded', () => {
+                    setTimeout(() => {
+                        const today = new Date().getDate();
+                        const icon = document.getElementById('serverStatusIcon');
+                        const tooltip = document.getElementById('serverStatusTooltip');
+                        
+                        if (today >= 10 && today <= 14) {
+                            // Apply warning
+                            icon.classList.add('warning');
+                            icon.style.backgroundColor = '#dc3545';
+                            tooltip.innerText = "Warning: Pay for server operational cost otherwise system down if not payable to that time.";
+                            
+                            // Check if we already alerted today
+                            const lastAlertDate = localStorage.getItem('serverStatusAlertDate');
+                            const currentDateStr = new Date().toDateString();
+                            
+                            if (lastAlertDate !== currentDateStr) {
+                                // Use the existing showNotification if available, otherwise fallback to alert
+                                if (typeof showNotification === 'function') {
+                                    showNotification('⚠️ Server Warning', 'Pay for server operational cost otherwise system down if not payable to that time.', 'error');
+                                } else {
+                                    alert('⚠️ Server Warning\n\nPay for server operational cost otherwise system down if not payable to that time.');
+                                }
+                                localStorage.setItem('serverStatusAlertDate', currentDateStr);
+                            }
+                        }
+                    }, 1000); // Slight delay to ensure UI is loaded
+                });
+            </script>
+
             <button type="button" class="notification-btn" onclick="toggleNotificationPanel()">🔔<span id="notifBadge" class="notification-badge" style="display:none;">0</span></button>
             <div id="notificationPanel" class="notification-panel">
                 <div class="notification-panel-header">
