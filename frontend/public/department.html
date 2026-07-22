@@ -20648,269 +20648,147 @@ font-size: 12px;
 /* Staff Oversight Table Styles */
 
 .oversight-table {
-
     width: 100%;
-
-    border-collapse: collapse;
-
-    margin-top: 10px;
-
-    background: white;
-
-    border: 2px solid #0b3d91;
-
-    font-size: 11px;
-
+    border-collapse: separate;
+    border-spacing: 0;
+    margin-top: 8px;
+    background: linear-gradient(135deg, #f8faff 0%, #eef2f9 100%);
+    border: 1px solid #c5d1e0;
+    border-radius: 2px;
+    font-size: 10px;
+    overflow: hidden;
 }
-
-
 
 .oversight-table th {
-
-    background: #0b3d91;
-
+    background: linear-gradient(135deg, #0b3d91 0%, #1a5ec7 100%);
     color: white;
-
-    padding: 6px 8px;
-
+    padding: 4px 6px;
     text-align: left;
-
     font-weight: 600;
-
-    font-size: 11px;
-
-    border: 2px solid #0b3d91;
-
+    font-size: 10px;
+    border: 1px solid #0a3680;
+    letter-spacing: 0.2px;
 }
-
-
 
 .oversight-table td {
-
-    padding: 5px 8px;
-
-    border: 2px solid #dee2e6;
-
-    font-size: 11px;
-
+    padding: 3px 6px;
+    border: 1px solid #dde3ed;
+    font-size: 10px;
     vertical-align: middle;
-
 }
-
-
 
 .oversight-table tr:last-child td {
-
-    border-bottom: 2px solid #dee2e6;
-
+    border-bottom: 1px solid #dde3ed;
 }
 
+.oversight-table tbody tr:nth-child(even) {
+    background: linear-gradient(135deg, #f0f4fb 0%, #e8edf6 100%);
+}
 
+.oversight-table tbody tr:nth-child(odd) {
+    background: linear-gradient(135deg, #ffffff 0%, #f6f8fc 100%);
+}
 
 .oversight-table tr:hover {
-
-    background-color: #f8f9fa;
-
+    background: linear-gradient(135deg, #e3ecfa 0%, #d6e2f5 100%);
 }
-
-
 
 .status-badge {
-
     display: inline-block;
-
-    padding: 2px 6px;
-
-    border-radius: 8px;
-
-    font-size: 9px;
-
+    padding: 1px 5px;
+    border-radius: 2px;
+    font-size: 8px;
     font-weight: 600;
-
     text-transform: uppercase;
-
     letter-spacing: 0.3px;
-
 }
-
-
 
 .status-badge.active {
-
-    background: #d4edda;
-
+    background: linear-gradient(135deg, #d4edda 0%, #b7dfbf 100%);
     color: #155724;
-
     border: 1px solid #c3e6cb;
-
 }
-
-
 
 .status-badge.warning {
-
-    background: #fff3cd;
-
+    background: linear-gradient(135deg, #fff3cd 0%, #ffe9a0 100%);
     color: #856404;
-
     border: 1px solid #ffeaa7;
-
 }
-
-
 
 .status-badge.approved {
-
-    background: #d1ecf1;
-
+    background: linear-gradient(135deg, #d1ecf1 0%, #b0dde6 100%);
     color: #0c5460;
-
     border: 1px solid #bee5eb;
-
 }
-
-
 
 .status-badge.normal {
-
-    background: #d4edda;
-
+    background: linear-gradient(135deg, #d4edda 0%, #b7dfbf 100%);
     color: #155724;
-
     border: 1px solid #c3e6cb;
-
 }
-
-
-
-.status-badge.warning {
-
-    background: #fff3cd;
-
-    color: #856404;
-
-    border: 1px solid #ffeaa7;
-
-}
-
-
 
 .status-badge.urgent {
-
-    background: #f8d7da;
-
+    background: linear-gradient(135deg, #f8d7da 0%, #f1b5ba 100%);
     color: #721c24;
-
     border: 1px solid #f5c6cb;
-
 }
-
-
 
 /* Compliance Management Styles */
 
 .compliance-dashboard {
-
     margin-top: 20px;
-
 }
-
-
 
 .compliance-alerts, .compliance-summary, .compliance-actions {
-
     margin-bottom: 25px;
-
 }
-
-
 
 .compliance-alerts h4, .compliance-summary h4, .compliance-actions h4 {
-
     color: #0b3d91;
-
     font-size: 16px;
-
     margin-bottom: 15px;
-
     font-weight: 600;
-
 }
-
-
 
 .no-alerts {
-
     text-align: center;
-
     padding: 30px;
-
     background: #f8f9fa;
-
-    border-radius: 8px;
-
+    border-radius: 2px;
     border: 1px solid #e9ecef;
-
     color: #6c757d;
-
 }
-
-
 
 .no-alerts p {
-
     margin: 0;
-
     font-size: 14px;
-
 }
 
-
-
 .oversight-table .action-btn {
-
-    padding: 2px 6px;
-
-    font-size: 10px;
-
+    padding: 1px 5px;
+    font-size: 9px;
     border: 1px solid #0b3d91;
-
-    background: #0b3d91;
-
+    background: linear-gradient(135deg, #0b3d91 0%, #1556b0 100%);
     color: white;
-
-    border-radius: 3px;
-
+    border-radius: 2px;
     cursor: pointer;
-
+    transition: all 0.2s ease;
 }
 
 .oversight-table .action-btn:hover {
-
-    background: #1e5bb8;
-
+    background: linear-gradient(135deg, #1556b0 0%, #1e6fd9 100%);
 }
 
 .oversight-table tr.urgent {
-
-    background-color: #fff5f5;
-
+    background: linear-gradient(135deg, #fff5f5 0%, #ffe8e8 100%);
 }
-
-
 
 .oversight-table tr.warning {
-
-    background-color: #fffbf0;
-
+    background: linear-gradient(135deg, #fffbf0 0%, #fff3d6 100%);
 }
 
-
-
 .oversight-table tr.normal {
-
-    background-color: #f0fff4;
-
+    background: linear-gradient(135deg, #f0fff4 0%, #dbf5e3 100%);
 }
 
 
