@@ -90483,6 +90483,20 @@ async function staffOversight(){
 
         // Build department rows from real data
 
+        // Standardize department names/codes for matching
+        const getStandardizedDept = (dept) => {
+            if (!dept) return '';
+            const d = dept.toLowerCase().replace(/[^a-z0-9]/g, '');
+            if (d === 'pm' || d === 'projectmanagement' || d === 'projects') return 'pm';
+            if (d === 'hr' || d === 'humanresources') return 'hr';
+            if (d === 'finance') return 'finance';
+            if (d === 'ops' || d === 'operations') return 'ops';
+            if (d === 'realestate') return 'realestate';
+            if (d === 'hse' || d === 'healthsafety' || d === 'healthandsafety') return 'hse';
+            if (d === 'admin' || d === 'administration') return 'admin';
+            return d;
+        };
+
         if (departments.length > 0) {
 
             departmentRows = departments.map((dept, index) => {
@@ -90494,11 +90508,10 @@ async function staffOversight(){
                 const deptStatus = dept.status || 'Active';
 
                 const staffCount = employees.filter(emp => {
-
-                    const empDept = (emp.department || emp.department_name || '').toLowerCase();
-
-                    return empDept === deptName.toLowerCase() || empDept === deptCode.toLowerCase();
-
+                    const empDept = getStandardizedDept(emp.department || emp.department_name);
+                    const dName = getStandardizedDept(deptName);
+                    const dCode = getStandardizedDept(deptCode);
+                    return empDept === dName || empDept === dCode;
                 }).length;
 
                 const statusClass = deptStatus.toLowerCase() === 'active' ? 'approved' : 'warning';

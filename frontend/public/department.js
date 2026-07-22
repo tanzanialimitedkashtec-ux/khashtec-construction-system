@@ -63477,27 +63477,33 @@ async function staffOversight(){
         // Build department rows from real data
 
         if (departments.length > 0) {
+            const getStandardizedDept = (dept) => {
+                if (!dept) return '';
+                const d = dept.toLowerCase().replace(/[^a-z0-9]/g, '');
+                if (d === 'pm' || d === 'projectmanagement' || d === 'projects') return 'pm';
+                if (d === 'hr' || d === 'humanresources') return 'hr';
+                if (d === 'finance') return 'finance';
+                if (d === 'ops' || d === 'operations') return 'ops';
+                if (d === 'realestate' || d === 'realestate') return 'realestate';
+                if (d === 'hse' || d === 'healthsafety' || d === 'healthandsafety') return 'hse';
+                if (d === 'admin' || d === 'administration') return 'admin';
+                return d;
+            };
 
             departmentRows = departments.map((dept, index) => {
-
                 const deptName = dept.name || dept.department_name || 'Unknown';
-
                 const deptCode = dept.code || '';
-
                 const deptStatus = dept.status || 'Active';
 
                 const staffCount = employees.filter(emp => {
-
-                    const empDept = (emp.department || emp.department_name || '').toLowerCase();
-
-                    return empDept === deptName.toLowerCase() || empDept === deptCode.toLowerCase();
-
+                    const empDept = getStandardizedDept(emp.department || emp.department_name);
+                    const dName = getStandardizedDept(deptName);
+                    const dCode = getStandardizedDept(deptCode);
+                    return empDept === dName || empDept === dCode;
                 }).length;
 
                 const statusClass = deptStatus.toLowerCase() === 'active' ? 'approved' : 'warning';
-
                 const rowspanAttr = index === 0 ? ` rowspan="${departments.length}"` : '';
-
                 const categoryCell = index === 0 ? `<td${rowspanAttr}><strong>Departments</strong></td>` : '';
 
                 return `<tr>
@@ -63507,8 +63513,7 @@ async function staffOversight(){
                             <td><span class="status-badge ${statusClass}">${deptStatus}</span></td>
                             <td><button class="action-btn" onclick="reviewDeptStructure('${deptCode.toLowerCase() || deptName.toLowerCase()}')">Review</button></td>
                         </tr>`;
-
-            }).join('n');
+            }).join('\n');
 
         } else {
 
