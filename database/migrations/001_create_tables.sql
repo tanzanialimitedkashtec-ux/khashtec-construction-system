@@ -994,50 +994,6 @@ CREATE TABLE IF NOT EXISTS worker_assignments (
 
 
 
--- Insert sample mission & vision data
-INSERT IGNORE INTO mission_vision (
-    mission_statement, 
-    mission_category, 
-    mission_last_reviewed, 
-    vision_statement, 
-    vision_timeframe, 
-    vision_last_reviewed, 
-    core_values, 
-    additional_values, 
-    short_term_objectives, 
-    long_term_objectives, 
-    stakeholder_focus, 
-    communication_strategy, 
-    integration_strategy, 
-    review_frequency, 
-    next_review_date, 
-    success_metrics, 
-    notes, 
-    submitted_by, 
-    submitted_date, 
-    status
-) VALUES (
-    'To deliver exceptional construction services that exceed client expectations through innovation, quality craftsmanship, and sustainable practices.', 
-    'quality', 
-    '2024-03-15', 
-    'To become East Africa\'s leading construction company known for sustainable development, innovative solutions, and community impact.', 
-    '10-years', 
-    '2024-03-15', 
-    '["integrity", "excellence", "innovation", "teamwork", "customer-focus"]', 
-    'Continuous learning and environmental stewardship', 
-    'Expand operations to 3 new regions, achieve 20% revenue growth', 
-    'Establish presence in 5 African countries, become carbon neutral', 
-    '["customers", "employees", "community", "environment"]', 
-    'Quarterly town halls, monthly newsletters, intranet portal', 
-    'Performance reviews aligned with values, training programs', 
-    'annual', 
-    '2025-03-15', 
-    'Client satisfaction scores, employee engagement, revenue growth, environmental impact', 
-    'Mission and vision reviewed and approved by board of directors', 
-    'Managing Director', 
-    '2024-01-01', 
-    'active'
-);
 
 
 -- Insert sample long-term growth strategy data
