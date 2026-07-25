@@ -1039,52 +1039,6 @@ INSERT IGNORE INTO mission_vision (
     'active'
 );
 
--- Insert sample leadership management data
-INSERT IGNORE INTO leadership_management (
-    position, 
-    department, 
-    current_holder, 
-    reports_to, 
-    leadership_level, 
-    appointment_date, 
-    responsibilities, 
-    strategic_thinking, 
-    decision_making, 
-    communication_skills, 
-    team_leadership, 
-    succession_status, 
-    potential_successors, 
-    development_timeline, 
-    kpis, 
-    review_frequency, 
-    last_review_date, 
-    notes, 
-    submitted_by, 
-    submitted_date, 
-    status
-) VALUES (
-    'Chief Executive Officer', 
-    'Executive Office', 
-    'John Smith', 
-    'Board of Directors', 
-    'c-suite', 
-    '2024-01-01', 
-    '["strategic-planning", "team-management", "financial-oversight"]', 
-    'expert', 
-    'expert', 
-    'expert', 
-    'expert', 
-    'identified', 
-    'Jane Doe, Mike Johnson', 
-    '12-month development plan', 
-    'Revenue growth, Market expansion, Team satisfaction', 
-    'quarterly', 
-    '2024-03-15', 
-    'Strategic leader with 10+ years experience', 
-    'Managing Director', 
-    '2024-01-01', 
-    'active'
-);
 
 -- Insert sample long-term growth strategy data
 INSERT IGNORE INTO long_term_growth (
