@@ -25329,6 +25329,9 @@ function showDepartmentAnalytics() {
             .dept-analytics-card h3 { margin: 0 0 4px; color: #172033; font-size: 16px; }
             .dept-analytics-card .sub { color: #667085; font-size: 12px; margin: 0 0 12px; }
             .dept-analytics-canvas-wrap { position: relative; height: 260px; width: 100%; }
+            .dept-analytics-canvas-wrap::-webkit-scrollbar { width: 8px; height: 8px; }
+            .dept-analytics-canvas-wrap::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 8px; }
+            .dept-analytics-chart-scroll { position: relative; width: 100%; }
             .dept-analytics-empty { display: flex; align-items: center; justify-content: center; height: 260px; color: #98a2b3; font-size: 14px; text-align: center; }
             @media (max-width: 640px) { .dept-analytics-grid { grid-template-columns: 1fr; } }
         </style>
@@ -25436,57 +25439,120 @@ function setupDeptAnalyticsAutoRefresh() {
 }
 
 function renderDeptAnalyticsBarChart(canvasId, config) {
-    const canvas = document.getElementById(canvasId);
-    if (!canvas || typeof Chart === 'undefined') return;
-    const wrap = canvas.parentElement;
+    if (typeof Chart === 'undefined') return;
+    window.deptAnalyticsCharts = window.deptAnalyticsCharts || {};
+    window.deptAnalyticsWraps = window.deptAnalyticsWraps || {};
 
-    if (!config.labels || config.labels.length === 0) {
+    // Locate the wrapper even if a previous render swapped the canvas for an empty state.
+    const liveCanvas = document.getElementById(canvasId);
+    let wrap = liveCanvas ? liveCanvas.closest('.dept-analytics-canvas-wrap') : window.deptAnalyticsWraps[canvasId];
+    if (!wrap || !document.body.contains(wrap)) return;
+    window.deptAnalyticsWraps[canvasId] = wrap;
+
+    const labels = config.labels || [];
+
+    if (labels.length === 0) {
         if (window.deptAnalyticsCharts[canvasId]) {
             window.deptAnalyticsCharts[canvasId].destroy();
             delete window.deptAnalyticsCharts[canvasId];
         }
-        if (wrap) wrap.innerHTML = '<div class="dept-analytics-empty">No data available yet</div>';
+        wrap.style.height = '';
+        wrap.style.overflowY = '';
+        wrap.innerHTML = '<div class="dept-analytics-empty">No data available yet</div>';
         return;
     }
 
-    if (wrap && !document.getElementById(canvasId)) {
-        wrap.innerHTML = `<canvas id="${canvasId}"></canvas>`;
-    }
-    const activeCanvas = document.getElementById(canvasId);
+    // With many categories (or long labels), vertical bars get cramped/unreadable.
+    // Switch to horizontal bars and grow the plot so every bar keeps breathing room.
+    const dsCount = config.datasets.length;
+    const longLabel = labels.some(l => String(l).length > 14);
+    const horizontal = config.orientation === 'horizontal' ||
+        (config.orientation !== 'vertical' && (labels.length > 7 || longLabel));
 
+    let neededH = 260;
+    let scroll = false;
+    if (horizontal) {
+        const perCat = dsCount * 22 + 18;
+        neededH = Math.max(260, labels.length * perCat + 56);
+        scroll = neededH > 440;
+    }
+
+    // Ensure the correct DOM structure (plain canvas vs. scrollable inner container).
+    const needScrollInner = horizontal && scroll;
+    const hasInner = !!wrap.querySelector('.dept-analytics-chart-scroll');
+    let canvas = document.getElementById(canvasId);
+    if (!canvas || needScrollInner !== hasInner) {
+        if (window.deptAnalyticsCharts[canvasId]) {
+            window.deptAnalyticsCharts[canvasId].destroy();
+            delete window.deptAnalyticsCharts[canvasId];
+        }
+        wrap.innerHTML = needScrollInner
+            ? `<div class="dept-analytics-chart-scroll" style="height:${neededH}px;"><canvas id="${canvasId}"></canvas></div>`
+            : `<canvas id="${canvasId}"></canvas>`;
+        canvas = document.getElementById(canvasId);
+    } else if (needScrollInner) {
+        const inner = wrap.querySelector('.dept-analytics-chart-scroll');
+        if (inner) inner.style.height = neededH + 'px';
+    }
+
+    if (needScrollInner) {
+        wrap.style.height = '440px';
+        wrap.style.overflowY = 'auto';
+        wrap.style.overflowX = 'hidden';
+    } else {
+        wrap.style.height = (horizontal ? neededH : 260) + 'px';
+        wrap.style.overflowY = 'hidden';
+    }
+
+    // Reuse the chart only when it is bound to the current canvas and same orientation.
     const existing = window.deptAnalyticsCharts[canvasId];
-    if (existing) {
-        existing.data.labels = config.labels;
-        existing.data.datasets = config.datasets;
-        existing.update();
+    if (existing && (existing.canvas !== canvas || existing.$deptHorizontal !== horizontal)) {
+        existing.destroy();
+        delete window.deptAnalyticsCharts[canvasId];
+    }
+    const reuse = window.deptAnalyticsCharts[canvasId];
+    if (reuse) {
+        reuse.data.labels = labels;
+        reuse.data.datasets = config.datasets;
+        reuse.update();
         return;
     }
 
-    window.deptAnalyticsCharts[canvasId] = new Chart(activeCanvas.getContext('2d'), {
+    const valueAxis = horizontal ? 'x' : 'y';
+    const catAxis = horizontal ? 'y' : 'x';
+    const scales = {};
+    scales[catAxis] = { ticks: { autoSkip: false, maxRotation: horizontal ? 0 : 45, font: { size: 11 } }, grid: { display: false } };
+    scales[valueAxis] = {
+        beginAtZero: true,
+        suggestedMax: config.max,
+        grid: { color: '#eef2f7' },
+        ticks: config.currency ? { callback: (v) => deptAnalyticsFmtTZS(v) } : { precision: 0 }
+    };
+
+    const chart = new Chart(canvas.getContext('2d'), {
         type: 'bar',
-        data: { labels: config.labels, datasets: config.datasets },
+        data: { labels, datasets: config.datasets },
         options: {
+            indexAxis: horizontal ? 'y' : 'x',
             responsive: true,
             maintainAspectRatio: false,
-            animation: { duration: 500 },
+            animation: { duration: 400 },
+            layout: { padding: { right: horizontal ? 14 : 0, top: 4 } },
+            elements: { bar: { borderRadius: 4, borderSkipped: false } },
+            datasets: { bar: { maxBarThickness: horizontal ? 26 : 46, categoryPercentage: 0.82, barPercentage: 0.9 } },
             plugins: {
-                legend: { display: config.datasets.length > 1, position: 'bottom' },
+                legend: { display: dsCount > 1, position: 'bottom', labels: { boxWidth: 12, font: { size: 11 } } },
                 tooltip: {
                     callbacks: config.currency ? {
-                        label: (ctx) => `${ctx.dataset.label ? ctx.dataset.label + ': ' : ''}${deptAnalyticsFmtTZS(ctx.parsed.y)}`
+                        label: (ctx) => `${ctx.dataset.label ? ctx.dataset.label + ': ' : ''}${deptAnalyticsFmtTZS(horizontal ? ctx.parsed.x : ctx.parsed.y)}`
                     } : {}
                 }
             },
-            scales: {
-                x: { ticks: { autoSkip: false, maxRotation: 45, minRotation: 0 }, grid: { display: false } },
-                y: {
-                    beginAtZero: true,
-                    suggestedMax: config.max,
-                    ticks: config.currency ? { callback: (v) => deptAnalyticsFmtTZS(v) } : { precision: 0 }
-                }
-            }
+            scales
         }
     });
+    chart.$deptHorizontal = horizontal;
+    window.deptAnalyticsCharts[canvasId] = chart;
 }
 
 async function loadDepartmentAnalytics(manual) {
