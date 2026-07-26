@@ -13218,6 +13218,26 @@ font-weight: bold;
 
 
 
+.status-badge.status-in-progress {
+
+    background: #cfe2ff;
+
+    color: #084298;
+
+}
+
+
+
+.status-badge.status-default {
+
+    background: #e2e3e5;
+
+    color: #383d41;
+
+}
+
+
+
 .status-badge.status-planning {
 
     background: #fff3cd;
@@ -24035,7 +24055,7 @@ document.addEventListener('click', function(e) {
 
 
 
-const PRODUCTION_API_ORIGIN = 'https://khashtec-construction-system-production-e7b5.up.railway.app';
+const PRODUCTION_API_ORIGIN = window.location.origin; /* TEST-ONLY override: keep API calls local */
 
 const originalFetch = window.fetch.bind(window);
 
@@ -73025,27 +73045,24 @@ function displayProjects(projects) {
         // Get status display safely
 
         const statusVal = (project.status || '').toLowerCase();
-        const statusDisplay = statusVal === 'active' ? '🟢 Active' : 
+        const statusKey = statusVal.replace(/\s+/g, '-');
+        const statusDisplay = statusKey === 'active' ? '🟢 Active' : 
 
-                             statusVal === 'completed' ? '✅ Completed' : 
+                             statusKey === 'in-progress' ? '🔵 In Progress' : 
 
-                             statusVal === 'planning' ? '📋 Planning' : 
+                             statusKey === 'completed' ? '✅ Completed' : 
 
-                             statusVal === 'on-hold' ? '⏸️ On Hold' : 
+                             statusKey === 'planning' ? '📋 Planning' : 
 
-                             statusVal === 'cancelled' ? '❌ Cancelled' : (project.status || 'Planning');
+                             statusKey === 'on-hold' ? '⏸️ On Hold' : 
+
+                             statusKey === 'cancelled' ? '❌ Cancelled' : (project.status || 'Planning');
 
         
 
-        const statusClass = statusVal === 'active' ? 'status-active' : 
+        const statusClass = ['active', 'in-progress', 'completed', 'planning', 'on-hold', 'cancelled'].includes(statusKey)
 
-                            statusVal === 'completed' ? 'status-completed' : 
-
-                            statusVal === 'planning' ? 'status-planning' : 
-
-                            statusVal === 'on-hold' ? 'status-on-hold' : 
-
-                            statusVal === 'cancelled' ? 'status-cancelled' : '';
+                            ? 'status-' + statusKey : 'status-default';
 
         
 
