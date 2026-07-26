@@ -25546,6 +25546,7 @@ async function loadDepartmentAnalytics(manual) {
     renderDeptAnalyticsBarChart('chartTax', {
         labels: ['Paid', 'Pending', 'Overdue', 'Penalties', 'Interest'],
         currency: true,
+        orientation: 'vertical',
         datasets: [{
             label: 'Amount',
             data: [taxData.paid_amount, taxData.pending_amount, taxData.overdue_amount, taxData.total_penalties, taxData.total_interest].map(v => Number(v) || 0),
@@ -25557,6 +25558,7 @@ async function loadDepartmentAnalytics(manual) {
     renderDeptAnalyticsBarChart('chartBudget', {
         labels: ['Approved Budget', 'Total Expenses', 'Approved Exp.', 'Pending Exp.', 'This Month'],
         currency: true,
+        orientation: 'vertical',
         datasets: [{
             label: 'Amount',
             data: [exp.monthlyBudget, exp.totalExpenses, exp.approvedExpenses, exp.pendingAmount, exp.monthExpenses].map(v => Number(v) || 0),
@@ -25568,6 +25570,7 @@ async function loadDepartmentAnalytics(manual) {
     renderDeptAnalyticsBarChart('chartTransport', {
         labels: ['Total', 'Maintenance', 'Extra', 'Paid', 'Pending'],
         currency: true,
+        orientation: 'vertical',
         datasets: [{
             label: 'Amount',
             data: [tr.total_costs, tr.maintenance_costs, tr.extra_costs, tr.paid_amount, tr.pending_amount].map(v => Number(v) || 0),
@@ -25585,6 +25588,7 @@ async function loadDepartmentAnalytics(manual) {
     });
     renderDeptAnalyticsBarChart('chartProjects', {
         labels: Object.keys(projectStatusCounts),
+        orientation: 'vertical',
         datasets: [{
             label: 'Projects',
             data: Object.values(projectStatusCounts),
