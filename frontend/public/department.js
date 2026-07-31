@@ -36842,7 +36842,7 @@ function showPolicyModal(policy) {
 
         .status-badge.Revision:Requested { background: #17a2b8; color: white; }
 
-        .status-badge.success { background: #28a745; color: white; }
+        .status-badge.success { background: #28a745; color: white; padding: 2px 8px; font-size: 11px; border-radius: 12px; font-weight: 500; }
 
     `;
 
