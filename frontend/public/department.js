@@ -36842,6 +36842,8 @@ function showPolicyModal(policy) {
 
         .status-badge.Revision:Requested { background: #17a2b8; color: white; }
 
+        .status-badge.success { background: #28a745; color: white; }
+
     `;
 
     document.head.appendChild(style);

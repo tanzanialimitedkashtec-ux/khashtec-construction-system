@@ -1316,6 +1316,8 @@ button.action{
 
 .status-badge.inactive { background: #6c757d; }
 
+.status-badge.success { background: #28a745; color: #fff; }
+
 
 
 .actions {
@@ -20751,6 +20753,12 @@ font-size: 12px;
     background: linear-gradient(135deg, #f8d7da 0%, #f1b5ba 100%);
     color: #721c24;
     border: 1px solid #f5c6cb;
+}
+
+.status-badge.success {
+    background: linear-gradient(135deg, #28a745 0%, #1e7e34 100%);
+    color: #ffffff;
+    border: 1px solid #1e7e34;
 }
 
 /* Compliance Management Styles */
@@ -60929,6 +60937,8 @@ function showPolicyModal(policy) {
         .status-badge.Rejected { background: #dc3545; color: white; }
 
         .status-badge.Revision\:Requested { background: #17a2b8; color: white; }
+
+        .status-badge.success { background: #28a745; color: white; }
 
     `;
 
