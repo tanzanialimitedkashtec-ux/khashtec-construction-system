@@ -23619,10 +23619,13 @@ font-size: 12px;
     .top-controls {
         padding: 6px 8px;
         top: 40px;
-        flex-wrap: wrap;
+        flex-wrap: nowrap;
+        justify-content: space-between;
         gap: 4px;
     }
-    .top-controls .profile-widget-container { order: 3; }
+    .top-controls-right {
+        margin-left: auto;
+    }
 
     /* Sidebar: slide-over overlay on mobile */
     .sidebar {
