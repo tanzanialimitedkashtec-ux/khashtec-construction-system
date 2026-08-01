@@ -26971,7 +26971,7 @@ function approveRecruitmentPolicies(){
 
                         <span class="stat-label">Pending Approval:</span>
 
-                        <span class="stat-value">2</span>
+                        <span class="stat-value" id="stat-pending">...</span>
 
                     </div>
 
@@ -26979,7 +26979,7 @@ function approveRecruitmentPolicies(){
 
                         <span class="stat-label">Approved Today:</span>
 
-                        <span class="stat-value">5</span>
+                        <span class="stat-value" id="stat-approved">...</span>
 
                     </div>
 
@@ -26987,7 +26987,7 @@ function approveRecruitmentPolicies(){
 
                         <span class="stat-label">Revisions Requested:</span>
 
-                        <span class="stat-value">3</span>
+                        <span class="stat-value" id="stat-revisions">...</span>
 
                     </div>
 
@@ -26995,7 +26995,7 @@ function approveRecruitmentPolicies(){
 
                         <span class="stat-label">Total Policies:</span>
 
-                        <span class="stat-value">28</span>
+                        <span class="stat-value" id="stat-total">...</span>
 
                     </div>
 
@@ -101896,7 +101896,7 @@ function showProcurementForm() {
 
 // Function to show Tax Payments form
 
-function showTaxPayments() {
+function showTaxPayments(taxData = null) {
 
     const formHTML = `
 
@@ -102070,7 +102070,36 @@ function showTaxPayments() {
 
         if (taxForm) {
 
-            taxForm.addEventListener('submit', async function(e) {
+            
+            if (taxData) {
+                const h3 = taxForm.closest('.form-container').querySelector('.form-header h3');
+                if (h3) h3.textContent = 'View Tax Payment';
+                
+                if (taxForm.querySelector('#taxType')) taxForm.querySelector('#taxType').value = taxData.tax_type || taxData.taxType || '';
+                if (taxForm.querySelector('#taxAmount')) taxForm.querySelector('#taxAmount').value = taxData.amount || '';
+                if (taxForm.querySelector('#taxPeriod') && (taxData.tax_period || taxData.taxPeriod)) taxForm.querySelector('#taxPeriod').value = taxData.tax_period || taxData.taxPeriod;
+                if (taxForm.querySelector('#taxDueDate') && (taxData.due_date || taxData.dueDate)) taxForm.querySelector('#taxDueDate').value = (taxData.due_date || taxData.dueDate).split('T')[0];
+                if (taxForm.querySelector('#taxStatus')) taxForm.querySelector('#taxStatus').value = taxData.payment_status || taxData.paymentStatus || '';
+                if (taxForm.querySelector('#paymentMethod')) taxForm.querySelector('#paymentMethod').value = taxData.payment_method || taxData.paymentMethod || '';
+                if (taxForm.querySelector('#paymentReference')) taxForm.querySelector('#paymentReference').value = taxData.payment_reference || taxData.paymentReference || '';
+                if (taxForm.querySelector('#penalties') && taxData.penalties !== undefined) taxForm.querySelector('#penalties').value = taxData.penalties;
+                if (taxForm.querySelector('#interest') && taxData.interest !== undefined) taxForm.querySelector('#interest').value = taxData.interest;
+                if (taxForm.querySelector('#taxDescription')) taxForm.querySelector('#taxDescription').value = taxData.description || '';
+                
+                Array.from(taxForm.elements).forEach(el => {
+                    if (el.tagName !== 'BUTTON' && el.id !== 'taxAttachments') el.disabled = true;
+                });
+                
+                const attInput = taxForm.querySelector('#taxAttachments');
+                if (attInput) attInput.closest('.form-group').style.display = 'none';
+                
+                const submitBtn = taxForm.querySelector('button[type="submit"]');
+                if (submitBtn) submitBtn.style.display = 'none';
+                
+                taxForm.addEventListener('submit', function(e) { e.preventDefault(); });
+            } else {
+                taxForm.addEventListener('submit', async function(e) {
+
 
                 console.log('💰 Tax form submitted');
 
@@ -102159,6 +102188,7 @@ function showTaxPayments() {
                 }
 
             });
+            }
 
         }
 
@@ -102209,6 +102239,7 @@ async function loadTaxPaymentsTable() {
                         <th style="padding:7px 8px;text-align:left;">Method</th>
                         <th style="padding:7px 8px;text-align:left;">Reference</th>
                         <th style="padding:7px 8px;text-align:left;">Status</th>
+                        <th style="padding:7px 8px;text-align:center;">Action</th>
                     </tr>
                 </thead>
                 <tbody>`;
@@ -102229,6 +102260,9 @@ async function loadTaxPaymentsTable() {
                 <td style="padding:6px 8px;border-bottom:1px solid #eee;">${rec.payment_reference || rec.paymentReference || '-'}</td>
                 <td style="padding:6px 8px;border-bottom:1px solid #eee;">
                     <span style="background:${sc};color:#fff;padding:2px 8px;border-radius:10px;font-size:11px;">${s}</span>
+                </td>
+                <td style="padding:6px 8px;border-bottom:1px solid #eee;text-align:center;">
+                    <button onclick='showTaxPayments(${JSON.stringify(rec).replace(/\'/g, \"&#39;\")})' style="background:#2196F3;color:white;border:none;padding:3px 8px;border-radius:4px;cursor:pointer;font-size:11px;">View</button>
                 </td>
             </tr>`;
         });
@@ -103063,6 +103097,7 @@ function showMaterialsInForm_old() {
                 }
 
             });
+            }
 
         }
 
@@ -103513,6 +103548,7 @@ function showMaterialsOutForm_old() {
                 }
 
             });
+            }
 
         }
 
@@ -104098,6 +104134,7 @@ function showAddMaterialForm() {
                 }
 
             });
+            }
 
         }
 
@@ -104525,6 +104562,7 @@ function showSuggestionsManagement() {
                 }
 
             });
+            }
 
         }
 
@@ -105555,6 +105593,7 @@ function showAddTransportCostForm() {
                 }
 
             });
+            }
 
         }
 
