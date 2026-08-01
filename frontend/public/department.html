@@ -23797,6 +23797,14 @@ font-size: 12px;
 .dept-analytics-kpi.people strong { color: #28a745; }
 .dept-analytics-kpi.safety strong { color: #dc3545; }
 .dept-analytics-kpi.finance strong { color: #fd7e14; }
+
+/* Apply #0b3d91 to table column names on mobile only */
+@media (max-width: 768px) {
+    table th, table thead th {
+        background-color: #0b3d91 !important;
+        color: #ffffff !important;
+    }
+}
 </style>
 
     <!-- PWA Support -->

@@ -1,5 +1,5 @@
 // KASHTEC Construction Management System - Service Worker
-const CACHE_NAME = 'kashtec-cache-v1';
+const CACHE_NAME = 'kashtec-cache-v4';
 const STATIC_ASSETS = [
   '/',
   '/department.html',
