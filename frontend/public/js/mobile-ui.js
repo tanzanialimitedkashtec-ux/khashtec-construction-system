@@ -306,8 +306,7 @@
         ],
         'ASSISTANT': [
             { icon: '&#128196;', label: 'Docs', action: 'docs' },
-            { icon: '&#128197;', label: 'Meetings', action: 'meetings' },
-            { icon: '&#128276;', label: 'Notify', action: 'notify' }
+            { icon: '&#128197;', label: 'Meetings', action: 'meetings' }
         ],
         'HSE': [
             { icon: '&#9888;', label: 'Safety', action: 'safety' },
@@ -346,8 +345,7 @@
         var rk = getRoleKey();
         var middleItems = roleNavItems[rk] || [
             { icon: '&#128196;', label: 'Docs', action: 'docs' },
-            { icon: '&#128101;', label: 'Team', action: 'workers' },
-            { icon: '&#128276;', label: 'Notify', action: 'notify' }
+            { icon: '&#128101;', label: 'Team', action: 'workers' }
         ];
 
         var html = '<button class="m-ni act" data-a="dashboard" onclick="mNav(\'dashboard\')">' +

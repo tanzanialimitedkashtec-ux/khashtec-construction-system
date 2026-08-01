@@ -1,0 +1,28 @@
+{
+  "name": "KASHTEC Tanzania Limited - Construction Management System",
+  "short_name": "KASHTEC",
+  "description": "Construction Management System by KASHTEC Tanzania Limited",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0b3d91",
+  "theme_color": "#0b3d91",
+  "orientation": "any",
+  "scope": "/",
+  "icons": [
+    {
+      "src": "/images/khashtec-logo-circle.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/images/khashtec-logo-circle.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["business", "productivity"],
+  "lang": "en",
+  "dir": "ltr"
+}

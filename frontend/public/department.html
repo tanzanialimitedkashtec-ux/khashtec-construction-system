@@ -23796,6 +23796,14 @@ font-size: 12px;
 .dept-analytics-kpi.finance strong { color: #fd7e14; }
 </style>
 
+    <!-- PWA Support -->
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#0b3d91">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="KASHTEC">
+    <link rel="apple-touch-icon" href="/images/khashtec-logo-circle.png">
+
 </head>
 
 <body class="login-active">
@@ -103099,8 +103107,6 @@ function showMaterialsInForm_old() {
             });
             }
 
-        }
-
     }, 100);
 
 }
@@ -111829,7 +111835,113 @@ function confirmPayEmployee(e) {
 }
 </script>
 
+<!-- PWA Install App Button -->
+<div id="pwaInstallBanner" style="display:none; position:fixed; bottom:24px; right:24px; z-index:99999; animation: pwaSlideUp 0.5s ease-out;">
+    <button id="installButton" style="
+        display:flex; align-items:center; gap:10px;
+        background: linear-gradient(135deg, #0b3d91 0%, #1a5fc9 100%);
+        color:white; border:none; border-radius:16px;
+        padding:14px 24px; font-size:15px; font-weight:600;
+        cursor:pointer; box-shadow: 0 8px 32px rgba(11,61,145,0.35);
+        transition: all 0.3s ease; font-family: inherit;
+    ">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+            <polyline points="7 10 12 15 17 10"/>
+            <line x1="12" y1="15" x2="12" y2="3"/>
+        </svg>
+        Install App
+    </button>
+</div>
 
+<style>
+@keyframes pwaSlideUp {
+    from { transform: translateY(100px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+#installButton:hover {
+    transform: translateY(-2px) !important;
+    box-shadow: 0 12px 40px rgba(11,61,145,0.45) !important;
+}
+#installButton:active {
+    transform: translateY(0) !important;
+}
+</style>
+
+<script>
+// ========================
+// PWA: Service Worker Registration
+// ========================
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/service-worker.js')
+            .then((registration) => {
+                console.log('[PWA] Service Worker registered with scope:', registration.scope);
+            })
+            .catch((error) => {
+                console.error('[PWA] Service Worker registration failed:', error);
+            });
+    });
+}
+
+// ========================
+// PWA: Install App Prompt
+// ========================
+let deferredEvent;
+const installButton = document.getElementById('installButton');
+const pwaInstallBanner = document.getElementById('pwaInstallBanner');
+
+window.addEventListener('beforeinstallprompt', (e) => {
+    // prevent the browser from displaying the default install dialog
+    e.preventDefault();
+
+    // Stash the event so it can be triggered later when the user clicks the button
+    deferredEvent = e;
+
+    // Show the install button
+    if (pwaInstallBanner) {
+        pwaInstallBanner.style.display = 'block';
+    }
+});
+
+installButton.addEventListener('click', () => {
+    // if the deferredEvent exists, call its prompt method to display the install dialog
+    if (deferredEvent) {
+        deferredEvent.prompt();
+
+        // Wait for the user to respond to the prompt
+        deferredEvent.userChoice.then((choiceResult) => {
+            if (choiceResult.outcome === 'accepted') {
+                console.log('[PWA] User accepted the install prompt');
+            } else {
+                console.log('[PWA] User dismissed the install prompt');
+            }
+            // Clear the deferred event - can only be used once
+            deferredEvent = null;
+            // Hide the install button
+            if (pwaInstallBanner) {
+                pwaInstallBanner.style.display = 'none';
+            }
+        });
+    }
+});
+
+// Hide install button if app is already installed (standalone mode)
+window.addEventListener('appinstalled', () => {
+    console.log('[PWA] App was installed');
+    if (pwaInstallBanner) {
+        pwaInstallBanner.style.display = 'none';
+    }
+    deferredEvent = null;
+});
+
+// Check if running in standalone (installed) mode - hide button
+if (window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone) {
+    if (pwaInstallBanner) {
+        pwaInstallBanner.style.display = 'none';
+    }
+}
+</script>
 
 
 
