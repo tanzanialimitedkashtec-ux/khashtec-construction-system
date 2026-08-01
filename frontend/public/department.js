@@ -2900,7 +2900,7 @@ function approveRecruitmentPolicies(){
 
                         <span class="stat-label">Pending Approval:</span>
 
-                        <span class="stat-value">2</span>
+                        <span class="stat-value" id="stat-pending">...</span>
 
                     </div>
 
@@ -2908,7 +2908,7 @@ function approveRecruitmentPolicies(){
 
                         <span class="stat-label">Approved Today:</span>
 
-                        <span class="stat-value">5</span>
+                        <span class="stat-value" id="stat-approved">...</span>
 
                     </div>
 
@@ -2916,7 +2916,7 @@ function approveRecruitmentPolicies(){
 
                         <span class="stat-label">Revisions Requested:</span>
 
-                        <span class="stat-value">3</span>
+                        <span class="stat-value" id="stat-revisions">...</span>
 
                     </div>
 
@@ -2924,7 +2924,7 @@ function approveRecruitmentPolicies(){
 
                         <span class="stat-label">Total Policies:</span>
 
-                        <span class="stat-value">28</span>
+                        <span class="stat-value" id="stat-total">...</span>
 
                     </div>
 
@@ -3777,6 +3777,27 @@ function displayPoliciesForApproval(policies) {
     // Store policies globally for filtering
 
     allPolicies = policies || [];
+
+    // Update dynamic statistics based on real data
+    if (document.getElementById('stat-total')) {
+        const total = allPolicies.length;
+        const pending = allPolicies.filter(p => (p.status || '').toLowerCase() === 'pending').length;
+        const revisions = allPolicies.filter(p => (p.status || '').toLowerCase() === 'revision').length;
+        
+        // For 'Approved Today', check if status is approved and date includes today's string
+        const todayStr = new Date().toISOString().split('T')[0];
+        const approvedToday = allPolicies.filter(p => {
+            if ((p.status || '').toLowerCase() !== 'approved') return false;
+            const dateStr = p.updated_at || p.submissionDate || p.submitted_date || p.created_at || '';
+            // If date is available, match with today. Otherwise include it.
+            return dateStr.includes(todayStr) || dateStr === '';
+        }).length;
+        
+        document.getElementById('stat-total').textContent = total;
+        document.getElementById('stat-pending').textContent = pending;
+        document.getElementById('stat-approved').textContent = approvedToday;
+        document.getElementById('stat-revisions').textContent = revisions;
+    }
 
     
 
@@ -71976,6 +71997,7 @@ function showNHIFContributions() {
                 }
 
             });
+            }
 
         }
 
@@ -72540,7 +72562,7 @@ function showProcurementForm() {
 
 // Function to show Tax Payments form
 
-function showTaxPayments() {
+function showTaxPayments(taxData = null) {
 
     const formHTML = `
 
@@ -72714,7 +72736,36 @@ function showTaxPayments() {
 
         if (taxForm) {
 
-            taxForm.addEventListener('submit', async function(e) {
+            
+            if (taxData) {
+                const h3 = taxForm.closest('.form-container').querySelector('.form-header h3');
+                if (h3) h3.textContent = 'View Tax Payment';
+                
+                if (taxForm.querySelector('#taxType')) taxForm.querySelector('#taxType').value = taxData.tax_type || taxData.taxType || '';
+                if (taxForm.querySelector('#taxAmount')) taxForm.querySelector('#taxAmount').value = taxData.amount || '';
+                if (taxForm.querySelector('#taxPeriod') && (taxData.tax_period || taxData.taxPeriod)) taxForm.querySelector('#taxPeriod').value = taxData.tax_period || taxData.taxPeriod;
+                if (taxForm.querySelector('#taxDueDate') && (taxData.due_date || taxData.dueDate)) taxForm.querySelector('#taxDueDate').value = (taxData.due_date || taxData.dueDate).split('T')[0];
+                if (taxForm.querySelector('#taxStatus')) taxForm.querySelector('#taxStatus').value = taxData.payment_status || taxData.paymentStatus || '';
+                if (taxForm.querySelector('#paymentMethod')) taxForm.querySelector('#paymentMethod').value = taxData.payment_method || taxData.paymentMethod || '';
+                if (taxForm.querySelector('#paymentReference')) taxForm.querySelector('#paymentReference').value = taxData.payment_reference || taxData.paymentReference || '';
+                if (taxForm.querySelector('#penalties') && taxData.penalties !== undefined) taxForm.querySelector('#penalties').value = taxData.penalties;
+                if (taxForm.querySelector('#interest') && taxData.interest !== undefined) taxForm.querySelector('#interest').value = taxData.interest;
+                if (taxForm.querySelector('#taxDescription')) taxForm.querySelector('#taxDescription').value = taxData.description || '';
+                
+                Array.from(taxForm.elements).forEach(el => {
+                    if (el.tagName !== 'BUTTON' && el.id !== 'taxAttachments') el.disabled = true;
+                });
+                
+                const attInput = taxForm.querySelector('#taxAttachments');
+                if (attInput) attInput.closest('.form-group').style.display = 'none';
+                
+                const submitBtn = taxForm.querySelector('button[type="submit"]');
+                if (submitBtn) submitBtn.style.display = 'none';
+                
+                taxForm.addEventListener('submit', function(e) { e.preventDefault(); });
+            } else {
+                taxForm.addEventListener('submit', async function(e) {
+
 
                 console.log('ðŸ’° Tax form submitted');
 
@@ -72811,6 +72862,7 @@ function showTaxPayments() {
                 }
 
             });
+            }
 
         }
 
@@ -73601,6 +73653,7 @@ function showMaterialsInForm() {
                 }
 
             });
+            }
 
         }
 
@@ -74051,6 +74104,7 @@ function showMaterialsOutForm() {
                 }
 
             });
+            }
 
         }
 
@@ -74642,6 +74696,7 @@ function showAddMaterialForm() {
                 }
 
             });
+            }
 
         }
 
@@ -75098,6 +75153,7 @@ function showSuggestionsManagement() {
                 }
 
             });
+            }
 
         }
 
@@ -76155,6 +76211,7 @@ function showAddTransportCostForm() {
                 }
 
             });
+            }
 
         }
 
