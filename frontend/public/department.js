@@ -29339,26 +29339,26 @@ async function viewUserDetails(userId) {
         overlay.id = 'userDetailsOverlay';
         overlay.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:10000;display:flex;align-items:center;justify-content:center;';
         const modal = document.createElement('div');
-        modal.style.cssText = 'background:#fff;border-radius:8px;padding:24px;max-width:550px;width:90%;max-height:80vh;overflow-y:auto;box-shadow:0 4px 20px rgba(0,0,0,0.3);';
-        modal.innerHTML = '<div style="display:flex;align-items:center;gap:16px;margin-bottom:20px;">' +
-            '<div style="width:56px;height:56px;border-radius:50%;background:linear-gradient(135deg,#1a73e8,#0d47a1);color:#fff;display:flex;align-items:center;justify-content:center;font-size:26px;font-weight:bold;">' + initial + '</div>' +
-            '<div><h3 style="margin:0 0 4px 0;">' + (user.full_name || user.fullName || 'N/A') + '</h3>' +
-            '<span style="display:inline-block;padding:2px 10px;border-radius:12px;font-size:12px;font-weight:bold;color:#fff;background:' + (statusText === 'Active' ? '#28a745' : '#dc3545') + '">' + statusText + '</span></div></div>' +
-            '<table style="width:100%;border-collapse:collapse;">' +
-            '<tr style="border-bottom:1px solid #eee;"><td style="padding:10px;color:#666;width:40%;">Employee ID</td><td style="padding:10px;font-weight:500;">' + (user.employee_id || user.id || 'N/A') + '</td></tr>' +
-            '<tr style="border-bottom:1px solid #eee;"><td style="padding:10px;color:#666;">Email</td><td style="padding:10px;font-weight:500;">' + (user.gmail || user.email || 'N/A') + '</td></tr>' +
-            '<tr style="border-bottom:1px solid #eee;"><td style="padding:10px;color:#666;">Phone</td><td style="padding:10px;font-weight:500;">' + (user.phone || 'N/A') + '</td></tr>' +
-            '<tr style="border-bottom:1px solid #eee;"><td style="padding:10px;color:#666;">Position</td><td style="padding:10px;font-weight:500;">' + (user.position || user.role || user.job_category || 'N/A') + '</td></tr>' +
-            '<tr style="border-bottom:1px solid #eee;"><td style="padding:10px;color:#666;">Department</td><td style="padding:10px;font-weight:500;">' + (user.department || 'N/A') + '</td></tr>' +
-            '<tr style="border-bottom:1px solid #eee;"><td style="padding:10px;color:#666;">NIDA</td><td style="padding:10px;font-weight:500;">' + (user.nida || 'N/A') + '</td></tr>' +
-            '<tr style="border-bottom:1px solid #eee;"><td style="padding:10px;color:#666;">Passport</td><td style="padding:10px;font-weight:500;">' + (user.passport || 'N/A') + '</td></tr>' +
-            '<tr><td style="padding:10px;color:#666;">Contract Type</td><td style="padding:10px;font-weight:500;">' + (user.contract_type || 'N/A') + '</td></tr>' +
+        modal.style.cssText = 'background:#fff;border-radius:8px;padding:16px;max-width:360px;width:90%;max-height:80vh;overflow-y:auto;box-shadow:0 4px 20px rgba(0,0,0,0.3);';
+        modal.innerHTML = '<div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;">' +
+            '<div style="width:48px;height:48px;border-radius:50%;background:linear-gradient(135deg,#1a73e8,#0d47a1);color:#fff;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:bold;">' + initial + '</div>' +
+            '<div><h3 style="margin:0 0 4px 0;font-size:16px;">' + (user.full_name || user.fullName || 'N/A') + '</h3>' +
+            '<span style="display:inline-block;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:bold;color:#fff;background:' + (statusText === 'Active' ? '#28a745' : '#dc3545') + '">' + statusText + '</span></div></div>' +
+            '<table style="width:100%;border-collapse:collapse;font-size:14px;">' +
+            '<tr style="border-bottom:1px solid #eee;"><td style="padding:8px;color:#666;width:40%;">Employee ID</td><td style="padding:8px;font-weight:500;">' + (user.employee_id || user.id || 'N/A') + '</td></tr>' +
+            '<tr style="border-bottom:1px solid #eee;"><td style="padding:8px;color:#666;">Email</td><td style="padding:8px;font-weight:500;">' + (user.gmail || user.email || 'N/A') + '</td></tr>' +
+            '<tr style="border-bottom:1px solid #eee;"><td style="padding:8px;color:#666;">Phone</td><td style="padding:8px;font-weight:500;">' + (user.phone || 'N/A') + '</td></tr>' +
+            '<tr style="border-bottom:1px solid #eee;"><td style="padding:8px;color:#666;">Position</td><td style="padding:8px;font-weight:500;">' + (user.position || user.role || user.job_category || 'N/A') + '</td></tr>' +
+            '<tr style="border-bottom:1px solid #eee;"><td style="padding:8px;color:#666;">Department</td><td style="padding:8px;font-weight:500;">' + (user.department || 'N/A') + '</td></tr>' +
+            '<tr style="border-bottom:1px solid #eee;"><td style="padding:8px;color:#666;">NIDA</td><td style="padding:8px;font-weight:500;">' + (user.nida || 'N/A') + '</td></tr>' +
+            '<tr style="border-bottom:1px solid #eee;"><td style="padding:8px;color:#666;">Passport</td><td style="padding:8px;font-weight:500;">' + (user.passport || 'N/A') + '</td></tr>' +
+            '<tr><td style="padding:8px;color:#666;">Contract Type</td><td style="padding:8px;font-weight:500;">' + (user.contract_type || 'N/A') + '</td></tr>' +
             '</table>' +
-            '<div style="display:flex;gap:8px;justify-content:flex-end;margin-top:20px;">' +
+            '<div style="display:flex;gap:8px;justify-content:flex-end;margin-top:16px;">' +
             (statusText === 'Active' ?
-                "<button onclick=\"document.getElementById('userDetailsOverlay').remove(); suspendUser(" + user.id + ")\" style=\"padding:8px 16px;background:#dc3545;color:#fff;border:none;border-radius:4px;cursor:pointer;\">Suspend</button>" :
-                "<button onclick=\"document.getElementById('userDetailsOverlay').remove(); reactivateUser(" + user.id + ")\" style=\"padding:8px 16px;background:#28a745;color:#fff;border:none;border-radius:4px;cursor:pointer;\">Reactivate</button>") +
-            "<button onclick=\"document.getElementById('userDetailsOverlay').remove()\" style=\"padding:8px 16px;background:#6c757d;color:#fff;border:none;border-radius:4px;cursor:pointer;\">Close</button></div>";
+                "<button onclick=\"document.getElementById('userDetailsOverlay').remove(); suspendUser(" + user.id + ")\" style=\"padding:6px 12px;background:#dc3545;color:#fff;border:none;border-radius:4px;cursor:pointer;font-size:14px;\">Suspend</button>" :
+                "<button onclick=\"document.getElementById('userDetailsOverlay').remove(); reactivateUser(" + user.id + ")\" style=\"padding:6px 12px;background:#28a745;color:#fff;border:none;border-radius:4px;cursor:pointer;font-size:14px;\">Reactivate</button>") +
+            "<button onclick=\"document.getElementById('userDetailsOverlay').remove()\" style=\"padding:6px 12px;background:#6c757d;color:#fff;border:none;border-radius:4px;cursor:pointer;font-size:14px;\">Close</button></div>";
         overlay.appendChild(modal);
         overlay.addEventListener('click', function(e) { if (e.target === overlay) overlay.remove(); });
         document.body.appendChild(overlay);
