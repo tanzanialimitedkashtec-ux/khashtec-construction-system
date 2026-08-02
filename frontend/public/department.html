@@ -24086,6 +24086,22 @@ font-size: 12px;
     }
 }
 </style>
+
+<!-- MOBILE TABLE HEADER STYLES -->
+<style id="mobile-table-headers">
+@media screen and (max-width: 768px) {
+    table th {
+        white-space: nowrap !important;
+        min-width: max-content !important;
+        padding-left: 12px !important;
+        padding-right: 12px !important;
+    }
+    .table-container {
+        overflow-x: auto !important;
+        -webkit-overflow-scrolling: touch !important;
+    }
+}
+</style>
 </head>
 
 <body class="login-active">
@@ -70832,7 +70848,23 @@ function downloadReceiptInvoice(invDataStr) {
         var printWindow = window.open('', '_blank');
         var formattedAmt = Number(inv.amount || 0).toLocaleString();
         
-        var html = '<!DOCTYPE html><html><head><title>Invoice Receipt - ' + (inv.invoice_number || inv.id) + '</title></head><body onload="window.print(); window.setTimeout(function(){ window.close(); }, 500);">';
+        var html = '<!DOCTYPE html><html><head><title>Invoice Receipt - ' + (inv.invoice_number || inv.id) + '</title>
+<!-- MOBILE TABLE HEADER STYLES -->
+<style id="mobile-table-headers">
+@media screen and (max-width: 768px) {
+    table th {
+        white-space: nowrap !important;
+        min-width: max-content !important;
+        padding-left: 12px !important;
+        padding-right: 12px !important;
+    }
+    .table-container {
+        overflow-x: auto !important;
+        -webkit-overflow-scrolling: touch !important;
+    }
+}
+</style>
+</head><body onload="window.print(); window.setTimeout(function(){ window.close(); }, 500);">';
         html += '<div style="max-width:800px;margin:20px auto;border:2px solid #1a5276;border-radius:10px;padding:25px;background:#fdfdfd;font-family:Georgia,serif;">';
         html += '<div style="text-align:center;border-bottom:2px solid #1a5276;padding-bottom:15px;margin-bottom:15px;">';
         html += '<img src="' + window.location.origin + '/images/khashtec%20logo.png" alt="Khashtec logo" style="display:block;margin:0 auto 10px;max-height:80px;width:auto;">';
