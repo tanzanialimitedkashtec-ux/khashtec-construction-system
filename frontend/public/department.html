@@ -86703,7 +86703,9 @@ function submitWorkItemDataHTMLLocal(workItem) {
 
             'Content-Type': 'application/json',
 
-            'Accept': 'application/json'
+            'Accept': 'application/json',
+
+            'Authorization': `Bearer ${typeof sessionManager !== 'undefined' ? sessionManager.getAuthToken() : ''}`
 
         },
 
