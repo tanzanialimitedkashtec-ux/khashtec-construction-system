@@ -24096,6 +24096,12 @@ font-size: 12px;
         -webkit-overflow-scrolling: touch !important;
     }
 }
+
+    /* Fix overlapping text in table columns on mobile */
+    table td > div {
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
+    }
 </style>
 </head>
 
