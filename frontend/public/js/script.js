@@ -3058,6 +3058,30 @@ function showNotification(arg1, arg2 = 'info', arg3 = 3000) {
             .notification-close:hover {
                 opacity: 1;
             }
+            @media (max-width: 768px) {
+                .custom-notification {
+                    min-width: auto !important;
+                    max-width: 260px !important;
+                    padding: 8px 10px !important;
+                    top: 10px !important;
+                    right: 10px !important;
+                    font-size: 12px !important;
+                    border-radius: 6px !important;
+                }
+                .notification-content {
+                    gap: 6px;
+                }
+                .notification-icon {
+                    font-size: 14px;
+                }
+                .notification-message {
+                    font-size: 12px;
+                }
+                .notification-close {
+                    font-size: 16px;
+                    margin-left: 6px;
+                }
+            }
         `;
         document.head.appendChild(style);
     }
