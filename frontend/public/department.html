@@ -32,15 +32,6 @@
     opacity: 0;
     pointer-events: none;
 }
-#pwaSplash .splash-logo {
-    width: 80px;
-    height: 80px;
-    margin-bottom: 24px;
-    animation: splashLogoIn 0.8s ease-out forwards;
-    opacity: 0;
-    border-radius: 50%;
-    box-shadow: 0 4px 20px rgba(255,255,255,0.15);
-}
 #pwaSplash .splash-text {
     font-family: Arial, Helvetica, sans-serif;
     font-size: 42px;
@@ -71,10 +62,6 @@
     border-radius: 50%;
     opacity: 0;
     animation: splashSubIn 0.5s ease-out 1.2s forwards, splashSpin 0.8s linear 1.2s infinite;
-}
-@keyframes splashLogoIn {
-    0% { opacity: 0; transform: scale(0.5); }
-    100% { opacity: 1; transform: scale(1); }
 }
 @keyframes splashTextIn {
     0% { opacity: 0; transform: translateY(20px) scale(0.9); letter-spacing: 20px; }
@@ -23909,13 +23896,197 @@ font-size: 12px;
     <meta name="apple-mobile-web-app-title" content="KASHTEC">
     <link rel="apple-touch-icon" href="/images/khashtec-logo-circle.png">
 
+    <!-- Mobile UI Specific Form Styles -->
+    <style>
+    @media screen and (max-width: 768px) {
+        /* Redesign all forms for mobile */
+        form, .compact-form, .login-form, .driver-form {
+            display: flex !important;
+            flex-direction: column;
+            gap: 16px;
+            padding: 24px 20px;
+            background: #ffffff;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.08), 0 1px 3px rgba(0,0,0,0.04) !important;
+            border: 1px solid rgba(226, 232, 240, 0.8) !important;
+            margin-bottom: 24px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        
+        /* Modern Inputs */
+        form input, form select, form textarea {
+            width: 100% !important;
+            padding: 16px 18px !important;
+            border-radius: 14px !important;
+            border: 1px solid #cbd5e1 !important;
+            background-color: #f8fafc !important;
+            font-size: 16px !important; /* Prevents iOS zoom */
+            color: #1e293b !important;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+            box-sizing: border-box !important;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.02) !important;
+        }
+
+        form input:focus, form select:focus, form textarea:focus {
+            border-color: #3b82f6 !important;
+            background-color: #ffffff !important;
+            box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.15), inset 0 1px 2px rgba(0,0,0,0.05) !important;
+            outline: none !important;
+        }
+
+        form label {
+            font-weight: 600 !important;
+            font-size: 14px !important;
+            color: #475569 !important;
+            margin-bottom: -8px !important;
+            display: block !important;
+            letter-spacing: 0.3px !important;
+        }
+
+        /* Beautiful Submit Buttons */
+        form button[type="submit"], form button.submit-btn, form .btn-primary, form button {
+            width: 100% !important;
+            padding: 16px !important;
+            border-radius: 14px !important;
+            background: linear-gradient(135deg, #2563eb, #1d4ed8) !important;
+            color: white !important;
+            font-weight: 700 !important;
+            font-size: 16px !important;
+            border: none !important;
+            box-shadow: 0 6px 16px rgba(37, 99, 235, 0.25) !important;
+            margin-top: 12px !important;
+            transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+            cursor: pointer !important;
+            text-transform: uppercase !important;
+            letter-spacing: 0.5px !important;
+        }
+
+        form button[type="submit"]:active, form button.submit-btn:active, form .btn-primary:active, form button:active {
+            transform: scale(0.97) !important;
+            box-shadow: 0 2px 8px rgba(37, 99, 235, 0.2) !important;
+        }
+        
+        /* Stack row columns into single columns */
+        form .row, form .form-group, form .col-md-6, form .col-md-12, form .col-sm-6 {
+            display: flex !important;
+            flex-direction: column !important;
+            width: 100% !important;
+            gap: 12px !important;
+            margin-bottom: 0 !important;
+            padding: 0 !important;
+        }
+    }
+    </style>
+
+<!-- MOBILE FORM STYLES -->
+<style id="mobile-form-styles">
+@media screen and (max-width: 768px) {
+    /* Different styles and layouts ONLY for Mobile UI */
+    form {
+        background: rgba(255, 255, 255, 0.95) !important;
+        backdrop-filter: blur(12px) !important;
+        -webkit-backdrop-filter: blur(12px) !important;
+        border: 1px solid rgba(255, 255, 255, 0.6) !important;
+        padding: 24px 20px !important;
+        border-radius: 20px !important;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08), 0 4px 12px rgba(0, 0, 0, 0.04) !important;
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 18px !important;
+        margin-bottom: 25px !important;
+        transition: transform 0.3s ease, box-shadow 0.3s ease !important;
+    }
+    
+    form:active {
+        transform: scale(0.99) !important;
+    }
+    
+    form input:not([type="radio"]):not([type="checkbox"]):not([type="file"]), 
+    form select, 
+    form textarea {
+        width: 100% !important;
+        padding: 14px 16px !important;
+        border: 2px solid #e2e8f0 !important;
+        border-radius: 12px !important;
+        font-size: 16px !important; /* Prevents iOS zoom */
+        background-color: #f8fafc !important;
+        color: #334155 !important;
+        transition: all 0.3s ease !important;
+        box-sizing: border-box !important;
+        box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.02) !important;
+    }
+    
+    form input:not([type="radio"]):not([type="checkbox"]):not([type="file"]):focus, 
+    form select:focus, 
+    form textarea:focus {
+        border-color: #3b82f6 !important;
+        background-color: #ffffff !important;
+        box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.15), inset 0 2px 4px rgba(0, 0, 0, 0.02) !important;
+        outline: none !important;
+    }
+    
+    form label {
+        font-weight: 600 !important;
+        color: #475569 !important;
+        margin-bottom: -6px !important;
+        font-size: 14px !important;
+        display: inline-block !important;
+    }
+    
+    form button[type="submit"], 
+    form button.submit-btn,
+    form .btn,
+    form .btn-primary {
+        background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%) !important;
+        color: white !important;
+        border: none !important;
+        padding: 16px !important;
+        border-radius: 12px !important;
+        font-weight: 700 !important;
+        font-size: 16px !important;
+        letter-spacing: 0.5px !important;
+        text-transform: uppercase !important;
+        box-shadow: 0 6px 15px rgba(37, 99, 235, 0.3) !important;
+        transition: all 0.3s ease !important;
+        width: 100% !important;
+        margin-top: 8px !important;
+    }
+    
+    form button[type="submit"]:active, 
+    form button.submit-btn:active,
+    form .btn:active {
+        transform: translateY(2px) !important;
+        box-shadow: 0 2px 8px rgba(37, 99, 235, 0.3) !important;
+    }
+
+    form h2, form h3, form h4 {
+        color: #1e293b !important;
+        font-weight: 800 !important;
+        margin-top: 0 !important;
+        margin-bottom: 5px !important;
+        font-size: 22px !important;
+    }
+    
+    /* Layout grid adjustments to full width */
+    form .row, form .form-row, form .grid {
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 18px !important;
+    }
+    form .col, form .col-md-6, form .col-sm-12 {
+        width: 100% !important;
+        padding: 0 !important;
+        margin: 0 !important;
+    }
+}
+</style>
 </head>
 
 <body class="login-active">
 
 <!-- PWA Splash Screen -->
 <div id="pwaSplash">
-    <img src="images/khashtec-logo-circle.png" alt="KASHTEC" class="splash-logo" onerror="this.style.display='none'">
     <div class="splash-text">KASHTEC</div>
     <div class="splash-subtitle">Tanzania Limited</div>
     <div class="splash-loader"></div>
@@ -70656,7 +70827,110 @@ function downloadReceiptInvoice(invDataStr) {
         var printWindow = window.open('', '_blank');
         var formattedAmt = Number(inv.amount || 0).toLocaleString();
         
-        var html = '<!DOCTYPE html><html><head><title>Invoice Receipt - ' + (inv.invoice_number || inv.id) + '</title></head><body onload="window.print(); window.setTimeout(function(){ window.close(); }, 500);">';
+        var html = '<!DOCTYPE html><html><head><title>Invoice Receipt - ' + (inv.invoice_number || inv.id) + '</title>
+<!-- MOBILE FORM STYLES -->
+<style id="mobile-form-styles">
+@media screen and (max-width: 768px) {
+    /* Different styles and layouts ONLY for Mobile UI */
+    form {
+        background: rgba(255, 255, 255, 0.95) !important;
+        backdrop-filter: blur(12px) !important;
+        -webkit-backdrop-filter: blur(12px) !important;
+        border: 1px solid rgba(255, 255, 255, 0.6) !important;
+        padding: 24px 20px !important;
+        border-radius: 20px !important;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08), 0 4px 12px rgba(0, 0, 0, 0.04) !important;
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 18px !important;
+        margin-bottom: 25px !important;
+        transition: transform 0.3s ease, box-shadow 0.3s ease !important;
+    }
+    
+    form:active {
+        transform: scale(0.99) !important;
+    }
+    
+    form input:not([type="radio"]):not([type="checkbox"]):not([type="file"]), 
+    form select, 
+    form textarea {
+        width: 100% !important;
+        padding: 14px 16px !important;
+        border: 2px solid #e2e8f0 !important;
+        border-radius: 12px !important;
+        font-size: 16px !important; /* Prevents iOS zoom */
+        background-color: #f8fafc !important;
+        color: #334155 !important;
+        transition: all 0.3s ease !important;
+        box-sizing: border-box !important;
+        box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.02) !important;
+    }
+    
+    form input:not([type="radio"]):not([type="checkbox"]):not([type="file"]):focus, 
+    form select:focus, 
+    form textarea:focus {
+        border-color: #3b82f6 !important;
+        background-color: #ffffff !important;
+        box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.15), inset 0 2px 4px rgba(0, 0, 0, 0.02) !important;
+        outline: none !important;
+    }
+    
+    form label {
+        font-weight: 600 !important;
+        color: #475569 !important;
+        margin-bottom: -6px !important;
+        font-size: 14px !important;
+        display: inline-block !important;
+    }
+    
+    form button[type="submit"], 
+    form button.submit-btn,
+    form .btn,
+    form .btn-primary {
+        background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%) !important;
+        color: white !important;
+        border: none !important;
+        padding: 16px !important;
+        border-radius: 12px !important;
+        font-weight: 700 !important;
+        font-size: 16px !important;
+        letter-spacing: 0.5px !important;
+        text-transform: uppercase !important;
+        box-shadow: 0 6px 15px rgba(37, 99, 235, 0.3) !important;
+        transition: all 0.3s ease !important;
+        width: 100% !important;
+        margin-top: 8px !important;
+    }
+    
+    form button[type="submit"]:active, 
+    form button.submit-btn:active,
+    form .btn:active {
+        transform: translateY(2px) !important;
+        box-shadow: 0 2px 8px rgba(37, 99, 235, 0.3) !important;
+    }
+
+    form h2, form h3, form h4 {
+        color: #1e293b !important;
+        font-weight: 800 !important;
+        margin-top: 0 !important;
+        margin-bottom: 5px !important;
+        font-size: 22px !important;
+    }
+    
+    /* Layout grid adjustments to full width */
+    form .row, form .form-row, form .grid {
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 18px !important;
+    }
+    form .col, form .col-md-6, form .col-sm-12 {
+        width: 100% !important;
+        padding: 0 !important;
+        margin: 0 !important;
+    }
+}
+</style>
+</head><body onload="window.print(); window.setTimeout(function(){ window.close(); }, 500);">';
         html += '<div style="max-width:800px;margin:20px auto;border:2px solid #1a5276;border-radius:10px;padding:25px;background:#fdfdfd;font-family:Georgia,serif;">';
         html += '<div style="text-align:center;border-bottom:2px solid #1a5276;padding-bottom:15px;margin-bottom:15px;">';
         html += '<img src="' + window.location.origin + '/images/khashtec%20logo.png" alt="Khashtec logo" style="display:block;margin:0 auto 10px;max-height:80px;width:auto;">';
