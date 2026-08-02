@@ -12,6 +12,100 @@
     
 
     <style>
+/* ===== PWA SPLASH SCREEN ===== */
+#pwaSplash {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, #0b3d91 0%, #061d49 50%, #0a2f6e 100%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 99999;
+    opacity: 1;
+    transition: opacity 0.6s ease-out;
+}
+#pwaSplash.splash-fade-out {
+    opacity: 0;
+    pointer-events: none;
+}
+#pwaSplash .splash-logo {
+    width: 80px;
+    height: 80px;
+    margin-bottom: 24px;
+    animation: splashLogoIn 0.8s ease-out forwards;
+    opacity: 0;
+    border-radius: 50%;
+    box-shadow: 0 4px 20px rgba(255,255,255,0.15);
+}
+#pwaSplash .splash-text {
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 42px;
+    font-weight: 900;
+    letter-spacing: 10px;
+    color: #ffffff;
+    text-transform: uppercase;
+    opacity: 0;
+    animation: splashTextIn 1s ease-out 0.3s forwards;
+    text-shadow: 0 2px 20px rgba(255,255,255,0.2);
+}
+#pwaSplash .splash-subtitle {
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 11px;
+    letter-spacing: 4px;
+    color: rgba(255,255,255,0.6);
+    text-transform: uppercase;
+    margin-top: 10px;
+    opacity: 0;
+    animation: splashSubIn 0.8s ease-out 0.8s forwards;
+}
+#pwaSplash .splash-loader {
+    margin-top: 40px;
+    width: 36px;
+    height: 36px;
+    border: 3px solid rgba(255,255,255,0.15);
+    border-top: 3px solid #ffffff;
+    border-radius: 50%;
+    opacity: 0;
+    animation: splashSubIn 0.5s ease-out 1.2s forwards, splashSpin 0.8s linear 1.2s infinite;
+}
+@keyframes splashLogoIn {
+    0% { opacity: 0; transform: scale(0.5); }
+    100% { opacity: 1; transform: scale(1); }
+}
+@keyframes splashTextIn {
+    0% { opacity: 0; transform: translateY(20px) scale(0.9); letter-spacing: 20px; }
+    100% { opacity: 1; transform: translateY(0) scale(1); letter-spacing: 10px; }
+}
+@keyframes splashSubIn {
+    0% { opacity: 0; transform: translateY(8px); }
+    100% { opacity: 1; transform: translateY(0); }
+}
+@keyframes splashSpin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+@media (max-width: 768px) {
+    #pwaSplash .splash-text {
+        font-size: 32px;
+        letter-spacing: 8px;
+    }
+    #pwaSplash .splash-text {
+        animation-name: splashTextInMobile;
+    }
+    @keyframes splashTextInMobile {
+        0% { opacity: 0; transform: translateY(20px) scale(0.9); letter-spacing: 16px; }
+        100% { opacity: 1; transform: translateY(0) scale(1); letter-spacing: 8px; }
+    }
+    #pwaSplash .splash-subtitle {
+        font-size: 9px;
+        letter-spacing: 3px;
+    }
+}
+/* ===== END SPLASH SCREEN ===== */
 /* Task Table Styling Using Workforce Table Style */
 .workforce-table-container,
 .task-table-container {
@@ -23819,6 +23913,14 @@ font-size: 12px;
 
 <body class="login-active">
 
+<!-- PWA Splash Screen -->
+<div id="pwaSplash">
+    <img src="images/khashtec-logo-circle.png" alt="KASHTEC" class="splash-logo" onerror="this.style.display='none'">
+    <div class="splash-text">KASHTEC</div>
+    <div class="splash-subtitle">Tanzania Limited</div>
+    <div class="splash-loader"></div>
+</div>
+
 <div id="loginBackground"></div>
 
 <header>
@@ -23856,6 +23958,28 @@ font-size: 12px;
 
 
 <script>
+// ===== PWA Splash Screen Logic =====
+(function() {
+    var splash = document.getElementById('pwaSplash');
+    if (!splash) return;
+
+    // Show splash for 2.5 seconds then fade out
+    var splashDuration = 2500;
+
+    function dismissSplash() {
+        splash.classList.add('splash-fade-out');
+        setTimeout(function() {
+            splash.style.display = 'none';
+        }, 600);
+    }
+
+    // Auto-dismiss after duration
+    setTimeout(dismissSplash, splashDuration);
+
+    // Also dismiss on tap/click
+    splash.addEventListener('click', dismissSplash);
+})();
+
 // Early definition of toggleSidebar to prevent ReferenceError
 if (typeof window.toggleSidebar !== 'function') {
     window.toggleSidebar = function() {
