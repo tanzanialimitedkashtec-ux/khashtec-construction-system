@@ -251,7 +251,7 @@ router.get('/', async (req, res) => {
                 console.log('🔍 Admin work array length:', adminWorkArray.length);
                 
                 adminWorkDocuments = adminWorkArray.map(item => ({
-                    id: item.id,
+                    id: `aw_${item.id}`,
                     title: item.work_title,
                     description: stripHtmlTags(item.work_description),
                     category: item.work_type || 'general',
@@ -632,10 +632,12 @@ router.get('/:id', async (req, res) => {
         }
 
         // 2) Fallback: try admin_work (legacy / work-item documents)
-        try {
-            const adminWorkItems = await db.execute(
-                'SELECT * FROM admin_work WHERE id = ?', [docId]
-            );
+        if (typeof docId === 'string' && docId.startsWith('aw_')) {
+            const awId = docId.replace('aw_', '');
+            try {
+                const adminWorkItems = await db.execute(
+                    'SELECT * FROM admin_work WHERE id = ?', [awId]
+                );
             if (Array.isArray(adminWorkItems) && adminWorkItems.length > 0) {
                 const item = adminWorkItems[0];
                 return res.json({
@@ -653,8 +655,9 @@ router.get('/:id', async (req, res) => {
                     source: 'admin_work_table'
                 });
             }
-        } catch (awErr) {
-            console.warn('⚠️ admin_work lookup failed:', awErr.message);
+            } catch (awErr) {
+                console.warn('⚠️ admin_work lookup failed:', awErr.message);
+            }
         }
 
         // 3) Genuinely not found in either table
