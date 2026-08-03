@@ -205,6 +205,7 @@ router.get('/', async (req, res) => {
                     name: item.title,
                     description: item.description,
                     category: item.category,
+                    department: item.department || item.category || 'Other',
                     type: item.file_type,
                     uploadedBy: item.uploaded_by,
                     uploadedByName: item.uploaded_by_name,
@@ -1006,6 +1007,14 @@ router.post('/', function(req, res, next) {
             
             const mappedCategory = categoryMap[(docDepartment || '').toLowerCase()] || 'Other';
             
+            // Ensure department column exists (auto-migration)
+            try {
+                await db.execute("ALTER TABLE documents ADD COLUMN department VARCHAR(100) DEFAULT 'admin' AFTER category");
+                console.log('✅ Added department column to documents table');
+            } catch (colErr) {
+                // Column already exists — ignore
+            }
+            
             // Single INSERT into documents table only (no admin_work duplication)
             const documentsQuery = `
                 INSERT INTO documents (
@@ -1017,9 +1026,10 @@ router.post('/', function(req, res, next) {
                     file_data,
                     file_mime,
                     category,
+                    department,
                     uploaded_by,
                     status
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'Pending')
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'Pending')
             `;
             
             const documentsValues = [
@@ -1031,6 +1041,7 @@ router.post('/', function(req, res, next) {
                 fileData,
                 fileMime,
                 mappedCategory,
+                docDepartment || 'admin',
                 userId
             ];
             
