@@ -72098,7 +72098,6 @@ function showNHIFContributions() {
                 }
 
             });
-            }
 
         }
 
@@ -73754,7 +73753,6 @@ function showMaterialsInForm() {
                 }
 
             });
-            }
 
         }
 
@@ -74205,7 +74203,6 @@ function showMaterialsOutForm() {
                 }
 
             });
-            }
 
         }
 
@@ -74797,7 +74794,6 @@ function showAddMaterialForm() {
                 }
 
             });
-            }
 
         }
 
@@ -75254,7 +75250,6 @@ function showSuggestionsManagement() {
                 }
 
             });
-            }
 
         }
 
@@ -76312,7 +76307,6 @@ function showAddTransportCostForm() {
                 }
 
             });
-            }
 
         }
 
