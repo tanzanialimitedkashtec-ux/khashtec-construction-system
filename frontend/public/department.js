@@ -2251,7 +2251,7 @@ function loadMenu(){
 
 
 
-    if(currentRole === "ASSISTANT" || hasCustomNav){
+    if(currentRole === "ASSISTANT" || currentRole === "Admin Assistant" || hasCustomNav){
         console.log('Adding Admin Assistant menu items'); // Debug line
         
         addMenu("Upload Documents", uploadDocs);
