@@ -606,36 +606,42 @@ async function editDoc(docId) {
         // Get document details
         const doc = await KashTecAPI.getDocument(docId);
         
-        // Create edit modal
         const modal = document.createElement('div');
         modal.className = 'modal';
+        modal.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.6);display:flex;justify-content:center;align-items:center;z-index:10000;animation:fadeIn 0.3s ease';
         modal.innerHTML = `
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h3>Edit Document</h3>
-                    <button class="close-btn" onclick="closeModal()">&times;</button>
+            <div style="background:#fff;border-radius:12px;box-shadow:0 20px 60px rgba(0,0,0,0.3);width:400px;max-width:90%;max-height:85vh;overflow:hidden;animation:slideIn 0.3s ease">
+                <div style="background:linear-gradient(135deg,#0b3d91 0%,#1e5bb8 100%);color:#fff;padding:12px 16px;display:flex;justify-content:space-between;align-items:center">
+                    <div style="display:flex;align-items:center;gap:8px">
+                        <div style="width:32px;height:32px;background:rgba(255,255,255,0.2);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px">✏️</div>
+                        <div>
+                            <h3 style="margin:0;font-size:15px;font-weight:600">Edit Document</h3>
+                            <span style="font-size:11px;opacity:0.8">ID: ${docId}</span>
+                        </div>
+                    </div>
+                    <button onclick="closeModal()" style="background:rgba(255,255,255,0.2);border:none;color:#fff;width:28px;height:28px;border-radius:6px;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center">&times;</button>
                 </div>
-                <div class="modal-body">
+                <div style="padding:16px;overflow-y:auto;max-height:calc(85vh - 120px)">
                     <form id="editDocForm">
-                        <div class="form-group">
-                            <label>Document Title:</label>
-                            <input type="text" id="editTitle" value="${doc.title || ''}" required>
+                        <div style="margin-bottom:12px">
+                            <label style="font-size:11px;color:#6c757d;text-transform:uppercase;letter-spacing:0.5px;display:block;margin-bottom:4px">Document Title:</label>
+                            <input type="text" id="editTitle" value="${doc.title || ''}" required style="width:100%;padding:8px 12px;border:1px solid #dee2e6;border-radius:6px;font-size:13px;box-sizing:border-box;color:#1a1a2e">
                         </div>
-                        <div class="form-group">
-                            <label>Description:</label>
-                            <textarea id="editDescription">${doc.description || ''}</textarea>
+                        <div style="margin-bottom:12px">
+                            <label style="font-size:11px;color:#6c757d;text-transform:uppercase;letter-spacing:0.5px;display:block;margin-bottom:4px">Description:</label>
+                            <textarea id="editDescription" style="width:100%;padding:8px 12px;border:1px solid #dee2e6;border-radius:6px;font-size:13px;box-sizing:border-box;min-height:80px;resize:vertical;color:#1a1a2e">${doc.description || ''}</textarea>
                         </div>
-                        <div class="form-group">
-                            <label>Status:</label>
-                            <select id="editStatus">
+                        <div style="margin-bottom:16px">
+                            <label style="font-size:11px;color:#6c757d;text-transform:uppercase;letter-spacing:0.5px;display:block;margin-bottom:4px">Status:</label>
+                            <select id="editStatus" style="width:100%;padding:8px 12px;border:1px solid #dee2e6;border-radius:6px;font-size:13px;box-sizing:border-box;color:#1a1a2e">
                                 <option value="active" ${doc.status === 'active' ? 'selected' : ''}>Active</option>
                                 <option value="inactive" ${doc.status === 'inactive' ? 'selected' : ''}>Inactive</option>
                                 <option value="archived" ${doc.status === 'archived' ? 'selected' : ''}>Archived</option>
                             </select>
                         </div>
-                        <div class="form-actions">
-                            <button type="submit" class="action">Save Changes</button>
-                            <button type="button" class="action secondary" onclick="closeModal()">Cancel</button>
+                        <div style="display:flex;gap:8px;justify-content:flex-end;border-top:1px solid #e9ecef;padding-top:16px">
+                            <button type="submit" style="background:linear-gradient(135deg,#0b3d91,#1e5bb8);color:#fff;border:none;padding:8px 16px;border-radius:6px;font-size:13px;font-weight:500;cursor:pointer">Save Changes</button>
+                            <button type="button" onclick="closeModal()" style="background:#6c757d;color:#fff;border:none;padding:8px 16px;border-radius:6px;font-size:13px;font-weight:500;cursor:pointer">Cancel</button>
                         </div>
                     </form>
                 </div>
@@ -643,7 +649,6 @@ async function editDoc(docId) {
         `;
         
         document.body.appendChild(modal);
-        modal.style.display = 'block';
         
         // Handle form submission
         document.getElementById('editDocForm').addEventListener('submit', async (e) => {
