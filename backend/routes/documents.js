@@ -923,7 +923,6 @@ router.post('/', function(req, res, next) {
 }, async (req, res) => {
     try {
         console.log('Document upload request received');
-        console.log('File info:', req.file ? req.file.originalname : 'none');
         
         // Handle both file upload and JSON-only submissions
         if (req.body.work_type && req.body.work_title) {
@@ -935,13 +934,8 @@ router.post('/', function(req, res, next) {
                 work_type,
                 work_title,
                 work_description,
-                priority = 'Medium',
-                due_date,
-                assigned_to,
-                submitted_by,
                 docType,
                 docDepartment,
-                docPriority,
                 docDescription,
                 docFileName,
                 docFileSize,
@@ -954,8 +948,10 @@ router.post('/', function(req, res, next) {
             if (file_base64) {
                 try {
                     fileData = Buffer.from(file_base64, 'base64');
-                    if (docFileName && docFileName.toLowerCase().endsWith('.png')) fileMime = 'image/png';
-                    else if (docFileName && (docFileName.toLowerCase().endsWith('.jpg') || docFileName.toLowerCase().endsWith('.jpeg'))) fileMime = 'image/jpeg';
+                    const lowerName = (docFileName || '').toLowerCase();
+                    if (lowerName.endsWith('.png')) fileMime = 'image/png';
+                    else if (lowerName.endsWith('.jpg') || lowerName.endsWith('.jpeg')) fileMime = 'image/jpeg';
+                    else if (lowerName.endsWith('.doc') || lowerName.endsWith('.docx')) fileMime = 'application/msword';
                     else fileMime = 'application/pdf';
                 } catch (e) {
                     console.error('Error parsing base64:', e);
@@ -971,7 +967,6 @@ router.post('/', function(req, res, next) {
                     const jwt = require('jsonwebtoken');
                     const decoded = jwt.verify(token, process.env.JWT_SECRET);
                     userId = decoded.id;
-                    console.log('🔍 Extracted user ID from JWT:', userId);
                     if (!userId) {
                         return res.status(401).json({ error: 'Invalid token payload' });
                     }
@@ -983,151 +978,64 @@ router.post('/', function(req, res, next) {
                 return res.status(401).json({ error: 'Invalid token' });
             }
             
-            console.log('🔍 Final user ID for upload:', userId);
+            // Map department to valid category ENUM values
+            const categoryMap = {
+                'finance': 'Invoice',
+                'hr': 'Other',
+                'projects': 'Plan',
+                'operations': 'Other',
+                'management': 'Other',
+                'realestate': 'Contract',
+                'policy': 'Other',
+                'procedure': 'Other',
+                'report': 'Report',
+                'contract': 'Contract',
+                'memo': 'Other',
+                'other': 'Other'
+            };
             
-            console.log('🔍 Extracted work_type:', work_type);
-            console.log('🔍 Extracted work_title:', work_title);
-            console.log('🔍 Extracted priority:', priority);
+            const mappedCategory = categoryMap[(docDepartment || '').toLowerCase()] || 'Other';
             
-            // Insert into admin_work table
-            const adminWorkQuery = `
-                INSERT INTO admin_work (
-                    department_code,
-                    work_type,
-                    work_title,
-                    work_description,
-                    priority,
-                    due_date,
-                    assigned_to,
-                    submitted_by,
-                    submitted_date,
+            // Single INSERT into documents table only (no admin_work duplication)
+            const documentsQuery = `
+                INSERT INTO documents (
+                    title,
+                    description,
+                    file_name,
+                    file_size,
+                    file_type,
+                    file_data,
+                    file_mime,
+                    category,
+                    department,
+                    uploaded_by,
                     status
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW(), 'pending')
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'Pending')
             `;
             
-            const adminWorkValues = [
-                'admin',
-                work_type,
+            const documentsValues = [
                 work_title,
-                work_description,
-                priority,
-                due_date,
-                assigned_to,
-                submitted_by
+                docDescription || work_description,
+                docFileName || `${work_title.replace(/[^a-zA-Z0-9]/g, '_')}.pdf`,
+                docFileSize || 0,
+                docType || 'PDF',
+                fileData,
+                fileMime,
+                mappedCategory,
+                docDepartment || 'admin',
+                userId
             ];
             
-            console.log('🔍 Inserting work item with values:', adminWorkValues);
+            const documentsResult = await db.execute(documentsQuery, documentsValues);
+            console.log('✅ Document inserted successfully, ID:', documentsResult.insertId);
             
-            const adminWorkResult = await db.execute(adminWorkQuery, adminWorkValues);
-            console.log('✅ Work item inserted successfully:', adminWorkResult);
-            
-            // Also insert into documents table
-            try {
-                // Map department to valid category ENUM values
-                const categoryMap = {
-                    'finance': 'Invoice',
-                    'hr': 'Other',
-                    'projects': 'Plan',
-                    'operations': 'Other',
-                    'management': 'Other',
-                    'realestate': 'Contract',
-                    'policy': 'Other',
-                    'procedure': 'Other',
-                    'report': 'Report',
-                    'contract': 'Contract',
-                    'memo': 'Other',
-                    'other': 'Other'
-                };
-                
-                const mappedCategory = categoryMap[docDepartment?.toLowerCase()] || 'Other';
-                
-                // Ensure documents table exists
-                try {
-                    await db.execute(`
-                        CREATE TABLE IF NOT EXISTS documents (
-                            id INT AUTO_INCREMENT PRIMARY KEY,
-                            title VARCHAR(255) NOT NULL,
-                            description TEXT,
-                            file_name VARCHAR(255) NOT NULL,
-                            file_size BIGINT DEFAULT 0,
-                            file_type VARCHAR(100) DEFAULT 'PDF',
-                            category ENUM('Contract', 'Plan', 'Report', 'Invoice', 'Permit', 'Certificate', 'Other') DEFAULT 'Other',
-                            uploaded_by INT NOT NULL,
-                            status ENUM('Pending', 'Approved', 'Rejected') DEFAULT 'Pending',
-                            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-                            INDEX idx_category (category),
-                            INDEX idx_status (status),
-                            INDEX idx_uploaded_by (uploaded_by),
-                            INDEX idx_created_at (created_at)
-                        )
-                    `);
-                    console.log('✅ Documents table verified/created successfully');
-                } catch (tableError) {
-                    console.log('⚠️ Could not create documents table:', tableError.message);
-                }
-                
-                const documentsQuery = `
-                    INSERT INTO documents (
-                        title,
-                        description,
-                        file_name,
-                        file_size,
-                        file_type,
-                        file_data,
-                        file_mime,
-                        category,
-                        uploaded_by,
-                        status
-                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'Pending')
-                `;
-                
-                const documentsValues = [
-                    work_title,
-                    docDescription || work_description,
-                    docFileName || `${work_title.replace(/[^a-zA-Z0-9]/g, '_')}.pdf`,
-                    docFileSize || 0,
-                    docType || 'PDF',
-                    fileData,
-                    fileMime,
-                    mappedCategory,
-                    userId
-                ];
-                
-                console.log('🔍 Inserting document with values:', documentsValues);
-                console.log('🔍 Mapped category:', docDepartment, '→', mappedCategory);
-                
-                const documentsResult = await db.execute(documentsQuery, documentsValues);
-                console.log('✅ Document inserted successfully:', documentsResult);
-                
-                notify('Document Update', 'New document uploaded: ' + (req.body.title || req.body.name || (req.file && req.file.originalname) || 'Document'), 'info', 'MD', 'Admin Assistant');
-                res.json({
-                    success: true,
-                    message: 'Document uploaded successfully',
-                    id: documentsResult.insertId,
-                    adminWorkId: adminWorkResult.insertId,
-                    status: 'pending'
-                });
-                
-            } catch (docError) {
-                console.error('❌ Error inserting into documents table:', docError);
-                console.error('❌ Error details:', {
-                    message: docError.message,
-                    code: docError.code,
-                    errno: docError.errno,
-                    sqlState: docError.sqlState,
-                    sqlMessage: docError.sqlMessage
-                });
-                // Still return success for admin_work insertion
-                res.json({
-                    success: true,
-                    message: 'Work item uploaded successfully (document table error)',
-                    id: adminWorkResult.insertId,
-                    status: 'pending',
-                    warning: 'Document table insertion failed',
-                    error: docError.message
-                });
-            }
+            notify('Document Update', 'New document uploaded: ' + work_title, 'info', 'MD', 'Admin Assistant');
+            res.json({
+                success: true,
+                message: 'Document uploaded successfully',
+                id: documentsResult.insertId,
+                status: 'pending'
+            });
             
             return;
         } else if (!req.file) {

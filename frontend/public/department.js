@@ -9088,7 +9088,7 @@ function submitRevisionRequest(policyId) {
 
             errorCause = 'Invalid revision data';
 
-            troubleshooting = 'â€¢ Fill all required fields correctlynâ€¢ Check revision type selectionnâ€¢ Verify expected timelinenâ€¢ Ensure details are provided';
+            troubleshooting = '• Fill all required fields correctly\n• Check revision type selection\n• Verify expected timeline\n• Ensure details are provided';
 
         } else if (error.message.includes('404')) {
 
@@ -58872,7 +58872,7 @@ function displayDocuments(documents) {
                     <div class="document-actions">
 
                         <button class="action-btn view" onclick="viewDocument('${doc.id}')" title="View Document">👁️</button>
-                        <button class="action-btn download" onclick="downloadDocument('${doc.id}')" title="Download Document">ðŸ“¥</button>
+                        <button class="action-btn download" onclick="downloadDocument('${doc.id}')" title="Download Document">📥</button>
                         <button class="action-btn delete" onclick="deleteDoc('${doc.id}', '${(doc.name || doc.filename || "Document").replace(/\'/g, "\\'")}' )" title="Delete Document">🗑️</button>
 
                         </div>
@@ -59061,7 +59061,7 @@ function uploadDocument() {
 
     if (document.readyState === 'loading') {
 
-        console.error('âŒ DOM not ready yet, please wait');
+        console.error('â Œ DOM not ready yet, please wait');
 
         return;
 
@@ -59191,68 +59191,38 @@ function uploadDocument() {
 
     
 
-    // Read file as base64 if it exists
-
+    // Use FormData for fast binary upload
+    const formData = new FormData();
     if (docFile) {
-
-        const reader = new FileReader();
-
-        reader.onload = function(e) {
-
-            // Remove the data URI prefix (e.g. data:application/pdf;base64,)
-
-            const base64Data = e.target.result.split(',')[1];
-
-            workItem.file_base64 = base64Data;
-
-            
-
-            // Send data to backend API after reading file
-
-            submitWorkItemData(workItem);
-
-        };
-
-        reader.onerror = function() {
-
-            customAlert('Error reading the file', 'Error', 'error');
-
-        };
-
-        reader.readAsDataURL(docFile);
-
-    } else {
-
-        // No file, just submit
-
-        submitWorkItemData(workItem);
-
+        formData.append('file', docFile);
+    }
+    formData.append('work_type', 'Document Management');
+    formData.append('work_title', docTitle);
+    formData.append('work_description', docDescription);
+    formData.append('docType', docType);
+    formData.append('docDepartment', docDepartment);
+    formData.append('docPriority', docPriority);
+    formData.append('docDescription', docDescription);
+    if (docFile) {
+        formData.append('docFileName', docFile.name);
+        formData.append('docFileSize', docFile.size);
     }
 
+    submitWorkItemData(formData);
 }
 
 
 
-function submitWorkItemData(workItem) {
-
-    
-
+function submitWorkItemData(formData) {
     // Send data to backend API
-
+    const token = (typeof sessionManager !== 'undefined' && sessionManager.getAuthToken) ? sessionManager.getAuthToken() : '';
     fetch('/api/documents', {
-
         method: 'POST',
-
         headers: {
-
-            'Content-Type': 'application/json',
-
-            'Accept': 'application/json'
-
+            'Authorization': token ? `Bearer ${token}` : ''
+            // Note: Do NOT set Content-Type here, browser sets it automatically with boundary for FormData
         },
-
-        body: JSON.stringify(workItem)
-
+        body: formData
     })
 
     .then(response => {
@@ -59279,13 +59249,19 @@ function submitWorkItemData(workItem) {
 
         // Show detailed success notification
 
+        const title = formData.get('work_title') || 'Document';
+        const type = formData.get('docType') || 'Unknown';
+        const department = formData.get('docDepartment') || 'Unknown';
+        const fileName = formData.get('docFileName') || 'File';
+        const priority = formData.get('docPriority') || 'normal';
+
         showRealProblemNotification('SUCCESS', {
 
-            message: `âœ… Document uploaded successfully!nnðŸ“‹ Details:nâ€¢ Title: ${docTitle}nâ€¢ Type: ${docType}nâ€¢ Department: ${docDepartment}nâ€¢ File: ${docFile.name}nâ€¢ Priority: ${docPriority}nâ€¢ Document ID: ${data.id}nâ€¢ Status: ${data.status || 'pending'}nnðŸŽ‰ Document saved to database without page refresh!`,
+            message: `✅ Document uploaded successfully!\n\n📋 Details:\n• Title: ${title}\n• Type: ${type}\n• Department: ${department}\n• File: ${fileName}\n• Priority: ${priority}\n• Document ID: ${data.id}\n• Status: ${data.status || 'pending'}\n\n🎉 Document saved to database without page refresh!`,
 
             documentId: data.id,
 
-            fileName: docFile.name,
+            fileName: fileName,
 
             uploadDate: new Date().toLocaleString()
 
@@ -65286,52 +65262,52 @@ async function viewDocument(docId, titleParam = '') {
             modal.className = 'modal-overlay';
             modal.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.6);display:flex;justify-content:center;align-items:center;z-index:10000;animation:fadeIn 0.3s ease';
             modal.innerHTML = `
-                <div style="background:#fff;border-radius:12px;box-shadow:0 20px 60px rgba(0,0,0,0.3);width:520px;max-width:92%;max-height:85vh;overflow:hidden;animation:slideIn 0.3s ease">
-                    <div style="background:linear-gradient(135deg,#0b3d91 0%,#1e5bb8 100%);color:#fff;padding:20px 24px;display:flex;justify-content:space-between;align-items:center">
-                        <div style="display:flex;align-items:center;gap:12px">
-                            <div style="width:40px;height:40px;background:rgba(255,255,255,0.2);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px">📄</div>
+                <div style="background:#fff;border-radius:12px;box-shadow:0 20px 60px rgba(0,0,0,0.3);width:400px;max-width:90%;max-height:85vh;overflow:hidden;animation:slideIn 0.3s ease">
+                    <div style="background:linear-gradient(135deg,#0b3d91 0%,#1e5bb8 100%);color:#fff;padding:12px 16px;display:flex;justify-content:space-between;align-items:center">
+                        <div style="display:flex;align-items:center;gap:8px">
+                            <div style="width:32px;height:32px;background:rgba(255,255,255,0.2);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px">📄</div>
                             <div>
-                                <h3 style="margin:0;font-size:18px;font-weight:600">Document Details</h3>
-                                <span style="font-size:12px;opacity:0.8">ID: ${docId}</span>
+                                <h3 style="margin:0;font-size:15px;font-weight:600">Document Details</h3>
+                                <span style="font-size:11px;opacity:0.8">ID: ${docId}</span>
                             </div>
                         </div>
-                        <button onclick="this.closest('.modal-overlay').remove()" style="background:rgba(255,255,255,0.2);border:none;color:#fff;width:32px;height:32px;border-radius:8px;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center">&times;</button>
+                        <button onclick="this.closest('.modal-overlay').remove()" style="background:rgba(255,255,255,0.2);border:none;color:#fff;width:28px;height:28px;border-radius:6px;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center">&times;</button>
                     </div>
-                    <div style="padding:24px;overflow-y:auto;max-height:calc(85vh - 160px)">
-                        <h4 style="margin:0 0 16px;font-size:20px;color:#1a1a2e;font-weight:700">${docTitle}</h4>
+                    <div style="padding:16px;overflow-y:auto;max-height:calc(85vh - 120px)">
+                        <h4 style="margin:0 0 12px;font-size:16px;color:#1a1a2e;font-weight:700">${docTitle}</h4>
                         
-                        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px">
-                            <div style="background:#f8f9fa;border-radius:8px;padding:12px">
-                                <span style="font-size:11px;color:#6c757d;text-transform:uppercase;letter-spacing:0.5px;display:block;margin-bottom:4px">Type</span>
-                                <span style="font-size:14px;color:#1a1a2e;font-weight:500">${docType}</span>
+                        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px">
+                            <div style="background:#f8f9fa;border-radius:8px;padding:8px">
+                                <span style="font-size:10px;color:#6c757d;text-transform:uppercase;letter-spacing:0.5px;display:block;margin-bottom:2px">Type</span>
+                                <span style="font-size:13px;color:#1a1a2e;font-weight:500">${docType}</span>
                             </div>
-                            <div style="background:#f8f9fa;border-radius:8px;padding:12px">
-                                <span style="font-size:11px;color:#6c757d;text-transform:uppercase;letter-spacing:0.5px;display:block;margin-bottom:4px">Department</span>
-                                <span style="font-size:14px;color:#1a1a2e;font-weight:500">${docDept}</span>
+                            <div style="background:#f8f9fa;border-radius:8px;padding:8px">
+                                <span style="font-size:10px;color:#6c757d;text-transform:uppercase;letter-spacing:0.5px;display:block;margin-bottom:2px">Department</span>
+                                <span style="font-size:13px;color:#1a1a2e;font-weight:500">${docDept}</span>
                             </div>
-                            <div style="background:#f8f9fa;border-radius:8px;padding:12px">
-                                <span style="font-size:11px;color:#6c757d;text-transform:uppercase;letter-spacing:0.5px;display:block;margin-bottom:4px">Status</span>
-                                <span style="display:inline-block;padding:2px 10px;border-radius:12px;font-size:12px;font-weight:600;background:${statusColor}22;color:${statusColor}">${docStatus}</span>
+                            <div style="background:#f8f9fa;border-radius:8px;padding:8px">
+                                <span style="font-size:10px;color:#6c757d;text-transform:uppercase;letter-spacing:0.5px;display:block;margin-bottom:2px">Status</span>
+                                <span style="display:inline-block;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:600;background:${statusColor}22;color:${statusColor}">${docStatus}</span>
                             </div>
-                            <div style="background:#f8f9fa;border-radius:8px;padding:12px">
-                                <span style="font-size:11px;color:#6c757d;text-transform:uppercase;letter-spacing:0.5px;display:block;margin-bottom:4px">Last Updated</span>
-                                <span style="font-size:14px;color:#1a1a2e;font-weight:500">${docDate ? new Date(docDate).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }) : 'N/A'}</span>
+                            <div style="background:#f8f9fa;border-radius:8px;padding:8px">
+                                <span style="font-size:10px;color:#6c757d;text-transform:uppercase;letter-spacing:0.5px;display:block;margin-bottom:2px">Updated</span>
+                                <span style="font-size:13px;color:#1a1a2e;font-weight:500">${docDate ? new Date(docDate).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }) : 'N/A'}</span>
                             </div>
                         </div>
 
-                        ${docFileName ? `<div style="background:#f8f9fa;border-radius:8px;padding:12px;margin-bottom:12px">
-                            <span style="font-size:11px;color:#6c757d;text-transform:uppercase;letter-spacing:0.5px;display:block;margin-bottom:4px">File Name</span>
-                            <span style="font-size:14px;color:#1a1a2e;font-weight:500">${docFileName}</span>
+                        ${docFileName ? `<div style="background:#f8f9fa;border-radius:8px;padding:8px;margin-bottom:8px">
+                            <span style="font-size:10px;color:#6c757d;text-transform:uppercase;letter-spacing:0.5px;display:block;margin-bottom:2px">File Name</span>
+                            <span style="font-size:13px;color:#1a1a2e;font-weight:500">${docFileName}</span>
                         </div>` : ''}
 
-                        ${docDescription ? `<div style="background:#f0f4ff;border-left:4px solid #0b3d91;border-radius:0 8px 8px 0;padding:14px 16px;margin-bottom:16px">
-                            <span style="font-size:11px;color:#6c757d;text-transform:uppercase;letter-spacing:0.5px;display:block;margin-bottom:6px">Description</span>
-                            <p style="margin:0;font-size:14px;color:#333;line-height:1.5">${docDescription}</p>
+                        ${docDescription ? `<div style="background:#f0f4ff;border-left:4px solid #0b3d91;border-radius:0 8px 8px 0;padding:10px 12px;margin-bottom:12px">
+                            <span style="font-size:10px;color:#6c757d;text-transform:uppercase;letter-spacing:0.5px;display:block;margin-bottom:4px">Description</span>
+                            <p style="margin:0;font-size:13px;color:#333;line-height:1.4">${docDescription}</p>
                         </div>` : ''}
                     </div>
-                    <div style="padding:16px 24px;background:#f8f9fa;border-top:1px solid #e9ecef;display:flex;gap:10px;justify-content:flex-end">
-                        <button onclick="downloadDocument('${docId}'); this.closest('.modal-overlay').remove();" style="background:linear-gradient(135deg,#28a745,#20c997);color:#fff;border:none;padding:10px 20px;border-radius:8px;font-size:14px;font-weight:500;cursor:pointer;display:flex;align-items:center;gap:6px">📥 Download PDF</button>
-                        <button onclick="this.closest('.modal-overlay').remove()" style="background:#6c757d;color:#fff;border:none;padding:10px 20px;border-radius:8px;font-size:14px;font-weight:500;cursor:pointer">Close</button>
+                    <div style="padding:12px 16px;background:#f8f9fa;border-top:1px solid #e9ecef;display:flex;gap:8px;justify-content:flex-end">
+                        <button onclick="downloadDocument('${docId}'); this.closest('.modal-overlay').remove();" style="background:linear-gradient(135deg,#28a745,#20c997);color:#fff;border:none;padding:8px 16px;border-radius:6px;font-size:13px;font-weight:500;cursor:pointer;display:flex;align-items:center;gap:4px">📥 Download</button>
+                        <button onclick="this.closest('.modal-overlay').remove()" style="background:#6c757d;color:#fff;border:none;padding:8px 16px;border-radius:6px;font-size:13px;font-weight:500;cursor:pointer">Close</button>
                     </div>
                 </div>
             `;
