@@ -699,57 +699,57 @@ async function viewDoc(docId) {
         modal.className = 'modal';
         modal.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.6);display:flex;justify-content:center;align-items:center;z-index:10000;animation:fadeIn 0.3s ease';
         modal.innerHTML = `
-            <div style="background:#fff;border-radius:12px;box-shadow:0 20px 60px rgba(0,0,0,0.3);width:520px;max-width:92%;max-height:85vh;overflow:hidden;animation:slideIn 0.3s ease">
-                <div style="background:linear-gradient(135deg,#0b3d91 0%,#1e5bb8 100%);color:#fff;padding:20px 24px;display:flex;justify-content:space-between;align-items:center">
-                    <div style="display:flex;align-items:center;gap:12px">
-                        <div style="width:40px;height:40px;background:rgba(255,255,255,0.2);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px">📄</div>
+            <div style="background:#fff;border-radius:12px;box-shadow:0 20px 60px rgba(0,0,0,0.3);width:400px;max-width:90%;max-height:85vh;overflow:hidden;animation:slideIn 0.3s ease">
+                <div style="background:linear-gradient(135deg,#0b3d91 0%,#1e5bb8 100%);color:#fff;padding:12px 16px;display:flex;justify-content:space-between;align-items:center">
+                    <div style="display:flex;align-items:center;gap:8px">
+                        <div style="width:32px;height:32px;background:rgba(255,255,255,0.2);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px">📄</div>
                         <div>
-                            <h3 style="margin:0;font-size:18px;font-weight:600">Document Details</h3>
-                            <span style="font-size:12px;opacity:0.8">ID: ${docId}</span>
+                            <h3 style="margin:0;font-size:15px;font-weight:600">Document Details</h3>
+                            <span style="font-size:11px;opacity:0.8">ID: ${docId}</span>
                         </div>
                     </div>
-                    <button onclick="closeModal()" style="background:rgba(255,255,255,0.2);border:none;color:#fff;width:32px;height:32px;border-radius:8px;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center">&times;</button>
+                    <button onclick="closeModal()" style="background:rgba(255,255,255,0.2);border:none;color:#fff;width:28px;height:28px;border-radius:6px;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center">&times;</button>
                 </div>
-                <div style="padding:24px;overflow-y:auto;max-height:calc(85vh - 160px)">
-                    <h4 style="margin:0 0 16px;font-size:20px;color:#1a1a2e;font-weight:700">${docTitle}</h4>
+                <div style="padding:16px;overflow-y:auto;max-height:calc(85vh - 120px)">
+                    <h4 style="margin:0 0 12px;font-size:16px;color:#1a1a2e;font-weight:700">${docTitle}</h4>
                     
-                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px">
-                        <div style="background:#f8f9fa;border-radius:8px;padding:12px">
-                            <span style="font-size:11px;color:#6c757d;text-transform:uppercase;letter-spacing:0.5px;display:block;margin-bottom:4px">Type</span>
-                            <span style="font-size:14px;color:#1a1a2e;font-weight:500">${docType}</span>
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px">
+                        <div style="background:#f8f9fa;border-radius:8px;padding:8px">
+                            <span style="font-size:10px;color:#6c757d;text-transform:uppercase;letter-spacing:0.5px;display:block;margin-bottom:2px">Type</span>
+                            <span style="font-size:13px;color:#1a1a2e;font-weight:500">${docType}</span>
                         </div>
-                        <div style="background:#f8f9fa;border-radius:8px;padding:12px">
-                            <span style="font-size:11px;color:#6c757d;text-transform:uppercase;letter-spacing:0.5px;display:block;margin-bottom:4px">Department</span>
-                            <span style="font-size:14px;color:#1a1a2e;font-weight:500">${docDept}</span>
+                        <div style="background:#f8f9fa;border-radius:8px;padding:8px">
+                            <span style="font-size:10px;color:#6c757d;text-transform:uppercase;letter-spacing:0.5px;display:block;margin-bottom:2px">Department</span>
+                            <span style="font-size:13px;color:#1a1a2e;font-weight:500">${docDept}</span>
                         </div>
-                        <div style="background:#f8f9fa;border-radius:8px;padding:12px">
-                            <span style="font-size:11px;color:#6c757d;text-transform:uppercase;letter-spacing:0.5px;display:block;margin-bottom:4px">Status</span>
-                            <span style="display:inline-block;padding:2px 10px;border-radius:12px;font-size:12px;font-weight:600;background:${statusColor}22;color:${statusColor}">${docStatus}</span>
+                        <div style="background:#f8f9fa;border-radius:8px;padding:8px">
+                            <span style="font-size:10px;color:#6c757d;text-transform:uppercase;letter-spacing:0.5px;display:block;margin-bottom:2px">Status</span>
+                            <span style="display:inline-block;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:600;background:${statusColor}22;color:${statusColor}">${docStatus}</span>
                         </div>
-                        <div style="background:#f8f9fa;border-radius:8px;padding:12px">
-                            <span style="font-size:11px;color:#6c757d;text-transform:uppercase;letter-spacing:0.5px;display:block;margin-bottom:4px">Last Updated</span>
-                            <span style="font-size:14px;color:#1a1a2e;font-weight:500">${docDate ? new Date(docDate).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }) : 'N/A'}</span>
+                        <div style="background:#f8f9fa;border-radius:8px;padding:8px">
+                            <span style="font-size:10px;color:#6c757d;text-transform:uppercase;letter-spacing:0.5px;display:block;margin-bottom:2px">Updated</span>
+                            <span style="font-size:13px;color:#1a1a2e;font-weight:500">${docDate ? new Date(docDate).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }) : 'N/A'}</span>
                         </div>
                     </div>
 
-                    ${docUploader ? `<div style="background:#f8f9fa;border-radius:8px;padding:12px;margin-bottom:12px">
-                        <span style="font-size:11px;color:#6c757d;text-transform:uppercase;letter-spacing:0.5px;display:block;margin-bottom:4px">Uploaded By</span>
-                        <span style="font-size:14px;color:#1a1a2e;font-weight:500">${docUploader}</span>
+                    ${docUploader ? `<div style="background:#f8f9fa;border-radius:8px;padding:8px;margin-bottom:8px">
+                        <span style="font-size:10px;color:#6c757d;text-transform:uppercase;letter-spacing:0.5px;display:block;margin-bottom:2px">Uploaded By</span>
+                        <span style="font-size:13px;color:#1a1a2e;font-weight:500">${docUploader}</span>
                     </div>` : ''}
 
-                    ${docSize ? `<div style="background:#f8f9fa;border-radius:8px;padding:12px;margin-bottom:12px">
-                        <span style="font-size:11px;color:#6c757d;text-transform:uppercase;letter-spacing:0.5px;display:block;margin-bottom:4px">File Size</span>
-                        <span style="font-size:14px;color:#1a1a2e;font-weight:500">${typeof formatFileSize === 'function' ? formatFileSize(docSize) : docSize + ' bytes'}</span>
+                    ${docSize ? `<div style="background:#f8f9fa;border-radius:8px;padding:8px;margin-bottom:8px">
+                        <span style="font-size:10px;color:#6c757d;text-transform:uppercase;letter-spacing:0.5px;display:block;margin-bottom:2px">File Size</span>
+                        <span style="font-size:13px;color:#1a1a2e;font-weight:500">${typeof formatFileSize === 'function' ? formatFileSize(docSize) : docSize + ' bytes'}</span>
                     </div>` : ''}
 
-                    ${docDescription ? `<div style="background:#f0f4ff;border-left:4px solid #0b3d91;border-radius:0 8px 8px 0;padding:14px 16px;margin-bottom:16px">
-                        <span style="font-size:11px;color:#6c757d;text-transform:uppercase;letter-spacing:0.5px;display:block;margin-bottom:6px">Description</span>
-                        <p style="margin:0;font-size:14px;color:#333;line-height:1.5">${docDescription}</p>
+                    ${docDescription ? `<div style="background:#f0f4ff;border-left:4px solid #0b3d91;border-radius:0 8px 8px 0;padding:10px 12px;margin-bottom:12px">
+                        <span style="font-size:10px;color:#6c757d;text-transform:uppercase;letter-spacing:0.5px;display:block;margin-bottom:4px">Description</span>
+                        <p style="margin:0;font-size:13px;color:#333;line-height:1.4">${docDescription}</p>
                     </div>` : ''}
                 </div>
-                <div style="padding:16px 24px;background:#f8f9fa;border-top:1px solid #e9ecef;display:flex;gap:10px;justify-content:flex-end">
-                    <button onclick="downloadDoc('${docId}')" style="background:linear-gradient(135deg,#28a745,#20c997);color:#fff;border:none;padding:10px 20px;border-radius:8px;font-size:14px;font-weight:500;cursor:pointer;display:flex;align-items:center;gap:6px">📥 Download PDF</button>
-                    <button onclick="closeModal()" style="background:#6c757d;color:#fff;border:none;padding:10px 20px;border-radius:8px;font-size:14px;font-weight:500;cursor:pointer">Close</button>
+                <div style="padding:12px 16px;background:#f8f9fa;border-top:1px solid #e9ecef;display:flex;gap:8px;justify-content:flex-end">
+                    <button onclick="downloadDoc('${docId}')" style="background:linear-gradient(135deg,#28a745,#20c997);color:#fff;border:none;padding:8px 16px;border-radius:6px;font-size:13px;font-weight:500;cursor:pointer;display:flex;align-items:center;gap:4px">📥 Download</button>
+                    <button onclick="closeModal()" style="background:#6c757d;color:#fff;border:none;padding:8px 16px;border-radius:6px;font-size:13px;font-weight:500;cursor:pointer">Close</button>
                 </div>
             </div>
         `;
