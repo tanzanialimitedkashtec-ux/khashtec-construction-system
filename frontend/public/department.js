@@ -2252,23 +2252,15 @@ function loadMenu(){
 
 
     if(currentRole === "ASSISTANT" || hasCustomNav){
-
         console.log('Adding Admin Assistant menu items'); // Debug line
-
         
-
         addMenu("Upload Documents", uploadDocs);
-
         addMenu("Edit Documents", editDocuments);
-
         addMenu("Send Notifications", sendNotifications);
-
         addMenu("Record Meeting Minutes", recordMeetingMinutes);
-
         addMenu("View Employee List", viewEmployeeList);
-
         addMenu("Office Portal", officePortal);
-
+        addMenu("Backup System Data", showBackupSystemDashboard);
     }
 
     
@@ -65801,6 +65793,139 @@ async function userAccountManagement(){
 }
 
 
+
+async function showBackupSystemDashboard() {
+    showContent(`
+        <div class="card" style="max-width:1000px; margin:auto; padding:24px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px; flex-wrap:wrap; gap:16px;">
+                <div>
+                    <h3 style="margin:0; color:#0b3d91; font-size:24px; display:flex; align-items:center; gap:8px;">
+                        <span style="font-size:28px;">💾</span> System Data Backup
+                    </h3>
+                    <p style="margin:5px 0 0; color:#6c757d; font-size:14px;">Manage and monitor full system database backups.</p>
+                </div>
+                <button id="runBackupBtn" onclick="runSystemBackup()" style="background:linear-gradient(135deg,#0b3d91,#1e5bb8); color:white; border:none; padding:12px 24px; border-radius:8px; font-weight:600; cursor:pointer; display:flex; align-items:center; gap:8px; box-shadow:0 4px 12px rgba(11,61,145,0.2); transition:transform 0.2s;">
+                    <span>▶️</span> Run Full System Backup
+                </button>
+            </div>
+            
+            <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:20px; margin-bottom:30px;">
+                <div style="background:#f8f9fa; border-left:4px solid #0b3d91; padding:20px; border-radius:8px;">
+                    <div style="font-size:12px; color:#6c757d; text-transform:uppercase; font-weight:700;">Total Backups</div>
+                    <div id="totalBackupsCount" style="font-size:32px; font-weight:700; color:#1a1a2e; margin-top:5px;">-</div>
+                </div>
+                <div style="background:#f8f9fa; border-left:4px solid #10b981; padding:20px; border-radius:8px;">
+                    <div style="font-size:12px; color:#6c757d; text-transform:uppercase; font-weight:700;">Successful</div>
+                    <div id="successBackupsCount" style="font-size:32px; font-weight:700; color:#1a1a2e; margin-top:5px;">-</div>
+                </div>
+                <div style="background:#f8f9fa; border-left:4px solid #ef4444; padding:20px; border-radius:8px;">
+                    <div style="font-size:12px; color:#6c757d; text-transform:uppercase; font-weight:700;">Failed</div>
+                    <div id="failedBackupsCount" style="font-size:32px; font-weight:700; color:#1a1a2e; margin-top:5px;">-</div>
+                </div>
+            </div>
+
+            <h4 style="margin:0 0 16px; color:#1a1a2e; font-size:18px;">Recent Backup History</h4>
+            <div style="overflow-x:auto; background:white; border-radius:12px; box-shadow:0 2px 8px rgba(0,0,0,0.05); border:1px solid #e9ecef;">
+                <table style="width:100%; border-collapse:collapse; min-width:600px;">
+                    <thead>
+                        <tr style="background:#f8f9fa; border-bottom:2px solid #e9ecef;">
+                            <th style="padding:16px; text-align:left; font-size:13px; color:#495057; font-weight:600;">Date & Time</th>
+                            <th style="padding:16px; text-align:left; font-size:13px; color:#495057; font-weight:600;">Status</th>
+                            <th style="padding:16px; text-align:left; font-size:13px; color:#495057; font-weight:600;">Message</th>
+                        </tr>
+                    </thead>
+                    <tbody id="backupHistoryTableBody">
+                        <tr>
+                            <td colspan="3" style="padding:30px; text-align:center; color:#6c757d;">Loading backup history...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    `);
+
+    await loadBackupHistory();
+}
+
+async function loadBackupHistory() {
+    try {
+        const response = await fetch('/api/backup/history');
+        const data = await response.json();
+        
+        if (data.success) {
+            const logs = data.data;
+            const tbody = document.getElementById('backupHistoryTableBody');
+            
+            document.getElementById('totalBackupsCount').textContent = logs.length;
+            document.getElementById('successBackupsCount').textContent = logs.filter(l => l.status.toLowerCase() === 'success').length;
+            document.getElementById('failedBackupsCount').textContent = logs.filter(l => l.status.toLowerCase() !== 'success').length;
+
+            if (logs.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="3" style="padding:30px; text-align:center; color:#6c757d;">No backups have been recorded yet.</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = logs.map(log => {
+                const date = new Date(log.date);
+                const isSuccess = log.status.toLowerCase() === 'success';
+                const statusColor = isSuccess ? '#10b981' : '#ef4444';
+                const statusBg = isSuccess ? '#10b98120' : '#ef444420';
+                
+                return `
+                    <tr style="border-bottom:1px solid #e9ecef; transition:background 0.2s;" onmouseover="this.style.background='#f8f9fa'" onmouseout="this.style.background='white'">
+                        <td style="padding:16px; font-size:14px; color:#1a1a2e; white-space:nowrap;">
+                            <strong>${date.toLocaleDateString()}</strong> <span style="color:#6c757d; margin-left:8px;">${date.toLocaleTimeString()}</span>
+                        </td>
+                        <td style="padding:16px;">
+                            <span style="background:${statusBg}; color:${statusColor}; padding:6px 12px; border-radius:20px; font-size:12px; font-weight:600; display:inline-block;">
+                                ${isSuccess ? '✓ ' : '✕ '}${log.status}
+                            </span>
+                        </td>
+                        <td style="padding:16px; font-size:13px; color:#495057;">${log.message || '-'}</td>
+                    </tr>
+                `;
+            }).join('');
+        }
+    } catch (error) {
+        console.error('Failed to load backup history:', error);
+        document.getElementById('backupHistoryTableBody').innerHTML = '<tr><td colspan="3" style="padding:30px; text-align:center; color:#ef4444;">Failed to load backup history.</td></tr>';
+    }
+}
+
+async function runSystemBackup() {
+    const btn = document.getElementById('runBackupBtn');
+    if(btn.disabled) return;
+
+    btn.disabled = true;
+    const originalText = btn.innerHTML;
+    btn.innerHTML = `<span style="display:inline-block; animation:spin 1s linear infinite;">⏳</span> Running Backup...`;
+    
+    // Add keyframe for spin if it doesn't exist
+    if(!document.getElementById('spinKeyframe')) {
+        const style = document.createElement('style');
+        style.id = 'spinKeyframe';
+        style.innerHTML = `@keyframes spin { 100% { transform: rotate(360deg); } }`;
+        document.head.appendChild(style);
+    }
+
+    try {
+        const response = await fetch('/api/backup/run', { method: 'POST' });
+        const result = await response.json();
+        
+        if (result.success) {
+            customAlert('Backup completed successfully!', 'Success', 'success');
+        } else {
+            customAlert('Backup failed: ' + (result.error || 'Unknown error'), 'Error', 'error');
+        }
+    } catch (error) {
+        console.error('Backup request failed:', error);
+        customAlert('Failed to connect to the server. Backup request could not be completed.', 'Error', 'error');
+    } finally {
+        btn.disabled = false;
+        btn.innerHTML = originalText;
+        await loadBackupHistory();
+    }
+}
 
 function officePortal(){
 

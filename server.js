@@ -138,8 +138,7 @@ const financialStrategiesRoutes = require('./backend/routes/financialStrategies'
 
 const auditRoutes = require('./backend/routes/audit');
 const safetyRoutes = require('./backend/routes/safety');
-
-
+const backupRoutes = require('./backend/routes/backup');
 
 const app = express();
 
@@ -810,6 +809,7 @@ app.use('/api/auth', asyncHandler(async (req, res, next) => {
 
 
 app.use('/api/workflows', workflowRoutes);
+app.use('/api/backup', backupRoutes);
 
 app.use('/api/employees', asyncHandler(async (req, res, next) => {
 
