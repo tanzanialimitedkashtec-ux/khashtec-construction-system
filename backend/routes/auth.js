@@ -156,13 +156,44 @@ router.post('/login', loginLimiter, async (req, res) => {
                          VALUES (?, ?, ?, ?, ?, ?, ?)`,
                         ['ASSISTANT', 'assistant@kashtec.com', assistantHash, 'Admin Assistant', 'Administration', 'Admin Assistant', 'Active']
                     );
-                    console.log('✅ Default Admin Assistant user seeded into authentication table');
+                    
+                    // Also seed into the users table to prevent foreign key constraint failures
+                    const [newAuth] = await db.execute('SELECT id FROM authentication WHERE email = ?', ['assistant@kashtec.com']);
+                    if (newAuth && newAuth.length > 0) {
+                        try {
+                            await db.execute(
+                                `INSERT INTO users (id, name, email, role, department, status)
+                                 VALUES (?, ?, ?, ?, ?, ?)`,
+                                [newAuth[0].id, 'Admin Assistant', 'assistant@kashtec.com', 'Admin Assistant', 'Administration', 'Active']
+                            );
+                        } catch (err) {
+                            console.log('ℹ️ User might already exist in users table');
+                        }
+                    }
+                    
+                    console.log('✅ Default Admin Assistant user seeded into authentication table and users table');
                 } else {
                     await db.execute(
                         'UPDATE authentication SET password_hash = ?, role = ?, department_name = ?, status = ? WHERE email = ?',
                         [assistantHash, 'Admin Assistant', 'Administration', 'Active', 'assistant@kashtec.com']
                     );
-                    console.log('✅ Admin Assistant user password updated');
+                    
+                    // Ensure user is in users table as well
+                    const authId = assistantCheck[0].id;
+                    try {
+                        const [userCheck] = await db.execute('SELECT id FROM users WHERE id = ?', [authId]);
+                        if (!userCheck || userCheck.length === 0) {
+                            await db.execute(
+                                `INSERT INTO users (id, name, email, role, department, status)
+                                 VALUES (?, ?, ?, ?, ?, ?)`,
+                                [authId, 'Admin Assistant', 'assistant@kashtec.com', 'Admin Assistant', 'Administration', 'Active']
+                            );
+                        }
+                    } catch (err) {
+                        console.log('ℹ️ Could not sync user to users table:', err.message);
+                    }
+                    
+                    console.log('✅ Admin Assistant user password updated and synced with users table');
                 }
             } catch (seedErr) {
                 console.log('ℹ️ Assistant seed check:', seedErr.message);
