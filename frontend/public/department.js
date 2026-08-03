@@ -81286,12 +81286,61 @@ async function uploadLeadershipPhoto(leaderId, inputElement) {
             70% { transform: scale(1); box-shadow: 0 0 0 10px rgba(59, 130, 246, 0); }
             100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(59, 130, 246, 0); }
         }
+        @media (max-width: 600px) {
+            .login-toast-container {
+                top: 10px;
+                right: 10px;
+                left: 10px;
+                align-items: center;
+            }
+            .login-toast {
+                width: 100%;
+                min-width: unset;
+                max-width: 100%;
+                transform: translateY(-120%);
+            }
+            .login-toast.show {
+                transform: translateY(0);
+            }
+        }
     `;
     document.head.appendChild(style);
 
     const container = document.createElement('div');
     container.className = 'login-toast-container';
     document.body.appendChild(container);
+
+    // Audio context for bubble sound
+    let audioCtx = null;
+    function playBubbleSound() {
+        try {
+            if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            
+            osc.type = 'sine';
+            const now = audioCtx.currentTime;
+            
+            // Sweep frequency up for a "bloop/pop" sound
+            osc.frequency.setValueAtTime(300, now);
+            osc.frequency.exponentialRampToValueAtTime(800, now + 0.1);
+            
+            // Envelope for quick attack and decay
+            gain.gain.setValueAtTime(0, now);
+            gain.gain.linearRampToValueAtTime(0.5, now + 0.02);
+            gain.gain.exponentialRampToValueAtTime(0.01, now + 0.1);
+            
+            osc.start(now);
+            osc.stop(now + 0.1);
+        } catch (e) {
+            console.log('Audio playback failed', e);
+        }
+    }
 
     window.showLoginToast = function(message, role) {
         const toast = document.createElement('div');
@@ -81318,6 +81367,7 @@ async function uploadLeadershipPhoto(leaderId, inputElement) {
         `;
 
         container.appendChild(toast);
+        playBubbleSound();
         
         setTimeout(() => {
             toast.classList.add('show');
