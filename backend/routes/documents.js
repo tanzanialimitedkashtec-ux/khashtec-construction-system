@@ -945,7 +945,17 @@ router.post('/', function(req, res, next) {
             // Handle binary data from frontend
             let fileData = null;
             let fileMime = 'application/pdf';
-            if (file_base64) {
+            
+            if (req.file) {
+                try {
+                    var fsSync = require('fs');
+                    fileData = fsSync.readFileSync(req.file.path);
+                    fileMime = req.file.mimetype;
+                    try { fsSync.unlinkSync(req.file.path); } catch (_) {}
+                } catch (e) {
+                    console.warn('Could not read uploaded file from req.file:', e.message);
+                }
+            } else if (file_base64) {
                 try {
                     fileData = Buffer.from(file_base64, 'base64');
                     const lowerName = (docFileName || '').toLowerCase();
@@ -1007,10 +1017,9 @@ router.post('/', function(req, res, next) {
                     file_data,
                     file_mime,
                     category,
-                    department,
                     uploaded_by,
                     status
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'Pending')
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'Pending')
             `;
             
             const documentsValues = [
@@ -1022,7 +1031,6 @@ router.post('/', function(req, res, next) {
                 fileData,
                 fileMime,
                 mappedCategory,
-                docDepartment || 'admin',
                 userId
             ];
             
