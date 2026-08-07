@@ -54,11 +54,10 @@ router.get('/history', (req, res) => {
 
 // POST /api/backup/run - Trigger a system backup
 router.post('/run', (req, res) => {
-    // Return immediately to not block the request, as backup could take some time
-    // But since the user wants immediate feedback if possible, we can wait.
-    // Let's run it and wait, but send a reasonable timeout if needed.
-    // Usually DB backups on small DBs are fast. Let's just wait for it.
-    
+    // Increase timeout to 15 minutes (900,000 ms) for large backups
+    req.setTimeout(900000);
+    res.setTimeout(900000);
+
     console.log('[API] Triggering system backup...');
     
     exec(`node "${SCRIPT_PATH}"`, (error, stdout, stderr) => {

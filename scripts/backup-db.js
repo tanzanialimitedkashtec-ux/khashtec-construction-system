@@ -177,6 +177,9 @@ async function runBackup() {
     '--single-transaction',
     '--routines',
     '--triggers',
+    '--events',
+    '--add-drop-table',
+    '--extended-insert',
     `--result-file="${sqlFilePath}"`,
     `"${mysqlDatabase}"`,
   ].join(' ');
