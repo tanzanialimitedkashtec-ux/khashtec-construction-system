@@ -65796,7 +65796,7 @@ async function userAccountManagement(){
 
 async function showBackupSystemDashboard() {
     showContent(`
-        <div class="card" style="max-width:700px; margin:auto; padding:16px; border-radius:2px;">
+        <div class="card" style="padding:16px; border-radius:2px; width: 100%;">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; flex-wrap:wrap; gap:12px;">
                 <div>
                     <h3 style="margin:0; color:#0b3d91; font-size:20px; display:flex; align-items:center; gap:8px;">
