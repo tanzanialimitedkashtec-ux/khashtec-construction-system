@@ -742,7 +742,7 @@ router.get('/stats/overview', async (req, res) => {
 // Serve profile picture
 router.get('/:id/profile-picture', async (req, res) => {
     try {
-        const rows = await db.execute(
+        const [rows] = await db.execute(
             'SELECT profile_picture_data, profile_picture_mime, profile_picture FROM worker_accounts WHERE id = ?',
             [req.params.id]
         );
@@ -772,7 +772,7 @@ router.get('/:id/profile-picture', async (req, res) => {
 // Serve ID document
 router.get('/:id/id-document', async (req, res) => {
     try {
-        const rows = await db.execute(
+        const [rows] = await db.execute(
             'SELECT id_document_data, id_document_mime, id_document FROM worker_accounts WHERE id = ?',
             [req.params.id]
         );
@@ -800,7 +800,7 @@ router.get('/:id/id-document', async (req, res) => {
 // Serve contract document
 router.get('/:id/contract-document', async (req, res) => {
     try {
-        const rows = await db.execute(
+        const [rows] = await db.execute(
             'SELECT contract_document_data, contract_document_mime, contract_document FROM worker_accounts WHERE id = ?',
             [req.params.id]
         );
