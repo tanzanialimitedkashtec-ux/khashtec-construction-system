@@ -18843,7 +18843,7 @@ function displayWorkerAccountsTable(workers) {
             <td style="padding: 8px 10px; border: 1px solid #dee2e6;">${w.job_title || '—'}</td>
             <td style="padding: 8px 10px; border: 1px solid #dee2e6;">${acctTypeMap[w.account_type] || w.account_type || '—'}</td>
             <td style="padding: 8px 10px; border: 1px solid #dee2e6;">${accessMap[w.access_level] || w.access_level || '—'}</td>
-            <td style="padding: 8px 10px; border: 1px solid #dee2e6; max-width: 200px; white-space: normal; word-wrap: break-word;">${w.account_notes || '—'}</td>
+            <td style="padding: 8px 10px; border: 1px solid #dee2e6; max-width: 200px; white-space: normal; word-wrap: break-word;"><div style="max-height: 80px; overflow-y: auto;">${w.account_notes || '—'}</div></td>
             <td style="padding: 8px 10px; border: 1px solid #dee2e6; text-align: center;">${profileLink}</td>
             <td style="padding: 8px 10px; border: 1px solid #dee2e6; text-align: center;">${idDocLink}</td>
             <td style="padding: 8px 10px; border: 1px solid #dee2e6; text-align: center;">${contractLink}</td>
