@@ -11937,9 +11937,9 @@ function registerEmployee(){
 
                         <div class="form-group">
 
-                            <label for="empNIDA">NIDA Number *</label>
+                            <label for="empNIDA">NIDA Number</label>
 
-                            <input type="text" id="empNIDA" name="nida_number" placeholder="National ID Number" required />
+                            <input type="text" id="empNIDA" name="nida_number" placeholder="National ID Number (Optional)" />
 
                         </div>
 
@@ -17472,7 +17472,7 @@ function saveEmployee() {
 
         gmail: document.getElementById('empGmail').value,
 
-        nida: document.getElementById('empNIDA').value,
+        nida: document.getElementById('empNIDA').value || '',
 
         passport: document.getElementById('empPassport').value,
 
@@ -17490,7 +17490,7 @@ function saveEmployee() {
 
     // Validate required fields
 
-    if (!employee.fullName || !employee.phone || !employee.gmail || !employee.nida || !employee.contract || !employee.jobCategory || !employee.department) {
+    if (!employee.fullName || !employee.phone || !employee.gmail || !employee.contract || !employee.jobCategory || !employee.department) {
 
         customAlert('Please fill in all required fields marked with *', "Validation Error", "error");
 
@@ -24907,7 +24907,7 @@ function saveEmployeeManual() {
 
         // Validate required fields
 
-        if (!fullName || !phone || !nida || !contract || !jobCategory || !department) {
+        if (!fullName || !phone || !contract || !jobCategory || !department) {
 
             showRealProblemNotification('VALIDATION_ERROR', {
 
@@ -24920,8 +24920,6 @@ function saveEmployeeManual() {
                     phone: !phone,
 
                     gmail: !gmail,
-
-                    nida: !nida,
 
                     contract: !contract,
 
@@ -28392,7 +28390,7 @@ function registerDriver(){
 
                     <div class="form-group">
 
-                        <label>NIDA Number *</label>
+                        <label>NIDA Number</label>
 
                         <input type="text" id="nidaNumber" placeholder="e.g., 1234567890123456789" maxlength="20" required />
 
@@ -53354,9 +53352,9 @@ function registerClient(){
 
                         <div class="form-group">
 
-                            <label>NIDA Number *</label>
+                            <label>NIDA Number</label>
 
-                            <input type="text" id="clientNida" placeholder="National ID Number" required />
+                            <input type="text" id="clientNida" placeholder="National ID Number (Optional)" />
 
                         </div>
 
@@ -57473,7 +57471,7 @@ function saveNewClient() {
 
                     'Email Address *n' +
 
-                    'NIDA Number *n' +
+                    'NIDA Numbern' +
 
                     'Physical Address *', "Validation Error", "error");
 

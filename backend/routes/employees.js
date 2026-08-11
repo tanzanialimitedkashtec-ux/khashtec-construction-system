@@ -357,23 +357,22 @@ router.post('/', (req, res, next) => {
     });
     
     // More flexible validation - only require truly essential fields
-    if (!fullName || !phone || !department || !nida) {
+    if (!fullName || !phone || !department) {
         console.log('❌ Validation failed - missing essential fields');
         const missingFields = [
             !fullName ? 'fullName' : null,
             !phone ? 'phone' : null,
-            !department ? 'department' : null,
-            !nida ? 'nida' : null
+            !department ? 'department' : null
         ].filter(Boolean);
         
         console.log('❌ Missing essential fields:', missingFields);
         
         return res.status(400).json({
             error: 'Missing required fields',
-            required: ['fullName', 'phone', 'department', 'nida'],
+            required: ['fullName', 'phone', 'department'],
             received: { fullName, gmail, phone, department, jobCategory, job_category, nida, contract },
             missing: missingFields,
-            note: 'jobCategory and contract are optional'
+            note: 'jobCategory, contract, and nida are optional'
         });
     }
     
@@ -383,10 +382,15 @@ router.post('/', (req, res, next) => {
         // Try database operations first
         try {
             console.log('?? Checking if employee already exists...');
-            const existingResult = await db.execute(
-                'SELECT id, full_name FROM employee_details WHERE (gmail = ? AND gmail != "") OR nida = ?',
-                [gmail || '', nida]
-            );
+            let existingQuery, existingParams;
+            if (nida) {
+                existingQuery = 'SELECT id, full_name FROM employee_details WHERE (gmail = ? AND gmail != "") OR (nida = ? AND nida != "")';
+                existingParams = [gmail || '', nida];
+            } else {
+                existingQuery = 'SELECT id, full_name FROM employee_details WHERE (gmail = ? AND gmail != "")';
+                existingParams = [gmail || ''];
+            }
+            const existingResult = await db.execute(existingQuery, existingParams);
             
             // Handle different MySQL2 return formats
             let existingEmployees = [];
@@ -482,14 +486,14 @@ router.post('/', (req, res, next) => {
                 detailsResult = await db.execute(
                     `INSERT INTO employee_details (employee_id, full_name, gmail, phone, nida, passport, contract_type, profile_image, profile_image_data, profile_image_mime, cv_path, cv_data, cv_mime, agreement_path, agreement_data, agreement_mime)
                      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-                    [employeeDbId, fullName, gmail || `no-email-${employeeId}@kashtec.local`, phone, nida, passport || '', contract || '', profileImagePath, profileImageBuffer, profileImageMime, cvPath, cvBuffer, cvMime, agreementPath, agreementBuffer, agreementMime]
+                    [employeeDbId, fullName, gmail || `no-email-${employeeId}@kashtec.local`, phone, nida || null, passport || '', contract || '', profileImagePath, profileImageBuffer, profileImageMime, cvPath, cvBuffer, cvMime, agreementPath, agreementBuffer, agreementMime]
                 );
             } catch (blobErr) {
                 console.warn('⚠️ BLOB insert failed, retrying without BLOB columns:', blobErr.message);
                 detailsResult = await db.execute(
                     `INSERT INTO employee_details (employee_id, full_name, gmail, phone, nida, passport, contract_type, profile_image)
                      VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-                    [employeeDbId, fullName, gmail || `no-email-${employeeId}@kashtec.local`, phone, nida, passport || '', contract || '', profileImagePath]
+                    [employeeDbId, fullName, gmail || `no-email-${employeeId}@kashtec.local`, phone, nida || null, passport || '', contract || '', profileImagePath]
                 );
             }
             

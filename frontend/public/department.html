@@ -36427,9 +36427,9 @@ function registerEmployee(){
 
                         <div class="form-group">
 
-                            <label for="empNIDA">NIDA Number *</label>
+                            <label for="empNIDA">NIDA Number</label>
 
-                            <input type="text" id="empNIDA" name="nida_number" placeholder="National ID Number" required>
+                            <input type="text" id="empNIDA" name="nida_number" placeholder="National ID Number (Optional)">
 
                         </div>
 
@@ -41512,7 +41512,7 @@ function saveEmployee() {
 
     // Validate required fields
 
-    if (!employee.fullName || !employee.phone || !employee.gmail || !employee.nida || !employee.contract || !employee.jobCategory || !employee.department) {
+    if (!employee.fullName || !employee.phone || !employee.gmail || !employee.contract || !employee.jobCategory || !employee.department) {
 
         customAlert('Please fill in all required fields marked with *', "Validation Error", "error");
 
@@ -48579,7 +48579,7 @@ function saveEmployeeManual() {
 
         // Validate required fields
 
-        if (!fullName || !phone || !nida || !contract || !jobCategory || !department) {
+        if (!fullName || !phone || !contract || !jobCategory || !department) {
 
             showRealProblemNotification('VALIDATION_ERROR', {
 
@@ -48592,8 +48592,6 @@ function saveEmployeeManual() {
                     phone: !phone,
 
                     gmail: !gmail,
-
-                    nida: !nida,
 
                     contract: !contract,
 
