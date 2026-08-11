@@ -18843,7 +18843,7 @@ function displayWorkerAccountsTable(workers) {
             <td style="padding: 8px 10px; border: 1px solid #dee2e6;">${w.job_title || '—'}</td>
             <td style="padding: 8px 10px; border: 1px solid #dee2e6;">${acctTypeMap[w.account_type] || w.account_type || '—'}</td>
             <td style="padding: 8px 10px; border: 1px solid #dee2e6;">${accessMap[w.access_level] || w.access_level || '—'}</td>
-            <td style="padding: 8px 10px; border: 1px solid #dee2e6; max-width: 200px; white-space: normal; word-wrap: break-word;"><div style="max-height: 80px; overflow-y: auto;">${w.account_notes || '—'}</div></td>
+            <td style="padding: 8px 10px; border: 1px solid #dee2e6; max-width: 200px; white-space: normal; word-wrap: break-word; position: relative;" class="notes-cell-hover"><div style="max-height: 60px; overflow: hidden; text-overflow: ellipsis; cursor: pointer;" title="${(w.account_notes || '').replace(/"/g, '&quot;')}">${w.account_notes ? (w.account_notes.length > 80 ? w.account_notes.substring(0, 80) + '…' : w.account_notes) : '—'}</div>${w.account_notes && w.account_notes.length > 80 ? '<div class="notes-tooltip-popup">' + w.account_notes.replace(/</g, '&lt;').replace(/>/g, '&gt;') + '</div>' : ''}</td>
             <td style="padding: 8px 10px; border: 1px solid #dee2e6; text-align: center;">${profileLink}</td>
             <td style="padding: 8px 10px; border: 1px solid #dee2e6; text-align: center;">${idDocLink}</td>
             <td style="padding: 8px 10px; border: 1px solid #dee2e6; text-align: center;">${contractLink}</td>
