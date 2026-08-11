@@ -758,7 +758,7 @@ router.get('/:id/profile-picture', async (req, res) => {
 
         // Fallback: try disk file
         if (worker.profile_picture) {
-            const filePath = path.join(__dirname, '../..', worker.profile_picture.replace(/^\\//, ''));
+            const filePath = path.join(__dirname, '../..', worker.profile_picture.replace(/^\//, ''));
             if (fsSync.existsSync(filePath)) return res.sendFile(filePath);
         }
 
@@ -786,7 +786,7 @@ router.get('/:id/id-document', async (req, res) => {
         }
 
         if (worker.id_document) {
-            const filePath = path.join(__dirname, '../..', worker.id_document.replace(/^\\//, ''));
+            const filePath = path.join(__dirname, '../..', worker.id_document.replace(/^\//, ''));
             if (fsSync.existsSync(filePath)) return res.sendFile(filePath);
         }
 
@@ -814,7 +814,7 @@ router.get('/:id/contract-document', async (req, res) => {
         }
 
         if (worker.contract_document) {
-            const filePath = path.join(__dirname, '../..', worker.contract_document.replace(/^\\//, ''));
+            const filePath = path.join(__dirname, '../..', worker.contract_document.replace(/^\//, ''));
             if (fsSync.existsSync(filePath)) return res.sendFile(filePath);
         }
 
