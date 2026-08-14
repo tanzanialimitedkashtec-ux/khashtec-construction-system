@@ -101404,104 +101404,104 @@ function showNHIFContributions() {
     if (!mainContent) return;
 
     mainContent.innerHTML = `
-        <div style="padding: 20px; font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">
+        <div style="padding: 10px; font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">
             <!-- Premium Header -->
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.02); border: 1px solid #f0f0f0;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; background: white; padding: 10px; border-radius: 2px; box-shadow: 0 2px 4px rgba(0,0,0,0.02); border: 1px solid #f0f0f0;">
                 <div>
-                    <h2 style="margin: 0; font-size: 24px; color: #1e293b; font-weight: 700; display: flex; align-items: center; gap: 10px;">
-                        <span style="background: #2563eb; color: white; padding: 8px; border-radius: 8px; display: inline-flex; align-items: center; justify-content: center;"><i class="fas fa-heartbeat"></i></span>
+                    <h2 style="margin: 0; font-size: 16px; color: #1e293b; font-weight: 700; display: flex; align-items: center; gap: 6px;">
+                        <span style="background: #2563eb; color: white; padding: 6px; border-radius: 2px; display: inline-flex; align-items: center; justify-content: center; font-size: 14px;"><i class="fas fa-heartbeat"></i></span>
                         NHIF Contributions
                     </h2>
-                    <p style="margin: 5px 0 0 0; color: #64748b; font-size: 14px;">Record and track National Health Insurance Fund contributions for all employees.</p>
+                    <p style="margin: 4px 0 0 0; color: #64748b; font-size: 12px;">Record and track National Health Insurance Fund contributions for all employees.</p>
                 </div>
-                <button onclick="loadNHIFSummaryAndTable()" class="btn" style="background: #f1f5f9; color: #475569; border: 1px solid #e2e8f0; padding: 8px 16px; border-radius: 8px; display: flex; align-items: center; gap: 8px; cursor: pointer; transition: all 0.2s;"><i class="fas fa-sync-alt"></i> Refresh</button>
+                <button onclick="loadNHIFSummaryAndTable()" class="btn" style="background: #f1f5f9; color: #475569; border: 1px solid #e2e8f0; padding: 6px 12px; border-radius: 2px; display: flex; align-items: center; gap: 6px; cursor: pointer; transition: all 0.2s; font-size: 12px;"><i class="fas fa-sync-alt"></i> Refresh</button>
             </div>
 
             <!-- Summary Stat Cards -->
-            <div id="nhifSummaryContainer" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; margin-bottom: 25px;">
-                <div class="card" style="background: white; padding: 20px; border-radius: 12px; border: 1px solid #e2e8f0; box-shadow: 0 4px 6px rgba(0,0,0,0.01); position: relative; overflow: hidden;">
-                    <div style="color: #64748b; font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">Total Contributions</div>
-                    <div id="nhifTotalAmount" style="font-size: 24px; font-weight: 700; color: #0f172a; margin-top: 8px;">0 TZS</div>
-                    <div id="nhifTotalCount" style="color: #64748b; font-size: 12px; margin-top: 5px;">0 records</div>
-                    <div style="position: absolute; right: 20px; bottom: 20px; font-size: 28px; color: #e2e8f0;"><i class="fas fa-calculator"></i></div>
+            <div id="nhifSummaryContainer" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px; margin-bottom: 10px;">
+                <div class="card" style="background: white; padding: 12px; border-radius: 2px; border: 1px solid #e2e8f0; box-shadow: 0 2px 4px rgba(0,0,0,0.01); position: relative; overflow: hidden;">
+                    <div style="color: #64748b; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">Total Contributions</div>
+                    <div id="nhifTotalAmount" style="font-size: 16px; font-weight: 700; color: #0f172a; margin-top: 6px;">0 TZS</div>
+                    <div id="nhifTotalCount" style="color: #64748b; font-size: 11px; margin-top: 4px;">0 records</div>
+                    <div style="position: absolute; right: 12px; bottom: 12px; font-size: 20px; color: #e2e8f0;"><i class="fas fa-calculator"></i></div>
                 </div>
-                <div class="card" style="background: white; padding: 20px; border-radius: 12px; border: 1px solid #e2e8f0; box-shadow: 0 4px 6px rgba(0,0,0,0.01); position: relative; overflow: hidden;">
-                    <div style="color: #10b981; font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">Paid Contributions</div>
-                    <div id="nhifPaidAmount" style="font-size: 24px; font-weight: 700; color: #059669; margin-top: 8px;">0 TZS</div>
-                    <div id="nhifPaidCount" style="color: #64748b; font-size: 12px; margin-top: 5px;">0 paid</div>
-                    <div style="position: absolute; right: 20px; bottom: 20px; font-size: 28px; color: #d1fae5;"><i class="fas fa-check-circle"></i></div>
+                <div class="card" style="background: white; padding: 12px; border-radius: 2px; border: 1px solid #e2e8f0; box-shadow: 0 2px 4px rgba(0,0,0,0.01); position: relative; overflow: hidden;">
+                    <div style="color: #10b981; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">Paid Contributions</div>
+                    <div id="nhifPaidAmount" style="font-size: 16px; font-weight: 700; color: #059669; margin-top: 6px;">0 TZS</div>
+                    <div id="nhifPaidCount" style="color: #64748b; font-size: 11px; margin-top: 4px;">0 paid</div>
+                    <div style="position: absolute; right: 12px; bottom: 12px; font-size: 20px; color: #d1fae5;"><i class="fas fa-check-circle"></i></div>
                 </div>
-                <div class="card" style="background: white; padding: 20px; border-radius: 12px; border: 1px solid #e2e8f0; box-shadow: 0 4px 6px rgba(0,0,0,0.01); position: relative; overflow: hidden;">
-                    <div style="color: #f59e0b; font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">Pending Contributions</div>
-                    <div id="nhifPendingAmount" style="font-size: 24px; font-weight: 700; color: #d97706; margin-top: 8px;">0 TZS</div>
-                    <div id="nhifPendingCount" style="color: #64748b; font-size: 12px; margin-top: 5px;">0 pending</div>
-                    <div style="position: absolute; right: 20px; bottom: 20px; font-size: 28px; color: #fef3c7;"><i class="fas fa-clock"></i></div>
+                <div class="card" style="background: white; padding: 12px; border-radius: 2px; border: 1px solid #e2e8f0; box-shadow: 0 2px 4px rgba(0,0,0,0.01); position: relative; overflow: hidden;">
+                    <div style="color: #f59e0b; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">Pending Contributions</div>
+                    <div id="nhifPendingAmount" style="font-size: 16px; font-weight: 700; color: #d97706; margin-top: 6px;">0 TZS</div>
+                    <div id="nhifPendingCount" style="color: #64748b; font-size: 11px; margin-top: 4px;">0 pending</div>
+                    <div style="position: absolute; right: 12px; bottom: 12px; font-size: 20px; color: #fef3c7;"><i class="fas fa-clock"></i></div>
                 </div>
-                <div class="card" style="background: white; padding: 20px; border-radius: 12px; border: 1px solid #e2e8f0; box-shadow: 0 4px 6px rgba(0,0,0,0.01); position: relative; overflow: hidden;">
-                    <div style="color: #ef4444; font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">Overdue Contributions</div>
-                    <div id="nhifOverdueAmount" style="font-size: 24px; font-weight: 700; color: #dc2626; margin-top: 8px;">0 TZS</div>
-                    <div id="nhifOverdueCount" style="color: #64748b; font-size: 12px; margin-top: 5px;">0 overdue</div>
-                    <div style="position: absolute; right: 20px; bottom: 20px; font-size: 28px; color: #fee2e2;"><i class="fas fa-exclamation-triangle"></i></div>
+                <div class="card" style="background: white; padding: 12px; border-radius: 2px; border: 1px solid #e2e8f0; box-shadow: 0 2px 4px rgba(0,0,0,0.01); position: relative; overflow: hidden;">
+                    <div style="color: #ef4444; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">Overdue Contributions</div>
+                    <div id="nhifOverdueAmount" style="font-size: 16px; font-weight: 700; color: #dc2626; margin-top: 6px;">0 TZS</div>
+                    <div id="nhifOverdueCount" style="color: #64748b; font-size: 11px; margin-top: 4px;">0 overdue</div>
+                    <div style="position: absolute; right: 12px; bottom: 12px; font-size: 20px; color: #fee2e2;"><i class="fas fa-exclamation-triangle"></i></div>
                 </div>
             </div>
 
             <!-- Side-by-Side Content Area -->
-            <div style="display: flex; flex-wrap: wrap; gap: 20px;">
+            <div style="display: flex; flex-wrap: wrap; gap: 10px;">
                 <!-- Left Column: Form Panel -->
-                <div style="flex: 1 1 350px; min-width: 320px; background: white; border: 1px solid #e2e8f0; border-radius: 12px; padding: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.01);">
-                    <h3 style="margin-top: 0; margin-bottom: 20px; font-size: 18px; color: #1e293b; font-weight: 600; display: flex; align-items: center; gap: 8px; border-bottom: 1px solid #f1f5f9; padding-bottom: 12px;">
+                <div style="flex: 1 1 300px; min-width: 280px; background: white; border: 1px solid #e2e8f0; border-radius: 2px; padding: 15px; box-shadow: 0 2px 4px rgba(0,0,0,0.01);">
+                    <h3 style="margin-top: 0; margin-bottom: 15px; font-size: 14px; color: #1e293b; font-weight: 600; display: flex; align-items: center; gap: 6px; border-bottom: 1px solid #f1f5f9; padding-bottom: 10px;">
                         <i class="fas fa-file-invoice-dollar" style="color: #2563eb;"></i> Record Contribution
                     </h3>
                     <form id="nhifForm">
-                        <div style="margin-bottom: 16px;">
-                            <label for="nhifEmployee" style="display: block; font-weight: 500; font-size: 13px; color: #475569; margin-bottom: 6px;">Employee <span style="color:#ef4444;">*</span></label>
-                            <select id="nhifEmployee" name="nhifEmployee" required style="width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 14px; color: #1e293b; outline: none; transition: border-color 0.2s; background: white;">
+                        <div style="margin-bottom: 10px;">
+                            <label for="nhifEmployee" style="display: block; font-weight: 500; font-size: 11px; color: #475569; margin-bottom: 4px;">Employee <span style="color:#ef4444;">*</span></label>
+                            <select id="nhifEmployee" name="nhifEmployee" required style="width: 100%; padding: 6px 8px; border: 1px solid #cbd5e1; border-radius: 2px; font-size: 12px; color: #1e293b; outline: none; transition: border-color 0.2s; background: white;">
                                 <option value="">Select Employee</option>
                             </select>
                         </div>
-                        <div style="margin-bottom: 16px;">
-                            <label for="nhifMonth" style="display: block; font-weight: 500; font-size: 13px; color: #475569; margin-bottom: 6px;">Contribution Month <span style="color:#ef4444;">*</span></label>
-                            <input type="month" id="nhifMonth" name="nhifMonth" required style="width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 14px; color: #1e293b; outline: none; transition: border-color 0.2s; box-sizing: border-box;">
+                        <div style="margin-bottom: 10px;">
+                            <label for="nhifMonth" style="display: block; font-weight: 500; font-size: 11px; color: #475569; margin-bottom: 4px;">Contribution Month <span style="color:#ef4444;">*</span></label>
+                            <input type="month" id="nhifMonth" name="nhifMonth" required style="width: 100%; padding: 6px 8px; border: 1px solid #cbd5e1; border-radius: 2px; font-size: 12px; color: #1e293b; outline: none; transition: border-color 0.2s; box-sizing: border-box;">
                         </div>
-                        <div style="margin-bottom: 16px;">
-                            <label for="nhifEmployeeContrib" style="display: block; font-weight: 500; font-size: 13px; color: #475569; margin-bottom: 6px;">Employee Contribution (TZS) <span style="color:#ef4444;">*</span></label>
-                            <input type="number" id="nhifEmployeeContrib" name="employeeContribution" required min="0" placeholder="0" style="width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 14px; color: #1e293b; outline: none; transition: border-color 0.2s; box-sizing: border-box;">
+                        <div style="margin-bottom: 10px;">
+                            <label for="nhifEmployeeContrib" style="display: block; font-weight: 500; font-size: 11px; color: #475569; margin-bottom: 4px;">Employee Contribution (TZS) <span style="color:#ef4444;">*</span></label>
+                            <input type="number" id="nhifEmployeeContrib" name="employeeContribution" required min="0" placeholder="0" style="width: 100%; padding: 6px 8px; border: 1px solid #cbd5e1; border-radius: 2px; font-size: 12px; color: #1e293b; outline: none; transition: border-color 0.2s; box-sizing: border-box;">
                         </div>
-                        <div style="margin-bottom: 16px;">
-                            <label for="nhifEmployerContrib" style="display: block; font-weight: 500; font-size: 13px; color: #475569; margin-bottom: 6px;">Employer Contribution (TZS) <span style="color:#ef4444;">*</span></label>
-                            <input type="number" id="nhifEmployerContrib" name="employerContribution" required min="0" placeholder="0" style="width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 14px; color: #1e293b; outline: none; transition: border-color 0.2s; box-sizing: border-box;">
+                        <div style="margin-bottom: 10px;">
+                            <label for="nhifEmployerContrib" style="display: block; font-weight: 500; font-size: 11px; color: #475569; margin-bottom: 4px;">Employer Contribution (TZS) <span style="color:#ef4444;">*</span></label>
+                            <input type="number" id="nhifEmployerContrib" name="employerContribution" required min="0" placeholder="0" style="width: 100%; padding: 6px 8px; border: 1px solid #cbd5e1; border-radius: 2px; font-size: 12px; color: #1e293b; outline: none; transition: border-color 0.2s; box-sizing: border-box;">
                         </div>
-                        <div style="margin-bottom: 16px;">
-                            <label for="nhifStatus" style="display: block; font-weight: 500; font-size: 13px; color: #475569; margin-bottom: 6px;">Payment Status <span style="color:#ef4444;">*</span></label>
-                            <select id="nhifStatus" name="nhifStatus" required style="width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 14px; color: #1e293b; outline: none; transition: border-color 0.2s; background: white;">
+                        <div style="margin-bottom: 10px;">
+                            <label for="nhifStatus" style="display: block; font-weight: 500; font-size: 11px; color: #475569; margin-bottom: 4px;">Payment Status <span style="color:#ef4444;">*</span></label>
+                            <select id="nhifStatus" name="nhifStatus" required style="width: 100%; padding: 6px 8px; border: 1px solid #cbd5e1; border-radius: 2px; font-size: 12px; color: #1e293b; outline: none; transition: border-color 0.2s; background: white;">
                                 <option value="Pending">Pending</option>
                                 <option value="Paid">Paid</option>
                                 <option value="Overdue">Overdue</option>
                             </select>
                         </div>
-                        <div id="nhifReceiptGroup" style="margin-bottom: 20px; display: none;">
-                            <label for="nhifReceiptNumber" style="display: block; font-weight: 500; font-size: 13px; color: #475569; margin-bottom: 6px;">Receipt Number</label>
-                            <input type="text" id="nhifReceiptNumber" name="receiptNumber" placeholder="e.g. REC-123456" style="width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 14px; color: #1e293b; outline: none; transition: border-color 0.2s; box-sizing: border-box;">
+                        <div id="nhifReceiptGroup" style="margin-bottom: 15px; display: none;">
+                            <label for="nhifReceiptNumber" style="display: block; font-weight: 500; font-size: 11px; color: #475569; margin-bottom: 4px;">Receipt Number</label>
+                            <input type="text" id="nhifReceiptNumber" name="receiptNumber" placeholder="e.g. REC-123456" style="width: 100%; padding: 6px 8px; border: 1px solid #cbd5e1; border-radius: 2px; font-size: 12px; color: #1e293b; outline: none; transition: border-color 0.2s; box-sizing: border-box;">
                         </div>
-                        <div style="display: flex; gap: 10px;">
-                            <button type="submit" class="btn btn-primary" style="flex: 2; padding: 10px; background: #2563eb; color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; transition: background 0.2s;">Submit</button>
-                            <button type="button" id="nhifFormReset" style="flex: 1; padding: 10px; background: #f1f5f9; color: #475569; border: 1px solid #e2e8f0; border-radius: 8px; font-weight: 500; cursor: pointer; transition: background 0.2s;">Clear</button>
+                        <div style="display: flex; gap: 8px;">
+                            <button type="submit" class="btn btn-primary" style="flex: 2; padding: 8px; background: #2563eb; color: white; border: none; border-radius: 2px; font-weight: 600; font-size: 12px; cursor: pointer; transition: background 0.2s;">Submit</button>
+                            <button type="button" id="nhifFormReset" style="flex: 1; padding: 8px; background: #f1f5f9; color: #475569; border: 1px solid #e2e8f0; border-radius: 2px; font-weight: 500; font-size: 12px; cursor: pointer; transition: background 0.2s;">Clear</button>
                         </div>
                     </form>
                 </div>
 
                 <!-- Right Column: Data Table Panel -->
-                <div style="flex: 2 1 600px; min-width: 450px; background: white; border: 1px solid #e2e8f0; border-radius: 12px; padding: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.01);">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 10px; border-bottom: 1px solid #f1f5f9; padding-bottom: 12px;">
-                        <h3 style="margin: 0; font-size: 18px; color: #1e293b; font-weight: 600; display: flex; align-items: center; gap: 8px;">
+                <div style="flex: 2 1 400px; min-width: 350px; background: white; border: 1px solid #e2e8f0; border-radius: 2px; padding: 15px; box-shadow: 0 2px 4px rgba(0,0,0,0.01);">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; flex-wrap: wrap; gap: 10px; border-bottom: 1px solid #f1f5f9; padding-bottom: 10px;">
+                        <h3 style="margin: 0; font-size: 14px; color: #1e293b; font-weight: 600; display: flex; align-items: center; gap: 6px;">
                             <i class="fas fa-list-ul" style="color: #2563eb;"></i> Contribution Records
                         </h3>
-                        <div style="display: flex; gap: 10px; align-items: center;">
+                        <div style="display: flex; gap: 8px; align-items: center;">
                             <div style="position: relative;">
-                                <input type="text" id="nhifSearch" placeholder="Search employee..." style="padding: 8px 12px 8px 32px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 13px; outline: none; width: 180px; transition: all 0.2s;">
-                                <i class="fas fa-search" style="position: absolute; left: 10px; top: 11px; color: #94a3b8; font-size: 12px;"></i>
+                                <input type="text" id="nhifSearch" placeholder="Search employee..." style="padding: 6px 10px 6px 28px; border: 1px solid #cbd5e1; border-radius: 2px; font-size: 12px; outline: none; width: 160px; transition: all 0.2s;">
+                                <i class="fas fa-search" style="position: absolute; left: 8px; top: 9px; color: #94a3b8; font-size: 11px;"></i>
                             </div>
-                            <select id="nhifStatusFilter" style="padding: 8px 10px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 13px; color: #475569; outline: none; background: white;">
+                            <select id="nhifStatusFilter" style="padding: 6px 8px; border: 1px solid #cbd5e1; border-radius: 2px; font-size: 12px; color: #475569; outline: none; background: white;">
                                 <option value="all">All Statuses</option>
                                 <option value="Paid">Paid</option>
                                 <option value="Pending">Pending</option>
@@ -101510,7 +101510,7 @@ function showNHIFContributions() {
                         </div>
                     </div>
                     <div id="nhifTableContainer" style="overflow-x: auto; max-height: 480px;">
-                        <p style="text-align: center; color: #888; padding: 20px;">Loading records...</p>
+                        <p style="text-align: center; color: #888; padding: 15px; font-size: 12px;">Loading records...</p>
                     </div>
                 </div>
             </div>
