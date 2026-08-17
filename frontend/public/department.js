@@ -38527,6 +38527,8 @@ function expenseControl(){
 
                                 <option value="Safety">Safety / HSE</option>
 
+                                <option value="Labour Charge">Labour Charge</option>
+
                             </select>
 
                         </div>
