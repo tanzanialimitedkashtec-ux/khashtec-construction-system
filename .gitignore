@@ -62,6 +62,7 @@ backup-db.js
 restore-notifications.js
 work-approval-functions.js
 workflow-engine.js
+!backend/workflow-engine.js
 cleanup_git.ps1
 *.backup
 *.bak

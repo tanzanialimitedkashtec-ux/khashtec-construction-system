@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const WorkflowEngine = require('../../workflow-engine'); // using the standalone file
+const WorkflowEngine = require('../workflow-engine'); // using the standalone file
 
 // Instantiate a global workflow engine
 // Now persisting to MySQL
