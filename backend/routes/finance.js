@@ -452,9 +452,18 @@ router.get('/receipt/:id', async (req, res) => {
         }
         
         const buffer = Buffer.from(row.receipt_data, 'base64');
-        const mimetype = row.receipt_mimetype || 'application/pdf';
+        const allowedMimetypes = new Set([
+            'application/pdf',
+            'image/png',
+            'image/jpeg',
+            'image/gif',
+            'image/webp'
+        ]);
+        const rawMimetype = row.receipt_mimetype || 'application/pdf';
+        const mimetype = allowedMimetypes.has(rawMimetype) ? rawMimetype : 'application/octet-stream';
         res.setHeader('Content-Type', mimetype);
-        res.setHeader('Content-Disposition', 'inline; filename="receipt-' + id + '"');
+        res.setHeader('X-Content-Type-Options', 'nosniff');
+        res.setHeader('Content-Disposition', 'attachment; filename="receipt-' + id + '"');
         res.send(buffer);
     } catch (error) {
         console.error('❌ Error serving receipt:', error.message);
