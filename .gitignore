@@ -41,8 +41,9 @@ test-image.*
 test_workforce_request.js
 *.test.local.*
 
-# ── Dev / One-Off Scripts ────────────────────────────────────
+# ── Dev / One-Off Scripts & Cleanup Files ────────────────────
 add_*.py
+add_*.js
 fix_*.py
 fix_*.js
 inject_*.py
@@ -57,6 +58,11 @@ sync_*.js
 check_*.js
 auto_fix.js
 query.js
+backup-db.js
+restore-notifications.js
+work-approval-functions.js
+workflow-engine.js
+cleanup_git.ps1
 *.backup
 *.bak
 diagnose-railway.*
