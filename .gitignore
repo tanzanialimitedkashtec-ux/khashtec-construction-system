@@ -44,14 +44,26 @@ test_workforce_request.js
 # ── Dev / One-Off Scripts ────────────────────────────────────
 add_*.py
 fix_*.py
+fix_*.js
 inject_*.py
 append_*.py
 patch_*.py
 shrink_*.py
+scope_*.py
 update_dept.py
+update_*.py
+update_*.js
+sync_*.js
+check_*.js
+auto_fix.js
+query.js
 *.backup
 *.bak
 diagnose-railway.*
+add_polling.py
+
+# ── SQL Database Backups ──────────────────────────────────────
+backup-*.sql
 
 # ── Large Binary / Backup Archives ───────────────────────────
 *.zip
@@ -59,6 +71,10 @@ diagnose-railway.*
 *.tar.bz2
 *.7z
 *.rar
+
+# ── Temp & Test Files ─────────────────────────────────────────
+test.txt
+test2.txt
 
 # ── OS Files ─────────────────────────────────────────────────
 .DS_Store
@@ -85,6 +101,8 @@ build/
 
 # ── Railway / Deployment Internal Docs ───────────────────────
 RAILWAY-*.md
+RAILWAY-*.ps1
+RAILWAY-*.sh
 REDEPLOY.md
 CHANGES_COMPLETED.md
 ATTENDANCE_REAL_DATA_UPDATE.md

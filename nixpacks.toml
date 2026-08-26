@@ -1,4 +1,0 @@
-[phases.setup]
-aptPkgs = ["...", "default-mysql-client"]
-nixPkgs = ["...", "mariadb-client"]
-
