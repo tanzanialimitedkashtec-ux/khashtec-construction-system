@@ -212,18 +212,18 @@ CREATE TABLE `authentication` (
 ) ENGINE=InnoDB AUTO_INCREMENT=7938 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 INSERT INTO `authentication` (`id`, `department_code`, `email`, `password_hash`, `role`, `department_name`, `manager_name`, `status`, `last_login`, `login_attempts`, `locked_until`, `created_at`, `updated_at`, `nav_access`, `failed_attempts`, `lockout_until`) VALUES
-(1, 'MD', 'kashtectz@gmail.com', '$2a$12$qYG1sFaEmkmYMaf3OtVG5.zGlLdH5dY9tfMApcsxWMHd6CZQyGHDG', 'Managing Director', 'Managing Director', 'K.M. kayungilo', 'Active', '2026-07-19 06:14:35', 0, NULL, '2026-06-01 09:34:26', '2026-07-19 06:14:35', NULL, 0, NULL),
-(2, 'ADMIN', 'admin@kashtec.com', '$2a$12$u6PW.jhy0/RN6xCBD8IcAupzxxeogxf3sheaeQm1RUevCl.BStPmq', 'Director of Administration', 'Administration', 'Director of Administration', 'Active', '2026-07-16 07:00:43', 0, NULL, '2026-06-01 09:34:26', '2026-07-16 07:00:43', 'All', 0, NULL),
-(3, 'HR', 'hr@manager0501', '$2a$12$kh/jJEXotTFazfPdDfvtUu/rTUoNzUulmo0gBxyMUznzl5Cnl.X1C', 'HR Manager', 'HR', 'HR Manager', 'Active', '2026-07-14 04:06:00', 0, NULL, '2026-06-01 09:34:26', '2026-07-14 04:06:00', 'All', 0, NULL),
-(4, 'HSE', 'hse@manager0501', '$2a$12$Ju7KnyHUC7aYlQdPyygjPuly4JAxNkgau61OD0DBFo8Twk4YuadC2', 'HSE Manager', 'Health & Safety', 'HSE Manager', 'Active', '2026-07-15 00:58:36', 0, NULL, '2026-06-01 09:34:26', '2026-07-15 00:58:36', 'All', 0, NULL),
-(5, 'FINANCE', 'finance@manager0501', '$2a$12$erijjsoL4iop4djBA3Y9q.czZCLC.SAwo43z1ajVq3PGk34jqkJsG', 'Finance Manager', 'Finance', 'farhaothman', 'Active', '2026-07-17 08:09:54', 0, NULL, '2026-06-01 09:34:26', '2026-07-18 18:41:58', NULL, 1, NULL),
-(6, 'PROJECT', 'pm@manager0501', '$2a$12$hnIhglIHwfIkNjPZOIOEtO.YuCd3tNBxSL96wjgXJWiXTtHbhEwBq', 'Project Manager', 'Project', 'Technical12', 'Active', '2026-07-14 02:35:19', 0, NULL, '2026-06-01 09:34:26', '2026-07-15 00:20:41', NULL, 1, NULL),
-(7, 'REALESTATE', 'realestate@manager0501', '$2a$12$5vKxkZPe9NixoVfGSWunh.LvUg8K5s6Y2JSVhQKEjaZNXM9M1g1fC', 'Real Estate Manager', 'Real Estate', 'Real Estate Manager', 'Active', '2026-07-17 04:32:42', 0, NULL, '2026-06-01 09:34:26', '2026-07-17 04:32:42', NULL, 0, NULL),
-(8, 'ASSISTANT', 'assistant@kashtec.com', '$2a$12$b95IZ2AY.W5QCuRhVeMo.OB8jeAxyApJ4.7x.nPUXuA21QuS0Hw8W', 'Admin Assistant', 'Administration', 'Admin Assistant', 'Active', '2026-07-16 06:59:21', 0, NULL, '2026-06-01 09:34:26', '2026-07-19 06:57:53', NULL, 0, NULL),
-(7662, 'DEPT-5548-4S7F', 'latifaidd20@gmail.com', '$2a$12$oNligfG64fKhHJxcuUhohOEe3pXvPTUBrfoIkQaE2P2MntGYKOAGC', 'HR Manager', 'HR', 'latifa', 'Active', '2026-07-19 06:57:54', 0, NULL, '2026-07-13 15:46:15', '2026-07-19 06:57:54', '[]', 0, NULL),
-(7751, 'DEPT-8070-5DAD', 'chrispingolden@gmail.com', '$2a$12$pAQiuqohXAWgDRLAP0MGzufAGeJdr9EOHNdFfPteO/2hgHOIJ6D4C', 'Project Manager', 'Project', 'chrispin', 'Active', '2026-07-14 03:45:47', 0, NULL, '2026-07-14 03:45:18', '2026-07-14 03:45:47', NULL, 0, NULL),
-(7816, 'DEPT-5353-G5CH', 'realestate@manager0502', '$2a$12$dsdqGqx2mk7ou0SNg2Ir8eT1gDhNlG05fUmJOqw/NxUCvzW6BgdiW', 'Real Estate Manager', 'Real Estate', 'chrispin', 'Active', '2026-07-15 01:32:42', 0, NULL, '2026-07-15 01:03:15', '2026-07-15 01:32:42', NULL, 0, NULL),
-(7857, 'DEPT-MD', 'md@kashtec.com', '$2a$12$WVq.5CVVD6TNvpdwhlixE.KPbCi7mAUVfy1QPVRdZQ9Id7t9oLFDW', 'Managing Director', 'Managing Director', 'Managing Director', 'Active', NULL, 0, NULL, '2026-07-16 04:58:48', '2026-07-19 06:57:53', 'All', 0, NULL);
+(1, 'MD', 'kashtectz@gmail.com', 'REDACTED', 'Managing Director', 'Managing Director', 'K.M. kayungilo', 'Active', '2026-07-19 06:14:35', 0, NULL, '2026-06-01 09:34:26', '2026-07-19 06:14:35', NULL, 0, NULL),
+(2, 'ADMIN', 'admin@kashtec.com', 'REDACTED', 'Director of Administration', 'Administration', 'Director of Administration', 'Active', '2026-07-16 07:00:43', 0, NULL, '2026-06-01 09:34:26', '2026-07-16 07:00:43', 'All', 0, NULL),
+(3, 'HR', 'hr@manager0501', 'REDACTED', 'HR Manager', 'HR', 'HR Manager', 'Active', '2026-07-14 04:06:00', 0, NULL, '2026-06-01 09:34:26', '2026-07-14 04:06:00', 'All', 0, NULL),
+(4, 'HSE', 'hse@manager0501', 'REDACTED', 'HSE Manager', 'Health & Safety', 'HSE Manager', 'Active', '2026-07-15 00:58:36', 0, NULL, '2026-06-01 09:34:26', '2026-07-15 00:58:36', 'All', 0, NULL),
+(5, 'FINANCE', 'finance@manager0501', 'REDACTED', 'Finance Manager', 'Finance', 'farhaothman', 'Active', '2026-07-17 08:09:54', 0, NULL, '2026-06-01 09:34:26', '2026-07-18 18:41:58', NULL, 1, NULL),
+(6, 'PROJECT', 'pm@manager0501', 'REDACTED', 'Project Manager', 'Project', 'Technical12', 'Active', '2026-07-14 02:35:19', 0, NULL, '2026-06-01 09:34:26', '2026-07-15 00:20:41', NULL, 1, NULL),
+(7, 'REALESTATE', 'realestate@manager0501', 'REDACTED', 'Real Estate Manager', 'Real Estate', 'Real Estate Manager', 'Active', '2026-07-17 04:32:42', 0, NULL, '2026-06-01 09:34:26', '2026-07-17 04:32:42', NULL, 0, NULL),
+(8, 'ASSISTANT', 'assistant@kashtec.com', 'REDACTED', 'Admin Assistant', 'Administration', 'Admin Assistant', 'Active', '2026-07-16 06:59:21', 0, NULL, '2026-06-01 09:34:26', '2026-07-19 06:57:53', NULL, 0, NULL),
+(7662, 'DEPT-5548-4S7F', 'latifaidd20@gmail.com', 'REDACTED', 'HR Manager', 'HR', 'latifa', 'Active', '2026-07-19 06:57:54', 0, NULL, '2026-07-13 15:46:15', '2026-07-19 06:57:54', '[]', 0, NULL),
+(7751, 'DEPT-8070-5DAD', 'chrispingolden@gmail.com', 'REDACTED', 'Project Manager', 'Project', 'chrispin', 'Active', '2026-07-14 03:45:47', 0, NULL, '2026-07-14 03:45:18', '2026-07-14 03:45:47', NULL, 0, NULL),
+(7816, 'DEPT-5353-G5CH', 'realestate@manager0502', 'REDACTED', 'Real Estate Manager', 'Real Estate', 'chrispin', 'Active', '2026-07-15 01:32:42', 0, NULL, '2026-07-15 01:03:15', '2026-07-15 01:32:42', NULL, 0, NULL),
+(7857, 'DEPT-MD', 'md@kashtec.com', 'REDACTED', 'Managing Director', 'Managing Director', 'Managing Director', 'Active', NULL, 0, NULL, '2026-07-16 04:58:48', '2026-07-19 06:57:53', 'All', 0, NULL);
 
 -- ----------------------------
 -- Table: claims
