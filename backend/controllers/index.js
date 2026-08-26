@@ -128,9 +128,11 @@ class OfficePortalController {
             const updateValues = [];
             
             Object.keys(updates).forEach(key => {
-                updateFields.push(`${key} = ?`);
+                if (/^[a-zA-Z0-9_]+$/.test(key)) {
+                updateFields.push(`\`${key}\` = ?`);
                 updateValues.push(updates[key]);
-            });
+            }
+        });
             
             const updateQuery = `UPDATE office_portal_users SET ${updateFields.join(', ')} WHERE id = ?`;
             updateValues.push(id);
@@ -420,9 +422,11 @@ class EmployeeController {
             const updateValues = [];
             
             Object.keys(updates).forEach(key => {
-                updateFields.push(`${key} = ?`);
+                if (/^[a-zA-Z0-9_]+$/.test(key)) {
+                updateFields.push(`\`${key}\` = ?`);
                 updateValues.push(updates[key]);
-            });
+            }
+        });
             
             const updateQuery = `UPDATE employees SET ${updateFields.join(', ')} WHERE id = ?`;
             updateValues.push(id);

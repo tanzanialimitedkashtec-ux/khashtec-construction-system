@@ -484,8 +484,8 @@ router.put('/:id', async (req, res) => {
             const updateValues = [];
             
             Object.keys(updateData).forEach(key => {
-                if (updateData[key] !== undefined && key !== 'id') {
-                    updateFields.push(`${key} = ?`);
+                if (/^[a-zA-Z0-9_]+$/.test(key) && updateData[key] !== undefined && key !== 'id') {
+                    updateFields.push(`\`${key}\` = ?`);
                     updateValues.push(updateData[key]);
                 }
             });

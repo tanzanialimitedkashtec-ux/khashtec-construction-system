@@ -349,9 +349,16 @@ router.put('/:id', async (req, res) => {
             });
         }
 
+        const keys = Object.keys(updateFields);
+        for (let key of keys) {
+            if (!/^[a-zA-Z0-9_]+$/.test(key)) {
+                return res.status(400).json({ success: false, message: 'Invalid column name' });
+            }
+        }
+        
         const [result] = await db.execute(`
             UPDATE transport_costs 
-            SET ${Object.keys(updateFields).map(key => `${key} = ?`).join(', ')}
+            SET ${keys.map(key => `\`${key}\` = ?`).join(', ')}
             WHERE id = ?
         `, [...Object.values(updateFields), id]);
 
