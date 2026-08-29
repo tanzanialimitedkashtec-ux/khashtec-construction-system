@@ -169,32 +169,22 @@ async function runBackup() {
   const sqlFilePath = path.join(backupsDir, sqlFilename);
 
   // ---- 3. Run mysqldump ----
-  const dumpCmd = [
-    'mysqldump',
-    `--host="${mysqlHost}"`,
-    `--port="${mysqlPort}"`,
-    `--user="${mysqlUser}"`,
-    '--single-transaction',
-    '--routines',
-    '--triggers',
-    '--events',
-    '--add-drop-table',
-    '--extended-insert',
-    `--result-file="${sqlFilePath}"`,
-    `"${mysqlDatabase}"`,
-  ].join(' ');
-
   console.log(`[backup] Running mysqldump for database "${mysqlDatabase}"…`);
 
   try {
-    // Pass MYSQL_PWD in the environment so special characters in the password don't break the shell command
-    execSync(dumpCmd, { 
-      stdio: 'pipe',
-      env: { ...process.env, MYSQL_PWD: mysqlPassword }
+    const mysqldump = require('mysqldump');
+    await mysqldump({
+      connection: {
+        host: mysqlHost,
+        port: parseInt(mysqlPort, 10),
+        user: mysqlUser,
+        password: mysqlPassword,
+        database: mysqlDatabase,
+      },
+      dumpToFile: sqlFilePath,
     });
   } catch (dumpErr) {
-    const stderr = dumpErr.stderr ? dumpErr.stderr.toString() : dumpErr.message;
-    throw new Error(`[backup] mysqldump failed: ${stderr}`);
+    throw new Error(`[backup] mysqldump failed: ${dumpErr.message || dumpErr}`);
   }
 
   console.log(`[backup] Dump saved: ${sqlFilePath}`);
